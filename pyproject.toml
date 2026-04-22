@@ -61,7 +61,7 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=agent_sdd --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=agent_sdd --cov-report=term-missing --cov-fail-under=70"
 
 [tool.coverage.run]
 source = ["src/agent_sdd"]

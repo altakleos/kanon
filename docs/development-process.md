@@ -456,4 +456,3 @@ Terms used throughout this document with specific meanings:
 - [docs/specs/README.md](specs/README.md) — spec index and template
 - [docs/design/README.md](design/README.md) — design doc index
 - [docs/plans/README.md](plans/README.md) — plan template
-- [docs/operations/README.md](operations/README.md) — operational runbooks (release, parallel agents, context budget)
