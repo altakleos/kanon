@@ -358,8 +358,43 @@ def upgrade(target: Path) -> None:
     click.echo(f"Upgraded agent-sdd project at {target}: {old_version} → {__version__}")
 
 
+_SECTION_INSERT_ANCHOR = "## Contribution Conventions"
+
+
+def _insert_section(text: str, section: str, content: str) -> str:
+    """Insert a new marker-delimited section into *text* at a sensible anchor.
+
+    Preferred anchor: just before the first ``## Contribution Conventions``
+    header. Fallback: append at end of file, preserving any trailing newline.
+    User content outside the kit-managed markers is preserved — the
+    inserted block is bracketed by new marker pairs.
+    """
+    begin = f"<!-- agent-sdd:begin:{section} -->"
+    end = f"<!-- agent-sdd:end:{section} -->"
+    block = f"{begin}\n{content.strip()}\n{end}\n"
+    anchor_idx = text.find(_SECTION_INSERT_ANCHOR)
+    if anchor_idx >= 0:
+        before = text[:anchor_idx].rstrip() + "\n\n"
+        after = text[anchor_idx:]
+        return before + block + "\n" + after
+    # Fallback: append.
+    if text and not text.endswith("\n"):
+        text = text + "\n"
+    return text + "\n" + block
+
+
 def _merge_agents_md(existing: str, new: str) -> str:
-    """Copy marker-delimited sections from *new* into *existing*, preserving user content outside markers."""
+    """Copy marker-delimited sections from *new* into *existing*.
+
+    - Sections present in both are replaced in-place (preserves existing
+      user content outside the markers).
+    - Sections present only in *new* are inserted at a sensible anchor
+      (before ``## Contribution Conventions`` or at end of file).
+    - Sections present only in *existing* are removed (their content is
+      kit-managed; the new tier doesn't want them active).
+
+    User content outside all marker pairs is never modified.
+    """
     all_sections = {s for secs in _TIER_SECTIONS.values() for s in secs}
     result = existing
     for section in all_sections:
@@ -373,9 +408,11 @@ def _merge_agents_md(existing: str, new: str) -> str:
             result = _remove_section(result, section)
             continue
         new_section_body = new[nb + len(begin): ne].strip()
-        # Replace in existing if present; otherwise skip (can't insert without anchoring heuristics).
         if begin in result and end in result:
             result = _replace_section(result, section, new_section_body)
+        else:
+            # Section required by new tier but absent in existing — insert it.
+            result = _insert_section(result, section, new_section_body)
     return result
 
 
