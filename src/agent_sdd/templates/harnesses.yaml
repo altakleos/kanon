@@ -1,0 +1,55 @@
+# Cross-harness shim registry for agent-sdd.
+#
+# Each entry describes a harness-specific rule file that points at the
+# canonical AGENTS.md at the repo root. New harnesses are added here
+# without a Python code change; re-release the kit to propagate.
+#
+# See docs/specs/cross-harness-shims.md for the contract and ADR-0003
+# for the canonical-AGENTS.md decision.
+
+- name: claude-code
+  path: CLAUDE.md
+  body: |
+    See @AGENTS.md
+
+- name: kiro
+  path: .kiro/steering/agent-sdd.md
+  body: |
+    # agent-sdd boot chain
+
+    Read and follow the instructions in `AGENTS.md` at the repo root.
+
+- name: cursor
+  path: .cursor/rules/agent-sdd.mdc
+  frontmatter:
+    description: agent-sdd boot chain
+    alwaysApply: true
+  body: |
+    Read and follow the instructions in `AGENTS.md` at the repo root.
+
+- name: copilot
+  path: .github/copilot-instructions.md
+  body: |
+    Read and follow the instructions in `AGENTS.md` at the repo root.
+
+- name: windsurf
+  path: .windsurf/rules/agent-sdd.md
+  frontmatter:
+    trigger: always_on
+  body: |
+    Read and follow the instructions in `AGENTS.md` at the repo root.
+
+- name: cline
+  path: .clinerules/agent-sdd.md
+  body: |
+    Read and follow the instructions in `AGENTS.md` at the repo root.
+
+- name: roo
+  path: .roo/rules/agent-sdd.md
+  body: |
+    Read and follow the instructions in `AGENTS.md` at the repo root.
+
+- name: jetbrains-ai
+  path: .aiassistant/rules/agent-sdd.md
+  body: |
+    Read and follow the instructions in `AGENTS.md` at the repo root.
