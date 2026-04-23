@@ -1,0 +1,49 @@
+# Kanon kit manifest — tier membership declaration.
+#
+# Each tier-N entry lists the files and protocols first introduced at that
+# tier. A consumer init/upgrade at tier M unions entries for tiers 0..M
+# (strict-superset semantics). Paths under `files:` are relative to
+# `src/kanon/kit/files/`; paths under `protocols:` are relative to
+# `src/kanon/kit/protocols/`.
+#
+# See docs/design/kit-bundle.md and docs/specs/template-bundle.md for the
+# construction flow and invariants.
+
+tier-0:
+  files:
+    - CLAUDE.md
+  protocols: []
+
+tier-1:
+  files:
+    - docs/development-process.md
+    - docs/decisions/README.md
+    - docs/decisions/_template.md
+    - docs/plans/README.md
+    - docs/plans/_template.md
+  protocols: []
+
+tier-2:
+  files:
+    - docs/specs/README.md
+    - docs/specs/_template.md
+  protocols: []
+
+tier-3:
+  files:
+    - docs/design/README.md
+    - docs/design/_template.md
+    - docs/foundations/README.md
+    - docs/foundations/vision.md
+    - docs/foundations/principles/README.md
+    - docs/foundations/personas/README.md
+  protocols: []
+
+# AGENTS.md marker sections active at each tier. Section fragments live at
+# src/kanon/kit/sections/<name>.md and are inserted into the per-tier base
+# from src/kanon/kit/agents-md/tier-<N>.md by the CLI.
+agents-md-sections:
+  tier-0: []
+  tier-1: [plan-before-build]
+  tier-2: [plan-before-build, spec-before-design]
+  tier-3: [plan-before-build, spec-before-design]

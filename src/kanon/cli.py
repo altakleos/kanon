@@ -8,6 +8,10 @@ Subcommands:
 
 Per ADR-0008, tier migration affects AGENTS.md content inside HTML-comment-
 delimited sections only; user content outside markers is never touched.
+
+Tier membership (which files and protocols scaffold at which tier, and which
+AGENTS.md marker sections are active) is data in src/kanon/kit/manifest.yaml.
+See docs/design/kit-bundle.md and ADR-0011.
 """
 
 from __future__ import annotations
@@ -18,6 +22,7 @@ import shutil
 import string
 import sys
 from datetime import datetime, timezone
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -29,52 +34,91 @@ from kanon import __version__
 
 _VALID_TIERS = {0, 1, 2, 3}
 
-# Section names per tier — each is a named block inside AGENTS.md wrapped in
-# <!-- kanon:begin:<name> --> / <!-- kanon:end:<name> --> markers.
-_TIER_SECTIONS: dict[int, list[str]] = {
-    0: [],
-    1: ["plan-before-build"],
-    2: ["plan-before-build", "spec-before-design"],
-    3: ["plan-before-build", "spec-before-design"],
-}
-
-# Tier -> list of paths (relative to target) that the tier requires, in
-# addition to everything the lower tier requires. Strict superset semantics.
-_TIER_FILES: dict[int, list[str]] = {
-    0: ["AGENTS.md", "CLAUDE.md", ".kanon/config.yaml"],
-    1: [
-        "docs/development-process.md",
-        "docs/decisions/README.md",
-        "docs/decisions/_template.md",
-        "docs/plans/README.md",
-        "docs/plans/_template.md",
-    ],
-    2: [
-        "docs/specs/README.md",
-        "docs/specs/_template.md",
-    ],
-    3: [
-        "docs/design/README.md",
-        "docs/design/_template.md",
-        "docs/foundations/README.md",
-        "docs/foundations/vision.md",
-        "docs/foundations/principles/README.md",
-        "docs/foundations/personas/README.md",
-    ],
-}
+# Files the CLI always synthesizes (not sourced from the kit's files/ tree).
+# `.kanon/kit.md` is conditional — included only when kit/kit.md exists on disk.
+_ALWAYS_SYNTHESIZED = ("AGENTS.md", ".kanon/config.yaml")
 
 
-def _expected_files(tier: int) -> list[str]:
-    """Return the full path list a project at *tier* must have."""
+def _kit_root() -> Path:
+    """Location of the vendored kit bundle inside the installed package."""
+    return Path(kanon.__file__).parent / "kit"
+
+
+@lru_cache(maxsize=1)
+def _load_manifest() -> dict[str, Any]:
+    """Load and validate kit/manifest.yaml. Cached across calls."""
+    path = _kit_root() / "manifest.yaml"
+    if not path.is_file():
+        raise click.ClickException(f"kit manifest missing: {path}")
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise click.ClickException(f"malformed {path}: expected a YAML mapping.")
+    for n in range(4):
+        key = f"tier-{n}"
+        if key not in data:
+            raise click.ClickException(f"{path}: missing required key {key!r}.")
+        tier_entry = data[key]
+        if not isinstance(tier_entry, dict):
+            raise click.ClickException(f"{path}: {key} must be a mapping.")
+        for bucket in ("files", "protocols"):
+            if not isinstance(tier_entry.get(bucket, []), list):
+                raise click.ClickException(f"{path}: {key}.{bucket} must be a list.")
+    if "agents-md-sections" not in data or not isinstance(data["agents-md-sections"], dict):
+        raise click.ClickException(f"{path}: missing or malformed 'agents-md-sections' mapping.")
+    return data
+
+
+def _manifest_tier_files(tier: int) -> list[str]:
+    """Return union of files under `tier-0`..`tier-N` from the manifest."""
+    manifest = _load_manifest()
     paths: list[str] = []
     for n in range(tier + 1):
-        paths.extend(_TIER_FILES[n])
+        paths.extend(manifest.get(f"tier-{n}", {}).get("files", []))
     return paths
 
 
-def _templates_root() -> Path:
-    """Location of the vendored template bundles inside the installed package."""
-    return Path(kanon.__file__).parent / "templates"
+def _manifest_tier_protocols(tier: int) -> list[str]:
+    """Return union of protocols under `tier-0`..`tier-N` from the manifest."""
+    manifest = _load_manifest()
+    paths: list[str] = []
+    for n in range(tier + 1):
+        paths.extend(manifest.get(f"tier-{n}", {}).get("protocols", []))
+    return paths
+
+
+def _manifest_tier_sections(tier: int) -> list[str]:
+    """Return the list of AGENTS.md marker sections active at the given tier."""
+    manifest = _load_manifest()
+    sections = manifest["agents-md-sections"].get(f"tier-{tier}", [])
+    if not isinstance(sections, list):
+        raise click.ClickException(
+            f"manifest.yaml: agents-md-sections.tier-{tier} must be a list."
+        )
+    return list(sections)
+
+
+def _manifest_all_sections() -> set[str]:
+    """Every section name referenced anywhere in manifest's agents-md-sections mapping."""
+    manifest = _load_manifest()
+    seen: set[str] = set()
+    for sections in manifest["agents-md-sections"].values():
+        if isinstance(sections, list):
+            seen.update(sections)
+    return seen
+
+
+def _expected_files(tier: int) -> list[str]:
+    """Return the full path list a project at *tier* must have.
+
+    Includes always-synthesized files (AGENTS.md, .kanon/config.yaml, .kanon/kit.md),
+    manifest file entries, and protocol entries scaffolded under .kanon/protocols/.
+    """
+    paths: list[str] = list(_ALWAYS_SYNTHESIZED)
+    if (_kit_root() / "kit.md").is_file():
+        paths.append(".kanon/kit.md")
+    paths.extend(_manifest_tier_files(tier))
+    paths.extend(f".kanon/protocols/{p}" for p in _manifest_tier_protocols(tier))
+    return paths
 
 
 def _now_iso() -> str:
@@ -119,7 +163,7 @@ def _write_config(target: Path, kit_version: str, tier: int) -> None:
 
 
 def _load_harnesses() -> list[dict[str, Any]]:
-    path = _templates_root() / "harnesses.yaml"
+    path = _kit_root() / "harnesses.yaml"
     if not path.is_file():
         return []
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or []
@@ -134,20 +178,31 @@ def _render_placeholder(text: str, context: dict[str, str]) -> str:
 
 
 def _build_bundle(tier: int, context: dict[str, str]) -> dict[str, str]:
-    """Return {relative_path: rendered_content} for every file in tier."""
+    """Return {relative_path: rendered_content} for every file scaffolded at *tier*.
+
+    Walks kit/files/ and kit/protocols/ filtered by manifest membership.
+    Does NOT include always-synthesized files (AGENTS.md, .kanon/config.yaml,
+    .kanon/kit.md) — those are assembled separately by the init/upgrade flow.
+    """
     bundle: dict[str, str] = {}
-    templates = _templates_root()
-    for n in range(tier + 1):
-        src_dir = templates / f"tier-{n}"
-        if not src_dir.is_dir():
-            continue
-        for src_file in sorted(src_dir.rglob("*")):
-            if not src_file.is_file():
-                continue
-            rel = src_file.relative_to(src_dir)
-            rel_str = rel.as_posix()
-            text = src_file.read_text(encoding="utf-8")
-            bundle[rel_str] = _render_placeholder(text, context)
+    kit = _kit_root()
+    files_root = kit / "files"
+    protocols_root = kit / "protocols"
+
+    for rel in _manifest_tier_files(tier):
+        src = files_root / rel
+        if not src.is_file():
+            raise click.ClickException(f"kit file missing: {src}")
+        bundle[rel] = _render_placeholder(src.read_text(encoding="utf-8"), context)
+
+    for rel in _manifest_tier_protocols(tier):
+        src = protocols_root / rel
+        if not src.is_file():
+            raise click.ClickException(f"kit protocol missing: {src}")
+        bundle[f".kanon/protocols/{rel}"] = _render_placeholder(
+            src.read_text(encoding="utf-8"), context
+        )
+
     return bundle
 
 
@@ -167,27 +222,36 @@ def _render_shims() -> dict[str, str]:
     return result
 
 
-def _assemble_agents_md(tier: int, project_name: str) -> str:
-    """Build AGENTS.md content by combining the tier-<N> AGENTS.md template
-    with the tier-specific marker-delimited section fragments."""
-    templates = _templates_root()
-    agents_template = templates / f"tier-{tier}" / "AGENTS.md"
-    if not agents_template.is_file():
-        raise click.ClickException(f"Missing template: {agents_template}")
-    text = _render_placeholder(
-        agents_template.read_text(encoding="utf-8"),
+def _render_kit_md(tier: int, project_name: str) -> str | None:
+    """Render kit/kit.md with placeholder substitution. None if kit.md doesn't exist yet."""
+    src = _kit_root() / "kit.md"
+    if not src.is_file():
+        return None
+    return _render_placeholder(
+        src.read_text(encoding="utf-8"),
         {"project_name": project_name, "tier": str(tier)},
     )
-    # Fill marker-delimited blocks with their tier-<N> fragment content.
-    for section in _TIER_SECTIONS[tier]:
-        fragment = templates / "agents-md-sections" / f"{section}.md"
+
+
+def _assemble_agents_md(tier: int, project_name: str) -> str:
+    """Build AGENTS.md content from kit/agents-md/tier-<N>.md + kit/sections/*.md."""
+    kit = _kit_root()
+    base = kit / "agents-md" / f"tier-{tier}.md"
+    if not base.is_file():
+        raise click.ClickException(f"Missing AGENTS.md base: {base}")
+    text = _render_placeholder(
+        base.read_text(encoding="utf-8"),
+        {"project_name": project_name, "tier": str(tier)},
+    )
+    # Fill marker-delimited blocks with their fragment content.
+    for section in _manifest_tier_sections(tier):
+        fragment = kit / "sections" / f"{section}.md"
         if not fragment.is_file():
             continue
         fragment_text = fragment.read_text(encoding="utf-8")
         text = _replace_section(text, section, fragment_text)
     # Remove any sections not active at this tier (their markers may be absent).
-    all_sections = {s for secs in _TIER_SECTIONS.values() for s in secs}
-    inactive = all_sections - set(_TIER_SECTIONS[tier])
+    inactive = _manifest_all_sections() - set(_manifest_tier_sections(tier))
     for section in inactive:
         text = _remove_section(text, section)
     return text
@@ -229,31 +293,19 @@ def _write_tree_atomically(
     files: dict[str, str],
     force: bool = False,
 ) -> None:
-    """Write *files* relative to *target*, atomically per-file.
-
-    Uses the parent-dir fsync helper from _atomic. This is a simpler form
-    than Sensei's full engine-swap because init/upgrade operate on distinct
-    subpaths rather than an entire bundle directory.
-    """
+    """Write *files* relative to *target*, atomically per-file."""
     from kanon._atomic import atomic_write_text
 
     for rel, content in sorted(files.items()):
         dst = target / rel
         if dst.exists() and not force:
-            # init() callers handle the force check upstream; this branch
-            # only triggers if callers forgot. Be explicit.
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
         atomic_write_text(dst, content)
 
 
 def _atomic_replace_dir(src: Path, dst: Path) -> None:
-    """Replace *dst* with the contents of *src* atomically.
-
-    Ports Sensei's _atomic_replace_engine pattern. *dst* after this call
-    contains the exact contents of *src*; on failure, the previous *dst*
-    (if any) is restored.
-    """
+    """Replace *dst* with the contents of *src* atomically."""
     parent = dst.parent
     tmp = parent / f"{dst.name}.tmp"
     old = parent / f"{dst.name}.old"
@@ -315,10 +367,11 @@ def init(target: Path, tier_arg: int, force: bool) -> None:
 
     context = {"project_name": target.name, "tier": str(tier_arg)}
 
-    # Build the bundle (tier-0 ∪ tier-1 ∪ ... ∪ tier-N) and render AGENTS.md separately.
     bundle = _build_bundle(tier_arg, context)
-    bundle.pop("AGENTS.md", None)  # assembled below with section fragments
     bundle["AGENTS.md"] = _assemble_agents_md(tier_arg, target.name)
+    kit_md = _render_kit_md(tier_arg, target.name)
+    if kit_md is not None:
+        bundle[".kanon/kit.md"] = kit_md
     bundle.update(_render_shims())
 
     _write_tree_atomically(target, bundle, force=force)
@@ -342,17 +395,20 @@ def upgrade(target: Path) -> None:
         click.echo(f"Already at {__version__}. Nothing to upgrade.")
         return
 
-    # For v0.1, upgrade rewrites AGENTS.md (marker sections only) and config;
-    # tier-specific docs/ templates that exist in consumer's repo are
-    # untouched (non-destructive). A future version may atomically refresh
-    # individual template files the consumer hasn't customised.
-    new_agents_md = _assemble_agents_md(tier_arg, target.name)
-    existing = (target / "AGENTS.md").read_text(encoding="utf-8")
+    # v0.2: upgrade rewrites AGENTS.md marker sections, kit.md, and config.
+    # Consumer-authored content outside markers is preserved.
     from kanon._atomic import atomic_write_text
 
+    new_agents_md = _assemble_agents_md(tier_arg, target.name)
+    existing = (target / "AGENTS.md").read_text(encoding="utf-8")
     merged = _merge_agents_md(existing, new_agents_md)
     if merged != existing:
         atomic_write_text(target / "AGENTS.md", merged)
+
+    kit_md = _render_kit_md(tier_arg, target.name)
+    if kit_md is not None:
+        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
+
     _write_config(target, __version__, tier_arg)
 
     click.echo(f"Upgraded kanon project at {target}: {old_version} → {__version__}")
@@ -362,13 +418,7 @@ _SECTION_INSERT_ANCHOR = "## Contribution Conventions"
 
 
 def _insert_section(text: str, section: str, content: str) -> str:
-    """Insert a new marker-delimited section into *text* at a sensible anchor.
-
-    Preferred anchor: just before the first ``## Contribution Conventions``
-    header. Fallback: append at end of file, preserving any trailing newline.
-    User content outside the kit-managed markers is preserved — the
-    inserted block is bracketed by new marker pairs.
-    """
+    """Insert a new marker-delimited section into *text* at a sensible anchor."""
     begin = f"<!-- kanon:begin:{section} -->"
     end = f"<!-- kanon:end:{section} -->"
     block = f"{begin}\n{content.strip()}\n{end}\n"
@@ -377,7 +427,6 @@ def _insert_section(text: str, section: str, content: str) -> str:
         before = text[:anchor_idx].rstrip() + "\n\n"
         after = text[anchor_idx:]
         return before + block + "\n" + after
-    # Fallback: append.
     if text and not text.endswith("\n"):
         text = text + "\n"
     return text + "\n" + block
@@ -386,32 +435,25 @@ def _insert_section(text: str, section: str, content: str) -> str:
 def _merge_agents_md(existing: str, new: str) -> str:
     """Copy marker-delimited sections from *new* into *existing*.
 
-    - Sections present in both are replaced in-place (preserves existing
-      user content outside the markers).
-    - Sections present only in *new* are inserted at a sensible anchor
-      (before ``## Contribution Conventions`` or at end of file).
-    - Sections present only in *existing* are removed (their content is
-      kit-managed; the new tier doesn't want them active).
-
+    - Sections present in both are replaced in-place.
+    - Sections present only in *new* are inserted at a sensible anchor.
+    - Sections present only in *existing* are removed.
     User content outside all marker pairs is never modified.
     """
-    all_sections = {s for secs in _TIER_SECTIONS.values() for s in secs}
+    all_sections = _manifest_all_sections()
     result = existing
     for section in all_sections:
         begin = f"<!-- kanon:begin:{section} -->"
         end = f"<!-- kanon:end:{section} -->"
-        # Extract new-section content.
         nb = new.find(begin)
         ne = new.find(end, nb + len(begin)) if nb >= 0 else -1
         if nb < 0 or ne < 0:
-            # New AGENTS.md has removed this section; strip it from existing.
             result = _remove_section(result, section)
             continue
         new_section_body = new[nb + len(begin): ne].strip()
         if begin in result and end in result:
             result = _replace_section(result, section, new_section_body)
         else:
-            # Section required by new tier but absent in existing — insert it.
             result = _insert_section(result, section, new_section_body)
     return result
 
@@ -446,12 +488,11 @@ def verify(target: Path) -> None:
     agents_md_path = target / "AGENTS.md"
     if agents_md_path.is_file():
         agents_text = agents_md_path.read_text(encoding="utf-8")
-        for section in _TIER_SECTIONS[tier_arg]:
+        for section in _manifest_tier_sections(tier_arg):
             begin = f"<!-- kanon:begin:{section} -->"
             end = f"<!-- kanon:end:{section} -->"
             if begin not in agents_text or end not in agents_text:
                 errors.append(f"AGENTS.md missing marker pair for section '{section}' (tier {tier_arg}).")
-        # Unbalanced markers at all?
         all_begins = agents_text.count("<!-- kanon:begin:")
         all_ends = agents_text.count("<!-- kanon:end:")
         if all_begins != all_ends:
@@ -503,17 +544,14 @@ def tier_set(target: Path, n: int) -> None:
         raise click.ClickException(f"Invalid current tier {current!r} in config.")
 
     if current == n:
-        # Idempotent: still update timestamp for auditability.
         _write_config(target, config.get("kit_version", __version__), n)
         click.echo(f"Tier already {n}. Noop (timestamp refreshed).")
         return
 
     context = {"project_name": target.name, "tier": str(n)}
     target_bundle = _build_bundle(n, context)
-    target_bundle.pop("AGENTS.md", None)
 
     if n > current:
-        # Tier-up: write new files that don't exist yet, rewrite AGENTS.md.
         added = 0
         for rel, content in sorted(target_bundle.items()):
             dst = target / rel
@@ -526,7 +564,6 @@ def tier_set(target: Path, n: int) -> None:
             added += 1
         click.echo(f"Tier-up {current} → {n}: added {added} new file(s).")
     else:
-        # Tier-down: retain all existing content; warn about artifacts beyond required.
         beyond: list[str] = []
         required = set(_expected_files(n))
         for current_rel in _expected_files(current):
@@ -540,13 +577,18 @@ def tier_set(target: Path, n: int) -> None:
             click.echo("You may keep, archive, or delete them as you choose.")
 
     # Rewrite AGENTS.md to match the new tier's sections.
+    from kanon._atomic import atomic_write_text
+
     new_agents = _assemble_agents_md(n, target.name)
     existing_agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     merged = _merge_agents_md(existing_agents, new_agents)
     if merged != existing_agents:
-        from kanon._atomic import atomic_write_text
-
         atomic_write_text(target / "AGENTS.md", merged)
+
+    # Rewrite .kanon/kit.md to reflect the new tier.
+    kit_md = _render_kit_md(n, target.name)
+    if kit_md is not None:
+        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
 
     _write_config(target, config.get("kit_version", __version__), n)
     click.echo(f"Tier set to {n} in .kanon/config.yaml.")

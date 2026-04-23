@@ -41,23 +41,23 @@ REQUIRED_FILES: tuple[str, ...] = (
     "kanon/__init__.py",
     "kanon/cli.py",
     "kanon/_atomic.py",
-    "kanon/templates/harnesses.yaml",
-    "kanon/templates/tier-0/AGENTS.md",
-    "kanon/templates/tier-0/CLAUDE.md",
-    "kanon/templates/tier-1/AGENTS.md",
-    "kanon/templates/tier-1/docs/development-process.md",
-    "kanon/templates/tier-2/AGENTS.md",
-    "kanon/templates/tier-3/AGENTS.md",
-    "kanon/templates/agents-md-sections/plan-before-build.md",
-    "kanon/templates/agents-md-sections/spec-before-design.md",
+    "kanon/kit/manifest.yaml",
+    "kanon/kit/harnesses.yaml",
+    "kanon/kit/agents-md/tier-0.md",
+    "kanon/kit/agents-md/tier-1.md",
+    "kanon/kit/agents-md/tier-2.md",
+    "kanon/kit/agents-md/tier-3.md",
+    "kanon/kit/files/CLAUDE.md",
+    "kanon/kit/files/docs/development-process.md",
+    "kanon/kit/sections/plan-before-build.md",
+    "kanon/kit/sections/spec-before-design.md",
 )
 
 REQUIRED_DIRS: tuple[str, ...] = (
-    "kanon/templates/tier-0/",
-    "kanon/templates/tier-1/",
-    "kanon/templates/tier-2/",
-    "kanon/templates/tier-3/",
-    "kanon/templates/agents-md-sections/",
+    "kanon/kit/",
+    "kanon/kit/agents-md/",
+    "kanon/kit/files/",
+    "kanon/kit/sections/",
 )
 
 FORBIDDEN_PREFIXES: tuple[str, ...] = (

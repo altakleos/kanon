@@ -34,9 +34,9 @@ from typing import Any
 import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_TEMPLATES = _REPO_ROOT / "src" / "kanon" / "templates"
+_KIT = _REPO_ROOT / "src" / "kanon" / "kit"
 _CANONICAL_DEV_PROCESS = _REPO_ROOT / "docs" / "development-process.md"
-_TEMPLATE_DEV_PROCESS = _TEMPLATES / "tier-1" / "docs" / "development-process.md"
+_TEMPLATE_DEV_PROCESS = _KIT / "files" / "docs" / "development-process.md"
 
 _KNOWN_SECTIONS: frozenset[str] = frozenset({"plan-before-build", "spec-before-design"})
 
@@ -61,8 +61,7 @@ def _check_dev_process_byte_equality(errors: list[str]) -> None:
 
 
 def _check_agents_md_markers(errors: list[str]) -> None:
-    for tier_dir in sorted(_TEMPLATES.glob("tier-*/")):
-        agents_md = tier_dir / "AGENTS.md"
+    for agents_md in sorted((_KIT / "agents-md").glob("tier-*.md")):
         if not agents_md.is_file():
             continue
         text = agents_md.read_text(encoding="utf-8")
@@ -88,7 +87,7 @@ def _check_agents_md_markers(errors: list[str]) -> None:
 
 
 def _check_harnesses_yaml(errors: list[str]) -> None:
-    path = _TEMPLATES / "harnesses.yaml"
+    path = _KIT / "harnesses.yaml"
     if not path.is_file():
         errors.append(f"missing: {path.relative_to(_REPO_ROOT)}")
         return
