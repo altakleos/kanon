@@ -21,13 +21,16 @@ tier-1:
     - docs/decisions/_template.md
     - docs/plans/README.md
     - docs/plans/_template.md
-  protocols: []
+  protocols:
+    - tier-up-advisor.md
+    - verify-triage.md
 
 tier-2:
   files:
     - docs/specs/README.md
     - docs/specs/_template.md
-  protocols: []
+  protocols:
+    - spec-review.md
 
 tier-3:
   files:
