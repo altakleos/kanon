@@ -222,6 +222,43 @@ def _render_shims() -> dict[str, str]:
     return result
 
 
+def _parse_frontmatter(text: str) -> dict[str, Any]:
+    """Parse a `---\\n…\\n---\\n` YAML frontmatter block. Empty dict if absent."""
+    if not text.startswith("---\n"):
+        return {}
+    end = text.find("\n---\n", 4)
+    if end < 0:
+        return {}
+    data = yaml.safe_load(text[4:end])
+    return data if isinstance(data, dict) else {}
+
+
+def _render_protocols_index(tier: int) -> str:
+    """Render the `protocols-index` marker section body from manifest + protocol frontmatter."""
+    kit = _kit_root()
+    rows: list[tuple[str, int, str]] = []
+    for n in range(tier + 1):
+        for name in _load_manifest().get(f"tier-{n}", {}).get("protocols", []):
+            proto_path = kit / "protocols" / name
+            if not proto_path.is_file():
+                continue
+            fm = _parse_frontmatter(proto_path.read_text(encoding="utf-8"))
+            invoke_when = str(fm.get("invoke-when", "")).strip() or "(no trigger declared)"
+            rows.append((name, n, invoke_when))
+    lines = [
+        "## Active protocols",
+        "",
+        "Prose-as-code procedures available at this tier. When a trigger fires, read the protocol file in full and follow its numbered steps.",
+        "",
+        "| Protocol | Tier min | Invoke when |",
+        "| --- | --- | --- |",
+    ]
+    for name, tmin, when in rows:
+        slug = name.removesuffix(".md")
+        lines.append(f"| [`{slug}`](.kanon/protocols/{name}) | {tmin} | {when} |")
+    return "\n".join(lines) + "\n"
+
+
 def _render_kit_md(tier: int, project_name: str) -> str | None:
     """Render kit/kit.md with placeholder substitution. None if kit.md doesn't exist yet."""
     src = _kit_root() / "kit.md"
@@ -245,10 +282,13 @@ def _assemble_agents_md(tier: int, project_name: str) -> str:
     )
     # Fill marker-delimited blocks with their fragment content.
     for section in _manifest_tier_sections(tier):
-        fragment = kit / "sections" / f"{section}.md"
-        if not fragment.is_file():
-            continue
-        fragment_text = fragment.read_text(encoding="utf-8")
+        if section == "protocols-index":
+            fragment_text = _render_protocols_index(tier)
+        else:
+            fragment = kit / "sections" / f"{section}.md"
+            if not fragment.is_file():
+                continue
+            fragment_text = fragment.read_text(encoding="utf-8")
         text = _replace_section(text, section, fragment_text)
     # Remove any sections not active at this tier (their markers may be absent).
     inactive = _manifest_all_sections() - set(_manifest_tier_sections(tier))

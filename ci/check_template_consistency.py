@@ -38,7 +38,7 @@ _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
 _CANONICAL_DEV_PROCESS = _REPO_ROOT / "docs" / "development-process.md"
 _TEMPLATE_DEV_PROCESS = _KIT / "files" / "docs" / "development-process.md"
 
-_KNOWN_SECTIONS: frozenset[str] = frozenset({"plan-before-build", "spec-before-design"})
+_KNOWN_SECTIONS: frozenset[str] = frozenset({"plan-before-build", "spec-before-design", "protocols-index"})
 
 _SECTION_RE = re.compile(r"<!-- kanon:(begin|end):([a-z0-9-]+) -->")
 

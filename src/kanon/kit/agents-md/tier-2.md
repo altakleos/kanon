@@ -21,6 +21,9 @@ A tier-2 `kanon` project. Plan-before-build and spec-before-design gates are bot
 <!-- kanon:begin:spec-before-design -->
 <!-- kanon:end:spec-before-design -->
 
+<!-- kanon:begin:protocols-index -->
+<!-- kanon:end:protocols-index -->
+
 ## Contribution Conventions
 
 - **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes.

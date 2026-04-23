@@ -47,6 +47,6 @@ tier-3:
 # from src/kanon/kit/agents-md/tier-<N>.md by the CLI.
 agents-md-sections:
   tier-0: []
-  tier-1: [plan-before-build]
-  tier-2: [plan-before-build, spec-before-design]
-  tier-3: [plan-before-build, spec-before-design]
+  tier-1: [plan-before-build, protocols-index]
+  tier-2: [plan-before-build, spec-before-design, protocols-index]
+  tier-3: [plan-before-build, spec-before-design, protocols-index]

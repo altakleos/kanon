@@ -38,8 +38,8 @@ kanon/
 ├── src/kanon/
 │   ├── __init__.py
 │   ├── cli.py                  (click CLI: init/upgrade/verify/tier)
-│   └── templates/              (tier-0..tier-3 bundles scaffolded by `kanon init`)
-└── tests/                    (CLI, template integrity, tier-migration round-trip)
+│   └── kit/                    (unified bundle — manifest.yaml + agents-md/ + files/ + sections/ + protocols/)
+└── tests/                    (CLI, kit integrity, tier-migration round-trip)
 ```
 
 ## Key Constraints
@@ -47,8 +47,8 @@ kanon/
 - `docs/development-process.md` is **project-agnostic**. Do not mention the kit's own CLI commands, tier model specifics, or any `kanon`-brand terms in it. Kit-specific material lives in `docs/kanon-implementation.md`.
 - **Process rules belong in `docs/development-process.md`**. README files in artifact directories (`specs/`, `design/`, `plans/`, `decisions/`, `foundations/`) carry indexes, templates, and pointers — not process definitions. When adding a new process concept, put it in the method doc and add a pointer from the relevant README.
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
-- The tier-3 bundle at `src/kanon/templates/tier-3/` shares source of truth with this repo's own `docs/` and `AGENTS.md` (section markers). `ci/check_template_consistency.py` enforces byte-equality.
-- Tier-{0,1,2} bundles are strict subsets of tier-3. Do not author them independently — derive them by omission.
+- The kit bundle at `src/kanon/kit/` shares source of truth with this repo's own `docs/`, `AGENTS.md` section markers, and `.kanon/protocols/`. `ci/check_template_consistency.py` enforces byte-equality against a narrow whitelist (see ADR-0011).
+- Tier membership is data in `src/kanon/kit/manifest.yaml`. To scaffold a new file at tier-N for consumers, add it under `kit/files/` or `kit/protocols/` and list its path under the appropriate `tier-N` entry in the manifest. Strict-superset semantics are preserved by manifest-union.
 
 <!-- kanon:begin:plan-before-build -->
 ## Required: Plan Before Build
@@ -101,6 +101,18 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 
 **Design-doc skip.** A design doc may be skipped when all four conditions in [`docs/development-process.md` § When to Skip a Design Doc](docs/development-process.md#when-to-skip-a-design-doc) hold (pattern instantiation, single-concern scope, spec carries the reasoning, plan exists). The skip must be declared in the plan's frontmatter as `design: "Follows ADR-NNNN"` **before** implementation begins — retroactive declarations don't count.
 <!-- kanon:end:spec-before-design -->
+
+<!-- kanon:begin:protocols-index -->
+## Active protocols
+
+Prose-as-code procedures available at this tier. When a trigger fires, read the protocol file in full and follow its numbered steps.
+
+| Protocol | Tier min | Invoke when |
+| --- | --- | --- |
+| [`tier-up-advisor`](.kanon/protocols/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's kanon tier, or asks "should we tier up?" |
+| [`verify-triage`](.kanon/protocols/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
+| [`spec-review`](.kanon/protocols/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
+<!-- kanon:end:protocols-index -->
 
 ## Contribution Conventions
 

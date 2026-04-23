@@ -17,6 +17,9 @@ A tier-1 `kanon` project. The plan-before-build gate is active; ADRs and plans a
 <!-- kanon:begin:plan-before-build -->
 <!-- kanon:end:plan-before-build -->
 
+<!-- kanon:begin:protocols-index -->
+<!-- kanon:end:protocols-index -->
+
 ## Contribution Conventions
 
 - **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes.

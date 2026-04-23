@@ -22,6 +22,9 @@ A tier-3 `kanon` project. Full stack: foundations + specs + design + ADRs + plan
 <!-- kanon:begin:spec-before-design -->
 <!-- kanon:end:spec-before-design -->
 
+<!-- kanon:begin:protocols-index -->
+<!-- kanon:end:protocols-index -->
+
 ## Contribution Conventions
 
 - **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes.
