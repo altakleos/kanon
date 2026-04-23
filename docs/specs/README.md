@@ -6,12 +6,12 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 
 | Spec | Intent |
 |---|---|
-| [cli](cli.md) | The `agent-sdd` CLI surface and contracts |
+| [cli](cli.md) | The `kanon` CLI surface and contracts |
 | [template-bundle](template-bundle.md) | What gets scaffolded by `init` and what `upgrade` replaces |
 | [cross-harness-shims](cross-harness-shims.md) | The shim registry and per-harness contracts |
 | [tiers](tiers.md) | Tier-0 through tier-3 content and triggers |
 | [tier-migration](tier-migration.md) | `tier set` semantics — mutable, idempotent, non-destructive |
-| [verification-contract](verification-contract.md) | What `agent-sdd verify` guarantees about a consumer repo |
+| [verification-contract](verification-contract.md) | What `kanon verify` guarantees about a consumer repo |
 
 ## Deferred specs (scheduled for v0.2+)
 

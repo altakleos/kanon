@@ -6,7 +6,7 @@ date: 2026-04-22
 
 ## Context
 
-Sensei's status taxonomy (inherited via `docs/development-process.md`) is `draft | accepted | accepted (lite) | provisional | superseded`. `agent-sdd` ships with deferred capabilities that are intent-committed but implementation-scheduled for later releases — fidelity-lock, spec-graph-tooling, ambiguity-budget, multi-agent-coordination, expand-and-contract-lifecycle, invariant-ids (per `docs/plans/roadmap.md`).
+Sensei's status taxonomy (inherited via `docs/development-process.md`) is `draft | accepted | accepted (lite) | provisional | superseded`. `kanon` ships with deferred capabilities that are intent-committed but implementation-scheduled for later releases — fidelity-lock, spec-graph-tooling, ambiguity-budget, multi-agent-coordination, expand-and-contract-lifecycle, invariant-ids (per `docs/plans/roadmap.md`).
 
 None of the existing status values fits:
 - `draft` means "under active discussion for imminent acceptance" — too immediate.

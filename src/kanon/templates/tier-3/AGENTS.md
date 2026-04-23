@@ -1,6 +1,6 @@
 # AGENTS.md — ${project_name}
 
-A tier-3 `agent-sdd` project. Full stack: foundations + specs + design + ADRs + plans + verification. All process gates are active.
+A tier-3 `kanon` project. Full stack: foundations + specs + design + ADRs + plans + verification. All process gates are active.
 
 ## Boot chain
 
@@ -16,11 +16,11 @@ A tier-3 `agent-sdd` project. Full stack: foundations + specs + design + ADRs + 
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 - Principles in `docs/foundations/principles/` are the project's cross-cutting stances. Specs and ADRs reference them via frontmatter.
 
-<!-- agent-sdd:begin:plan-before-build -->
-<!-- agent-sdd:end:plan-before-build -->
+<!-- kanon:begin:plan-before-build -->
+<!-- kanon:end:plan-before-build -->
 
-<!-- agent-sdd:begin:spec-before-design -->
-<!-- agent-sdd:end:spec-before-design -->
+<!-- kanon:begin:spec-before-design -->
+<!-- kanon:end:spec-before-design -->
 
 ## Contribution Conventions
 

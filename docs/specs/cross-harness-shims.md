@@ -15,26 +15,26 @@ Define the shim set that makes a consumer repo's SDD rules discoverable to every
 
 ## Invariants
 
-1. **Registry externalised.** The set of harnesses and their shim paths + frontmatter is defined in `src/agent_sdd/templates/harnesses.yaml`, not hardcoded in Python.
+1. **Registry externalised.** The set of harnesses and their shim paths + frontmatter is defined in `src/kanon/templates/harnesses.yaml`, not hardcoded in Python.
 2. **Shims are pointers.** Every shim file is a single-line reference to `AGENTS.md`. The exact form depends on the harness:
    - `CLAUDE.md` — `See @AGENTS.md\n` (Claude Code reads `@AGENTS.md` as an import directive).
    - Harnesses that don't support imports — a one-line sentence `Read and follow the instructions in AGENTS.md at the repo root.` with any frontmatter the harness requires.
-3. **V0.1 harness set.** `agent-sdd init` writes all of these by default:
+3. **V0.1 harness set.** `kanon init` writes all of these by default:
    - `CLAUDE.md` (Claude Code)
-   - `.kiro/steering/agent-sdd.md` (Kiro)
-   - `.cursor/rules/agent-sdd.mdc` (Cursor — `alwaysApply: true` frontmatter)
+   - `.kiro/steering/kanon.md` (Kiro)
+   - `.cursor/rules/kanon.mdc` (Cursor — `alwaysApply: true` frontmatter)
    - `.github/copilot-instructions.md` (GitHub Copilot)
-   - `.windsurf/rules/agent-sdd.md` (Windsurf — `trigger: always_on` frontmatter)
-   - `.clinerules/agent-sdd.md` (Cline)
-   - `.roo/rules/agent-sdd.md` (Roo Code)
-   - `.aiassistant/rules/agent-sdd.md` (JetBrains AI)
+   - `.windsurf/rules/kanon.md` (Windsurf — `trigger: always_on` frontmatter)
+   - `.clinerules/kanon.md` (Cline)
+   - `.roo/rules/kanon.md` (Roo Code)
+   - `.aiassistant/rules/kanon.md` (JetBrains AI)
 4. **`AGENTS.md` at repo root is the canonical root.** No shim duplicates content from it.
 5. **Harness YAML schema.** Each registry entry carries:
    ```yaml
    - name: cursor
-     path: .cursor/rules/agent-sdd.mdc
+     path: .cursor/rules/kanon.mdc
      frontmatter:
-       description: agent-sdd boot chain
+       description: kanon boot chain
        alwaysApply: true
      body: |
        Read and follow the instructions in `AGENTS.md` at the repo root.

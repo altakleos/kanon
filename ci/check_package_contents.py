@@ -38,31 +38,31 @@ from pathlib import Path
 from typing import Any
 
 REQUIRED_FILES: tuple[str, ...] = (
-    "agent_sdd/__init__.py",
-    "agent_sdd/cli.py",
-    "agent_sdd/_atomic.py",
-    "agent_sdd/templates/harnesses.yaml",
-    "agent_sdd/templates/tier-0/AGENTS.md",
-    "agent_sdd/templates/tier-0/CLAUDE.md",
-    "agent_sdd/templates/tier-1/AGENTS.md",
-    "agent_sdd/templates/tier-1/docs/development-process.md",
-    "agent_sdd/templates/tier-2/AGENTS.md",
-    "agent_sdd/templates/tier-3/AGENTS.md",
-    "agent_sdd/templates/agents-md-sections/plan-before-build.md",
-    "agent_sdd/templates/agents-md-sections/spec-before-design.md",
+    "kanon/__init__.py",
+    "kanon/cli.py",
+    "kanon/_atomic.py",
+    "kanon/templates/harnesses.yaml",
+    "kanon/templates/tier-0/AGENTS.md",
+    "kanon/templates/tier-0/CLAUDE.md",
+    "kanon/templates/tier-1/AGENTS.md",
+    "kanon/templates/tier-1/docs/development-process.md",
+    "kanon/templates/tier-2/AGENTS.md",
+    "kanon/templates/tier-3/AGENTS.md",
+    "kanon/templates/agents-md-sections/plan-before-build.md",
+    "kanon/templates/agents-md-sections/spec-before-design.md",
 )
 
 REQUIRED_DIRS: tuple[str, ...] = (
-    "agent_sdd/templates/tier-0/",
-    "agent_sdd/templates/tier-1/",
-    "agent_sdd/templates/tier-2/",
-    "agent_sdd/templates/tier-3/",
-    "agent_sdd/templates/agents-md-sections/",
+    "kanon/templates/tier-0/",
+    "kanon/templates/tier-1/",
+    "kanon/templates/tier-2/",
+    "kanon/templates/tier-3/",
+    "kanon/templates/agents-md-sections/",
 )
 
 FORBIDDEN_PREFIXES: tuple[str, ...] = (
     # Consumer-state paths that should never leak into the distributed wheel.
-    ".agent-sdd/",
+    ".kanon/",
     "docs/",               # kit's own docs/ are not shipped in the wheel
     "tests/",
     "ci/",
@@ -109,7 +109,7 @@ def check_wheel(wheel_path: Path, tag: str, changelog_path: Path | None = None) 
     with zipfile.ZipFile(wheel_path) as z:
         names = z.namelist()
         try:
-            init_content = z.read("agent_sdd/__init__.py").decode("utf-8")
+            init_content = z.read("kanon/__init__.py").decode("utf-8")
         except KeyError:
             init_content = ""
     name_set = set(names)

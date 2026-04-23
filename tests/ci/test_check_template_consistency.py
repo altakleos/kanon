@@ -25,7 +25,7 @@ ctc = _load_validator()
 
 
 def test_real_repo_passes() -> None:
-    """The agent-sdd repo itself must satisfy template-consistency invariants."""
+    """The kanon repo itself must satisfy template-consistency invariants."""
     errors = ctc.run_checks()
     assert errors == [], "template-consistency check failed:\n  " + "\n  ".join(errors)
 

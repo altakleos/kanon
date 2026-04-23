@@ -1,4 +1,4 @@
-"""Shared fixtures for the agent-sdd test suite."""
+"""Shared fixtures for the kanon test suite."""
 
 from __future__ import annotations
 

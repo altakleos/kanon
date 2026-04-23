@@ -1,6 +1,6 @@
 # AGENTS.md — ${project_name}
 
-A tier-2 `agent-sdd` project. Plan-before-build and spec-before-design gates are both active; specs are tracked under `docs/specs/`.
+A tier-2 `kanon` project. Plan-before-build and spec-before-design gates are both active; specs are tracked under `docs/specs/`.
 
 ## Boot chain
 
@@ -15,11 +15,11 @@ A tier-2 `agent-sdd` project. Plan-before-build and spec-before-design gates are
 - Process rules belong in `docs/development-process.md`. README files in artifact directories carry indexes and templates, not process definitions.
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 
-<!-- agent-sdd:begin:plan-before-build -->
-<!-- agent-sdd:end:plan-before-build -->
+<!-- kanon:begin:plan-before-build -->
+<!-- kanon:end:plan-before-build -->
 
-<!-- agent-sdd:begin:spec-before-design -->
-<!-- agent-sdd:end:spec-before-design -->
+<!-- kanon:begin:spec-before-design -->
+<!-- kanon:end:spec-before-design -->
 
 ## Contribution Conventions
 

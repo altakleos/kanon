@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-_TEMPLATES = _REPO_ROOT / "src" / "agent_sdd" / "templates"
+_TEMPLATES = _REPO_ROOT / "src" / "kanon" / "templates"
 
 
 def test_all_four_tier_dirs_exist() -> None:
@@ -34,17 +34,17 @@ def test_dev_process_byte_equal_to_canonical() -> None:
 @pytest.mark.parametrize("tier", [1, 2, 3])
 def test_tier_agents_md_contains_expected_markers(tier: int) -> None:
     agents_md = (_TEMPLATES / f"tier-{tier}" / "AGENTS.md").read_text(encoding="utf-8")
-    assert "<!-- agent-sdd:begin:plan-before-build -->" in agents_md
-    assert "<!-- agent-sdd:end:plan-before-build -->" in agents_md
+    assert "<!-- kanon:begin:plan-before-build -->" in agents_md
+    assert "<!-- kanon:end:plan-before-build -->" in agents_md
     if tier >= 2:
-        assert "<!-- agent-sdd:begin:spec-before-design -->" in agents_md
-        assert "<!-- agent-sdd:end:spec-before-design -->" in agents_md
+        assert "<!-- kanon:begin:spec-before-design -->" in agents_md
+        assert "<!-- kanon:end:spec-before-design -->" in agents_md
 
 
 def test_tier_0_agents_md_has_no_gate_markers() -> None:
     agents_md = (_TEMPLATES / "tier-0" / "AGENTS.md").read_text(encoding="utf-8")
-    assert "<!-- agent-sdd:begin:" not in agents_md
-    assert "<!-- agent-sdd:end:" not in agents_md
+    assert "<!-- kanon:begin:" not in agents_md
+    assert "<!-- kanon:end:" not in agents_md
 
 
 def test_agents_md_section_fragments_exist() -> None:

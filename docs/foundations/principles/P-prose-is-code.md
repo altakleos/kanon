@@ -27,4 +27,4 @@ The principle is weaker for non-gating prose — principle descriptions, vision 
 
 ## Source
 
-Sensei's foundational principle of the same name, ported unchanged. The user's company has been piloting this discipline inside Sensei for months; `agent-sdd` packages the discipline.
+Sensei's foundational principle of the same name, ported unchanged. The user's company has been piloting this discipline inside Sensei for months; `kanon` packages the discipline.

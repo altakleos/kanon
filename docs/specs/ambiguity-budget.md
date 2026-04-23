@@ -18,10 +18,10 @@ Provide a mechanical falsifier for the specs-as-source claim. For each sampled s
 
 ## Sketched invariants
 
-1. `agent-sdd ambiguity-budget [--spec <path>] [--agents <n>] [--seed <seed>]` invokes N ≥ 2 agents against the spec's invariants.
+1. `kanon ambiguity-budget [--spec <path>] [--agents <n>] [--seed <seed>]` invokes N ≥ 2 agents against the spec's invariants.
 2. Each agent receives only: the spec file, relevant foundation files (principles referenced by `realizes:`), and a neutral "implement this" prompt. No code context.
 3. Outputs are diffed at a semantic level — (deferred sub-question) either AST-level for code, behavioural-level for tests, or simple text diff. v0.2 starts with text diff, refines.
-4. The run produces a per-spec divergence score. Budget: the project declares an acceptable maximum divergence per spec; `agent-sdd verify` can consume the score and warn when budget is exceeded.
+4. The run produces a per-spec divergence score. Budget: the project declares an acceptable maximum divergence per spec; `kanon verify` can consume the score and warn when budget is exceeded.
 5. Cost-gated: ambiguity-budget runs are expensive (LLM calls). Consumers opt in per-spec or per-CI-run; not on every `verify` invocation.
 
 ## Out of Scope in v0.1

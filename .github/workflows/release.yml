@@ -33,7 +33,7 @@ jobs:
         run: ruff check src/ tests/ ci/
 
       - name: Type check with mypy
-        run: mypy src/agent_sdd
+        run: mypy src/kanon
 
       - name: Check foundations layer
         run: python ci/check_foundations.py

@@ -6,7 +6,7 @@ date: 2026-04-22
 
 ## Context
 
-`agent-sdd`-managed projects use transcript fixtures (prose-as-code fixtures per the pattern inherited from Sensei's ADR-0011) as verification artifacts for protocol behaviour. A fixture that passes on `claude-sonnet-4-6` may not pass on `claude-opus-5` — the model is part of the implementation the fixture verifies.
+`kanon`-managed projects use transcript fixtures (prose-as-code fixtures per the pattern inherited from Sensei's ADR-0011) as verification artifacts for protocol behaviour. A fixture that passes on `claude-sonnet-4-6` may not pass on `claude-opus-5` — the model is part of the implementation the fixture verifies.
 
 Today, there is no explicit mechanism to track this. A model version bump can silently invalidate fixture coverage; the consumer only finds out when a production protocol misbehaves against the newer model.
 
@@ -25,13 +25,13 @@ last-validated: 2026-04-20
 ---
 ```
 
-`agent-sdd verify` compares the consumer project's declared default model (from its own `AGENTS.md` configuration or `.agent-sdd/config.yaml`) against each fixture's `validated-against:` list. When the current default is not listed, `verify` emits a **warning** (not a hard fail) naming the fixture and the missing version. The consumer is then obligated to either (a) re-run the fixture against the new model and update the list, or (b) document a waiver in the fixture's frontmatter (`waiver: <reason>`, `waiver-expires: <date>`).
+`kanon verify` compares the consumer project's declared default model (from its own `AGENTS.md` configuration or `.kanon/config.yaml`) against each fixture's `validated-against:` list. When the current default is not listed, `verify` emits a **warning** (not a hard fail) naming the fixture and the missing version. The consumer is then obligated to either (a) re-run the fixture against the new model and update the list, or (b) document a waiver in the fixture's frontmatter (`waiver: <reason>`, `waiver-expires: <date>`).
 
 ## v0.1 scope
 
 What v0.1 ships:
 - The `validated-against:` / `last-validated:` frontmatter convention in spec and fixture templates.
-- Warning-level detection in `agent-sdd verify`.
+- Warning-level detection in `kanon verify`.
 - Documentation of the convention in `docs/specs/verification-contract.md`.
 
 What v0.1 **does not** ship, and why:
@@ -52,7 +52,7 @@ What v0.1 **does not** ship, and why:
 
 ## Config Impact
 
-Consumer `.agent-sdd/config.yaml` optionally carries `default-model:` (for future automated re-running). Consumer AGENTS.md's project-specific section is the canonical place today.
+Consumer `.kanon/config.yaml` optionally carries `default-model:` (for future automated re-running). Consumer AGENTS.md's project-specific section is the canonical place today.
 
 ## References
 

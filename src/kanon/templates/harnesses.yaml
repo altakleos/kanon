@@ -1,4 +1,4 @@
-# Cross-harness shim registry for agent-sdd.
+# Cross-harness shim registry for kanon.
 #
 # Each entry describes a harness-specific rule file that points at the
 # canonical AGENTS.md at the repo root. New harnesses are added here
@@ -13,16 +13,16 @@
     See @AGENTS.md
 
 - name: kiro
-  path: .kiro/steering/agent-sdd.md
+  path: .kiro/steering/kanon.md
   body: |
-    # agent-sdd boot chain
+    # kanon boot chain
 
     Read and follow the instructions in `AGENTS.md` at the repo root.
 
 - name: cursor
-  path: .cursor/rules/agent-sdd.mdc
+  path: .cursor/rules/kanon.mdc
   frontmatter:
-    description: agent-sdd boot chain
+    description: kanon boot chain
     alwaysApply: true
   body: |
     Read and follow the instructions in `AGENTS.md` at the repo root.
@@ -33,23 +33,23 @@
     Read and follow the instructions in `AGENTS.md` at the repo root.
 
 - name: windsurf
-  path: .windsurf/rules/agent-sdd.md
+  path: .windsurf/rules/kanon.md
   frontmatter:
     trigger: always_on
   body: |
     Read and follow the instructions in `AGENTS.md` at the repo root.
 
 - name: cline
-  path: .clinerules/agent-sdd.md
+  path: .clinerules/kanon.md
   body: |
     Read and follow the instructions in `AGENTS.md` at the repo root.
 
 - name: roo
-  path: .roo/rules/agent-sdd.md
+  path: .roo/rules/kanon.md
   body: |
     Read and follow the instructions in `AGENTS.md` at the repo root.
 
 - name: jetbrains-ai
-  path: .aiassistant/rules/agent-sdd.md
+  path: .aiassistant/rules/kanon.md
   body: |
     Read and follow the instructions in `AGENTS.md` at the repo root.

@@ -2,32 +2,32 @@
 status: accepted
 date: 2026-04-22
 ---
-# Vision — What `agent-sdd` Is, and What It Is Not
+# Vision — What `kanon` Is, and What It Is Not
 
-## What `agent-sdd` Is
+## What `kanon` Is
 
-`agent-sdd` is a portable, self-hosting kit that packages Spec-Driven Development (SDD) as prose an LLM agent reads and obeys. A single pointer in the consumer repo's `CLAUDE.md` or `AGENTS.md` is enough to make any LLM-agent-driven project process-disciplined: plans before building, specs before designing, verification alongside implementation.
+`kanon` is a portable, self-hosting kit that packages Spec-Driven Development (SDD) as prose an LLM agent reads and obeys. A single pointer in the consumer repo's `CLAUDE.md` or `AGENTS.md` is enough to make any LLM-agent-driven project process-disciplined: plans before building, specs before designing, verification alongside implementation.
 
 Three properties define the kit:
 
 1. **Portable.** Works across Claude Code, OpenAI Codex, Cursor, GitHub Copilot, Windsurf, Cline, Roo Code, JetBrains AI, and Kiro via a per-harness shim registry. New harnesses are added to a data file; no code change required.
-2. **Tiered.** Start at tier-0 (just an AGENTS.md, for vibe-coding) and grow to tier-3 (full foundations + specs + design + ADRs + plans + verification stack) as the project matures. `agent-sdd tier set` moves any project between any two tiers non-destructively.
-3. **Self-hosting.** The kit is itself a tier-3 `agent-sdd` project. Its own `docs/` tree shares source of truth with the tier-3 template it ships; CI enforces byte-equality. If you can't use the kit to develop the kit, the kit isn't good enough.
+2. **Tiered.** Start at tier-0 (just an AGENTS.md, for vibe-coding) and grow to tier-3 (full foundations + specs + design + ADRs + plans + verification stack) as the project matures. `kanon tier set` moves any project between any two tiers non-destructively.
+3. **Self-hosting.** The kit is itself a tier-3 `kanon` project. Its own `docs/` tree shares source of truth with the tier-3 template it ships; CI enforces byte-equality. If you can't use the kit to develop the kit, the kit isn't good enough.
 
 ## Current Promises
 
-A consumer repo that adopts `agent-sdd` gets:
+A consumer repo that adopts `kanon` gets:
 
 - **Plan-before-build and spec-before-design gates** in AGENTS.md that any major LLM agent harness will read and honour.
 - **Cross-harness consistency** — the same rules apply in Claude Code, Cursor, Codex, and the rest, via pointer shims that never duplicate content.
 - **Non-destructive tier migration** — projects aren't locked into their initial tier; they grow (or contract) without losing user content.
 - **Verification as first-class authoritative source** (per ADR-0004) — tests and fixtures are co-authored with specs, not derived from them.
-- **Model-version compatibility signals** (per ADR-0005) — transcript fixtures declare which model versions they were validated against; `agent-sdd verify` warns when a fixture hasn't been re-run on the current model.
+- **Model-version compatibility signals** (per ADR-0005) — transcript fixtures declare which model versions they were validated against; `kanon verify` warns when a fixture hasn't been re-run on the current model.
 - **A roadmap of `status: deferred` specs** so a fresh session can discover what's coming without reading external plans.
 
 ## Non-Goals
 
-`agent-sdd` explicitly does not:
+`kanon` explicitly does not:
 
 - **Generate code from specs.** There is no deterministic spec-to-code compiler. Agents read specs and write code; the kit does not try to close that loop mechanically.
 - **Ship harness-specific enforcement hooks.** The base kit is prose-only. Harness-specific enforcement adapters (Claude Code hooks, pre-commit scripts, etc.) are out of scope — the kit's premise is that LLM agency is rising to meet prose gates.
@@ -39,7 +39,7 @@ A consumer repo that adopts `agent-sdd` gets:
 
 Sensei, the reference implementation, is a pedagogy product built under proprietary SDD discipline. As the author moved on to plan other projects, the obvious question was: should each project reinvent SDD, or should the method be packaged and shared? Packaging wins for two reasons: the conventions reduce per-project overhead, and the accumulated craft (atomic-write contracts, cross-harness shims, CI validators, transcript fixtures) shouldn't be reconstructed from scratch every time.
 
-`agent-sdd` is the packaging. Sensei remains the reference implementation that proves the method under real pedagogy constraints.
+`kanon` is the packaging. Sensei remains the reference implementation that proves the method under real pedagogy constraints.
 
 ## Design Stance — "Specs Are Source"
 
@@ -47,8 +47,8 @@ In an AI-coded future where humans read specs far more than they read generated 
 
 ## Success Criteria (v0.1)
 
-- The `agent-sdd` repo itself passes `agent-sdd verify .` as a tier-3 consumer.
-- `agent-sdd init <target> --tier <N>` produces a valid project for every N ∈ {0, 1, 2, 3}.
+- The `kanon` repo itself passes `kanon verify .` as a tier-3 consumer.
+- `kanon init <target> --tier <N>` produces a valid project for every N ∈ {0, 1, 2, 3}.
 - Tier migration chain (0 → 1 → 2 → 3 → back) preserves user-authored content end-to-end.
 - PyPI release `v0.1.0a1` cut without manual intervention beyond the trusted-publishing gate.
 

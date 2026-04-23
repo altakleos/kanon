@@ -1,14 +1,14 @@
 """Template-consistency validator (maintainer-side, CI hard-fail).
 
-Asserts four invariants that keep the agent-sdd kit self-hosted:
+Asserts four invariants that keep the kanon kit self-hosted:
 
 1. **Byte-equality** between the repo's canonical `docs/development-process.md`
    and the tier-1 template's copy. These two files MUST be identical
    byte-for-byte; the repo's own method doc and the one scaffolded into
    consumer projects cannot diverge.
 2. **AGENTS.md marker balance** in every tier template — every
-   ``<!-- agent-sdd:begin:<name> -->`` has a matching
-   ``<!-- agent-sdd:end:<name> -->``.
+   ``<!-- kanon:begin:<name> -->`` has a matching
+   ``<!-- kanon:end:<name> -->``.
 3. **Known section names.** Every marker section name in any template
    AGENTS.md or agents-md-sections fragment is in the documented set
    (currently: plan-before-build, spec-before-design).
@@ -34,13 +34,13 @@ from typing import Any
 import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_TEMPLATES = _REPO_ROOT / "src" / "agent_sdd" / "templates"
+_TEMPLATES = _REPO_ROOT / "src" / "kanon" / "templates"
 _CANONICAL_DEV_PROCESS = _REPO_ROOT / "docs" / "development-process.md"
 _TEMPLATE_DEV_PROCESS = _TEMPLATES / "tier-1" / "docs" / "development-process.md"
 
 _KNOWN_SECTIONS: frozenset[str] = frozenset({"plan-before-build", "spec-before-design"})
 
-_SECTION_RE = re.compile(r"<!-- agent-sdd:(begin|end):([a-z0-9-]+) -->")
+_SECTION_RE = re.compile(r"<!-- kanon:(begin|end):([a-z0-9-]+) -->")
 
 
 def _check_dev_process_byte_equality(errors: list[str]) -> None:

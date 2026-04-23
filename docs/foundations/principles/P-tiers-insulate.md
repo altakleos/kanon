@@ -8,7 +8,7 @@ date: 2026-04-22
 
 ## Statement
 
-`agent-sdd`'s tier model cleanly insulates consumers: a tier-0 project never sees tier-3 artifacts, terminology, or process gates. That consumer insulation is load-bearing. The tier model does **not** insulate producers (the kit's maintainers) from the friction of tier migrations, cross-tier dependencies, or retroactive artifact manufacturing. Those are real producer-facing concerns the kit addresses separately via runbooks and non-destructive migration.
+`kanon`'s tier model cleanly insulates consumers: a tier-0 project never sees tier-3 artifacts, terminology, or process gates. That consumer insulation is load-bearing. The tier model does **not** insulate producers (the kit's maintainers) from the friction of tier migrations, cross-tier dependencies, or retroactive artifact manufacturing. Those are real producer-facing concerns the kit addresses separately via runbooks and non-destructive migration.
 
 ## Rationale
 
@@ -20,8 +20,8 @@ The principle is that (1) is a kit design property — solved structurally by wh
 
 ## Implications
 
-- `agent-sdd init --tier 0` literally does not write any `docs/` directory. The tier-0 user has no mental model of tier-3 artifacts to carry.
-- `agent-sdd tier set` is designed assuming the user knows about tier migration (producer concern), not assuming they know about every artifact they're adding (consumer concern — handled by README-per-layer auto-generation).
+- `kanon init --tier 0` literally does not write any `docs/` directory. The tier-0 user has no mental model of tier-3 artifacts to carry.
+- `kanon tier set` is designed assuming the user knows about tier migration (producer concern), not assuming they know about every artifact they're adding (consumer concern — handled by README-per-layer auto-generation).
 - Tier-up operations print a terse summary of what was added, not a tutorial on how to use the new layer (the README of each new directory does that).
 - Tier-down operations print a warning listing artifacts now "beyond required" — deliberately surfacing the producer-facing choice (keep, archive, delete) rather than hiding it.
 
@@ -32,4 +32,4 @@ The principle is that (1) is a kit design property — solved structurally by wh
 
 ## Source
 
-Fair-adversary agent report during v0.1 design synthesis; user confirmation that tier-3 is agent-sdd's own dogfood tier.
+Fair-adversary agent report during v0.1 design synthesis; user confirmation that tier-3 is kanon's own dogfood tier.

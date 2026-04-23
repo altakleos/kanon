@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import pytest
 
-from agent_sdd._atomic import atomic_write_text
+from kanon._atomic import atomic_write_text
 
 
 def test_happy_path(tmp_path: Path) -> None:
@@ -31,7 +31,7 @@ def test_crash_on_replace_leaves_original_untouched(tmp_path: Path) -> None:
     target.write_text(original_content, encoding="utf-8")
 
     with (
-        patch("agent_sdd._atomic.os.replace", side_effect=OSError("disk full")),
+        patch("kanon._atomic.os.replace", side_effect=OSError("disk full")),
         pytest.raises(OSError, match="disk full"),
     ):
         atomic_write_text(target, "new: content\n")
@@ -50,7 +50,7 @@ def test_overwrites_existing_file(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(os.name != "posix", reason="parent-dir fsync is POSIX-only")
 def test_fsyncs_parent_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import agent_sdd._atomic as atomic_mod
+    import kanon._atomic as atomic_mod
 
     events: list[str] = []
     real_fsync = atomic_mod.os.fsync

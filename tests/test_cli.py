@@ -1,4 +1,4 @@
-"""Tests for the agent-sdd CLI: init, upgrade, verify, tier set.
+"""Tests for the kanon CLI: init, upgrade, verify, tier set.
 
 Includes tier-migration round-trip smoke: 0 → 1 → 2 → 3 → 2 → 1 → 0
 preserves user-authored files and verify stays OK at every step.
@@ -13,8 +13,8 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-from agent_sdd import __version__
-from agent_sdd.cli import main
+from kanon import __version__
+from kanon.cli import main
 
 # --- init ---
 
@@ -28,7 +28,7 @@ def test_init_scaffolds_all_required_files(tmp_path: Path, tier: int) -> None:
 
     assert (target / "AGENTS.md").is_file()
     assert (target / "CLAUDE.md").is_file()
-    config = yaml.safe_load((target / ".agent-sdd" / "config.yaml").read_text())
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
     assert config["tier"] == tier
     assert config["kit_version"] == __version__
     assert "tier_set_at" in config
@@ -70,13 +70,13 @@ def test_init_writes_all_shims(tmp_path: Path) -> None:
 
     expected_shims = [
         "CLAUDE.md",
-        ".kiro/steering/agent-sdd.md",
-        ".cursor/rules/agent-sdd.mdc",
+        ".kiro/steering/kanon.md",
+        ".cursor/rules/kanon.mdc",
         ".github/copilot-instructions.md",
-        ".windsurf/rules/agent-sdd.md",
-        ".clinerules/agent-sdd.md",
-        ".roo/rules/agent-sdd.md",
-        ".aiassistant/rules/agent-sdd.md",
+        ".windsurf/rules/kanon.md",
+        ".clinerules/kanon.md",
+        ".roo/rules/kanon.md",
+        ".aiassistant/rules/kanon.md",
     ]
     for shim_path in expected_shims:
         assert (target / shim_path).is_file(), f"missing shim: {shim_path}"
@@ -89,7 +89,7 @@ def test_shims_are_pointers_not_duplicates(tmp_path: Path) -> None:
 
     # Shims should be short — well under 1000 chars — and must not contain
     # the plan-before-build rule text (which is AGENTS.md's job).
-    for shim_name in ["CLAUDE.md", ".cursor/rules/agent-sdd.mdc", ".windsurf/rules/agent-sdd.md"]:
+    for shim_name in ["CLAUDE.md", ".cursor/rules/kanon.mdc", ".windsurf/rules/kanon.md"]:
         content = (target / shim_name).read_text(encoding="utf-8")
         assert len(content) < 1000
         assert "Required: Plan Before Build" not in content
@@ -139,7 +139,7 @@ def test_tier_up_additive_only(tmp_path: Path) -> None:
     tier1_files = {
         p.relative_to(target): p.read_text(encoding="utf-8")
         for p in target.rglob("*")
-        if p.is_file() and ".agent-sdd" not in p.parts
+        if p.is_file() and ".kanon" not in p.parts
     }
 
     runner.invoke(main, ["tier", "set", str(target), "3"])
@@ -155,7 +155,7 @@ def test_tier_up_additive_only(tmp_path: Path) -> None:
             # But every non-marker line from the original must still be present.
             new_content = p.read_text(encoding="utf-8")
             for line in content.splitlines():
-                if "<!-- agent-sdd:" in line or not line.strip():
+                if "<!-- kanon:" in line or not line.strip():
                     continue
                 assert line in new_content or line.startswith("#"), f"tier-up lost non-marker line: {line!r}"
         else:
@@ -179,7 +179,7 @@ def test_tier_down_is_non_destructive(tmp_path: Path) -> None:
 
     # All tier-3 files still exist (except AGENTS.md and config.yaml which are rewritten).
     for rel in tier3_files:
-        if rel == Path("AGENTS.md") or rel == Path(".agent-sdd/config.yaml"):
+        if rel == Path("AGENTS.md") or rel == Path(".kanon/config.yaml"):
             continue
         assert (target / rel).exists(), f"tier-down removed: {rel}"
 
@@ -235,8 +235,8 @@ def test_verify_fails_on_missing_marker(tmp_path: Path) -> None:
     # Strip all marker sections.
     text = agents.read_text(encoding="utf-8")
     # Remove plan-before-build markers entirely.
-    text = text.replace("<!-- agent-sdd:begin:plan-before-build -->", "")
-    text = text.replace("<!-- agent-sdd:end:plan-before-build -->", "")
+    text = text.replace("<!-- kanon:begin:plan-before-build -->", "")
+    text = text.replace("<!-- kanon:end:plan-before-build -->", "")
     agents.write_text(text, encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert result.exit_code != 0

@@ -17,7 +17,7 @@ stresses:
 
 Works across timezones. Multiple contributors, multiple LLM agents, occasional parallel worktrees. The shared infrastructure makes promises that downstream teams rely on, so spec-level invariants matter. Regulatory compliance sometimes applies. The team has product managers and auditors who read specs but never code. Code reviews happen at the PR level with multiple reviewers.
 
-## Goals with `agent-sdd`
+## Goals with `kanon`
 
 - Adopt the kit across every platform repo with consistent conventions.
 - Use full tier-3 discipline: foundations (vision, principles, personas), specs as the producer-consumer contract, design docs for mechanism choices, ADRs for decision archaeology, plans for execution records, verification as co-authoritative source.
@@ -35,7 +35,7 @@ Works across timezones. Multiple contributors, multiple LLM agents, occasional p
 
 - Adoption friction in the sense of solo-engineer. Platform teams accept meaningful ceremony; they already have it in other tools. The kit's job is to make the ceremony worthwhile.
 
-## Success when using `agent-sdd`
+## Success when using `kanon`
 
 - A new reviewer can review a PR by reading the plan + spec diff, touching code only for confirmation.
 - A new team consumer of a platform library is productive against the library in under a day by reading the spec tree.

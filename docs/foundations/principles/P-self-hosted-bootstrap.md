@@ -8,7 +8,7 @@ date: 2026-04-22
 
 ## Statement
 
-`agent-sdd` is developed using `agent-sdd`. The repo is a tier-3 `agent-sdd` project. Its own `docs/` tree and the tier-3 template it ships share source of truth (byte-identical where files are shared), enforced by CI. A kit that can't be used to develop itself is by definition not ready to ship.
+`kanon` is developed using `kanon`. The repo is a tier-3 `kanon` project. Its own `docs/` tree and the tier-3 template it ships share source of truth (byte-identical where files are shared), enforced by CI. A kit that can't be used to develop itself is by definition not ready to ship.
 
 ## Rationale
 
@@ -28,4 +28,4 @@ Self-hosting is the cheapest test of fitness. If the kit's AGENTS.md and process
 
 ## Source
 
-User requirement during v0.1 planning ("the agent-sdd should be developed using agent-sdd!"). Formalised as a principle because it shapes many downstream decisions (the check_template_consistency validator, the tier-3-is-the-repo design, the three-commit bootstrap ADR).
+User requirement during v0.1 planning ("the kanon should be developed using kanon!"). Formalised as a principle because it shapes many downstream decisions (the check_template_consistency validator, the tier-3-is-the-repo design, the three-commit bootstrap ADR).

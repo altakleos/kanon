@@ -1,8 +1,8 @@
-"""agent-sdd CLI.
+"""kanon CLI.
 
 Subcommands:
-    init <target>            Scaffold a new agent-sdd project at <target>.
-    upgrade <target>          Update target's .agent-sdd/ to installed kit version.
+    init <target>            Scaffold a new kanon project at <target>.
+    upgrade <target>          Update target's .kanon/ to installed kit version.
     verify <target>           Validate target against its declared tier.
     tier set <target> <N>     Migrate target to tier N (0..3), mutable + non-destructive.
 
@@ -24,13 +24,13 @@ from typing import Any
 import click
 import yaml
 
-import agent_sdd
-from agent_sdd import __version__
+import kanon
+from kanon import __version__
 
 _VALID_TIERS = {0, 1, 2, 3}
 
 # Section names per tier — each is a named block inside AGENTS.md wrapped in
-# <!-- agent-sdd:begin:<name> --> / <!-- agent-sdd:end:<name> --> markers.
+# <!-- kanon:begin:<name> --> / <!-- kanon:end:<name> --> markers.
 _TIER_SECTIONS: dict[int, list[str]] = {
     0: [],
     1: ["plan-before-build"],
@@ -41,7 +41,7 @@ _TIER_SECTIONS: dict[int, list[str]] = {
 # Tier -> list of paths (relative to target) that the tier requires, in
 # addition to everything the lower tier requires. Strict superset semantics.
 _TIER_FILES: dict[int, list[str]] = {
-    0: ["AGENTS.md", "CLAUDE.md", ".agent-sdd/config.yaml"],
+    0: ["AGENTS.md", "CLAUDE.md", ".kanon/config.yaml"],
     1: [
         "docs/development-process.md",
         "docs/decisions/README.md",
@@ -74,7 +74,7 @@ def _expected_files(tier: int) -> list[str]:
 
 def _templates_root() -> Path:
     """Location of the vendored template bundles inside the installed package."""
-    return Path(agent_sdd.__file__).parent / "templates"
+    return Path(kanon.__file__).parent / "templates"
 
 
 def _now_iso() -> str:
@@ -93,10 +93,10 @@ def _fsync_dir(path: Path) -> None:
 
 
 def _read_config(target: Path) -> dict[str, Any]:
-    config = target / ".agent-sdd" / "config.yaml"
+    config = target / ".kanon" / "config.yaml"
     if not config.is_file():
         raise click.ClickException(
-            f"Not an agent-sdd project: {target} (missing .agent-sdd/config.yaml)."
+            f"Not a kanon project: {target} (missing .kanon/config.yaml)."
         )
     data = yaml.safe_load(config.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
@@ -105,7 +105,7 @@ def _read_config(target: Path) -> dict[str, Any]:
 
 
 def _write_config(target: Path, kit_version: str, tier: int) -> None:
-    config_dir = target / ".agent-sdd"
+    config_dir = target / ".kanon"
     config_dir.mkdir(parents=True, exist_ok=True)
     payload = {
         "kit_version": kit_version,
@@ -113,7 +113,7 @@ def _write_config(target: Path, kit_version: str, tier: int) -> None:
         "tier_set_at": _now_iso(),
     }
     config_path = config_dir / "config.yaml"
-    from agent_sdd._atomic import atomic_write_text
+    from kanon._atomic import atomic_write_text
 
     atomic_write_text(config_path, yaml.safe_dump(payload, sort_keys=False))
 
@@ -194,10 +194,10 @@ def _assemble_agents_md(tier: int, project_name: str) -> str:
 
 
 def _replace_section(text: str, section: str, content: str) -> str:
-    """Replace content between <!-- agent-sdd:begin:<section> --> and
-    <!-- agent-sdd:end:<section> -->. If markers are absent, return text unchanged."""
-    begin = f"<!-- agent-sdd:begin:{section} -->"
-    end = f"<!-- agent-sdd:end:{section} -->"
+    """Replace content between <!-- kanon:begin:<section> --> and
+    <!-- kanon:end:<section> -->. If markers are absent, return text unchanged."""
+    begin = f"<!-- kanon:begin:{section} -->"
+    end = f"<!-- kanon:end:{section} -->"
     bi = text.find(begin)
     ei = text.find(end, bi + len(begin)) if bi >= 0 else -1
     if bi < 0 or ei < 0:
@@ -209,8 +209,8 @@ def _replace_section(text: str, section: str, content: str) -> str:
 
 def _remove_section(text: str, section: str) -> str:
     """Remove the marker pair and everything between them."""
-    begin = f"<!-- agent-sdd:begin:{section} -->"
-    end = f"<!-- agent-sdd:end:{section} -->"
+    begin = f"<!-- kanon:begin:{section} -->"
+    end = f"<!-- kanon:end:{section} -->"
     bi = text.find(begin)
     ei = text.find(end, bi + len(begin)) if bi >= 0 else -1
     if bi < 0 or ei < 0:
@@ -235,7 +235,7 @@ def _write_tree_atomically(
     than Sensei's full engine-swap because init/upgrade operate on distinct
     subpaths rather than an entire bundle directory.
     """
-    from agent_sdd._atomic import atomic_write_text
+    from kanon._atomic import atomic_write_text
 
     for rel, content in sorted(files.items()):
         dst = target / rel
@@ -292,25 +292,25 @@ def _atomic_replace_dir(src: Path, dst: Path) -> None:
 
 
 @click.group()
-@click.version_option(__version__, prog_name="agent-sdd")
+@click.version_option(__version__, prog_name="kanon")
 def main() -> None:
-    """agent-sdd — portable, self-hosting SDD kit for LLM-agent-driven repos."""
+    """kanon — portable, self-hosting SDD kit for LLM-agent-driven repos."""
 
 
 @main.command()
 @click.argument("target", type=click.Path(file_okay=False, path_type=Path))
 @click.option("--tier", "tier_arg", type=click.IntRange(0, 3), default=1, show_default=True)
-@click.option("--force", is_flag=True, help="Overwrite an existing .agent-sdd/ directory.")
+@click.option("--force", is_flag=True, help="Overwrite an existing .kanon/ directory.")
 def init(target: Path, tier_arg: int, force: bool) -> None:
-    """Scaffold a new agent-sdd project at TARGET."""
+    """Scaffold a new kanon project at TARGET."""
     target = target.resolve()
     target.mkdir(parents=True, exist_ok=True)
 
-    config_path = target / ".agent-sdd" / "config.yaml"
+    config_path = target / ".kanon" / "config.yaml"
     if config_path.exists() and not force:
         raise click.ClickException(
-            f"agent-sdd project already exists at {target}. "
-            f"Run `agent-sdd upgrade` to refresh, or re-run with --force to reinitialise."
+            f"kanon project already exists at {target}. "
+            f"Run `kanon upgrade` to refresh, or re-run with --force to reinitialise."
         )
 
     context = {"project_name": target.name, "tier": str(tier_arg)}
@@ -324,15 +324,15 @@ def init(target: Path, tier_arg: int, force: bool) -> None:
     _write_tree_atomically(target, bundle, force=force)
     _write_config(target, __version__, tier_arg)
 
-    click.echo(f"Created agent-sdd project at {target} (tier {tier_arg}).")
-    click.echo(f"Wrote {len(bundle) + 1} files plus .agent-sdd/config.yaml.")
+    click.echo(f"Created kanon project at {target} (tier {tier_arg}).")
+    click.echo(f"Wrote {len(bundle) + 1} files plus .kanon/config.yaml.")
     click.echo("Open this folder with any LLM coding agent to begin.")
 
 
 @main.command()
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def upgrade(target: Path) -> None:
-    """Refresh TARGET's .agent-sdd/ from the installed kit (preserving docs/, AGENTS.md, config)."""
+    """Refresh TARGET's .kanon/ from the installed kit (preserving docs/, AGENTS.md, config)."""
     target = target.resolve()
     config = _read_config(target)
     tier_arg = int(config.get("tier", 1))
@@ -348,14 +348,14 @@ def upgrade(target: Path) -> None:
     # individual template files the consumer hasn't customised.
     new_agents_md = _assemble_agents_md(tier_arg, target.name)
     existing = (target / "AGENTS.md").read_text(encoding="utf-8")
-    from agent_sdd._atomic import atomic_write_text
+    from kanon._atomic import atomic_write_text
 
     merged = _merge_agents_md(existing, new_agents_md)
     if merged != existing:
         atomic_write_text(target / "AGENTS.md", merged)
     _write_config(target, __version__, tier_arg)
 
-    click.echo(f"Upgraded agent-sdd project at {target}: {old_version} → {__version__}")
+    click.echo(f"Upgraded kanon project at {target}: {old_version} → {__version__}")
 
 
 _SECTION_INSERT_ANCHOR = "## Contribution Conventions"
@@ -369,8 +369,8 @@ def _insert_section(text: str, section: str, content: str) -> str:
     User content outside the kit-managed markers is preserved — the
     inserted block is bracketed by new marker pairs.
     """
-    begin = f"<!-- agent-sdd:begin:{section} -->"
-    end = f"<!-- agent-sdd:end:{section} -->"
+    begin = f"<!-- kanon:begin:{section} -->"
+    end = f"<!-- kanon:end:{section} -->"
     block = f"{begin}\n{content.strip()}\n{end}\n"
     anchor_idx = text.find(_SECTION_INSERT_ANCHOR)
     if anchor_idx >= 0:
@@ -398,8 +398,8 @@ def _merge_agents_md(existing: str, new: str) -> str:
     all_sections = {s for secs in _TIER_SECTIONS.values() for s in secs}
     result = existing
     for section in all_sections:
-        begin = f"<!-- agent-sdd:begin:{section} -->"
-        end = f"<!-- agent-sdd:end:{section} -->"
+        begin = f"<!-- kanon:begin:{section} -->"
+        end = f"<!-- kanon:end:{section} -->"
         # Extract new-section content.
         nb = new.find(begin)
         ne = new.find(end, nb + len(begin)) if nb >= 0 else -1
@@ -447,13 +447,13 @@ def verify(target: Path) -> None:
     if agents_md_path.is_file():
         agents_text = agents_md_path.read_text(encoding="utf-8")
         for section in _TIER_SECTIONS[tier_arg]:
-            begin = f"<!-- agent-sdd:begin:{section} -->"
-            end = f"<!-- agent-sdd:end:{section} -->"
+            begin = f"<!-- kanon:begin:{section} -->"
+            end = f"<!-- kanon:end:{section} -->"
             if begin not in agents_text or end not in agents_text:
                 errors.append(f"AGENTS.md missing marker pair for section '{section}' (tier {tier_arg}).")
         # Unbalanced markers at all?
-        all_begins = agents_text.count("<!-- agent-sdd:begin:")
-        all_ends = agents_text.count("<!-- agent-sdd:end:")
+        all_begins = agents_text.count("<!-- kanon:begin:")
+        all_ends = agents_text.count("<!-- kanon:end:")
         if all_begins != all_ends:
             errors.append(
                 f"AGENTS.md marker imbalance: {all_begins} begin(s), {all_ends} end(s)."
@@ -481,7 +481,7 @@ def _emit_verify_report(
     }
     click.echo(json.dumps(report, indent=2))
     if status == "ok":
-        click.echo(f"OK — tier-{tier} agent-sdd project at {target} is valid.", err=True)
+        click.echo(f"OK — tier-{tier} kanon project at {target} is valid.", err=True)
     else:
         click.echo(f"FAIL — {len(errors)} error(s) at {target}.", err=True)
 
@@ -520,7 +520,7 @@ def tier_set(target: Path, n: int) -> None:
             if dst.exists():
                 continue
             dst.parent.mkdir(parents=True, exist_ok=True)
-            from agent_sdd._atomic import atomic_write_text
+            from kanon._atomic import atomic_write_text
 
             atomic_write_text(dst, content)
             added += 1
@@ -544,12 +544,12 @@ def tier_set(target: Path, n: int) -> None:
     existing_agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     merged = _merge_agents_md(existing_agents, new_agents)
     if merged != existing_agents:
-        from agent_sdd._atomic import atomic_write_text
+        from kanon._atomic import atomic_write_text
 
         atomic_write_text(target / "AGENTS.md", merged)
 
     _write_config(target, config.get("kit_version", __version__), n)
-    click.echo(f"Tier set to {n} in .agent-sdd/config.yaml.")
+    click.echo(f"Tier set to {n} in .kanon/config.yaml.")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@ date: 2026-04-22
 
 ## Context
 
-`agent-sdd`'s design stance is "specs are source; code is compiled output" (see `docs/foundations/vision.md`). This frame implies authoritative knowledge flows from specs downward: specs → implementation. Under the frame, code is a cached artifact the agent regenerates when the spec changes.
+`kanon`'s design stance is "specs are source; code is compiled output" (see `docs/foundations/vision.md`). This frame implies authoritative knowledge flows from specs downward: specs → implementation. Under the frame, code is a cached artifact the agent regenerates when the spec changes.
 
 But tests and transcript fixtures cannot be derived from specs deterministically. Python `pytest` files are authored, not compiled. Transcript fixtures capture observed agent behaviour, not spec-derived invariants. If specs are source and code is compiled output, where do tests sit?
 
@@ -26,7 +26,7 @@ Concretely:
 - `docs/specs/*.md` carry `fixtures:` frontmatter naming the verification artifacts that prove each invariant.
 - Verification artifacts (pytest files, transcript fixtures) carry inverse references via `verified_by:` on spec invariants (convention introduced optionally in v0.1, mandatory in a follow-on per `specs/invariant-ids.md`).
 - `ci/check_foundations.py` validates that every `fixtures:` entry resolves.
-- When a model-version change would invalidate a fixture (see ADR-0005), `agent-sdd verify` flags the inconsistency — it does not silently prefer one source over the other.
+- When a model-version change would invalidate a fixture (see ADR-0005), `kanon verify` flags the inconsistency — it does not silently prefer one source over the other.
 
 ## Alternatives Considered
 

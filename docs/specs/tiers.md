@@ -17,7 +17,7 @@ Define the four tiers — tier-0 through tier-3 — by what artifacts each inclu
 ## Invariants
 
 1. **Tier taxonomy.** Four tiers, in strict inclusion order.
-   - **Tier-0** — `AGENTS.md` + harness shims + `.agent-sdd/config.yaml`. No `docs/` structure. No process gates active.
+   - **Tier-0** — `AGENTS.md` + harness shims + `.kanon/config.yaml`. No `docs/` structure. No process gates active.
    - **Tier-1** — Tier-0 plus `docs/development-process.md` + `docs/decisions/` (README + _template) + `docs/plans/` (README + _template). **Plan-before-build gate active** in AGENTS.md.
    - **Tier-2** — Tier-1 plus `docs/specs/` (README + _template). **Spec-before-design gate active** in AGENTS.md.
    - **Tier-3** — Tier-2 plus `docs/design/` (README + _template) + `docs/foundations/` (vision, principles/, personas/, README).
@@ -26,8 +26,8 @@ Define the four tiers — tier-0 through tier-3 — by what artifacts each inclu
    - Move to tier-2 when: making user-visible promises; specs constrain implementation; second developer joins.
    - Move to tier-3 when: multiple teams consume the project; cross-cutting vision needs capturing; compliance or audit requirements.
 3. **Strict inclusion.** Every file in tier-N exists in tier-(N+1). The converse — tier-(N+1) has files tier-N doesn't — is what makes tiers additive.
-4. **Tier is stored explicitly** in `.agent-sdd/config.yaml` (`tier: <N>`). Not inferred from filesystem contents (see ADR-0008 for rationale).
-5. **Tier is mutable.** `agent-sdd tier set` migrates between any two tiers; see `tier-migration.md`.
+4. **Tier is stored explicitly** in `.kanon/config.yaml` (`tier: <N>`). Not inferred from filesystem contents (see ADR-0008 for rationale).
+5. **Tier is mutable.** `kanon tier set` migrates between any two tiers; see `tier-migration.md`.
 6. **Process gates are tier-dependent.**
    - Plan-before-build: active at tier ≥ 1.
    - Spec-before-design: active at tier ≥ 2.

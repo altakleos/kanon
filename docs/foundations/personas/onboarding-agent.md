@@ -16,7 +16,7 @@ stresses:
 
 Opens the repo fresh — no memory from prior sessions. Has a limited context window. The agent may be running in Claude Code, Codex, Cursor, Windsurf, Cline, Roo, Kiro, or JetBrains AI. The user asks "implement feature X" or "fix this bug." The agent has seconds to orient before producing its first tool call, and it must emit the correct audit-trail sentence ("Plan at X has been approved" or "Spec at Y has been approved" or "This change is trivial: Z").
 
-## Goals with `agent-sdd`
+## Goals with `kanon`
 
 - Discover the boot chain via whatever file its harness reads — `CLAUDE.md`, `AGENTS.md`, `.cursor/rules/*.mdc`, `.github/copilot-instructions.md`, etc. — and follow the boot chain to the authoritative rules.
 - Understand the project's process gates (plan-before-build, spec-before-design) before the first edit.
@@ -34,7 +34,7 @@ Opens the repo fresh — no memory from prior sessions. Has a limited context wi
 
 - Historical archaeology (ADR supersession chains, old plans). The onboarding agent is focused on current state, not history. History matters for future-you (a different persona not currently called out but worth naming: "six-months-later-you" — may add in a future revision).
 
-## Success when using `agent-sdd`
+## Success when using `kanon`
 
 - The agent reads `AGENTS.md` + `docs/foundations/vision.md` + `docs/plans/roadmap.md` in that order and has a correct mental model within 30 seconds of opening the repo.
 - The agent's first tool call for any non-trivial task is writing a plan file (not an edit). Exceptions are declared via the trivial-criteria checklist.

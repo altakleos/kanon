@@ -8,32 +8,32 @@ stressed_by:
   - solo-engineer
 fixtures_deferred: "Tier-migration round-trip tests land in Phase D (tests/test_cli.py::test_tier_migration_*)"
 ---
-# Spec: Tier migration — `agent-sdd tier set`
+# Spec: Tier migration — `kanon tier set`
 
 ## Intent
 
-Define the behaviour of `agent-sdd tier set <target> <N>`: what it changes, what it guarantees, what it never does.
+Define the behaviour of `kanon tier set <target> <N>`: what it changes, what it guarantees, what it never does.
 
 ## Invariants
 
-1. **Mutable tier.** Tier is stored in `.agent-sdd/config.yaml`. `tier set` writes this field to `<N>` and updates `tier_set_at` to the current ISO-8601 timestamp.
+1. **Mutable tier.** Tier is stored in `.kanon/config.yaml`. `tier set` writes this field to `<N>` and updates `tier_set_at` to the current ISO-8601 timestamp.
 2. **Idempotent.** `tier set <target> <N>` run twice with the same target tier is a noop (exit 0, no filesystem changes beyond `tier_set_at`). This means the command can be safely run from scripts and CI.
 3. **Tier-up is additive only.** Moving tier-N to tier-(N+k) creates only the *new* files: the layer directories (`docs/specs/` if moving to tier-2, etc.), the new READMEs and _templates, and the newly enabled AGENTS.md sections. Existing user content is never modified, moved, or deleted. No files are renamed or reorganised.
-4. **Tier-down is non-destructive.** Moving tier-N to tier-(N-k) updates `.agent-sdd/config.yaml` and removes the now-disabled AGENTS.md sections (marker-delimited content only). **Existing artifact directories stay on disk.** The command prints a warning listing artifacts that are now "beyond required" so the consumer can choose to archive or delete. The kit does not delete artifacts unilaterally — they may still be valuable history.
-5. **AGENTS.md rewriting is marker-delimited.** The section-marker rewriter touches only content between `<!-- agent-sdd:begin:<section-name> -->` and `<!-- agent-sdd:end:<section-name> -->`. When a tier transition enables a new section, the rewriter inserts the delimited block in the canonical position (documented in `template-bundle.md`). When it disables a section, it removes the block including the markers. Content outside the markers is never modified. Manual edits inside the markers will be overwritten on the next `tier set` or `upgrade`.
+4. **Tier-down is non-destructive.** Moving tier-N to tier-(N-k) updates `.kanon/config.yaml` and removes the now-disabled AGENTS.md sections (marker-delimited content only). **Existing artifact directories stay on disk.** The command prints a warning listing artifacts that are now "beyond required" so the consumer can choose to archive or delete. The kit does not delete artifacts unilaterally — they may still be valuable history.
+5. **AGENTS.md rewriting is marker-delimited.** The section-marker rewriter touches only content between `<!-- kanon:begin:<section-name> -->` and `<!-- kanon:end:<section-name> -->`. When a tier transition enables a new section, the rewriter inserts the delimited block in the canonical position (documented in `template-bundle.md`). When it disables a section, it removes the block including the markers. Content outside the markers is never modified. Manual edits inside the markers will be overwritten on the next `tier set` or `upgrade`.
 6. **Atomic.** Migration is a single filesystem transaction using the same atomic-replace primitives as `upgrade`. An interrupted migration leaves the target repo in either the pre-migration state or the post-migration state, never a mixed state.
 7. **Section-list per tier.** The AGENTS.md sections enabled at each tier are:
    - Tier-0: (none beyond the boot chain and project-layout blocks, which are not marker-delimited)
    - Tier-1: `plan-before-build`
    - Tier-2: `plan-before-build`, `spec-before-design`
    - Tier-3: `plan-before-build`, `spec-before-design` (additional tier-3 sections may be added later; in v0.1 tier-2 and tier-3 have the same marker sections, but tier-3 additionally has `docs/foundations/` and `docs/design/` directories).
-8. **Invalid targets rejected.** `tier set <target> <N>` with N ∉ {0, 1, 2, 3} exits with code 2 and a clear error message. A target path without `.agent-sdd/config.yaml` exits with a clear error.
+8. **Invalid targets rejected.** `tier set <target> <N>` with N ∉ {0, 1, 2, 3} exits with code 2 and a clear error message. A target path without `.kanon/config.yaml` exits with a clear error.
 
 ## Rationale
 
 Non-destructive tier-down is the single choice that makes experimentation safe. Users will try tier-up, feel it's too much, tier-down, and expect their specs and plans to still be there. Silently deleting them would lose real work. Printing a warning and letting the user choose is the correct respect for user work.
 
-Marker-delimited rewriting solves the "kit wants to update AGENTS.md without touching user content" problem cleanly. Sensei has run without marker delimiters for months; the evidence of that working-without-markers is that no one has wanted to heavily customise `AGENTS.md` outside the kit sections. Adding markers from day 1 in `agent-sdd` preserves the option.
+Marker-delimited rewriting solves the "kit wants to update AGENTS.md without touching user content" problem cleanly. Sensei has run without marker delimiters for months; the evidence of that working-without-markers is that no one has wanted to heavily customise `AGENTS.md` outside the kit sections. Adding markers from day 1 in `kanon` preserves the option.
 
 ## Out of Scope
 

@@ -12,11 +12,11 @@ A portable SDD kit needs a single authoritative root that works across all of th
 
 ## Decision
 
-`AGENTS.md` at the repo root is the canonical source of truth for SDD rules. For harnesses that don't read `AGENTS.md` natively, `agent-sdd init` writes a thin **pointer shim** at the harness-specific path. Shims are one-line redirects (`See @AGENTS.md` style), never content duplicates.
+`AGENTS.md` at the repo root is the canonical source of truth for SDD rules. For harnesses that don't read `AGENTS.md` natively, `kanon init` writes a thin **pointer shim** at the harness-specific path. Shims are one-line redirects (`See @AGENTS.md` style), never content duplicates.
 
-The harness registry is externalised to a data file (`src/agent_sdd/templates/harnesses.yaml`), not hardcoded in Python. Adding a new harness is a data-file change + a new kit release; no code change required.
+The harness registry is externalised to a data file (`src/kanon/templates/harnesses.yaml`), not hardcoded in Python. Adding a new harness is a data-file change + a new kit release; no code change required.
 
-When a consumer repo already has an `AGENTS.md` with project-specific content, `agent-sdd init` injects the kit's rules inside HTML-comment-delimited sections (`<!-- agent-sdd:begin:<section> -->` / `<!-- agent-sdd:end:<section> -->`) so host prose outside those markers is preserved (see ADR-0008).
+When a consumer repo already has an `AGENTS.md` with project-specific content, `kanon init` injects the kit's rules inside HTML-comment-delimited sections (`<!-- kanon:begin:<section> -->` / `<!-- kanon:end:<section> -->`) so host prose outside those markers is preserved (see ADR-0008).
 
 ## Alternatives Considered
 
@@ -28,7 +28,7 @@ When a consumer repo already has an `AGENTS.md` with project-specific content, `
 
 ## Consequences
 
-- The consumer repo carries ~8 shim files (CLAUDE.md, .cursor/rules/agent-sdd.mdc, .github/copilot-instructions.md, .windsurf/rules/agent-sdd.md, .clinerules/agent-sdd.md, .roo/rules/agent-sdd.md, .aiassistant/rules/agent-sdd.md, .kiro/steering/agent-sdd.md). Each is 1–5 lines. Acceptable cost for cross-harness coverage.
+- The consumer repo carries ~8 shim files (CLAUDE.md, .cursor/rules/kanon.mdc, .github/copilot-instructions.md, .windsurf/rules/kanon.md, .clinerules/kanon.md, .roo/rules/kanon.md, .aiassistant/rules/kanon.md, .kiro/steering/kanon.md). Each is 1–5 lines. Acceptable cost for cross-harness coverage.
 - When Cursor or Windsurf change their frontmatter schema, only `harnesses.yaml` needs updating — not every consumer repo.
 - Shim files need per-harness frontmatter (Cursor's `alwaysApply: true`, Windsurf's `trigger: always_on`). The shim template for each harness lives in `harnesses.yaml`.
 

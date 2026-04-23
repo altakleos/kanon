@@ -10,9 +10,9 @@ Capabilities committed to but not yet shipped. Each is tracked as a `status: def
 
 | Spec | Capability |
 |---|---|
-| [`specs/fidelity-lock.md`](../specs/fidelity-lock.md) | `.agent-sdd/fidelity.lock` — spec/artifact/fixture SHAs; CI refuses merge on mismatch. |
+| [`specs/fidelity-lock.md`](../specs/fidelity-lock.md) | `.kanon/fidelity.lock` — spec/artifact/fixture SHAs; CI refuses merge on mismatch. |
 | [`specs/spec-graph-tooling.md`](../specs/spec-graph-tooling.md) | Atomic rename across the `serves:`/`realizes:`/`fixtures:` graph; orphan detection; spec-diff rendering. |
-| [`specs/ambiguity-budget.md`](../specs/ambiguity-budget.md) | `agent-sdd ambiguity-budget`: two-agents-one-spec falsifier. |
+| [`specs/ambiguity-budget.md`](../specs/ambiguity-budget.md) | `kanon ambiguity-budget`: two-agents-one-spec falsifier. |
 | [`specs/multi-agent-coordination.md`](../specs/multi-agent-coordination.md) | Reservations ledger, plan SHA pins, decision handshake, sub-agent AGENTS.md inheritance. |
 | [`specs/invariant-ids.md`](../specs/invariant-ids.md) | Stable per-invariant anchors + `verified_by:` references. |
 
