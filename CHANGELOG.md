@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- **Protocol layer** at `.kanon/protocols/` — three prose-as-code judgment procedures scaffolded into consumer repos:
+  - `tier-up-advisor.md` (tier-1+): signals collection → per-tier fit → tiebreaker ("prefer lower when in doubt; tier-up is cheap") → recommendation with rationale → halt if inconsistent with user intent.
+  - `verify-triage.md` (tier-1+): parse `kanon verify` JSON report → classify (config/structural/marker/model-drift) → prioritization tree → propose fix with confidence level → never mutate without approval.
+  - `spec-review.md` (tier-2+): structural checks → invariant falsifiability → ambiguity pass → steelman → three-tier feedback (what works / prioritized issues / one key learning) → readiness verdict.
+  - See [docs/specs/protocols.md](docs/specs/protocols.md) and [ADR-0010](docs/decisions/0010-protocol-layer.md).
+- **AGENTS.md marker section `protocols-index`** — at tier ≥ 1, consumer AGENTS.md gains a marker-delimited table listing every active protocol with name, tier-min, and invoke-when trigger. Generated dynamically from the manifest + protocol frontmatter at init/upgrade/tier-set time.
+- **Kit kernel doc** at `.kanon/kit.md` — scaffolded at every tier. Describes tier identity, boot chain, rules in force, protocol catalog, and migration pointer. Mimics Sensei's `.sensei/engine.md` pattern.
+- **33 new tests** covering the protocol layer + kit.md scaffolding + manifest resolution. Test count: 41 → 74.
+
+### Changed
+
+- **Source bundle refactor**: `src/kanon/templates/` → `src/kanon/kit/` with a manifest-driven layout. The four per-tier directories (`tier-{0,1,2,3}/`) are replaced by `kit/files/`, `kit/protocols/`, `kit/agents-md/`, `kit/sections/`, and a single `kit/manifest.yaml` declaring tier membership. Eliminates ~4× duplication of shared files (`development-process.md`, the four `_template.md` files, `CLAUDE.md`); byte-equality enforcement narrows to a whitelist of truly-shared files. The CLI's hardcoded `_TIER_FILES` / `_TIER_SECTIONS` dicts are gone; tier membership is data. Mimics Sensei's `src/sensei/engine/` shape for cross-project coherence. See [ADR-0011](docs/decisions/0011-kit-bundle-refactor.md).
+- **CI validator renamed**: `ci/check_template_consistency.py` → `ci/check_kit_consistency.py`. Drops the now-tautological cross-tier subset check; adds manifest-path-resolution + `kit/kit.md` existence checks; narrows byte-equality to a whitelist.
+- **Design doc renamed**: `docs/design/template-bundle.md` → `docs/design/kit-bundle.md` and rewritten to describe the manifest-driven layout.
+
 ## [0.1.0a1] — 2026-04-22
 
 First public alpha under the name `kanon`. The project was previously developed internally under the name `agent-sdd`; per ADR-0009, the rename happened before first external release. Architecture-validation release — the kit works end-to-end for the author's company's future projects; public adoption is not yet a goal.

@@ -9,7 +9,7 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | Plan | Feature | Status |
 |---|---|---|
 | [v0.1-bootstrap](v0.1-bootstrap.md) | Initial kit bootstrap through v0.1.0a1 release | in-progress |
-| [v0.2-kit-refactor-and-protocols](v0.2-kit-refactor-and-protocols.md) | Kit bundle refactor + three protocols | in-progress |
+| [v0.2-kit-refactor-and-protocols](v0.2-kit-refactor-and-protocols.md) | Kit bundle refactor + three protocols | done |
 
 ## Roadmap
 

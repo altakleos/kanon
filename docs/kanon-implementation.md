@@ -13,8 +13,8 @@ Implementation in `kanon` is realized across three artifact types:
 | Artifact type | Location | Executor | Role |
 |---|---|---|---|
 | Python CLI | `src/kanon/cli.py` | CPython via `kanon` entry point | Mechanical work: scaffolding, atomic upgrade, tier migration, verify |
-| Tier bundles | `src/kanon/templates/tier-{0,1,2,3}/` | copied onto consumer repos by `init` | Prose-as-code SDD rules the consumer's LLM reads |
-| Harness registry | `src/kanon/templates/harnesses.yaml` | loader inside CLI | Per-harness shim paths + frontmatter |
+| Kit bundle | `src/kanon/kit/` (manifest.yaml + agents-md/ + files/ + protocols/ + sections/) | filtered by `init` using manifest tier membership | Prose-as-code SDD rules and protocols the consumer's LLM reads |
+| Harness registry | `src/kanon/kit/harnesses.yaml` | loader inside CLI | Per-harness shim paths + frontmatter |
 
 ## Verification Layer
 
