@@ -436,7 +436,7 @@ def upgrade(target: Path) -> None:
         click.echo(f"Already at {__version__}. Nothing to upgrade.")
         return
 
-    # v0.2: upgrade rewrites AGENTS.md marker sections, kit.md, and config.
+    # upgrade rewrites AGENTS.md marker sections, kit.md, and config.
     # Consumer-authored content outside markers is preserved.
     from kanon._atomic import atomic_write_text
 

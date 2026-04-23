@@ -11,7 +11,7 @@ The v0.1 kit ships four per-tier directories at `src/kanon/templates/tier-{0,1,2
 Two problems with that shape:
 
 1. **~4× duplication of shared files.** `docs/development-process.md`, `docs/decisions/_template.md`, `docs/plans/_template.md`, and the shared `CLAUDE.md` each exist four times. Every edit to the repo-root canonical version must be replicated across the copies, policed by a byte-equality watchdog. Real maintenance cost; zero design benefit.
-2. **Adding a new layer compounds the duplication.** The v0.2 protocol layer (ADR-0010) would add `.kanon/protocols/*.md` files at multiple tiers. Under the current shape, each protocol file would exist 1–3× across tier directories, growing the problem.
+2. **Adding a new layer compounds the duplication.** The protocol layer (ADR-0010) would add `.kanon/protocols/*.md` files at multiple tiers. Under the current shape, each protocol file would exist 1–3× across tier directories, growing the problem.
 
 Additionally, the sibling project Sensei (`src/sensei/engine/`) bundles its runtime under a single folder with a kernel doc (`engine.md`), tunables YAML (`defaults.yaml`), and sub-buckets (`protocols/`, `scripts/`, `schemas/`, `templates/`). That shape is more coherent for future readers and maps well onto the kanon kit.
 

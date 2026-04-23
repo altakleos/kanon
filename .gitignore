@@ -13,3 +13,4 @@ htmlcov/
 .kanon.tmp/
 .kanon.old/
 *.tmp
+.omc/
