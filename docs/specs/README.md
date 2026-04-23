@@ -12,6 +12,7 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [tiers](tiers.md) | Tier-0 through tier-3 content and triggers |
 | [tier-migration](tier-migration.md) | `tier set` semantics — mutable, idempotent, non-destructive |
 | [verification-contract](verification-contract.md) | What `kanon verify` guarantees about a consumer repo |
+| [protocols](protocols.md) | Prose-as-code judgment procedures at `.kanon/protocols/` |
 
 ## Deferred specs (scheduled for v0.2+)
 

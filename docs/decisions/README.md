@@ -17,6 +17,8 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0007](0007-status-taxonomy.md) | Status taxonomy — adds `deferred` as a first-class value | accepted |
 | [0008](0008-tier-migration.md) | Tier migration is mutable, idempotent, non-destructive | accepted |
 | [0009](0009-project-rename-from-agent-sdd-to-kanon.md) | Project rename from `agent-sdd` to `kanon` | accepted |
+| [0010](0010-protocol-layer.md) | Protocol layer — prose-as-code judgment procedures at `.kanon/protocols/` | accepted |
+| [0011](0011-kit-bundle-refactor.md) | Kit bundle refactor — `templates/` → `kit/` with manifest-driven tier membership | accepted |
 
 ## ADR Template
 

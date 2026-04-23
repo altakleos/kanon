@@ -6,6 +6,6 @@ Technical architecture — HOW features are built at a high level. See `../devel
 
 | Doc | Implements |
 |---|---|
-| [template-bundle](template-bundle.md) | `../specs/template-bundle.md` — file-level design of the four tier bundles |
+| [kit-bundle](kit-bundle.md) | `../specs/template-bundle.md` — manifest-driven layout of `src/kanon/kit/` and per-tier construction |
 
 More design docs will land as features grow beyond pattern-instantiation (e.g., multi-agent coordination, fidelity-lock).
