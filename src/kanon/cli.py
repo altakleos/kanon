@@ -26,7 +26,7 @@ import os
 import string
 import sys
 from datetime import datetime, timezone
-from functools import lru_cache
+from functools import cache, lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -82,7 +82,7 @@ def _load_top_manifest() -> dict[str, Any]:
     return data
 
 
-@lru_cache(maxsize=None)
+@cache
 def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
     """Load src/kanon/kit/aspects/<aspect>/manifest.yaml."""
     top = _load_top_manifest()
