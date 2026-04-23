@@ -42,22 +42,26 @@ REQUIRED_FILES: tuple[str, ...] = (
     "kanon/cli.py",
     "kanon/_atomic.py",
     "kanon/kit/manifest.yaml",
+    "kanon/kit/kit.md",
     "kanon/kit/harnesses.yaml",
-    "kanon/kit/agents-md/tier-0.md",
-    "kanon/kit/agents-md/tier-1.md",
-    "kanon/kit/agents-md/tier-2.md",
-    "kanon/kit/agents-md/tier-3.md",
-    "kanon/kit/files/CLAUDE.md",
-    "kanon/kit/files/docs/development-process.md",
-    "kanon/kit/sections/plan-before-build.md",
-    "kanon/kit/sections/spec-before-design.md",
+    "kanon/kit/aspects/sdd/manifest.yaml",
+    "kanon/kit/aspects/sdd/agents-md/depth-0.md",
+    "kanon/kit/aspects/sdd/agents-md/depth-1.md",
+    "kanon/kit/aspects/sdd/agents-md/depth-2.md",
+    "kanon/kit/aspects/sdd/agents-md/depth-3.md",
+    "kanon/kit/aspects/sdd/files/CLAUDE.md",
+    "kanon/kit/aspects/sdd/files/docs/development-process.md",
+    "kanon/kit/aspects/sdd/sections/plan-before-build.md",
+    "kanon/kit/aspects/sdd/sections/spec-before-design.md",
 )
 
 REQUIRED_DIRS: tuple[str, ...] = (
     "kanon/kit/",
-    "kanon/kit/agents-md/",
-    "kanon/kit/files/",
-    "kanon/kit/sections/",
+    "kanon/kit/aspects/sdd/",
+    "kanon/kit/aspects/sdd/agents-md/",
+    "kanon/kit/aspects/sdd/files/",
+    "kanon/kit/aspects/sdd/sections/",
+    "kanon/kit/aspects/sdd/protocols/",
 )
 
 FORBIDDEN_PREFIXES: tuple[str, ...] = (

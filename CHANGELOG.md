@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a1] — 2026-04-23
+
 ### Added
 
 - **Aspect model** — aspects are first-class opt-in discipline units per ADR-0012 + ADR-0013. SDD becomes the first shipping aspect (`sdd`); the kit gains a `kanon aspect` subgroup (`list`, `info`, `set-depth`); per-aspect opt-in recorded in `.kanon/config.yaml`. See [`docs/specs/aspects.md`](docs/specs/aspects.md) and [`docs/design/aspect-model.md`](docs/design/aspect-model.md).
@@ -78,5 +80,6 @@ First public alpha under the name `kanon`. The project was previously developed 
 - Spec-graph tooling (rename, orphan detection, spec-diff rendering) is deferred to v0.2. See `docs/specs/spec-graph-tooling.md`.
 - Multi-agent coordination primitives (reservations ledger, plan-SHA pins, decision handshake) deferred to v0.2. See `docs/specs/multi-agent-coordination.md`.
 
-[Unreleased]: https://github.com/makutaku/kanon/compare/v0.1.0a1...HEAD
+[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a1...HEAD
+[0.2.0a1]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a1
 [0.1.0a1]: https://github.com/makutaku/kanon/releases/tag/v0.1.0a1
