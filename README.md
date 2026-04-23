@@ -3,7 +3,7 @@
 **Portable, self-hosting Spec-Driven Development kit for LLM-agent-driven repos.**
 
 ```bash
-pipx install kanon
+pipx install kanon-kit
 kanon init ~/myproject --tier 1
 cd ~/myproject           # open with any LLM coding agent
 ```
@@ -20,7 +20,7 @@ The kit is **self-hosting** — this repo is itself a tier-3 `kanon` project. Th
 
 ```bash
 # Install
-pipx install kanon
+pipx install kanon-kit
 
 # Scaffold a new project
 kanon init ~/myproject --tier 1

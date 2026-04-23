@@ -10,7 +10,9 @@ date: 2026-04-22
 
 ## Decision
 
-Distribute the kit as a pip package named `kanon`, installable via `pipx install kanon` (or `pip install kanon` inside a venv). The CLI entry point `kanon` exposes `init`, `upgrade`, `verify`, `tier`, and `--version`. The kit's scaffolded templates are vendored as data files under `src/kanon/templates/` inside the wheel, copied onto target repos by the CLI.
+Distribute the kit as a pip package. The **PyPI distribution name** is `kanon-kit` (the short name `kanon` was unavailable on PyPI); the **import path** and the **CLI entry point** both remain `kanon`. Install via `pipx install kanon-kit` (or `pip install kanon-kit` inside a venv); invoke as `kanon init|upgrade|verify|tier|aspect|--version`. The kit bundle is vendored as data under `src/kanon/kit/` inside the wheel and copied onto target repos by the CLI.
+
+*(Editor's note 2026-04-23: distribution-name clarification added post-hoc; original text said the package was "named `kanon`". Treated as a factual correction of the distribution name, not a decision reversal — the decision to distribute via PyPI stands. The original `src/kanon/templates/` path is also updated to `src/kanon/kit/` per ADR-0011's subsequent refactor.)*
 
 Kit version is recorded in the consumer repo at `.kanon/config.yaml` (field: `kit_version`). The CLI refuses to upgrade a consumer instance if the installed package is older than the recorded version, and emits a clear message when a newer version is available.
 

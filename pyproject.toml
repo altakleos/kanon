@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "kanon"
+name = "kanon-kit"
 dynamic = ["version"]
 description = "Portable, self-hosting Spec-Driven Development kit for LLM-agent-driven repos. Works across Claude Code, Codex, Cursor, Copilot, Windsurf, and more."
 readme = "README.md"

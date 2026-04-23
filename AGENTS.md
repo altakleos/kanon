@@ -1,6 +1,6 @@
 # AGENTS.md — kanon Source Repository
 
-You are operating the `kanon` source repository. This is the upstream project — the kit itself. Users install this kit via `pip install kanon` and run `kanon init` to scaffold their own projects.
+You are operating the `kanon` source repository. This is the upstream project — the kit itself. Users install this kit via `pip install kanon-kit` (the PyPI distribution is `kanon-kit`; the import / CLI name remains `kanon`) and run `kanon init` to scaffold their own projects.
 
 This repo is itself an `kanon` project, operating at **tier 3** (the highest tier). See [`.kanon/config.yaml`](.kanon/config.yaml) for the current tier and kit-version pin.
 
