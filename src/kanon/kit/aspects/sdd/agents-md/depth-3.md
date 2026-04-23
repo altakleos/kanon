@@ -16,11 +16,11 @@ A tier-3 `kanon` project. Full stack: foundations + specs + design + ADRs + plan
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 - Principles in `docs/foundations/principles/` are the project's cross-cutting stances. Specs and ADRs reference them via frontmatter.
 
-<!-- kanon:begin:plan-before-build -->
-<!-- kanon:end:plan-before-build -->
+<!-- kanon:begin:sdd/plan-before-build -->
+<!-- kanon:end:sdd/plan-before-build -->
 
-<!-- kanon:begin:spec-before-design -->
-<!-- kanon:end:spec-before-design -->
+<!-- kanon:begin:sdd/spec-before-design -->
+<!-- kanon:end:sdd/spec-before-design -->
 
 <!-- kanon:begin:protocols-index -->
 <!-- kanon:end:protocols-index -->

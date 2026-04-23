@@ -1,7 +1,8 @@
 """Tests that the kit bundle on disk is internally consistent.
 
 Separate from tests/test_cli.py (which tests the runtime CLI) — these
-tests assert properties of the kit bundle itself.
+tests assert properties of the kit bundle itself under the aspect-model
+layout (ADR-0012 / docs/design/aspect-model.md).
 """
 
 from __future__ import annotations
@@ -13,48 +14,73 @@ import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
+_SDD = _KIT / "aspects" / "sdd"
 
 
-def _load_manifest() -> dict:
+def _load_top_manifest() -> dict:
     return yaml.safe_load((_KIT / "manifest.yaml").read_text(encoding="utf-8"))
 
 
+def _load_sdd_manifest() -> dict:
+    return yaml.safe_load((_SDD / "manifest.yaml").read_text(encoding="utf-8"))
+
+
+# --- top-level layout ---
+
+
 def test_kit_root_has_expected_top_level_entries() -> None:
-    for entry in ("manifest.yaml", "harnesses.yaml", "agents-md", "sections", "protocols", "files"):
+    for entry in ("manifest.yaml", "harnesses.yaml", "kit.md", "aspects"):
         assert (_KIT / entry).exists(), f"missing kit entry: {entry}"
 
 
-@pytest.mark.parametrize("tier", [0, 1, 2, 3])
-def test_every_tier_has_agents_md_base(tier: int) -> None:
-    assert (_KIT / "agents-md" / f"tier-{tier}.md").is_file()
+def test_kit_aspects_dir_has_sdd() -> None:
+    assert (_KIT / "aspects" / "sdd").is_dir()
+
+
+def test_sdd_aspect_has_required_subdirs() -> None:
+    for sub in ("agents-md", "sections", "protocols", "files", "manifest.yaml"):
+        assert (_SDD / sub).exists(), f"missing under aspects/sdd/: {sub}"
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2, 3])
+def test_every_sdd_depth_has_agents_md_base(depth: int) -> None:
+    assert (_SDD / "agents-md" / f"depth-{depth}.md").is_file()
+
+
+# --- byte-equality against repo canonicals ---
 
 
 def test_dev_process_byte_equal_to_canonical() -> None:
-    """kit/files/docs/development-process.md must be byte-identical to repo's own."""
     canon = _REPO_ROOT / "docs" / "development-process.md"
-    tmpl = _KIT / "files" / "docs" / "development-process.md"
+    tmpl = _SDD / "files" / "docs" / "development-process.md"
     assert canon.read_bytes() == tmpl.read_bytes()
 
 
-@pytest.mark.parametrize("tier", [1, 2, 3])
-def test_tier_agents_md_contains_expected_markers(tier: int) -> None:
-    agents_md = (_KIT / "agents-md" / f"tier-{tier}.md").read_text(encoding="utf-8")
-    assert "<!-- kanon:begin:plan-before-build -->" in agents_md
-    assert "<!-- kanon:end:plan-before-build -->" in agents_md
-    if tier >= 2:
-        assert "<!-- kanon:begin:spec-before-design -->" in agents_md
-        assert "<!-- kanon:end:spec-before-design -->" in agents_md
+# --- AGENTS.md base templates use namespaced markers ---
 
 
-def test_tier_0_agents_md_has_no_gate_markers() -> None:
-    agents_md = (_KIT / "agents-md" / "tier-0.md").read_text(encoding="utf-8")
+@pytest.mark.parametrize("depth", [1, 2, 3])
+def test_depth_agents_md_contains_expected_markers(depth: int) -> None:
+    agents_md = (_SDD / "agents-md" / f"depth-{depth}.md").read_text(encoding="utf-8")
+    assert "<!-- kanon:begin:sdd/plan-before-build -->" in agents_md
+    assert "<!-- kanon:end:sdd/plan-before-build -->" in agents_md
+    if depth >= 2:
+        assert "<!-- kanon:begin:sdd/spec-before-design -->" in agents_md
+        assert "<!-- kanon:end:sdd/spec-before-design -->" in agents_md
+
+
+def test_depth_0_agents_md_has_no_gate_markers() -> None:
+    agents_md = (_SDD / "agents-md" / "depth-0.md").read_text(encoding="utf-8")
     assert "<!-- kanon:begin:" not in agents_md
     assert "<!-- kanon:end:" not in agents_md
 
 
 def test_sections_fragments_exist() -> None:
     for name in ("plan-before-build.md", "spec-before-design.md"):
-        assert (_KIT / "sections" / name).is_file()
+        assert (_SDD / "sections" / name).is_file()
+
+
+# --- harnesses.yaml and kit.md ---
 
 
 def test_harnesses_yaml_is_valid() -> None:
@@ -66,25 +92,13 @@ def test_harnesses_yaml_is_valid() -> None:
         assert "body" in entry
 
 
-def test_manifest_parses_with_four_tiers() -> None:
-    manifest = _load_manifest()
-    for n in range(4):
-        key = f"tier-{n}"
-        assert key in manifest
-        assert isinstance(manifest[key].get("files", []), list)
-        assert isinstance(manifest[key].get("protocols", []), list)
-    assert isinstance(manifest["agents-md-sections"], dict)
-
-
 def test_kit_md_has_placeholders() -> None:
-    """kit.md is a template — it must contain ${tier} and ${project_name} placeholders."""
     text = (_KIT / "kit.md").read_text(encoding="utf-8")
     assert "${tier}" in text
     assert "${project_name}" in text
 
 
 def test_kit_md_renders_with_placeholders() -> None:
-    """Rendering kit.md with placeholder values must substitute both tokens."""
     import string as _string
 
     text = (_KIT / "kit.md").read_text(encoding="utf-8")
@@ -97,18 +111,41 @@ def test_kit_md_renders_with_placeholders() -> None:
     assert "demo" in rendered
 
 
+# --- manifests (registry + per-aspect) ---
+
+
+def test_top_manifest_is_aspect_registry() -> None:
+    top = _load_top_manifest()
+    assert "aspects" in top and isinstance(top["aspects"], dict)
+    assert "sdd" in top["aspects"]
+    sdd = top["aspects"]["sdd"]
+    for field in ("path", "stability", "depth-range", "default-depth"):
+        assert field in sdd, f"sdd missing {field}"
+    assert sdd["stability"] in {"experimental", "stable", "deprecated"}
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2, 3])
+def test_sdd_sub_manifest_has_expected_depths(depth: int) -> None:
+    sub = _load_sdd_manifest()
+    key = f"depth-{depth}"
+    assert key in sub, f"sub-manifest missing {key}"
+    assert isinstance(sub[key], dict)
+
+
 def test_manifest_paths_resolve() -> None:
-    """Every path declared in manifest.yaml must resolve to an extant file."""
-    manifest = _load_manifest()
+    """Every path declared in sdd's sub-manifest resolves to an extant file."""
+    sub = _load_sdd_manifest()
     errors: list[str] = []
-    for n in range(4):
-        entry = manifest.get(f"tier-{n}", {})
-        for rel in entry.get("files", []):
-            p = _KIT / "files" / rel
+    for d in range(4):
+        entry = sub.get(f"depth-{d}", {})
+        for rel in entry.get("files", []) or []:
+            p = _SDD / "files" / rel
             if not p.is_file():
-                errors.append(f"tier-{n}.files references missing path: {rel}")
-        for rel in entry.get("protocols", []):
-            p = _KIT / "protocols" / rel
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/sdd/files/")
+        for rel in entry.get("protocols", []) or []:
+            p = _SDD / "protocols" / rel
             if not p.is_file():
-                errors.append(f"tier-{n}.protocols references missing path: {rel}")
+                errors.append(
+                    f"depth-{d}.protocols: {rel} missing under aspects/sdd/protocols/"
+                )
     assert not errors, "\n".join(errors)

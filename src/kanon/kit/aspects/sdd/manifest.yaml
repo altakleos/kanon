@@ -1,0 +1,50 @@
+# Per-aspect sub-manifest for `sdd` — tier content at each depth of the SDD aspect.
+#
+# Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.
+# Paths under `files:` are relative to src/kanon/kit/aspects/sdd/files/.
+# Paths under `protocols:` are relative to src/kanon/kit/aspects/sdd/protocols/.
+# Names under `sections:` resolve to src/kanon/kit/aspects/sdd/sections/<name>.md,
+# except the unprefixed `protocols-index` which is rendered dynamically by the CLI
+# as the cross-aspect unified catalog.
+#
+# See docs/design/aspect-model.md and ADR-0012.
+
+depth-0:
+  files:
+    - CLAUDE.md
+  protocols: []
+  sections: []
+
+depth-1:
+  files:
+    - docs/development-process.md
+    - docs/decisions/README.md
+    - docs/decisions/_template.md
+    - docs/plans/README.md
+    - docs/plans/_template.md
+  protocols:
+    - tier-up-advisor.md
+    - verify-triage.md
+  sections:
+    - plan-before-build
+    - protocols-index
+
+depth-2:
+  files:
+    - docs/specs/README.md
+    - docs/specs/_template.md
+  protocols:
+    - spec-review.md
+  sections:
+    - spec-before-design
+
+depth-3:
+  files:
+    - docs/design/README.md
+    - docs/design/_template.md
+    - docs/foundations/README.md
+    - docs/foundations/vision.md
+    - docs/foundations/principles/README.md
+    - docs/foundations/personas/README.md
+  protocols: []
+  sections: []

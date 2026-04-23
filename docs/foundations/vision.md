@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-04-22
+date: 2026-04-23
 ---
 # Vision — What `kanon` Is, and What It Is Not
 
@@ -30,7 +30,7 @@ A consumer repo that adopts `kanon` gets:
 `kanon` explicitly does not:
 
 - **Generate code from specs.** There is no deterministic spec-to-code compiler. Agents read specs and write code; the kit does not try to close that loop mechanically.
-- **Ship harness-specific enforcement hooks.** The base kit is prose-only. Harness-specific enforcement adapters (Claude Code hooks, pre-commit scripts, etc.) are out of scope — the kit's premise is that LLM agency is rising to meet prose gates.
+- **Ship harness-specific enforcement hooks for agent behavior.** The kit does not intercept, block, or validate LLM-agent actions at runtime — no harness adapters, no session daemons, no tool-call filters. LLM agency rises to meet prose gates; agents don't need runtime supervision. *Scope carve-out:* reference automation snippets for cryptographic, irreversible, or stateful operations the *consumer* executes (release-pipeline GitHub Actions templates, pre-commit configs, Makefile targets) are in scope for aspects that package those operations. See [ADR-0013](../decisions/0013-vision-amendment-reference-automation.md).
 - **Replace product-management tooling.** Plans and ADRs are engineering artifacts. If a project needs Jira, Linear, or a product-roadmap tool, that lives outside the kit.
 - **Prescribe what counts as "trivial" at fine granularity.** The kit ships a decision checklist; teams tune it to their context inside their AGENTS.md project-specific blocks (outside the kit-managed HTML-comment sections).
 - **Serve broad public adoption in v0.1.** The primary audience is the author's company's future projects. Open source because there's no reason to gate it; not optimised for random external adoption until patterns stabilise.

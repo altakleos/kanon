@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-04-22
-tier-min: 1
+depth-min: 1
 invoke-when: A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?"
 ---
 # Protocol: Verify-triage

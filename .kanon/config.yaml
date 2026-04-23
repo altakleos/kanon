@@ -1,3 +1,6 @@
-kit_version: "0.1.0a1.dev0"
-tier: 3
-tier_set_at: "2026-04-22T17:00:00Z"
+kit_version: 0.2.0a1
+aspects:
+  sdd:
+    depth: 3
+    enabled_at: '2026-04-23T07:36:25+00:00'
+    config: {}

@@ -15,11 +15,11 @@ A tier-2 `kanon` project. Plan-before-build and spec-before-design gates are bot
 - Process rules belong in `docs/development-process.md`. README files in artifact directories carry indexes and templates, not process definitions.
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 
-<!-- kanon:begin:plan-before-build -->
-<!-- kanon:end:plan-before-build -->
+<!-- kanon:begin:sdd/plan-before-build -->
+<!-- kanon:end:sdd/plan-before-build -->
 
-<!-- kanon:begin:spec-before-design -->
-<!-- kanon:end:spec-before-design -->
+<!-- kanon:begin:sdd/spec-before-design -->
+<!-- kanon:end:sdd/spec-before-design -->
 
 <!-- kanon:begin:protocols-index -->
 <!-- kanon:end:protocols-index -->

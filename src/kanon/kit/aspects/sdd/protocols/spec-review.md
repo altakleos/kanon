@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-04-22
-tier-min: 2
+depth-min: 2
 invoke-when: A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted
 ---
 # Protocol: Spec review
