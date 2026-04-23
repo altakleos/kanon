@@ -29,9 +29,9 @@ def test_init_scaffolds_all_required_files(tmp_path: Path, tier: int) -> None:
     assert (target / "AGENTS.md").is_file()
     assert (target / "CLAUDE.md").is_file()
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert config["tier"] == tier
+    assert config["aspects"]["sdd"]["depth"] == tier
     assert config["kit_version"] == __version__
-    assert "tier_set_at" in config
+    assert "enabled_at" in config["aspects"]["sdd"]
 
 
 def _extract_verify_json(output: str) -> dict:
@@ -50,7 +50,7 @@ def test_init_verify_returns_ok(tmp_path: Path, tier: int) -> None:
     assert result.exit_code == 0, result.output
     report = _extract_verify_json(result.output)
     assert report["status"] == "ok"
-    assert report["tier"] == tier
+    assert report["aspects"]["sdd"] == tier
 
 
 def test_init_rejects_existing_without_force(tmp_path: Path) -> None:
@@ -111,7 +111,7 @@ def test_protocols_scaffolded_at_correct_tier(tmp_path: Path, tier: int) -> None
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", str(tier)])
-    protocols_dir = target / ".kanon" / "protocols"
+    protocols_dir = target / ".kanon" / "protocols" / "sdd"
     actual: set[str] = (
         {p.name for p in protocols_dir.glob("*.md")}
         if protocols_dir.exists()
@@ -298,8 +298,8 @@ def test_verify_fails_on_missing_marker(tmp_path: Path) -> None:
     # Strip all marker sections.
     text = agents.read_text(encoding="utf-8")
     # Remove plan-before-build markers entirely.
-    text = text.replace("<!-- kanon:begin:plan-before-build -->", "")
-    text = text.replace("<!-- kanon:end:plan-before-build -->", "")
+    text = text.replace("<!-- kanon:begin:sdd/plan-before-build -->", "")
+    text = text.replace("<!-- kanon:end:sdd/plan-before-build -->", "")
     agents.write_text(text, encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert result.exit_code != 0
