@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-04-22
-tier-min: 1
+depth-min: 1
 invoke-when: The user or agent is considering raising this project's kanon tier, or asks "should we tier up?"
 ---
 # Protocol: Tier-up advisor

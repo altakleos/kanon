@@ -50,7 +50,7 @@ kanon/
 - The kit bundle at `src/kanon/kit/` shares source of truth with this repo's own `docs/`, `AGENTS.md` section markers, and `.kanon/protocols/`. `ci/check_kit_consistency.py` enforces byte-equality against a narrow whitelist (see ADR-0011).
 - Tier membership is data in `src/kanon/kit/manifest.yaml`. To scaffold a new file at tier-N for consumers, add it under `kit/files/` or `kit/protocols/` and list its path under the appropriate `tier-N` entry in the manifest. Strict-superset semantics are preserved by manifest-union.
 
-<!-- kanon:begin:plan-before-build -->
+<!-- kanon:begin:sdd/plan-before-build -->
 ## Required: Plan Before Build
 
 For any non-trivial change, your **first output** is a plan file under `docs/plans/<slug>.md` (feature-scoped) or `~/.claude/plans/` (session-scoped), followed by explicit user approval. You may not call Edit, Write, or mutating Bash on source files before the user has approved the plan.
@@ -74,9 +74,9 @@ A change is **trivial** (act directly, no plan needed) only if:
 **Before your first source-modifying tool call, state in one sentence:** "Plan at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and plan. This sentence is the audit trail — its absence in a transcript is how violations get caught.
 
 **Retroactive plans are evidence of past violation, not a norm.** If you see commits labeled "retroactive plan for X shipped in vY.Z", a prior agent skipped this rule and the user had to ask them to paper over it. Do not add to that pile.
-<!-- kanon:end:plan-before-build -->
+<!-- kanon:end:sdd/plan-before-build -->
 
-<!-- kanon:begin:spec-before-design -->
+<!-- kanon:begin:sdd/spec-before-design -->
 ## Required: Spec Before Design
 
 For any change that introduces a new user-visible capability, your **first output** is a spec file at `docs/specs/<slug>.md`, followed by explicit user approval. You may not write a design doc, ADR, plan, or implementation before the spec is approved.
@@ -100,7 +100,7 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 **Before your first design-doc, ADR, plan, or source-modifying tool call, state in one sentence:** "Spec at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and write the spec.
 
 **Design-doc skip.** A design doc may be skipped when all four conditions in [`docs/development-process.md` § When to Skip a Design Doc](docs/development-process.md#when-to-skip-a-design-doc) hold (pattern instantiation, single-concern scope, spec carries the reasoning, plan exists). The skip must be declared in the plan's frontmatter as `design: "Follows ADR-NNNN"` **before** implementation begins — retroactive declarations don't count.
-<!-- kanon:end:spec-before-design -->
+<!-- kanon:end:sdd/spec-before-design -->
 
 <!-- kanon:begin:protocols-index -->
 ## Active protocols
