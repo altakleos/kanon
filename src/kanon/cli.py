@@ -112,7 +112,7 @@ def _aspect_depth_range(aspect: str) -> tuple[int, int]:
 
 def _aspect_path(aspect: str) -> Path:
     top = _load_top_manifest()
-    return _kit_root() / top["aspects"][aspect]["path"]
+    return _kit_root() / str(top["aspects"][aspect]["path"])
 
 
 def _aspect_files(aspect: str, depth: int) -> list[str]:
