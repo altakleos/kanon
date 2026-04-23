@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [0.1.0a1] — 2026-04-22
 
-First public alpha. Architecture-validation release — the kit works end-to-end for the author's company's future projects; public adoption is not yet a goal.
+First public alpha under the name `kanon`. The project was previously developed internally under the name `agent-sdd`; per ADR-0009, the rename happened before first external release. Architecture-validation release — the kit works end-to-end for the author's company's future projects; public adoption is not yet a goal.
 
 ### Added
 
