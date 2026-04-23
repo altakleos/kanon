@@ -2,17 +2,24 @@
 
 Product intent — WHAT the kit does from its consumers' perspective. See `../development-process.md` § Specs for the layer's role and `§ When to Write a Spec` for the triggers.
 
-## Core specs (shipping in v0.1)
+## Core specs (shipping in v0.1 / v0.2)
 
-| Spec | Intent |
-|---|---|
-| [cli](cli.md) | The `kanon` CLI surface and contracts |
-| [template-bundle](template-bundle.md) | What gets scaffolded by `init` and what `upgrade` replaces |
-| [cross-harness-shims](cross-harness-shims.md) | The shim registry and per-harness contracts |
-| [tiers](tiers.md) | Tier-0 through tier-3 content and triggers |
-| [tier-migration](tier-migration.md) | `tier set` semantics — mutable, idempotent, non-destructive |
-| [verification-contract](verification-contract.md) | What `kanon verify` guarantees about a consumer repo |
-| [protocols](protocols.md) | Prose-as-code judgment procedures at `.kanon/protocols/` |
+| Spec | Intent | Accepted |
+|---|---|---|
+| [cli](cli.md) | The `kanon` CLI surface and contracts | v0.1 |
+| [template-bundle](template-bundle.md) | What gets scaffolded by `init` and what `upgrade` replaces | v0.1 |
+| [cross-harness-shims](cross-harness-shims.md) | The shim registry and per-harness contracts | v0.1 |
+| [tiers](tiers.md) | Tier-0 through tier-3 content and triggers | v0.1 |
+| [tier-migration](tier-migration.md) | `tier set` semantics — mutable, idempotent, non-destructive | v0.1 |
+| [verification-contract](verification-contract.md) | What `kanon verify` guarantees about a consumer repo | v0.1 |
+| [protocols](protocols.md) | Prose-as-code judgment procedures at `.kanon/protocols/` | v0.1.0a2 |
+| [aspects](aspects.md) | Opt-in discipline bundles; aspects subsume tiers | v0.2.0a1 |
+
+## Draft specs (in progress)
+
+| Spec | Intent | Target |
+|---|---|---|
+| [worktrees](worktrees.md) | Isolated parallel execution for concurrent LLM agents | v0.3 |
 
 ## Deferred specs (scheduled for v0.2+)
 
