@@ -7,7 +7,9 @@ realizes:
 stressed_by:
   - onboarding-agent
   - solo-engineer
-fixtures: [tests/test_protocols.py]
+fixtures:
+  - tests/test_protocols.py
+  - tests/test_kit_integrity.py
 ---
 # Spec: Protocol layer — prose-as-code judgment procedures
 

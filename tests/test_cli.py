@@ -95,6 +95,69 @@ def test_shims_are_pointers_not_duplicates(tmp_path: Path) -> None:
         assert "Required: Plan Before Build" not in content
 
 
+# --- protocol layer + kit.md ---
+
+
+_EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
+    0: set(),
+    1: {"tier-up-advisor.md", "verify-triage.md"},
+    2: {"tier-up-advisor.md", "verify-triage.md", "spec-review.md"},
+    3: {"tier-up-advisor.md", "verify-triage.md", "spec-review.md"},
+}
+
+
+@pytest.mark.parametrize("tier", [0, 1, 2, 3])
+def test_protocols_scaffolded_at_correct_tier(tmp_path: Path, tier: int) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", str(tier)])
+    protocols_dir = target / ".kanon" / "protocols"
+    actual: set[str] = (
+        {p.name for p in protocols_dir.glob("*.md")}
+        if protocols_dir.exists()
+        else set()
+    )
+    assert actual == _EXPECTED_PROTOCOLS_BY_TIER[tier]
+
+
+@pytest.mark.parametrize("tier", [0, 1, 2, 3])
+def test_kit_md_scaffolded_at_all_tiers(tmp_path: Path, tier: int) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", str(tier)])
+    kit_md = target / ".kanon" / "kit.md"
+    assert kit_md.is_file(), f"kit.md missing at tier {tier}"
+    text = kit_md.read_text(encoding="utf-8")
+    # Placeholders fully substituted.
+    assert "${tier}" not in text
+    assert "${project_name}" not in text
+    assert f"**Tier:** {tier}" in text
+
+
+@pytest.mark.parametrize("tier", [1, 2, 3])
+def test_protocols_index_marker_present_tier1_plus(tmp_path: Path, tier: int) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", str(tier)])
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "<!-- kanon:begin:protocols-index -->" in agents
+    assert "<!-- kanon:end:protocols-index -->" in agents
+    assert "tier-up-advisor" in agents
+    assert "verify-triage" in agents
+    if tier >= 2:
+        assert "spec-review" in agents
+    else:
+        assert "spec-review" not in agents
+
+
+def test_protocols_index_absent_at_tier_0(tmp_path: Path) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "0"])
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "<!-- kanon:begin:protocols-index -->" not in agents
+
+
 def test_init_preserves_user_content_outside_markers(tmp_path: Path) -> None:
     """User content in AGENTS.md outside kit markers must survive `upgrade`."""
     runner = CliRunner()

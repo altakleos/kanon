@@ -76,6 +76,27 @@ def test_manifest_parses_with_four_tiers() -> None:
     assert isinstance(manifest["agents-md-sections"], dict)
 
 
+def test_kit_md_has_placeholders() -> None:
+    """kit.md is a template — it must contain ${tier} and ${project_name} placeholders."""
+    text = (_KIT / "kit.md").read_text(encoding="utf-8")
+    assert "${tier}" in text
+    assert "${project_name}" in text
+
+
+def test_kit_md_renders_with_placeholders() -> None:
+    """Rendering kit.md with placeholder values must substitute both tokens."""
+    import string as _string
+
+    text = (_KIT / "kit.md").read_text(encoding="utf-8")
+    rendered = _string.Template(text).safe_substitute(
+        {"tier": "2", "project_name": "demo"}
+    )
+    assert "${tier}" not in rendered
+    assert "${project_name}" not in rendered
+    assert "**Tier:** 2" in rendered
+    assert "demo" in rendered
+
+
 def test_manifest_paths_resolve() -> None:
     """Every path declared in manifest.yaml must resolve to an extant file."""
     manifest = _load_manifest()
