@@ -8,20 +8,36 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ### Added
 
-- **Protocol layer** at `.kanon/protocols/` — three prose-as-code judgment procedures scaffolded into consumer repos:
-  - `tier-up-advisor.md` (tier-1+): signals collection → per-tier fit → tiebreaker ("prefer lower when in doubt; tier-up is cheap") → recommendation with rationale → halt if inconsistent with user intent.
-  - `verify-triage.md` (tier-1+): parse `kanon verify` JSON report → classify (config/structural/marker/model-drift) → prioritization tree → propose fix with confidence level → never mutate without approval.
-  - `spec-review.md` (tier-2+): structural checks → invariant falsifiability → ambiguity pass → steelman → three-tier feedback (what works / prioritized issues / one key learning) → readiness verdict.
+- **Aspect model** — aspects are first-class opt-in discipline units per ADR-0012 + ADR-0013. SDD becomes the first shipping aspect (`sdd`); the kit gains a `kanon aspect` subgroup (`list`, `info`, `set-depth`); per-aspect opt-in recorded in `.kanon/config.yaml`. See [`docs/specs/aspects.md`](docs/specs/aspects.md) and [`docs/design/aspect-model.md`](docs/design/aspect-model.md).
+- **`solo-with-agents` persona** — kanon's agent-first default user (one human, N concurrent LLM agents). See [`docs/foundations/personas/solo-with-agents.md`](docs/foundations/personas/solo-with-agents.md).
+- **Namespaced protocols and AGENTS.md markers** — protocols live at `.kanon/protocols/<aspect>/<name>.md`; AGENTS.md marker sections use `<!-- kanon:begin:<aspect>/<section> -->` with `protocols-index` unprefixed as the cross-aspect catalog.
+- **Protocol layer** at `.kanon/protocols/` — three prose-as-code judgment procedures scaffolded into consumer repos (under the `sdd/` namespace in the v0.2 layout):
+  - `tier-up-advisor.md` (depth-min 1): signals collection → per-depth fit → tiebreaker ("prefer lower when in doubt; tier-up is cheap") → recommendation with rationale → halt if inconsistent with user intent.
+  - `verify-triage.md` (depth-min 1): parse `kanon verify` JSON report → classify → prioritization tree → propose fix with confidence level → never mutate without approval.
+  - `spec-review.md` (depth-min 2): structural checks → invariant falsifiability → ambiguity pass → steelman → three-tier feedback → readiness verdict.
   - See [docs/specs/protocols.md](docs/specs/protocols.md) and [ADR-0010](docs/decisions/0010-protocol-layer.md).
-- **AGENTS.md marker section `protocols-index`** — at tier ≥ 1, consumer AGENTS.md gains a marker-delimited table listing every active protocol with name, tier-min, and invoke-when trigger. Generated dynamically from the manifest + protocol frontmatter at init/upgrade/tier-set time.
-- **Kit kernel doc** at `.kanon/kit.md` — scaffolded at every tier. Describes tier identity, boot chain, rules in force, protocol catalog, and migration pointer. Mimics Sensei's `.sensei/engine.md` pattern.
-- **33 new tests** covering the protocol layer + kit.md scaffolding + manifest resolution. Test count: 41 → 74.
+- **AGENTS.md marker section `protocols-index`** — unified cross-aspect table listing every active protocol grouped by aspect with name, depth-min, and invoke-when trigger. Regenerated dynamically at init/upgrade/set-depth.
+- **Kit kernel doc** at `.kanon/kit.md` — scaffolded at every depth. Describes tier identity, boot chain, rules in force, protocol catalog, and migration pointer.
+- **Reference automation snippets** carve-out in vision non-goals per ADR-0013 — aspects with cryptographic, irreversible, or stateful tails may ship CI templates (GitHub Actions YAML, pre-commit configs, Makefile targets) the consumer executes. Agent-behavior gating stays strictly prose-only.
+- **80 total tests** (up from 41 at v0.1.0a1) covering the aspect model, the protocol layer, kit.md scaffolding, manifest resolution, tier-migration round-trip, and legacy-config auto-migration.
 
 ### Changed
 
-- **Source bundle refactor**: `src/kanon/templates/` → `src/kanon/kit/` with a manifest-driven layout. The four per-tier directories (`tier-{0,1,2,3}/`) are replaced by `kit/files/`, `kit/protocols/`, `kit/agents-md/`, `kit/sections/`, and a single `kit/manifest.yaml` declaring tier membership. Eliminates ~4× duplication of shared files (`development-process.md`, the four `_template.md` files, `CLAUDE.md`); byte-equality enforcement narrows to a whitelist of truly-shared files. The CLI's hardcoded `_TIER_FILES` / `_TIER_SECTIONS` dicts are gone; tier membership is data. Mimics Sensei's `src/sensei/engine/` shape for cross-project coherence. See [ADR-0011](docs/decisions/0011-kit-bundle-refactor.md).
-- **CI validator renamed**: `ci/check_template_consistency.py` → `ci/check_kit_consistency.py`. Drops the now-tautological cross-tier subset check; adds manifest-path-resolution + `kit/kit.md` existence checks; narrows byte-equality to a whitelist.
-- **Design doc renamed**: `docs/design/template-bundle.md` → `docs/design/kit-bundle.md` and rewritten to describe the manifest-driven layout.
+- **Kit layout restructured** from `src/kanon/kit/{agents-md,sections,protocols,files}/` to `src/kanon/kit/aspects/sdd/{agents-md,sections,protocols,files}/` per ADR-0012. Top-level `src/kanon/kit/manifest.yaml` is now an aspect registry (`aspects: {sdd: {...}}`); per-aspect content moves into `aspects/sdd/manifest.yaml`. Strict-superset `depth-0..depth-3` replaces `tier-0..tier-3`; `tier-N.md` → `depth-N.md`.
+- **`.kanon/config.yaml` schema v2** — `aspects: {name: {depth, enabled_at, config}}` replaces top-level `tier:` + `tier_set_at:`. Auto-migration runs transparently on first `kanon upgrade`.
+- **Protocol frontmatter** — `tier-min:` → `depth-min:`.
+- **CLI** — generalised to iterate aspects; `kanon init --tier N` and `kanon tier set <target> <N>` preserved as backwards-compat sugar routing to the `sdd` aspect.
+- **Protocols spec** (`docs/specs/protocols.md`) — invariants carry aspect-prefix clauses for the namespaced layout.
+- **Vision** (`docs/foundations/vision.md`) — § Non-Goals item #2 narrowed in place per ADR-0013; ADR-0013 is the archaeological trail for the wording change.
+- **Initial pre-v0.2 kit-refactor work**: `src/kanon/templates/` → `src/kanon/kit/` with a manifest-driven layout per ADR-0011 (~4× duplication of shared files eliminated; byte-equality enforcement narrowed to a whitelist; hardcoded `_TIER_FILES` / `_TIER_SECTIONS` dicts gone).
+- **CI validator renamed and rewritten**: `ci/check_template_consistency.py` → `ci/check_kit_consistency.py`. Walks aspect registry + per-aspect sub-manifests; enforces cross-aspect file-ownership exclusivity; per-aspect byte-equality whitelist; namespace discipline on marker sections.
+- **Design doc renamed**: `docs/design/template-bundle.md` → `docs/design/kit-bundle.md`; new `docs/design/aspect-model.md` added for the aspect layer.
+
+### Migration (from v0.1.0a1)
+
+- **v1 config → v2**: `kanon upgrade` auto-migrates `tier: N` + `tier_set_at:` to `aspects: {sdd: {depth: N, enabled_at: ..., config: {}}}`. One-way; older kanon CLIs cannot parse v2 config.
+- **Flat protocols → namespaced**: `kanon upgrade` relocates `.kanon/protocols/*.md` under `.kanon/protocols/sdd/`.
+- **AGENTS.md markers**: unprefixed v1 markers (`plan-before-build`, `spec-before-design`) are rewritten to namespaced v2 form (`sdd/plan-before-build`, `sdd/spec-before-design`) during `upgrade`. `protocols-index` stays unprefixed (cross-aspect).
 
 ## [0.1.0a1] — 2026-04-22
 
