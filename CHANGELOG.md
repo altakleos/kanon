@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a2] — 2026-04-23
+
+### Changed
+
+- **PyPI distribution name** is now published correctly as `kanon-kit` (the short name `kanon` was unavailable on PyPI). The CLI entry point and import path remain `kanon`. `pipx install kanon-kit` is the install command from 0.2.0a2 onward.
+
+### Notes
+
+- 0.2.0a1 was published on PyPI with the same source tree as this release. 0.2.0a2 is a minimal version roll to exercise the now-working release pipeline end-to-end (the 0.2.0a1 publish job succeeded on retry but several earlier tag-move iterations failed against the registry during initial trusted-publisher configuration).
+
 ## [0.2.0a1] — 2026-04-23
 
 ### Added
@@ -80,6 +90,7 @@ First public alpha under the name `kanon`. The project was previously developed 
 - Spec-graph tooling (rename, orphan detection, spec-diff rendering) is deferred to v0.2. See `docs/specs/spec-graph-tooling.md`.
 - Multi-agent coordination primitives (reservations ledger, plan-SHA pins, decision handshake) deferred to v0.2. See `docs/specs/multi-agent-coordination.md`.
 
-[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a1...HEAD
+[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a2...HEAD
+[0.2.0a2]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a2
 [0.2.0a1]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a1
 [0.1.0a1]: https://github.com/makutaku/kanon/releases/tag/v0.1.0a1
