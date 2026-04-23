@@ -41,8 +41,8 @@ jobs:
       - name: Check markdown links
         run: python ci/check_links.py
 
-      - name: Check template consistency
-        run: python ci/check_template_consistency.py
+      - name: Check kit consistency
+        run: python ci/check_kit_consistency.py
 
   build-and-check:
     name: build + check package contents

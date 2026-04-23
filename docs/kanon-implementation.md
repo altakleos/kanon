@@ -23,7 +23,7 @@ Verification asserts both that the kit's own Python behaves correctly and that t
 | Artifact type | Location | Role |
 |---|---|---|
 | Pytest suite | `tests/` | CLI atomicity, tier-migration round-trips, template integrity |
-| CI validators | `ci/check_foundations.py`, `ci/check_links.py`, `ci/check_package_contents.py`, `ci/check_template_consistency.py` | Cross-artifact invariants |
+| CI validators | `ci/check_foundations.py`, `ci/check_links.py`, `ci/check_package_contents.py`, `ci/check_kit_consistency.py` | Cross-artifact invariants |
 | Top-level runner | `kanon verify` (CLI, shipped to consumers) | Entry point for consumer repos to verify their own SDD shape |
 
 ## Load-Bearing Principles

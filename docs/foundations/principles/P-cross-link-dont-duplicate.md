@@ -14,12 +14,12 @@ When two documents or files might share content, they are either byte-identical 
 
 Duplication looks cheap at authoring time and becomes expensive the first time an edit lands in one copy and not the other. Agents and humans alike hit the stale copy, follow it, and produce incoherent work. The cost is paid not at write time but at every subsequent read.
 
-This is why the kit's shims (per ADR-0003) are pointers, not content copies. Why the kit's tier-3 template uses the kit's own canonical docs (enforced by `check_template_consistency.py`). Why `AGENTS.md` and `docs/development-process.md` share the byte-identical trivial/non-trivial bullet lists (verified with `diff`).
+This is why the kit's shims (per ADR-0003) are pointers, not content copies. Why the kit's tier-3 template uses the kit's own canonical docs (enforced by `check_kit_consistency.py`). Why `AGENTS.md` and `docs/development-process.md` share the byte-identical trivial/non-trivial bullet lists (verified with `diff`).
 
 ## Implications
 
 - When the same rule must appear in two artifacts for reader convenience, it is authored once in the canonical location and either (a) included verbatim with a validator enforcing byte-equality, or (b) replaced with a one-line pointer.
-- The `ci/check_links.py` validator guards against broken cross-references. The `ci/check_template_consistency.py` validator guards against shared-file drift.
+- The `ci/check_links.py` validator guards against broken cross-references. The `ci/check_kit_consistency.py` validator guards against shared-file drift.
 - When tempted to copy-paste a paragraph from one file to another, default to a link. If the content truly must appear inline (e.g., an agent's context window won't follow the link reliably), document the duplication and enforce it mechanically.
 
 ## Exceptions / Tensions

@@ -6,7 +6,7 @@ realizes:
 stressed_by:
   - solo-engineer
   - platform-team
-fixtures_deferred: "Cross-tier tests (subset invariant, byte-equality) land in Phase D (ci/check_template_consistency.py, tests/test_template_integrity.py)"
+fixtures_deferred: "Cross-tier tests (manifest paths, byte-equality) land in Phase D (ci/check_kit_consistency.py, tests/test_template_integrity.py)"
 ---
 # Spec: Tiers — content and triggers
 

@@ -47,7 +47,7 @@ kanon/
 - `docs/development-process.md` is **project-agnostic**. Do not mention the kit's own CLI commands, tier model specifics, or any `kanon`-brand terms in it. Kit-specific material lives in `docs/kanon-implementation.md`.
 - **Process rules belong in `docs/development-process.md`**. README files in artifact directories (`specs/`, `design/`, `plans/`, `decisions/`, `foundations/`) carry indexes, templates, and pointers — not process definitions. When adding a new process concept, put it in the method doc and add a pointer from the relevant README.
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
-- The kit bundle at `src/kanon/kit/` shares source of truth with this repo's own `docs/`, `AGENTS.md` section markers, and `.kanon/protocols/`. `ci/check_template_consistency.py` enforces byte-equality against a narrow whitelist (see ADR-0011).
+- The kit bundle at `src/kanon/kit/` shares source of truth with this repo's own `docs/`, `AGENTS.md` section markers, and `.kanon/protocols/`. `ci/check_kit_consistency.py` enforces byte-equality against a narrow whitelist (see ADR-0011).
 - Tier membership is data in `src/kanon/kit/manifest.yaml`. To scaffold a new file at tier-N for consumers, add it under `kit/files/` or `kit/protocols/` and list its path under the appropriate `tier-N` entry in the manifest. Strict-superset semantics are preserved by manifest-union.
 
 <!-- kanon:begin:plan-before-build -->

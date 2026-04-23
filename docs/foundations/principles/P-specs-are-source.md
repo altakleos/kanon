@@ -20,7 +20,7 @@ This inverts the classical assumption that code is the truth and docs are docume
 
 - The kit invests in SDD-layer tooling (spec-graph rename, spec-diff rendering, fidelity locks — several deferred to v0.2+) at the expense of code-generation tooling.
 - Review workflows optimise for reading spec diffs first; code diffs are confirmatory.
-- `ci/check_template_consistency.py` enforces byte-equality between the repo's canonical SDD artifacts and the tier-3 template, because the artifacts *are* the source.
+- `ci/check_kit_consistency.py` enforces byte-equality between the repo's canonical SDD artifacts and the tier-3 template, because the artifacts *are* the source.
 - Non-determinism of LLM codegen is handled honestly (see `P-verification-co-authored.md` and ADR-0004) — code is not regenerated from specs mechanically; it is authored by agents reading specs and is re-validated by fixtures that live co-authoritative with the specs.
 
 ## Exceptions / Tensions

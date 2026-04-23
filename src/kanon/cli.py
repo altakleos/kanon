@@ -248,7 +248,8 @@ def _render_protocols_index(tier: int) -> str:
     lines = [
         "## Active protocols",
         "",
-        "Prose-as-code procedures available at this tier. When a trigger fires, read the protocol file in full and follow its numbered steps.",
+        "Prose-as-code procedures available at this tier. When a trigger fires, "
+        "read the protocol file in full and follow its numbered steps.",
         "",
         "| Protocol | Tier min | Invoke when |",
         "| --- | --- | --- |",
