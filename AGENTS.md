@@ -53,7 +53,7 @@ kanon/
 <!-- kanon:begin:sdd/plan-before-build -->
 ## Required: Plan Before Build
 
-For any non-trivial change, your **first output** is a plan file under `docs/plans/<slug>.md` (feature-scoped) or `~/.claude/plans/` (session-scoped), followed by explicit user approval. You may not call Edit, Write, or mutating Bash on source files before the user has approved the plan.
+For any non-trivial change, your **first output** is a plan file under `docs/plans/<slug>.md`, followed by explicit user approval. You may not call Edit, Write, or mutating Bash on source files before the user has approved the plan.
 
 A change is **non-trivial** (plan first) if any of these apply:
 
@@ -73,7 +73,7 @@ A change is **trivial** (act directly, no plan needed) only if:
 
 **Before your first source-modifying tool call, state in one sentence:** "Plan at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and plan. This sentence is the audit trail — its absence in a transcript is how violations get caught.
 
-**Retroactive plans are evidence of past violation, not a norm.** If you see commits labeled "retroactive plan for X shipped in vY.Z", a prior agent skipped this rule and the user had to ask them to paper over it. Do not add to that pile.
+**Retroactive plans are evidence of past violation, not a norm.** Do not add to that pile.
 <!-- kanon:end:sdd/plan-before-build -->
 
 <!-- kanon:begin:sdd/spec-before-design -->
@@ -98,8 +98,6 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 - adding a new output type that follows an existing pattern already governed by a spec
 
 **Before your first design-doc, ADR, plan, or source-modifying tool call, state in one sentence:** "Spec at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and write the spec.
-
-**Design-doc skip.** A design doc may be skipped when all four conditions in [`docs/development-process.md` § When to Skip a Design Doc](docs/development-process.md#when-to-skip-a-design-doc) hold (pattern instantiation, single-concern scope, spec carries the reasoning, plan exists). The skip must be declared in the plan's frontmatter as `design: "Follows ADR-NNNN"` **before** implementation begins — retroactive declarations don't count.
 <!-- kanon:end:sdd/spec-before-design -->
 
 <!-- kanon:begin:protocols-index -->
@@ -107,11 +105,13 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 
 Prose-as-code procedures available at this tier. When a trigger fires, read the protocol file in full and follow its numbered steps.
 
-| Protocol | Tier min | Invoke when |
+### sdd (depth 3)
+
+| Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
-| [`tier-up-advisor`](.kanon/protocols/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's kanon tier, or asks "should we tier up?" |
-| [`verify-triage`](.kanon/protocols/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
-| [`spec-review`](.kanon/protocols/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
+| [`tier-up-advisor`](.kanon/protocols/sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's kanon tier, or asks "should we tier up?" |
+| [`verify-triage`](.kanon/protocols/sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
+| [`spec-review`](.kanon/protocols/sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
 <!-- kanon:end:protocols-index -->
 
 ## Contribution Conventions
