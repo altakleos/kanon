@@ -1,5 +1,5 @@
 ---
-status: provisional
+status: accepted
 date: 2026-04-23
 ---
 # ADR-0013: Vision amendment — reference automation snippets are kit-shippable for deterministic-tail operations

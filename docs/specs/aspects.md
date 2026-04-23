@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-04-23
 realizes:
   - P-prose-is-code
@@ -7,9 +7,13 @@ realizes:
   - P-self-hosted-bootstrap
 stressed_by:
   - solo-engineer
+  - solo-with-agents
   - platform-team
   - onboarding-agent
-fixtures_deferred: "Aspect-model tests (manifest shape, namespaced markers, kanon aspect add/remove round-trips, legacy tier config auto-migration) land with the v0.2 aspect-model implementation plan."
+fixtures:
+  - tests/test_cli.py
+  - tests/test_kit_integrity.py
+  - tests/test_protocols.py
 ---
 # Spec: Aspects — opt-in discipline bundles
 

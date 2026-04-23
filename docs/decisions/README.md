@@ -19,8 +19,8 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0009](0009-project-rename-from-agent-sdd-to-kanon.md) | Project rename from `agent-sdd` to `kanon` | accepted |
 | [0010](0010-protocol-layer.md) | Protocol layer — prose-as-code judgment procedures at `.kanon/protocols/` | accepted |
 | [0011](0011-kit-bundle-refactor.md) | Kit bundle refactor — `templates/` → `kit/` with manifest-driven tier membership | accepted |
-| [0012](0012-aspect-model.md) | Aspect model — aspects subsume tiers; SDD becomes the first aspect | provisional |
-| [0013](0013-vision-amendment-reference-automation.md) | Vision amendment — reference automation snippets are kit-shippable | provisional |
+| [0012](0012-aspect-model.md) | Aspect model — aspects subsume tiers; SDD becomes the first aspect | accepted |
+| [0013](0013-vision-amendment-reference-automation.md) | Vision amendment — reference automation snippets are kit-shippable | accepted |
 
 ## ADR Template
 

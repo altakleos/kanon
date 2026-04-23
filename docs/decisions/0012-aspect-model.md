@@ -1,5 +1,5 @@
 ---
-status: provisional
+status: accepted
 date: 2026-04-23
 ---
 # ADR-0012: Aspect model — aspects subsume tiers; SDD becomes the first aspect
