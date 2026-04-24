@@ -112,7 +112,41 @@ Prose-as-code procedures available at this tier. When a trigger fires, read the 
 | [`tier-up-advisor`](.kanon/protocols/sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's kanon tier, or asks "should we tier up?" |
 | [`verify-triage`](.kanon/protocols/sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
 | [`spec-review`](.kanon/protocols/sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
+
+### worktrees (depth 2)
+
+| Protocol | Depth-min | Invoke when |
+| --- | --- | --- |
+| [`worktree-lifecycle`](.kanon/protocols/worktrees/worktree-lifecycle.md) | 1 | A multi-file or multi-step change is about to begin, or `git worktree list` shows active worktrees from other work streams |
 <!-- kanon:end:protocols-index -->
+
+<!-- kanon:begin:worktrees/branch-hygiene -->
+## Worktree Branch Hygiene
+
+Use a dedicated git worktree for any change that touches multiple files or requires multiple steps. Trivial single-file edits (typos, one-liner fixes) stay in the main checkout.
+
+**When to create a worktree:**
+
+- The change is multi-file or multi-step.
+- `git worktree list` shows other worktrees — parallel work is likely in progress.
+- You are unsure — prefer isolation; an unnecessary worktree is harmless.
+
+**Worktree location and naming:**
+
+- Path: `.worktrees/<slug>/` where `<slug>` derives from the plan or task name.
+- Branch: `wt/<slug>` — always use this prefix for worktree branches.
+
+**Integration cadence:**
+
+- Rebase from `main` before starting significant new work in the worktree.
+- Resolve conflicts immediately — do not let them accumulate.
+
+**Teardown rules:**
+
+- Never force-remove a worktree with uncommitted changes.
+- Commit or stash all work before running `git worktree remove`.
+- Delete the `wt/<slug>` branch only after it has been merged.
+<!-- kanon:end:worktrees/branch-hygiene -->
 
 ## Contribution Conventions
 
