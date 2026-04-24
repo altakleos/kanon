@@ -176,6 +176,7 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
     if aspects_arg is not None:
         aspects_to_enable = _parse_aspects_flag(aspects_arg, top)
     elif tier_arg is not None:
+        # --tier is sugar for --aspects sdd:N (backward compat)
         aspects_to_enable = {"sdd": tier_arg}
     else:
         aspects_to_enable = _default_aspects()

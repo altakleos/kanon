@@ -46,6 +46,7 @@ def _read_config(target: Path) -> dict[str, Any]:
     return _migrate_legacy_config(data)
 
 
+# Legacy v1→v2 migration: "sdd" reference required (v1 config had tier:N → sdd aspect)
 def _migrate_legacy_config(config: dict[str, Any]) -> dict[str, Any]:
     """One-way v1 (tier:) → v2 (aspects:) transformer. Idempotent if already v2."""
     if "aspects" in config:
