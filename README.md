@@ -70,6 +70,25 @@ New harness support: add an entry to `harnesses.yaml`; no Python change required
 - [Roadmap](docs/plans/roadmap.md) — capabilities deferred to later releases
 - [AGENTS.md](AGENTS.md) — contributor boot document
 
+## Development
+
+```bash
+# With uv (recommended — fast, reproducible)
+uv sync
+
+# Without uv
+python -m venv .venv
+.venv/bin/pip install -e ".[dev]"
+```
+
+Run tests:
+
+```bash
+.venv/bin/pytest              # fast tests (~1.5s)
+.venv/bin/pytest -m e2e       # installed-package E2E tests (~7s)
+.venv/bin/pytest -m ''        # everything
+```
+
 ## Status
 
 **Early alpha.** v0.1 ships the minimum viable kit: CLI, four tier templates, tier migration, cross-harness shims, self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
