@@ -105,7 +105,7 @@ Run tests:
 
 ## Status
 
-**Early alpha (v0.2.0a2).** The kit ships two aspects (`sdd` at depth 0–3, `worktrees` at depth 0–2), the aspect model, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
+**Early alpha (v0.2.0a3).** The kit ships two aspects (`sdd` at depth 0–3, `worktrees` at depth 0–2), the aspect model, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
 
 ## License
 

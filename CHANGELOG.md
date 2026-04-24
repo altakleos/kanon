@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a3] — 2026-04-24
+
+### Added
+
+- **Worktrees aspect** (`stability: experimental`, depth 0–2) — isolated parallel execution via git worktrees. Depth 1 ships prose guidance (protocol + AGENTS.md section); depth 2 adds shell helper scripts. See [ADR-0014](docs/decisions/0014-worktrees-aspect.md) and [spec](docs/specs/worktrees.md).
+- **True E2E tests** — subprocess-based tests that build the wheel, install in an isolated venv, and run `kanon` as a real CLI. Run with `pytest -m e2e`.
+- **E2E lifecycle tests** — multi-step integration tests chaining init → tier set → upgrade → verify → aspect set-depth.
+- **CI script tests** — test coverage for `check_foundations.py`, `check_links.py`, `check_package_contents.py`.
+
+### Changed
+
+- **cli.py decomposed** into three modules: `_manifest.py` (kit manifest loading), `_scaffold.py` (AGENTS.md assembly, config I/O), `cli.py` (click commands). No public API change.
+- **Vision doc updated** (ADR-0015) — "Tiered" property replaced with "Aspect-oriented"; success criteria split into v0.1 (achieved) and v0.2 (in progress).
+- **README rewritten** around the aspect model — aspects as primary concept, worktrees documented, Codex removed from harness list.
+- **AGENTS.md updated** — project layout reflects decomposed modules, tier language replaced with aspect/depth language throughout.
+- **Kit templates updated** — all sdd depth templates, kit.md, and tier-up-advisor protocol use aspect/depth language instead of tier language.
+- **Coverage floor raised** from 70% to 90% (actual: 95.6%, 163 tests).
+
+### Fixed
+
+- **Cross-aspect section injection** — `_assemble_agents_md()` now calls `_insert_section()` for markers that don't exist in the base template, fixing silent data loss when adding non-sdd aspects.
+- **Dead code removed** — `_fsync_dir` function and unused `os` import.
+
 ## [0.2.0a2] — 2026-04-23
 
 ### Changed
@@ -90,7 +113,8 @@ First public alpha under the name `kanon`. The project was previously developed 
 - Spec-graph tooling (rename, orphan detection, spec-diff rendering) is deferred to v0.2. See `docs/specs/spec-graph-tooling.md`.
 - Multi-agent coordination primitives (reservations ledger, plan-SHA pins, decision handshake) deferred to v0.2. See `docs/specs/multi-agent-coordination.md`.
 
-[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a2...HEAD
+[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a3...HEAD
+[0.2.0a3]: https://github.com/altakleos/kanon/compare/v0.2.0a2...v0.2.0a3
 [0.2.0a2]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a2
 [0.2.0a1]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a1
 [0.1.0a1]: https://github.com/makutaku/kanon/releases/tag/v0.1.0a1
