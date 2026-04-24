@@ -19,6 +19,7 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [release](release.md) | Disciplined release publishing | v0.2.0a5 |
 | [invariant-ids](invariant-ids.md) | Stable anchors for spec invariants | v0.2.0a5 |
 | [fidelity-lock](fidelity-lock.md) | Spec-SHA drift detection | v0.2.0a5 |
+| [verified-by](verified-by.md) | Invariant-to-test traceability | v0.2.0a5 |
 
 ## Deferred specs (scheduled for v0.2+)
 
@@ -26,7 +27,6 @@ See [`../plans/roadmap.md`](../plans/roadmap.md). Each is a real spec file with 
 
 | Spec | Capability | Target |
 |---|---|---|
-| [verified-by](verified-by.md) | Invariant-to-test traceability | v0.3 |
 | [spec-graph-tooling](spec-graph-tooling.md) | Atomic rename + orphan detection + spec-diff | v0.2 |
 | [ambiguity-budget](ambiguity-budget.md) | Two-agents-one-spec falsifier | v0.2 |
 | [multi-agent-coordination](multi-agent-coordination.md) | Reservations ledger + plan SHA + handshake | v0.2 |

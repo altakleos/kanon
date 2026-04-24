@@ -10,6 +10,24 @@ stressed_by:
 fixtures:
   - tests/test_protocols.py
   - tests/test_kit_integrity.py
+invariant_coverage:
+  INV-protocols-location:
+    - tests/test_protocols.py::test_sdd_protocols_directory_exists
+    - tests/test_protocols.py::test_protocol_byte_equals_repo_canonical
+  INV-protocols-frontmatter-schema:
+    - tests/test_protocols.py::test_protocol_has_required_frontmatter_keys
+  INV-protocols-tier-gating:
+    - tests/test_protocols.py::test_protocol_depth_min_matches_sub_manifest
+  INV-protocols-discoverability:
+    - tests/test_cli.py::test_protocols_index_marker_present_tier1_plus
+    - tests/test_cli.py::test_protocols_index_absent_at_tier_0
+  INV-protocols-byte-equality:
+    - tests/test_protocols.py::test_protocol_byte_equals_repo_canonical
+  INV-protocols-additive-across-tier-up:
+    - tests/test_cli.py::test_tier_up_additive_only
+    - tests/test_cli.py::test_tier_down_is_non_destructive
+  INV-protocols-no-runtime-dispatch:
+    - tests/test_protocols.py
 ---
 # Spec: Protocol layer — prose-as-code judgment procedures
 

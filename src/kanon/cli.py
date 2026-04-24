@@ -339,6 +339,31 @@ def verify(target: Path) -> None:
                         f"fidelity: spec {p.stem} is not tracked in fidelity.lock."
                     )
 
+    # Verified-by checks (depth >= 2)
+    if sdd_depth >= 2:
+        import re as _re
+
+        _inv_re = _re.compile(r"<!--\s*(INV-[a-z][a-z0-9-]*-[a-z][a-z0-9-]*)\s*-->")
+        specs_dir = target / "docs" / "specs"
+        if specs_dir.is_dir():
+            for sp in sorted(specs_dir.glob("*.md")):
+                if sp.name.startswith("_") or sp.name == "README.md":
+                    continue
+                text = sp.read_text(encoding="utf-8")
+                fm = _parse_frontmatter(text)
+                if fm.get("status") != "accepted" or fm.get("fixtures_deferred"):
+                    continue
+                anchors = _inv_re.findall(text)
+                if not anchors:
+                    continue
+                coverage = fm.get("invariant_coverage") or {}
+                missing = [a for a in anchors if a not in coverage]
+                if missing:
+                    warnings.append(
+                        f"verified-by: {sp.name} missing invariant_coverage "
+                        f"for {len(missing)} anchor(s)."
+                    )
+
     status = "fail" if errors else "ok"
     _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status=status)
     if errors:

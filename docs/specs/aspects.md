@@ -14,6 +14,37 @@ fixtures:
   - tests/test_cli.py
   - tests/test_kit_integrity.py
   - tests/test_protocols.py
+invariant_coverage:
+  INV-aspects-aspect-identity:
+    - tests/test_cli.py::test_aspect_list
+    - tests/test_cli.py::test_aspect_info
+    - tests/test_kit_integrity.py::test_top_manifest_is_aspect_registry
+  INV-aspects-sdd-is-an-aspect:
+    - tests/test_cli.py::test_upgrade_legacy_v1_migration
+    - tests/test_cli.py::test_init_scaffolds_all_required_files
+  INV-aspects-per-aspect-depth-dial:
+    - tests/test_kit_integrity.py::test_sdd_sub_manifest_has_expected_depths
+    - tests/test_cli.py::test_aspect_set_depth
+    - tests/test_kit_integrity.py::test_worktrees_manifest_has_expected_depths
+  INV-aspects-opt-in-explicit-primary:
+    - tests/test_cli.py::test_init_scaffolds_all_required_files
+    - tests/test_cli.py::test_aspect_add
+    - tests/test_cli.py::test_aspect_remove
+  INV-aspects-namespaced-discovery:
+    - tests/test_cli.py::test_upgrade_migrates_flat_protocols
+    - tests/test_protocols.py::test_protocol_byte_equals_repo_canonical
+    - tests/test_cli.py::test_protocols_index_marker_present_tier1_plus
+  INV-aspects-cross-aspect-ownership-exclusive:
+    - ci/check_kit_consistency.py
+  INV-aspects-non-destructive-add-remove:
+    - tests/test_cli.py::test_aspect_add
+    - tests/test_cli.py::test_aspect_remove
+    - tests/test_cli.py::test_aspect_remove_leaves_files
+  INV-aspects-reference-automation-shippable:
+    - tests/test_cli.py::test_release_depth_2_has_ci_files
+  INV-aspects-every-aspect-self-hosted:
+    - tests/test_kit_integrity.py::test_kit_root_has_expected_top_level_entries
+    - tests/test_kit_integrity.py::test_kit_aspects_dir_has_sdd
 ---
 # Spec: Aspects — opt-in discipline bundles
 

@@ -8,6 +8,29 @@ stressed_by:
   - solo-engineer
   - onboarding-agent
 fixtures: [tests/test_kit_integrity.py]
+invariant_coverage:
+  INV-template-bundle-four-tiers:
+    - tests/test_cli.py::test_init_scaffolds_all_required_files
+    - tests/test_kit_integrity.py::test_sdd_sub_manifest_has_expected_depths
+  INV-template-bundle-strict-subset:
+    - tests/test_kit_integrity.py::test_manifest_paths_resolve
+  INV-template-bundle-tier3-canonical-with-repo:
+    - tests/test_kit_integrity.py::test_dev_process_byte_equal_to_canonical
+    - ci/check_kit_consistency.py
+  INV-template-bundle-shims-are-pointers:
+    - tests/test_cli.py::test_shims_are_pointers_not_duplicates
+    - tests/test_cli.py::test_init_writes_all_shims
+  INV-template-bundle-html-comment-markers:
+    - tests/test_kit_integrity.py::test_depth_agents_md_contains_expected_markers
+    - tests/test_kit_integrity.py::test_depth_0_agents_md_has_no_gate_markers
+  INV-template-bundle-config-and-kit-md-seed:
+    - tests/test_cli.py::test_kit_md_scaffolded_at_all_tiers
+    - tests/test_cli.py::test_init_rejects_existing_without_force
+  INV-template-bundle-no-consumer-state-leaks:
+    - ci/check_package_contents.py
+  INV-template-bundle-placeholders-replaced:
+    - tests/test_kit_integrity.py::test_kit_md_has_placeholders
+    - tests/test_kit_integrity.py::test_kit_md_renders_with_placeholders
 ---
 # Spec: Template bundle — what `init` scaffolds
 

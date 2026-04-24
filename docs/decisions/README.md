@@ -27,6 +27,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0017](0017-release-aspect.md) | Release aspect — disciplined release publishing | accepted |
 | [0018](0018-invariant-ids.md) | Invariant IDs — stable anchors for spec invariants | accepted |
 | [0019](0019-fidelity-lock.md) | Fidelity Lock — spec-SHA drift detection | accepted |
+| [0020](0020-verified-by.md) | Verified-By — invariant-to-test traceability | accepted |
 
 ## ADR Template
 
