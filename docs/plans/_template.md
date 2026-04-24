@@ -22,3 +22,7 @@ date: YYYY-MM-DD
 - [ ] AC1: <what must be true when done>
 - [ ] AC2: <what must be true when done>
 - [ ] verify passes
+
+## Documentation Impact
+
+If this plan changes user-facing behavior, list which docs need updating (README, CLI help text, usage examples, migration guides). If no user-facing behavior changes, write "None."
