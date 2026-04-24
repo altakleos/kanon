@@ -1466,3 +1466,25 @@ def test_security_depth_2_has_ci_script(tmp_path: Path) -> None:
     result = runner.invoke(main, ["aspect", "set-depth", str(target), "security", "2"])
     assert result.exit_code == 0, result.output
     assert (target / "ci" / "check_security_patterns.py").is_file()
+
+
+def test_aspect_add_deps(tmp_path: Path) -> None:
+    """aspect add deps enables the aspect; protocol is scaffolded."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "deps"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "deps" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "deps" / "dependency-hygiene.md").is_file()
+
+
+def test_deps_depth_2_has_ci_script(tmp_path: Path) -> None:
+    """set-depth deps 2 scaffolds ci/check_deps.py."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "deps", "2"])
+    assert result.exit_code == 0, result.output
+    assert (target / "ci" / "check_deps.py").is_file()

@@ -108,6 +108,12 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 
 Prose-as-code procedures available at this depth. When a trigger fires, read the protocol file in full and follow its numbered steps.
 
+### deps (depth 2)
+
+| Protocol | Depth-min | Invoke when |
+| --- | --- | --- |
+| [`dependency-hygiene`](.kanon/protocols/deps/dependency-hygiene.md) | 1 | Adding, removing, or updating project dependencies |
+
 ### release (depth 2)
 
 | Protocol | Depth-min | Invoke when |
@@ -284,6 +290,12 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 
 Prose-as-code procedures available at this depth. When a trigger fires, read the protocol file in full and follow its numbered steps.
 
+### deps (depth 2)
+
+| Protocol | Depth-min | Invoke when |
+| --- | --- | --- |
+| [`dependency-hygiene`](.kanon/protocols/deps/dependency-hygiene.md) | 1 | Adding, removing, or updating project dependencies |
+
 ### release (depth 2)
 
 | Protocol | Depth-min | Invoke when |
@@ -429,6 +441,48 @@ LLM agents produce predictable security anti-patterns. Every code change follows
 **At depth 2: CI pattern scanner.** `ci/check_security_patterns.py` detects common anti-patterns via regex. It is a safety net, not a SAST replacement — passing the scanner does not mean the code is secure.
 <!-- kanon:end:security/secure-defaults -->
 <!-- kanon:end:security/body -->
+
+<!-- kanon:begin:deps/dependency-hygiene -->
+## Dependency Hygiene
+
+LLM agents add dependencies casually. Every dependency change follows these rules:
+
+**Always pin exact versions.** Use `==` in requirements.txt, exact versions in pyproject.toml, and exact versions (no `^` or `~`) in package.json. Unpinned dependencies break reproducibility.
+
+**Never add a dependency without justification.** Before adding a package, check whether the standard library or an existing dependency already covers the need. Duplicate-purpose libraries bloat the dependency tree and create maintenance burden.
+
+**Audit before adding.** Verify the package is actively maintained, has a compatible license, and is not a typosquat. Prefer well-known packages over obscure alternatives.
+
+**Remove unused dependencies.** When removing code that was the sole consumer of a dependency, remove the dependency too. Phantom dependencies are tech debt.
+
+**Keep manifests consistent.** If the project uses multiple manifest formats (e.g., pyproject.toml and requirements.txt), keep them in sync. Conflicting version constraints across manifests cause silent failures.
+
+**At depth 2: CI dependency scanner.** `ci/check_deps.py` detects unpinned versions and duplicate-purpose packages. It is a safety net — passing the scanner does not mean the dependency tree is optimal.
+<!-- kanon:end:deps/dependency-hygiene -->
+
+<!-- kanon:begin:deps/body -->
+The `deps` aspect is active with CI enforcement. Follow the dependency-hygiene protocol when adding or modifying dependencies.
+
+- `ci/check_deps.py` — scans manifest files for unpinned versions and duplicate-purpose packages.
+
+<!-- kanon:begin:deps/dependency-hygiene -->
+## Dependency Hygiene
+
+LLM agents add dependencies casually. Every dependency change follows these rules:
+
+**Always pin exact versions.** Use `==` in requirements.txt, exact versions in pyproject.toml, and exact versions (no `^` or `~`) in package.json. Unpinned dependencies break reproducibility.
+
+**Never add a dependency without justification.** Before adding a package, check whether the standard library or an existing dependency already covers the need. Duplicate-purpose libraries bloat the dependency tree and create maintenance burden.
+
+**Audit before adding.** Verify the package is actively maintained, has a compatible license, and is not a typosquat. Prefer well-known packages over obscure alternatives.
+
+**Remove unused dependencies.** When removing code that was the sole consumer of a dependency, remove the dependency too. Phantom dependencies are tech debt.
+
+**Keep manifests consistent.** If the project uses multiple manifest formats (e.g., pyproject.toml and requirements.txt), keep them in sync. Conflicting version constraints across manifests cause silent failures.
+
+**At depth 2: CI dependency scanner.** `ci/check_deps.py` detects unpinned versions and duplicate-purpose packages. It is a safety net — passing the scanner does not mean the dependency tree is optimal.
+<!-- kanon:end:deps/dependency-hygiene -->
+<!-- kanon:end:deps/body -->
 
 ## Contribution Conventions
 

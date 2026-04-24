@@ -58,3 +58,10 @@ aspects:
     depth-range: [0, 2]
     default-depth: 1
     requires: []
+
+  deps:
+    path: aspects/deps
+    stability: experimental
+    depth-range: [0, 2]
+    default-depth: 1
+    requires: []

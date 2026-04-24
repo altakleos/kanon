@@ -1,0 +1,30 @@
+# Deps aspect — dependency hygiene for LLM-agent-driven repos.
+#
+# Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + CI validator.
+# Strict-superset semantics: depth-N is the union of depth-0..depth-N.
+# Paths under `files:` are relative to src/kanon/kit/aspects/deps/files/.
+# Paths under `protocols:` are relative to src/kanon/kit/aspects/deps/protocols/.
+# Names under `sections:` resolve to src/kanon/kit/aspects/deps/sections/<name>.md,
+# except the unprefixed `protocols-index` which is rendered dynamically by the CLI
+# as the cross-aspect unified catalog.
+#
+# See docs/specs/deps.md and ADR-0023.
+
+depth-0:
+  files: []
+  protocols: []
+  sections: []
+
+depth-1:
+  files: []
+  protocols:
+    - dependency-hygiene.md
+  sections:
+    - dependency-hygiene
+    - protocols-index
+
+depth-2:
+  files:
+    - ci/check_deps.py
+  protocols: []
+  sections: []

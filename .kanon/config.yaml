@@ -20,3 +20,7 @@ aspects:
     depth: 2
     enabled_at: '2026-04-24T20:36:02+00:00'
     config: {}
+  deps:
+    depth: 2
+    enabled_at: '2026-04-24T20:47:42+00:00'
+    config: {}

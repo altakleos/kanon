@@ -366,3 +366,56 @@ def test_security_manifest_paths_resolve() -> None:
                     f"depth-{d}.sections: {name} missing under aspects/security/sections/"
                 )
     assert not errors, "\n".join(errors)
+
+
+# --- deps aspect ---
+
+_DEPS = _KIT / "aspects" / "deps"
+
+
+def _load_deps_manifest() -> dict:
+    return yaml.safe_load((_DEPS / "manifest.yaml").read_text(encoding="utf-8"))
+
+
+def test_kit_deps_aspect_dir_exists() -> None:
+    assert _DEPS.is_dir()
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2])
+def test_deps_manifest_has_expected_depths(depth: int) -> None:
+    sub = _load_deps_manifest()
+    key = f"depth-{depth}"
+    assert key in sub, f"deps sub-manifest missing {key}"
+    assert isinstance(sub[key], dict)
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2])
+def test_deps_agents_md_exists_per_depth(depth: int) -> None:
+    assert (_DEPS / "agents-md" / f"depth-{depth}.md").is_file()
+
+
+def test_deps_manifest_paths_resolve() -> None:
+    """Every path declared in deps sub-manifest resolves to an extant file."""
+    sub = _load_deps_manifest()
+    errors: list[str] = []
+    for d in range(3):
+        entry = sub.get(f"depth-{d}", {})
+        for rel in entry.get("files", []) or []:
+            p = _DEPS / "files" / rel
+            if not p.is_file():
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/deps/files/")
+        for rel in entry.get("protocols", []) or []:
+            p = _DEPS / "protocols" / rel
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.protocols: {rel} missing under aspects/deps/protocols/"
+                )
+        for name in entry.get("sections", []) or []:
+            if name == "protocols-index":
+                continue  # dynamically rendered
+            p = _DEPS / "sections" / f"{name}.md"
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.sections: {name} missing under aspects/deps/sections/"
+                )
+    assert not errors, "\n".join(errors)

@@ -30,6 +30,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0020](0020-verified-by.md) | Verified-By — invariant-to-test traceability | accepted |
 | [0021](0021-testing-aspect.md) | Testing aspect — test discipline for LLM-agent-driven repos | accepted |
 | [0022](0022-security-aspect.md) | Security aspect — hardened defaults for LLM-agent-authored code | accepted |
+| [0023](0023-deps-aspect.md) | Deps aspect — dependency hygiene for LLM-agent-driven repos | accepted |
 
 ## ADR Template
 
