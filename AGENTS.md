@@ -127,6 +127,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | [`tier-up-advisor`](.kanon/protocols/sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's sdd depth, or asks "should we increase depth?" |
 | [`verify-triage`](.kanon/protocols/sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
 | [`completion-checklist`](.kanon/protocols/sdd/completion-checklist.md) | 1 | An agent is about to declare a plan or task complete, or the user asks "is this done?" |
+| [`scope-check`](.kanon/protocols/sdd/scope-check.md) | 1 | An agent discovers during implementation that the current task requires changes not described in the approved plan |
 | [`spec-review`](.kanon/protocols/sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
 
 ### security (depth 2)
@@ -140,6 +141,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
 | [`test-discipline`](.kanon/protocols/testing/test-discipline.md) | 1 | Writing or modifying code |
+| [`error-diagnosis`](.kanon/protocols/testing/error-diagnosis.md) | 1 | A test fails, a build breaks, or a command produces an unexpected error during implementation |
 | [`ac-first-tdd`](.kanon/protocols/testing/ac-first-tdd.md) | 2 | Implementing a plan or spec invariant at testing depth >= 2 |
 
 ### worktrees (depth 2)
@@ -310,6 +312,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | [`tier-up-advisor`](.kanon/protocols/sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's sdd depth, or asks "should we increase depth?" |
 | [`verify-triage`](.kanon/protocols/sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
 | [`completion-checklist`](.kanon/protocols/sdd/completion-checklist.md) | 1 | An agent is about to declare a plan or task complete, or the user asks "is this done?" |
+| [`scope-check`](.kanon/protocols/sdd/scope-check.md) | 1 | An agent discovers during implementation that the current task requires changes not described in the approved plan |
 | [`spec-review`](.kanon/protocols/sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
 
 ### security (depth 2)
@@ -323,6 +326,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
 | [`test-discipline`](.kanon/protocols/testing/test-discipline.md) | 1 | Writing or modifying code |
+| [`error-diagnosis`](.kanon/protocols/testing/error-diagnosis.md) | 1 | A test fails, a build breaks, or a command produces an unexpected error during implementation |
 | [`ac-first-tdd`](.kanon/protocols/testing/ac-first-tdd.md) | 2 | Implementing a plan or spec invariant at testing depth >= 2 |
 
 ### worktrees (depth 2)

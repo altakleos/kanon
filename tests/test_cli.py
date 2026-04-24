@@ -102,9 +102,9 @@ def test_shims_are_pointers_not_duplicates(tmp_path: Path) -> None:
 
 _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
     0: set(),
-    1: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md"},
-    2: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "spec-review.md"},
-    3: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "spec-review.md"},
+    1: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md"},
+    2: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md", "spec-review.md"},
+    3: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md", "spec-review.md"},
 }
 
 
@@ -1433,6 +1433,7 @@ def test_aspect_add_testing(tmp_path: Path) -> None:
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
     assert "testing" in config["aspects"]
     assert (target / ".kanon" / "protocols" / "testing" / "test-discipline.md").is_file()
+    assert (target / ".kanon" / "protocols" / "testing" / "error-diagnosis.md").is_file()
 
 
 def test_testing_depth_3_has_ci_script(tmp_path: Path) -> None:

@@ -38,6 +38,7 @@ depth-1:
     - tier-up-advisor.md
     - verify-triage.md
     - completion-checklist.md
+    - scope-check.md
   sections:
     - plan-before-build
     - protocols-index

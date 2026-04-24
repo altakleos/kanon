@@ -2,25 +2,25 @@ kit_version: 0.2.0a4
 aspects:
   deps:
     depth: 2
-    enabled_at: '2026-04-24T20:56:45+00:00'
+    enabled_at: '2026-04-24T21:08:47+00:00'
     config: {}
   release:
     depth: 2
-    enabled_at: '2026-04-24T20:56:45+00:00'
+    enabled_at: '2026-04-24T21:08:47+00:00'
     config: {}
   sdd:
     depth: 3
-    enabled_at: '2026-04-24T20:56:45+00:00'
+    enabled_at: '2026-04-24T21:08:47+00:00'
     config: {}
   security:
     depth: 2
-    enabled_at: '2026-04-24T20:56:45+00:00'
+    enabled_at: '2026-04-24T21:08:47+00:00'
     config: {}
   testing:
     depth: 3
-    enabled_at: '2026-04-24T20:56:45+00:00'
+    enabled_at: '2026-04-24T21:08:47+00:00'
     config: {}
   worktrees:
     depth: 2
-    enabled_at: '2026-04-24T20:56:45+00:00'
+    enabled_at: '2026-04-24T21:08:47+00:00'
     config: {}
