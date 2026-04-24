@@ -1,6 +1,6 @@
 # AGENTS.md — ${project_name}
 
-A tier-2 `kanon` project. Plan-before-build and spec-before-design gates are both active; specs are tracked under `docs/specs/`.
+A `kanon` project with `sdd` at depth 2. Plan-before-build and spec-before-design gates are both active; specs are tracked under `docs/specs/`.
 
 ## Boot chain
 

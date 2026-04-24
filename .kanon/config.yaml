@@ -2,9 +2,9 @@ kit_version: 0.2.0a2
 aspects:
   sdd:
     depth: 3
-    enabled_at: '2026-04-24T00:43:23+00:00'
+    enabled_at: '2026-04-24T05:03:18+00:00'
     config: {}
   worktrees:
     depth: 2
-    enabled_at: '2026-04-24T00:43:27+00:00'
+    enabled_at: '2026-04-24T05:03:18+00:00'
     config: {}

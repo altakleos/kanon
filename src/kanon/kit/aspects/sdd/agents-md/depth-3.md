@@ -1,6 +1,6 @@
 # AGENTS.md — ${project_name}
 
-A tier-3 `kanon` project. Full stack: foundations + specs + design + ADRs + plans + verification. All process gates are active.
+A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + design + ADRs + plans + verification. All process gates are active.
 
 ## Boot chain
 

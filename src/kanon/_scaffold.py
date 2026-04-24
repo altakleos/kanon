@@ -156,7 +156,7 @@ def _render_protocols_index(aspects: dict[str, int]) -> str:
     lines = [
         "## Active protocols",
         "",
-        "Prose-as-code procedures available at this tier. When a trigger fires, "
+        "Prose-as-code procedures available at this depth. When a trigger fires, "
         "read the protocol file in full and follow its numbered steps.",
         "",
     ]

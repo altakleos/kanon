@@ -1,6 +1,6 @@
 # AGENTS.md — ${project_name}
 
-A tier-1 `kanon` project. The plan-before-build gate is active; ADRs and plans are tracked under `docs/`.
+A `kanon` project with `sdd` at depth 1. The plan-before-build gate is active; ADRs and plans are tracked under `docs/`.
 
 ## Boot chain
 

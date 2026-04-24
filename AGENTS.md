@@ -2,11 +2,11 @@
 
 You are operating the `kanon` source repository. This is the upstream project — the kit itself. Users install this kit via `pip install kanon-kit` (the PyPI distribution is `kanon-kit`; the import / CLI name remains `kanon`) and run `kanon init` to scaffold their own projects.
 
-This repo is itself an `kanon` project, operating at **tier 3** (the highest tier). See [`.kanon/config.yaml`](.kanon/config.yaml) for the current tier and kit-version pin.
+This repo is itself a `kanon` project, operating at `sdd` depth 3 and `worktrees` depth 2. See [`.kanon/config.yaml`](.kanon/config.yaml) for the current aspect depths and kit-version pin.
 
 ## What `kanon` Is
 
-A portable, self-hosting kit packaging the Spec-Driven Development (SDD) methodology as prose the agent reads and obeys. See [`docs/foundations/vision.md`](docs/foundations/vision.md).
+A portable, self-hosting kit packaging development disciplines — starting with Spec-Driven Development and worktree isolation — as prose the agent reads and obeys. See [`docs/foundations/vision.md`](docs/foundations/vision.md).
 
 ## Contributor Boot Chain
 
@@ -23,7 +23,7 @@ For the roadmap of deferred capabilities, see [`docs/plans/roadmap.md`](docs/pla
 
 ```
 kanon/
-├── AGENTS.md                 (this file — contributor entry point, tier-3)
+├── AGENTS.md                 (this file — contributor entry point)
 ├── CLAUDE.md                 (Claude Code shim pointing at AGENTS.md)
 ├── README.md                 (install + quickstart)
 ├── pyproject.toml            (pip package metadata)
@@ -37,18 +37,21 @@ kanon/
 │   └── plans/                  (task breakdowns + roadmap.md)
 ├── src/kanon/
 │   ├── __init__.py
-│   ├── cli.py                  (click CLI: init/upgrade/verify/tier)
-│   └── kit/                    (unified bundle — manifest.yaml + agents-md/ + files/ + sections/ + protocols/)
-└── tests/                    (CLI, kit integrity, tier-migration round-trip)
+│   ├── cli.py                  (click CLI: init/upgrade/verify/tier/aspect)
+│   ├── _manifest.py            (kit manifest loading, aspect queries)
+│   ├── _scaffold.py            (AGENTS.md assembly, config I/O, bundle building)
+│   ├── _atomic.py              (crash-safe atomic file writes)
+│   └── kit/                    (aspect bundles — manifest.yaml + aspects/{sdd,worktrees}/)
+└── tests/                    (CLI, kit integrity, aspect lifecycle, E2E)
 ```
 
 ## Key Constraints
 
-- `docs/development-process.md` is **project-agnostic**. Do not mention the kit's own CLI commands, tier model specifics, or any `kanon`-brand terms in it. Kit-specific material lives in `docs/kanon-implementation.md`.
+- `docs/development-process.md` is **project-agnostic**. Do not mention the kit's own CLI commands, aspect/depth model specifics, or any `kanon`-brand terms in it. Kit-specific material lives in `docs/kanon-implementation.md`.
 - **Process rules belong in `docs/development-process.md`**. README files in artifact directories (`specs/`, `design/`, `plans/`, `decisions/`, `foundations/`) carry indexes, templates, and pointers — not process definitions. When adding a new process concept, put it in the method doc and add a pointer from the relevant README.
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 - The kit bundle at `src/kanon/kit/` shares source of truth with this repo's own `docs/`, `AGENTS.md` section markers, and `.kanon/protocols/`. `ci/check_kit_consistency.py` enforces byte-equality against a narrow whitelist (see ADR-0011).
-- Tier membership is data in `src/kanon/kit/manifest.yaml`. To scaffold a new file at tier-N for consumers, add it under `kit/files/` or `kit/protocols/` and list its path under the appropriate `tier-N` entry in the manifest. Strict-superset semantics are preserved by manifest-union.
+- Aspect membership is data in `src/kanon/kit/manifest.yaml` (aspect registry) and per-aspect sub-manifests at `src/kanon/kit/aspects/<name>/manifest.yaml`. To scaffold a new file at depth-N for consumers, add it under `kit/aspects/<name>/files/` or `kit/aspects/<name>/protocols/` and list its path under the appropriate `depth-N` entry in the sub-manifest. Strict-superset semantics are preserved by manifest-union.
 
 <!-- kanon:begin:sdd/plan-before-build -->
 ## Required: Plan Before Build
@@ -103,13 +106,13 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 <!-- kanon:begin:protocols-index -->
 ## Active protocols
 
-Prose-as-code procedures available at this tier. When a trigger fires, read the protocol file in full and follow its numbered steps.
+Prose-as-code procedures available at this depth. When a trigger fires, read the protocol file in full and follow its numbered steps.
 
 ### sdd (depth 3)
 
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
-| [`tier-up-advisor`](.kanon/protocols/sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's kanon tier, or asks "should we tier up?" |
+| [`tier-up-advisor`](.kanon/protocols/sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's sdd depth, or asks "should we increase depth?" |
 | [`verify-triage`](.kanon/protocols/sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
 | [`spec-review`](.kanon/protocols/sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
 
@@ -147,6 +150,7 @@ Use a dedicated git worktree for any change that touches multiple files or requi
 - Commit or stash all work before running `git worktree remove`.
 - Delete the `wt/<slug>` branch only after it has been merged.
 <!-- kanon:end:worktrees/branch-hygiene -->
+
 
 ## Contribution Conventions
 
