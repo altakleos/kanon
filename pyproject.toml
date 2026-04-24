@@ -61,7 +61,8 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=kanon --cov-report=term-missing --cov-fail-under=70"
+addopts = "--cov=kanon --cov-report=term-missing --cov-fail-under=90 -m 'not e2e'"
+markers = ["e2e: end-to-end tests against installed package (slow)"]
 
 [tool.coverage.run]
 source = ["src/kanon"]
