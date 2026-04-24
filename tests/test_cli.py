@@ -1114,3 +1114,109 @@ def test_worktrees_depth_0_scaffolds_nothing(tmp_path: Path) -> None:
     assert not (target / "scripts").exists()
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "<!-- kanon:begin:worktrees/branch-hygiene -->" not in agents
+
+
+# --- aspect add / remove commands ---
+
+
+def test_aspect_add(tmp_path: Path) -> None:
+    """aspect add enables an aspect at its default depth."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "worktrees" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "worktrees" / "worktree-lifecycle.md").is_file()
+
+
+def test_aspect_add_already_enabled(tmp_path: Path) -> None:
+    """aspect add on an already-enabled aspect fails."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    assert result.exit_code != 0
+    assert "already enabled" in result.output.lower()
+
+
+def test_aspect_add_unknown(tmp_path: Path) -> None:
+    """aspect add with an unknown aspect name fails."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "nonexistent"])
+    assert result.exit_code != 0
+    assert "unknown aspect" in result.output.lower()
+
+
+def test_aspect_remove(tmp_path: Path) -> None:
+    """aspect remove deletes the aspect from config and AGENTS.md markers."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "worktrees" not in config["aspects"]
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" not in agents
+
+
+def test_aspect_remove_not_enabled(tmp_path: Path) -> None:
+    """aspect remove on a non-enabled aspect fails."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    assert result.exit_code != 0
+    assert "not enabled" in result.output.lower()
+
+
+def test_aspect_remove_leaves_files(tmp_path: Path) -> None:
+    """aspect remove is non-destructive: scaffolded files stay on disk."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "2"])
+    # Scripts exist before removal
+    assert (target / "scripts" / "worktree-setup.sh").is_file()
+    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    assert result.exit_code == 0, result.output
+    # Scripts still on disk (non-destructive)
+    assert (target / "scripts" / "worktree-setup.sh").is_file()
+    assert "non-destructive" in result.output.lower() or "left on disk" in result.output.lower()
+
+
+def test_init_with_aspects_flag(tmp_path: Path) -> None:
+    """init --aspects enables multiple aspects at specified depths."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--aspects", "sdd:2,worktrees:1"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert config["aspects"]["sdd"]["depth"] == 2
+    assert config["aspects"]["worktrees"]["depth"] == 1
+
+
+def test_init_aspects_and_tier_mutual_exclusion(tmp_path: Path) -> None:
+    """init with both --tier and --aspects fails."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--tier", "1", "--aspects", "sdd:1"])
+    assert result.exit_code != 0
+    assert "mutually exclusive" in result.output.lower()
+
+
+def test_init_default_aspects(tmp_path: Path) -> None:
+    """init with no --tier and no --aspects uses default aspects."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target)])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "sdd" in config["aspects"]
+    assert config["aspects"]["sdd"]["depth"] == 1

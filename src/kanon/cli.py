@@ -352,6 +352,84 @@ def aspect_info(name: str) -> None:
         click.echo(f"  Depth {d}: {len(files)} file(s), {len(protos)} protocol(s)")
 
 
+@aspect.command("add")
+@click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("aspect_name")
+def aspect_add(target: Path, aspect_name: str) -> None:
+    """Enable an aspect at its default depth."""
+    target = target.resolve()
+    config = _read_config(target)
+    top = _load_top_manifest()
+    if aspect_name not in top["aspects"]:
+        raise click.ClickException(
+            f"Unknown aspect: {aspect_name!r}. See `kanon aspect list`."
+        )
+    aspects = _config_aspects(config)
+    if aspect_name in aspects and aspects[aspect_name] > 0:
+        raise click.ClickException(
+            f"Aspect {aspect_name!r} is already enabled at depth {aspects[aspect_name]}. "
+            f"Use `kanon aspect set-depth` to change depth."
+        )
+    default_depth = int(top["aspects"][aspect_name]["default-depth"])
+    _set_aspect_depth(target, aspect_name, default_depth)
+
+
+@aspect.command("remove")
+@click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("aspect_name")
+def aspect_remove(target: Path, aspect_name: str) -> None:
+    """Remove an aspect (non-destructive: scaffolded files are left on disk)."""
+    target = target.resolve()
+    config = _read_config(target)
+    aspects = _config_aspects(config)
+    if aspect_name not in aspects:
+        raise click.ClickException(
+            f"Aspect {aspect_name!r} is not enabled in this project."
+        )
+
+    from kanon._atomic import atomic_write_text
+
+    # Remove aspect from config
+    aspects_meta = dict(config.get("aspects", {}))
+    del aspects_meta[aspect_name]
+    kit_version = config.get("kit_version", __version__)
+
+    # Remaining aspects for AGENTS.md reassembly
+    remaining = {k: int(v["depth"]) for k, v in aspects_meta.items()}
+
+    # Re-assemble and merge AGENTS.md without the removed aspect
+    new_agents = _assemble_agents_md(remaining, target.name)
+    agents_path = target / "AGENTS.md"
+    if agents_path.is_file():
+        existing = agents_path.read_text(encoding="utf-8")
+        merged = _merge_agents_md(existing, new_agents)
+        if merged != existing:
+            atomic_write_text(agents_path, merged)
+
+    # Update kit.md
+    kit_md = _render_kit_md(remaining, target.name)
+    if kit_md is not None:
+        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
+
+    _write_config(target, kit_version, aspects_meta)
+
+    # List aspect-specific files left on disk
+    from kanon._manifest import _aspect_files, _aspect_protocols
+
+    depth = aspects[aspect_name]
+    left: list[str] = list(_aspect_files(aspect_name, depth))
+    left.extend(
+        f".kanon/protocols/{aspect_name}/{p}"
+        for p in _aspect_protocols(aspect_name, depth)
+    )
+    on_disk = [r for r in left if (target / r).exists()]
+    click.echo(f"Removed aspect {aspect_name!r} from config and AGENTS.md.")
+    if on_disk:
+        click.echo("Scaffolded files left on disk (non-destructive):")
+        for rel in on_disk:
+            click.echo(f"  - {rel}")
+
+
 @aspect.command("set-depth")
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 @click.argument("aspect_name")
