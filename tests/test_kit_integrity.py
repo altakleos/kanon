@@ -149,3 +149,61 @@ def test_manifest_paths_resolve() -> None:
                     f"depth-{d}.protocols: {rel} missing under aspects/sdd/protocols/"
                 )
     assert not errors, "\n".join(errors)
+
+
+# --- worktrees aspect ---
+
+_WORKTREES = _KIT / "aspects" / "worktrees"
+
+
+def _load_worktrees_manifest() -> dict:
+    return yaml.safe_load((_WORKTREES / "manifest.yaml").read_text(encoding="utf-8"))
+
+
+def test_kit_worktrees_aspect_dir_exists() -> None:
+    assert _WORKTREES.is_dir()
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2])
+def test_worktrees_manifest_has_expected_depths(depth: int) -> None:
+    sub = _load_worktrees_manifest()
+    key = f"depth-{depth}"
+    assert key in sub, f"worktrees sub-manifest missing {key}"
+    assert isinstance(sub[key], dict)
+
+
+def test_worktrees_manifest_paths_resolve() -> None:
+    """Every path declared in worktrees sub-manifest resolves to an extant file."""
+    sub = _load_worktrees_manifest()
+    errors: list[str] = []
+    for d in range(3):
+        entry = sub.get(f"depth-{d}", {})
+        for rel in entry.get("files", []) or []:
+            p = _WORKTREES / "files" / rel
+            if not p.is_file():
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/worktrees/files/")
+        for rel in entry.get("protocols", []) or []:
+            p = _WORKTREES / "protocols" / rel
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.protocols: {rel} missing under aspects/worktrees/protocols/"
+                )
+        for name in entry.get("sections", []) or []:
+            if name == "protocols-index":
+                continue  # dynamically rendered
+            p = _WORKTREES / "sections" / f"{name}.md"
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.sections: {name} missing under aspects/worktrees/sections/"
+                )
+    assert not errors, "\n".join(errors)
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2])
+def test_worktrees_agents_md_exists_per_depth(depth: int) -> None:
+    assert (_WORKTREES / "agents-md" / f"depth-{depth}.md").is_file()
+
+
+def test_worktrees_depth_1_has_branch_hygiene_marker() -> None:
+    text = (_WORKTREES / "agents-md" / "depth-1.md").read_text(encoding="utf-8")
+    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in text
