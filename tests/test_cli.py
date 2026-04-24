@@ -102,9 +102,9 @@ def test_shims_are_pointers_not_duplicates(tmp_path: Path) -> None:
 
 _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
     0: set(),
-    1: {"tier-up-advisor.md", "verify-triage.md"},
-    2: {"tier-up-advisor.md", "verify-triage.md", "spec-review.md"},
-    3: {"tier-up-advisor.md", "verify-triage.md", "spec-review.md"},
+    1: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md"},
+    2: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "spec-review.md"},
+    3: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "spec-review.md"},
 }
 
 
