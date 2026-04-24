@@ -231,7 +231,11 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
                 if not fragment.is_file():
                     continue
                 fragment_text = fragment.read_text(encoding="utf-8")
-            text = _replace_section(text, namespaced, fragment_text)
+            begin_marker = f"<!-- kanon:begin:{namespaced} -->"
+            if begin_marker in text:
+                text = _replace_section(text, namespaced, fragment_text)
+            else:
+                text = _insert_section(text, namespaced, fragment_text)
     # Remove inactive marker sections the base template may carry.
     active: set[str] = set()
     for aspect, depth in aspects.items():

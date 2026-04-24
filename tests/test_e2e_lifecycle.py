@@ -98,9 +98,14 @@ def test_aspect_lifecycle(tmp_path: Path) -> None:
     # Step 4: protocol file exists
     assert (target / ".kanon" / "protocols" / "worktrees" / "worktree-lifecycle.md").is_file()
 
-    # Step 5: AGENTS.md references worktrees
+    # Step 5: AGENTS.md references worktrees with proper markers
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree" in agents.lower()
+    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:end:worktrees/branch-hygiene -->" in agents
+
+    # Step 5b: verify passes at depth 1
+    _verify_ok(runner, target)
 
     # Step 6: promote to depth 2
     result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "2"])
@@ -114,6 +119,14 @@ def test_aspect_lifecycle(tmp_path: Path) -> None:
     # Step 10: config updated
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text(encoding="utf-8"))
     assert config["aspects"]["worktrees"]["depth"] == 2
+
+    # Step 10b: AGENTS.md still has worktrees markers at depth 2
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:end:worktrees/branch-hygiene -->" in agents
+
+    # Step 10c: verify passes at depth 2
+    _verify_ok(runner, target)
 
     # Step 11: demote to depth 0
     result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "0"])

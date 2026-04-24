@@ -1072,6 +1072,8 @@ def test_init_with_worktrees_depth_1(tmp_path: Path) -> None:
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree-lifecycle" in agents
     assert "worktrees (depth 1)" in agents
+    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:end:worktrees/branch-hygiene -->" in agents
     assert not (target / "scripts").exists()
 
 
@@ -1086,6 +1088,8 @@ def test_init_with_worktrees_depth_2(tmp_path: Path) -> None:
     assert (target / ".kanon" / "protocols" / "worktrees" / "worktree-lifecycle.md").is_file()
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree-lifecycle" in agents
+    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:end:worktrees/branch-hygiene -->" in agents
     for script in ("worktree-setup.sh", "worktree-teardown.sh", "worktree-status.sh"):
         assert (target / "scripts" / script).is_file(), f"missing scripts/{script}"
 
