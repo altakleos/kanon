@@ -22,6 +22,7 @@ See docs/design/aspect-model.md and ADR-0012 / ADR-0013.
 from __future__ import annotations
 
 import json
+import operator
 import sys
 from pathlib import Path
 from typing import Any
@@ -88,6 +89,48 @@ def _parse_aspects_flag(raw: str, top: dict[str, Any]) -> dict[str, int]:
     if not result:
         raise click.ClickException("--aspects requires at least one aspect:depth pair.")
     return result
+
+
+_OPS: dict[str, Any] = {
+    ">=": operator.ge,
+    ">": operator.gt,
+    "==": operator.eq,
+    "<": operator.lt,
+    "<=": operator.le,
+}
+
+
+def _check_requires(
+    aspect_name: str, proposed_aspects: dict[str, int], top: dict[str, Any]
+) -> str | None:
+    """Return error message if requires: predicates are unmet, else None."""
+    for predicate in top["aspects"][aspect_name].get("requires", []):
+        dep_name, op, dep_depth_s = predicate.split()
+        dep_depth = int(dep_depth_s)
+        actual = proposed_aspects.get(dep_name, 0)
+        if not _OPS[op](actual, dep_depth):
+            return (
+                f"Aspect {aspect_name!r} requires {predicate!r}, "
+                f"but {dep_name!r} is at depth {actual}."
+            )
+    return None
+
+
+def _check_removal_dependents(
+    aspect_name: str, remaining_aspects: dict[str, int], top: dict[str, Any]
+) -> str | None:
+    """Return error if any remaining aspect depends on the one being removed."""
+    for name, depth in remaining_aspects.items():
+        if depth <= 0:
+            continue
+        for predicate in top["aspects"][name].get("requires", []):
+            dep_name = predicate.split()[0]
+            if dep_name == aspect_name:
+                return (
+                    f"Cannot remove {aspect_name!r}: "
+                    f"aspect {name!r} requires {predicate!r}."
+                )
+    return None
 
 
 @click.group()
@@ -371,6 +414,12 @@ def aspect_add(target: Path, aspect_name: str) -> None:
             f"Use `kanon aspect set-depth` to change depth."
         )
     default_depth = int(top["aspects"][aspect_name]["default-depth"])
+    # Check requires before enabling
+    proposed = dict(aspects)
+    proposed[aspect_name] = default_depth
+    err = _check_requires(aspect_name, proposed, top)
+    if err:
+        raise click.ClickException(err)
     _set_aspect_depth(target, aspect_name, default_depth)
 
 
@@ -386,6 +435,13 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
         raise click.ClickException(
             f"Aspect {aspect_name!r} is not enabled in this project."
         )
+
+    # Check if other enabled aspects depend on this one
+    top = _load_top_manifest()
+    remaining = {k: v for k, v in aspects.items() if k != aspect_name}
+    err = _check_removal_dependents(aspect_name, remaining, top)
+    if err:
+        raise click.ClickException(err)
 
     from kanon._atomic import atomic_write_text
 
@@ -454,6 +510,14 @@ def _set_aspect_depth(
         )
 
     aspects = _config_aspects(config)
+
+    # Enforce requires: predicates
+    proposed = dict(aspects)
+    proposed[aspect_name] = n
+    err = _check_requires(aspect_name, proposed, top)
+    if err:
+        raise click.ClickException(err)
+
     kit_version = config.get("kit_version", __version__)
     current = aspects.get(aspect_name, -1)
     aspects_meta = dict(config.get("aspects", {}))

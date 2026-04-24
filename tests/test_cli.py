@@ -1220,3 +1220,57 @@ def test_init_default_aspects(tmp_path: Path) -> None:
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
     assert "sdd" in config["aspects"]
     assert config["aspects"]["sdd"]["depth"] == 1
+
+
+# --- requires: enforcement tests ---
+
+
+def test_aspect_add_requires_unmet(tmp_path: Path) -> None:
+    """aspect add worktrees fails when sdd is at depth 0 (requires sdd >= 1)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "0"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    assert result.exit_code != 0
+    assert "sdd >= 1" in result.output
+
+
+def test_aspect_remove_blocked_by_dependent(tmp_path: Path) -> None:
+    """aspect remove sdd fails when worktrees depends on it."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1,worktrees:1"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "sdd"])
+    assert result.exit_code != 0
+    assert "worktrees" in result.output
+    assert "requires" in result.output.lower()
+
+
+def test_aspect_set_depth_requires_check(tmp_path: Path) -> None:
+    """set-depth worktrees 1 fails when sdd is at depth 0."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "0"])
+    result = runner.invoke(
+        main, ["aspect", "set-depth", str(target), "worktrees", "1"]
+    )
+    assert result.exit_code != 0
+    assert "sdd >= 1" in result.output
+
+
+def test_aspect_add_requires_met(tmp_path: Path) -> None:
+    """aspect add worktrees succeeds when sdd >= 1."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    assert result.exit_code == 0, result.output
+
+
+def test_aspect_remove_no_dependents(tmp_path: Path) -> None:
+    """aspect remove worktrees succeeds (nothing depends on worktrees)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1,worktrees:1"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    assert result.exit_code == 0, result.output
