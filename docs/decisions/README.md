@@ -29,6 +29,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0019](0019-fidelity-lock.md) | Fidelity Lock — spec-SHA drift detection | accepted |
 | [0020](0020-verified-by.md) | Verified-By — invariant-to-test traceability | accepted |
 | [0021](0021-testing-aspect.md) | Testing aspect — test discipline for LLM-agent-driven repos | accepted |
+| [0022](0022-security-aspect.md) | Security aspect — hardened defaults for LLM-agent-authored code | accepted |
 
 ## ADR Template
 

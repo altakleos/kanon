@@ -51,3 +51,10 @@ aspects:
     requires: []
     suggests:
       - "sdd >= 1"
+
+  security:
+    path: aspects/security
+    stability: experimental
+    depth-range: [0, 2]
+    default-depth: 1
+    requires: []

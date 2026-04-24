@@ -313,3 +313,56 @@ def test_testing_manifest_paths_resolve() -> None:
                     f"depth-{d}.sections: {name} missing under aspects/testing/sections/"
                 )
     assert not errors, "\n".join(errors)
+
+
+# --- security aspect ---
+
+_SECURITY = _KIT / "aspects" / "security"
+
+
+def _load_security_manifest() -> dict:
+    return yaml.safe_load((_SECURITY / "manifest.yaml").read_text(encoding="utf-8"))
+
+
+def test_kit_security_aspect_dir_exists() -> None:
+    assert _SECURITY.is_dir()
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2])
+def test_security_manifest_has_expected_depths(depth: int) -> None:
+    sub = _load_security_manifest()
+    key = f"depth-{depth}"
+    assert key in sub, f"security sub-manifest missing {key}"
+    assert isinstance(sub[key], dict)
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2])
+def test_security_agents_md_exists_per_depth(depth: int) -> None:
+    assert (_SECURITY / "agents-md" / f"depth-{depth}.md").is_file()
+
+
+def test_security_manifest_paths_resolve() -> None:
+    """Every path declared in security sub-manifest resolves to an extant file."""
+    sub = _load_security_manifest()
+    errors: list[str] = []
+    for d in range(3):
+        entry = sub.get(f"depth-{d}", {})
+        for rel in entry.get("files", []) or []:
+            p = _SECURITY / "files" / rel
+            if not p.is_file():
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/security/files/")
+        for rel in entry.get("protocols", []) or []:
+            p = _SECURITY / "protocols" / rel
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.protocols: {rel} missing under aspects/security/protocols/"
+                )
+        for name in entry.get("sections", []) or []:
+            if name == "protocols-index":
+                continue  # dynamically rendered
+            p = _SECURITY / "sections" / f"{name}.md"
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.sections: {name} missing under aspects/security/sections/"
+                )
+    assert not errors, "\n".join(errors)
