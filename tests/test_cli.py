@@ -6,6 +6,7 @@ preserves user-authored files and verify stays OK at every step.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -1359,3 +1360,61 @@ def test_verify_no_warning_without_lock(tmp_path: Path) -> None:
     result = runner.invoke(main, ["verify", str(target)])
     parsed = _extract_verify_json(result.output)
     assert not any("fidelity" in w for w in parsed.get("warnings", []))
+
+
+def test_fidelity_lock_includes_fixture_shas(tmp_path: Path) -> None:
+    """Spec with invariant_coverage produces fixture_shas in lock."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+    # Create a test file
+    test_file = target / "tests" / "test_example.py"
+    test_file.parent.mkdir(parents=True, exist_ok=True)
+    test_file.write_text("def test_one(): pass\n", encoding="utf-8")
+    # Create a spec with invariant_coverage pointing to the test file
+    spec = target / "docs" / "specs" / "example.md"
+    spec.write_text(
+        "---\nstatus: accepted\ndate: 2026-01-01\n"
+        "invariant_coverage:\n"
+        "  INV-example-one:\n"
+        "    - tests/test_example.py::test_one\n"
+        "---\n# Spec: Example\n",
+        encoding="utf-8",
+    )
+    result = runner.invoke(main, ["fidelity", "update", str(target)])
+    assert result.exit_code == 0, result.output
+    lock = target / ".kanon" / "fidelity.lock"
+    data = yaml.safe_load(lock.read_text(encoding="utf-8"))
+    entry = data["entries"]["example"]
+    assert "fixture_shas" in entry
+    assert "tests/test_example.py" in entry["fixture_shas"]
+    expected_sha = "sha256:" + hashlib.sha256(test_file.read_bytes()).hexdigest()
+    assert entry["fixture_shas"]["tests/test_example.py"] == expected_sha
+
+
+def test_verify_warns_on_stale_fixture(tmp_path: Path) -> None:
+    """Modify a fixture file after fidelity update, verify should warn."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+    test_file = target / "tests" / "test_example.py"
+    test_file.parent.mkdir(parents=True, exist_ok=True)
+    test_file.write_text("def test_one(): pass\n", encoding="utf-8")
+    spec = target / "docs" / "specs" / "example.md"
+    spec.write_text(
+        "---\nstatus: accepted\ndate: 2026-01-01\n"
+        "invariant_coverage:\n"
+        "  INV-example-one:\n"
+        "    - tests/test_example.py::test_one\n"
+        "---\n# Spec: Example\n",
+        encoding="utf-8",
+    )
+    runner.invoke(main, ["fidelity", "update", str(target)])
+    # Modify the test file (not the spec)
+    test_file.write_text("def test_one(): assert True\n", encoding="utf-8")
+    result = runner.invoke(main, ["verify", str(target)])
+    parsed = _extract_verify_json(result.output)
+    assert any(
+        "fixture" in w and "test_example.py" in w
+        for w in parsed.get("warnings", [])
+    )

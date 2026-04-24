@@ -333,6 +333,19 @@ def verify(target: Path) -> None:
                         warnings.append(
                             f"fidelity: spec {slug} has changed since last fidelity update."
                         )
+                # Phase 2: check fixture SHAs
+                for fpath, locked_sha in sorted(
+                    (entry.get("fixture_shas") or {}).items()
+                ):
+                    full = target / fpath
+                    if not full.is_file():
+                        warnings.append(
+                            f"fidelity: fixture {fpath} no longer exists (spec: {slug})."
+                        )
+                    elif _spec_sha(full) != locked_sha:
+                        warnings.append(
+                            f"fidelity: fixture {fpath} has changed since last fidelity update (spec: {slug})."
+                        )
             for p in current_specs:
                 if p.stem not in lock_entries:
                     warnings.append(
@@ -659,6 +672,27 @@ def _accepted_or_draft_specs(specs_dir: Path) -> list[Path]:
     return result
 
 
+def _fixture_shas(spec_path: Path, target: Path) -> dict[str, str]:
+    """Extract unique fixture file paths from invariant_coverage and compute their SHAs."""
+    fm = _parse_frontmatter(spec_path.read_text(encoding="utf-8"))
+    coverage = fm.get("invariant_coverage")
+    if not coverage or not isinstance(coverage, dict):
+        return {}
+    paths: set[str] = set()
+    for targets in coverage.values():
+        if not isinstance(targets, list):
+            continue
+        for t in targets:
+            # Strip ::test_func suffix to get the file path
+            paths.add(t.split("::")[0])
+    result: dict[str, str] = {}
+    for fp in sorted(paths):
+        full = target / fp
+        if full.is_file():
+            result[fp] = _spec_sha(full)
+    return result
+
+
 @main.group()
 def fidelity() -> None:
     """Fidelity lock management."""
@@ -679,8 +713,12 @@ def fidelity_update(target: Path) -> None:
 
     now = _now_iso()
     entries: dict[str, dict[str, str]] = {}
+    fixture_map: dict[str, dict[str, str]] = {}
     for p in specs:
         entries[p.stem] = {"spec_sha": _spec_sha(p), "locked_at": now}
+        fshas = _fixture_shas(p, target)
+        if fshas:
+            fixture_map[p.stem] = fshas
 
     lock_path = target / ".kanon" / "fidelity.lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
@@ -692,6 +730,10 @@ def fidelity_update(target: Path) -> None:
         e = entries[slug]
         lines.append(f"  {slug}:\n")
         lines.append(f"    spec_sha: \"{e['spec_sha']}\"\n")
+        if slug in fixture_map:
+            lines.append("    fixture_shas:\n")
+            for fp in sorted(fixture_map[slug]):
+                lines.append(f"      {fp}: \"{fixture_map[slug][fp]}\"\n")
         lines.append(f"    locked_at: \"{e['locked_at']}\"\n")
 
     atomic_write_text(lock_path, "".join(lines))
