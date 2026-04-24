@@ -15,6 +15,7 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [protocols](protocols.md) | Prose-as-code judgment procedures at `.kanon/protocols/` | v0.1.0a2 |
 | [aspects](aspects.md) | Opt-in discipline bundles; aspects subsume tiers | v0.2.0a1 |
 | [worktrees](worktrees.md) | Isolated parallel execution for concurrent LLM agents | v0.2.0a2 |
+| [aspect-decoupling](aspect-decoupling.md) | Remove sdd as structurally privileged aspect | v0.2.0a4 |
 
 ## Deferred specs (scheduled for v0.2+)
 
