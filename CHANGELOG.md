@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a5] — 2026-04-24
+
+### Added
+
+- **Testing aspect** (`stability: experimental`, depth 0–3) — test discipline, AC-first TDD, automated enforcement. Language-agnostic. First aspect to use `config:` block (`coverage_floor`) and `suggests:` field.
+- **Security aspect** (`stability: experimental`, depth 0–2) — secure-by-default discipline: no hardcoded secrets, parameterized queries, input validation, least-privilege. CI pattern scanner at depth 2.
+- **Deps aspect** (`stability: experimental`, depth 0–2) — dependency hygiene: pin versions, check before adding, justify additions. CI validator at depth 2.
+- **Invariant IDs** — 102 `INV-*` anchors across 13 specs. CI validator (`ci/check_invariant_ids.py`) enforces uniqueness and cross-reference resolution.
+- **Verified-by** — `invariant_coverage:` frontmatter mapping in specs linking invariants to tests. CI validator (`ci/check_verified_by.py`).
+- **Fidelity lock Phase 1 + 2** — `.kanon/fidelity.lock` tracks spec-SHA and fixture-SHA. `kanon fidelity update` generates the lock. `kanon verify` warns on drift at depth ≥ 2.
+- **`scope-check` protocol** (sdd, depth 1) — fires when agent discovers work outside the approved plan.
+- **`error-diagnosis` protocol** (testing, depth 1) — structured debugging: reproduce → hypothesize → fix root cause.
+- **`completion-checklist` protocol** (sdd, depth 1) — 7-item checklist before declaring work complete.
+- **Documentation Impact section** in plan template — plans must list which docs need updating.
+
+### Changed
+
+- **Aspect decoupling** (7 phases) — AGENTS.md base template is aspect-neutral, `kanon init --aspects` flag, `kanon aspect add/remove` commands, `requires:` enforcement, generic `${sdd_depth}` placeholders, manifest-driven CI.
+- **Spec template** updated with `INV-*` anchor convention.
+
 ## [0.2.0a4] — 2026-04-24
 
 ### Added
@@ -128,7 +148,9 @@ First public alpha under the name `kanon`. The project was previously developed 
 - Spec-graph tooling (rename, orphan detection, spec-diff rendering) is deferred to v0.2. See `docs/specs/spec-graph-tooling.md`.
 - Multi-agent coordination primitives (reservations ledger, plan-SHA pins, decision handshake) deferred to v0.2. See `docs/specs/multi-agent-coordination.md`.
 
-[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a3...HEAD
+[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a5...HEAD
+[0.2.0a5]: https://github.com/altakleos/kanon/compare/v0.2.0a4...v0.2.0a5
+[0.2.0a4]: https://github.com/altakleos/kanon/compare/v0.2.0a3...v0.2.0a4
 [0.2.0a3]: https://github.com/altakleos/kanon/compare/v0.2.0a2...v0.2.0a3
 [0.2.0a2]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a2
 [0.2.0a1]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a1
