@@ -207,3 +207,56 @@ def test_worktrees_agents_md_exists_per_depth(depth: int) -> None:
 def test_worktrees_depth_1_has_branch_hygiene_marker() -> None:
     text = (_WORKTREES / "agents-md" / "depth-1.md").read_text(encoding="utf-8")
     assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in text
+
+
+# --- release aspect ---
+
+_RELEASE = _KIT / "aspects" / "release"
+
+
+def _load_release_manifest() -> dict:
+    return yaml.safe_load((_RELEASE / "manifest.yaml").read_text(encoding="utf-8"))
+
+
+def test_kit_release_aspect_dir_exists() -> None:
+    assert _RELEASE.is_dir()
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2])
+def test_release_manifest_has_expected_depths(depth: int) -> None:
+    sub = _load_release_manifest()
+    key = f"depth-{depth}"
+    assert key in sub, f"release sub-manifest missing {key}"
+    assert isinstance(sub[key], dict)
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2])
+def test_release_agents_md_exists_per_depth(depth: int) -> None:
+    assert (_RELEASE / "agents-md" / f"depth-{depth}.md").is_file()
+
+
+def test_release_manifest_paths_resolve() -> None:
+    """Every path declared in release sub-manifest resolves to an extant file."""
+    sub = _load_release_manifest()
+    errors: list[str] = []
+    for d in range(3):
+        entry = sub.get(f"depth-{d}", {})
+        for rel in entry.get("files", []) or []:
+            p = _RELEASE / "files" / rel
+            if not p.is_file():
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/release/files/")
+        for rel in entry.get("protocols", []) or []:
+            p = _RELEASE / "protocols" / rel
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.protocols: {rel} missing under aspects/release/protocols/"
+                )
+        for name in entry.get("sections", []) or []:
+            if name == "protocols-index":
+                continue  # dynamically rendered
+            p = _RELEASE / "sections" / f"{name}.md"
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.sections: {name} missing under aspects/release/sections/"
+                )
+    assert not errors, "\n".join(errors)

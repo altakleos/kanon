@@ -8,3 +8,7 @@ aspects:
     depth: 2
     enabled_at: '2026-04-24T07:38:44+00:00'
     config: {}
+  release:
+    depth: 2
+    enabled_at: '2026-04-24T08:25:27+00:00'
+    config: {}

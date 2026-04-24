@@ -35,3 +35,10 @@ aspects:
     default-depth: 1
     requires:
       - "sdd >= 1"
+
+  release:
+    path: aspects/release
+    stability: experimental
+    depth-range: [0, 2]
+    default-depth: 1
+    requires: []

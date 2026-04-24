@@ -1,0 +1,30 @@
+# Release aspect — disciplined release publishing.
+# Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + automation.
+# Strict-superset semantics: depth-N is the union of depth-0..depth-N.
+# Paths under `files:` are relative to src/kanon/kit/aspects/release/files/.
+# Paths under `protocols:` are relative to src/kanon/kit/aspects/release/protocols/.
+# Names under `sections:` resolve to src/kanon/kit/aspects/release/sections/<name>.md,
+# except the unprefixed `protocols-index` which is rendered dynamically by the CLI
+# as the cross-aspect unified catalog.
+#
+# See docs/specs/release.md and ADR-0017.
+
+depth-0:
+  files: []
+  protocols: []
+  sections: []
+
+depth-1:
+  files: []
+  protocols:
+    - release-checklist.md
+  sections:
+    - publishing-discipline
+    - protocols-index
+
+depth-2:
+  files:
+    - ci/release-preflight.py
+    - .github/workflows/release.yml
+  protocols: []
+  sections: []

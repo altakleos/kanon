@@ -1275,3 +1275,29 @@ def test_aspect_remove_no_dependents(tmp_path: Path) -> None:
     runner.invoke(main, ["init", str(target), "--aspects", "sdd:1,worktrees:1"])
     result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
     assert result.exit_code == 0, result.output
+
+
+# --- release aspect CLI tests ---
+
+
+def test_aspect_add_release(tmp_path: Path) -> None:
+    """aspect add release enables the aspect; protocol is scaffolded."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "release"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "release" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "release" / "release-checklist.md").is_file()
+
+
+def test_release_depth_2_has_ci_files(tmp_path: Path) -> None:
+    """set-depth release 2 scaffolds CI files."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "release", "2"])
+    assert result.exit_code == 0, result.output
+    assert (target / "ci" / "release-preflight.py").is_file()
+    assert (target / ".github" / "workflows" / "release.yml").is_file()

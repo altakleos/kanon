@@ -16,6 +16,7 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [aspects](aspects.md) | Opt-in discipline bundles; aspects subsume tiers | v0.2.0a1 |
 | [worktrees](worktrees.md) | Isolated parallel execution for concurrent LLM agents | v0.2.0a2 |
 | [aspect-decoupling](aspect-decoupling.md) | Remove sdd as structurally privileged aspect | v0.2.0a4 |
+| [release](release.md) | Disciplined release publishing | v0.2.0a5 |
 
 ## Deferred specs (scheduled for v0.2+)
 
