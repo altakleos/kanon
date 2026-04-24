@@ -130,6 +130,7 @@ def test_kit_md_scaffolded_at_all_tiers(tmp_path: Path, tier: int) -> None:
     assert kit_md.is_file(), f"kit.md missing at tier {tier}"
     text = kit_md.read_text(encoding="utf-8")
     # Placeholders fully substituted.
+    assert "${sdd_depth}" not in text
     assert "${tier}" not in text
     assert "${project_name}" not in text
     assert f"**Tier:** {tier}" in text

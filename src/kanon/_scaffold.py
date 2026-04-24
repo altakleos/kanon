@@ -193,15 +193,20 @@ def _render_protocols_index(aspects: dict[str, int]) -> str:
 
 
 def _render_kit_md(aspects: dict[str, int], project_name: str) -> str | None:
-    """Render kit/kit.md with placeholder substitution. Uses sdd's depth for ${tier}."""
+    """Render kit/kit.md with placeholder substitution.
+
+    Context uses ``${<aspect>_depth}`` for each enabled aspect.
+    ``${tier}`` is preserved as a backward-compat alias for ``${sdd_depth}``.
+    """
     src = _kit_root() / "kit.md"
     if not src.is_file():
         return None
-    sdd_depth = aspects.get("sdd", 0)
-    return _render_placeholder(
-        src.read_text(encoding="utf-8"),
-        {"project_name": project_name, "tier": str(sdd_depth)},
-    )
+    context: dict[str, str] = {"project_name": project_name}
+    for aspect, depth in aspects.items():
+        context[f"{aspect}_depth"] = str(depth)
+    # Backward-compat alias: ${tier} → sdd depth.
+    context.setdefault("tier", context.get("sdd_depth", "0"))
+    return _render_placeholder(src.read_text(encoding="utf-8"), context)
 
 
 def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
@@ -211,11 +216,14 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
     fills namespaced marker sections from each aspect's sections/ fragments,
     renders the unified protocols-index, and removes inactive sections.
     """
-    sdd_depth = aspects.get("sdd", 0)
     base = _kit_root() / "agents-md-base.md"
     if not base.is_file():
         raise click.ClickException(f"Missing AGENTS.md base: {base}")
-    context = {"project_name": project_name, "tier": str(sdd_depth)}
+    context: dict[str, str] = {"project_name": project_name}
+    for aspect, depth in aspects.items():
+        context[f"{aspect}_depth"] = str(depth)
+    # Backward-compat alias: ${tier} → sdd depth.
+    context.setdefault("tier", context.get("sdd_depth", "0"))
     text = _render_placeholder(base.read_text(encoding="utf-8"), context)
     # Inject each aspect's depth-specific body before the Contribution Conventions anchor.
     for aspect, depth in sorted(aspects.items()):

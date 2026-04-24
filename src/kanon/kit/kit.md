@@ -4,7 +4,7 @@
 
 ## This repo's identity
 
-- **Tier:** ${tier}
+- **Tier:** ${sdd_depth}
 - **Kit bundle path in-repo:** `.kanon/`
 - **Config:** `.kanon/config.yaml` (kit version, aspects, depths, last set-depth timestamp)
 

@@ -94,7 +94,7 @@ def test_harnesses_yaml_is_valid() -> None:
 
 def test_kit_md_has_placeholders() -> None:
     text = (_KIT / "kit.md").read_text(encoding="utf-8")
-    assert "${tier}" in text
+    assert "${sdd_depth}" in text
     assert "${project_name}" in text
 
 
@@ -103,9 +103,9 @@ def test_kit_md_renders_with_placeholders() -> None:
 
     text = (_KIT / "kit.md").read_text(encoding="utf-8")
     rendered = _string.Template(text).safe_substitute(
-        {"tier": "2", "project_name": "demo"}
+        {"sdd_depth": "2", "project_name": "demo"}
     )
-    assert "${tier}" not in rendered
+    assert "${sdd_depth}" not in rendered
     assert "${project_name}" not in rendered
     assert "**Tier:** 2" in rendered
     assert "demo" in rendered
