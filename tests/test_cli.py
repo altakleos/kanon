@@ -1418,3 +1418,28 @@ def test_verify_warns_on_stale_fixture(tmp_path: Path) -> None:
         "fixture" in w and "test_example.py" in w
         for w in parsed.get("warnings", [])
     )
+
+
+# --- testing aspect CLI tests ---
+
+
+def test_aspect_add_testing(tmp_path: Path) -> None:
+    """aspect add testing enables the aspect; protocol is scaffolded."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "testing"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "testing" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "testing" / "test-discipline.md").is_file()
+
+
+def test_testing_depth_3_has_ci_script(tmp_path: Path) -> None:
+    """set-depth testing 3 scaffolds ci/check_test_quality.py."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "testing", "3"])
+    assert result.exit_code == 0, result.output
+    assert (target / "ci" / "check_test_quality.py").is_file()

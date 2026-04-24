@@ -1,0 +1,36 @@
+# Per-aspect sub-manifest for `testing` — test discipline for LLM-agent-driven repos.
+#
+# Depth 0: opt-out. Depth 1: test discipline. Depth 2: AC-first + TDD. Depth 3: automated enforcement.
+# Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.
+# Paths under `files:` are relative to src/kanon/kit/aspects/testing/files/.
+# Paths under `protocols:` are relative to src/kanon/kit/aspects/testing/protocols/.
+# Names under `sections:` resolve to src/kanon/kit/aspects/testing/sections/<name>.md,
+# except the unprefixed `protocols-index` which is rendered dynamically by the CLI
+# as the cross-aspect unified catalog.
+#
+# See docs/specs/testing.md and ADR-0021.
+
+depth-0:
+  files: []
+  protocols: []
+  sections: []
+
+depth-1:
+  files: []
+  protocols:
+    - test-discipline.md
+  sections:
+    - test-discipline
+    - protocols-index
+
+depth-2:
+  files: []
+  protocols:
+    - ac-first-tdd.md
+  sections: []
+
+depth-3:
+  files:
+    - ci/check_test_quality.py
+  protocols: []
+  sections: []

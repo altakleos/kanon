@@ -20,6 +20,7 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [invariant-ids](invariant-ids.md) | Stable anchors for spec invariants | v0.2.0a5 |
 | [fidelity-lock](fidelity-lock.md) | Spec-SHA drift detection | v0.2.0a5 |
 | [verified-by](verified-by.md) | Invariant-to-test traceability | v0.2.0a5 |
+| [testing](testing.md) | Test discipline for LLM-agent-driven repos | v0.2.0a5 |
 
 ## Deferred specs (scheduled for v0.2+)
 

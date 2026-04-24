@@ -42,3 +42,12 @@ aspects:
     depth-range: [0, 2]
     default-depth: 1
     requires: []
+
+  testing:
+    path: aspects/testing
+    stability: experimental
+    depth-range: [0, 3]
+    default-depth: 1
+    requires: []
+    suggests:
+      - "sdd >= 1"

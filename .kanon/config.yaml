@@ -12,3 +12,7 @@ aspects:
     depth: 2
     enabled_at: '2026-04-24T08:25:27+00:00'
     config: {}
+  testing:
+    depth: 3
+    enabled_at: '2026-04-24T20:19:56+00:00'
+    config: {}

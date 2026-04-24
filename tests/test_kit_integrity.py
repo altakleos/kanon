@@ -260,3 +260,56 @@ def test_release_manifest_paths_resolve() -> None:
                     f"depth-{d}.sections: {name} missing under aspects/release/sections/"
                 )
     assert not errors, "\n".join(errors)
+
+
+# --- testing aspect ---
+
+_TESTING = _KIT / "aspects" / "testing"
+
+
+def _load_testing_manifest() -> dict:
+    return yaml.safe_load((_TESTING / "manifest.yaml").read_text(encoding="utf-8"))
+
+
+def test_kit_testing_aspect_dir_exists() -> None:
+    assert _TESTING.is_dir()
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2, 3])
+def test_testing_manifest_has_expected_depths(depth: int) -> None:
+    sub = _load_testing_manifest()
+    key = f"depth-{depth}"
+    assert key in sub, f"testing sub-manifest missing {key}"
+    assert isinstance(sub[key], dict)
+
+
+@pytest.mark.parametrize("depth", [0, 1, 2, 3])
+def test_testing_agents_md_exists_per_depth(depth: int) -> None:
+    assert (_TESTING / "agents-md" / f"depth-{depth}.md").is_file()
+
+
+def test_testing_manifest_paths_resolve() -> None:
+    """Every path declared in testing sub-manifest resolves to an extant file."""
+    sub = _load_testing_manifest()
+    errors: list[str] = []
+    for d in range(4):
+        entry = sub.get(f"depth-{d}", {})
+        for rel in entry.get("files", []) or []:
+            p = _TESTING / "files" / rel
+            if not p.is_file():
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/testing/files/")
+        for rel in entry.get("protocols", []) or []:
+            p = _TESTING / "protocols" / rel
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.protocols: {rel} missing under aspects/testing/protocols/"
+                )
+        for name in entry.get("sections", []) or []:
+            if name == "protocols-index":
+                continue  # dynamically rendered
+            p = _TESTING / "sections" / f"{name}.md"
+            if not p.is_file():
+                errors.append(
+                    f"depth-{d}.sections: {name} missing under aspects/testing/sections/"
+                )
+    assert not errors, "\n".join(errors)
