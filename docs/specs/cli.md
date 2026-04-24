@@ -17,14 +17,23 @@ Provide a single `kanon` command with a small set of subcommands that cover the 
 
 ## Invariants
 
+<!-- INV-cli-subcommands -->
 1. **Subcommands.** The CLI exposes exactly: `init`, `upgrade`, `verify`, `tier`, `--version`. No other top-level subcommands are added in v0.1.
+<!-- INV-cli-init -->
 2. **`init <target> [--tier N] [--force] [--learner-id ID]`** — scaffolds a new project at `<target>`. Default tier is 1. `--force` overwrites an existing `.kanon/` directory; without it, an existing `.kanon/` causes an error.
+<!-- INV-cli-upgrade -->
 3. **`upgrade <target>`** — replaces `<target>/.kanon/` with the installed kit's templates atomically, preserving consumer content outside `.kanon/`. Uses the copy-to-tmp + fsync-dir + swap + fsync-dir pattern ported from Sensei's ADR-0004. A failed upgrade never corrupts an existing `.kanon/`.
+<!-- INV-cli-verify -->
 4. **`verify <target>`** — checks the consumer project against its declared tier (from `.kanon/config.yaml`). Reports missing required files, failed foundation backreferences, failed link validations, AGENTS.md marker imbalance, and (warning-level) stale model-version compatibility declarations. Exit 0 on clean, non-zero otherwise.
+<!-- INV-cli-tier-set -->
 5. **`tier set <target> <N>`** — see `tier-migration.md` spec. Exit 0 on success, non-zero on malformed target or invalid tier.
+<!-- INV-cli-version-flag -->
 6. **`--version`** — prints `kanon.__version__` and exits 0.
+<!-- INV-cli-exit-codes -->
 7. **Exit codes.** 0 on success. 1 on generic error / malformed input. 2 on contract violation the CLI caught (e.g., upgrading a target where `.kanon/config.yaml` is missing). 3+ reserved for future use.
+<!-- INV-cli-atomicity -->
 8. **Atomicity.** Every command that modifies files is atomic — the target repo is either in the pre-command state or the post-command state, never partial. Implemented via the tmp-dir swap pattern.
+<!-- INV-cli-consumer-friendly-errors -->
 9. **Consumer-friendly errors.** Missing `.kanon/config.yaml`, broken shim targets, or tier mismatches emit single-line human-readable messages with the offending path.
 
 ## Rationale

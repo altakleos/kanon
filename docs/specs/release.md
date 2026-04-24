@@ -19,25 +19,32 @@ The primary user is a solo developer with LLM agents who wants a repeatable, aud
 
 ## Invariants
 
+<!-- INV-release-depth-range -->
 1. **Depth range is 0–2.** The `release` aspect declares `depth-range: [0, 2]`.
    - **Depth 0** — opt-out. Aspect enabled in config but no files scaffolded.
    - **Depth 1** — prose guidance. Protocol file and AGENTS.md section are scaffolded. Agents understand the release checklist and apply judgment on when/how to cut a release.
    - **Depth 2** — prose guidance plus automation. Reference CI templates (GitHub Actions workflow) and a pre-release validation script are scaffolded alongside the protocol and AGENTS.md section.
 
+<!-- INV-release-protocol-shaped -->
 2. **Protocol-shaped.** The aspect ships one protocol at `.kanon/protocols/release/release-checklist.md` (depth ≥ 1) covering: version bump procedure, changelog validation, pre-release checks (tests pass, lint clean, verify ok), tag creation, wheel build + validation, and the publish gate (the final step where the built artifact is pushed to the package registry — typically triggered by a CI workflow on tag push, not by the agent directly). Frontmatter `invoke-when` names **a release is being prepared** as the trigger.
 
+<!-- INV-release-agents-md-section -->
 3. **AGENTS.md section.** At depth ≥ 1, the aspect contributes one marker-delimited section `release/publishing-discipline` to AGENTS.md — a short prose summary of the release checklist so an operating agent sees the rules on the boot chain.
 
+<!-- INV-release-reference-automation-snippets -->
 4. **Reference automation snippets** (per ADR-0013, depth-2 only). The aspect scaffolds:
    - `ci/release-preflight.py` — a standalone validation script that checks: version in `__init__.py` matches tag, CHANGELOG has an entry for the version, tests pass, lint clean, `kanon verify` passes. Exit 0 or 1.
    - `.github/workflows/release.yml` — a reference GitHub Actions workflow for build + validate + publish via trusted publishing.
    
    These are copy-in templates the consumer adapts to their needs. Byte-equality is **not** enforced after scaffolding — consumers are expected to customize CI workflows and validation scripts for their project's specific needs.
 
+<!-- INV-release-non-destructive-lifecycle -->
 5. **Non-destructive lifecycle.** Adding the release aspect does not modify existing CI files. Removing it leaves scaffolded files on disk. The reference workflow is a template — consumers adapt it to their needs.
 
+<!-- INV-release-no-cross-aspect-dependency -->
 6. **No cross-aspect dependency.** `release` declares `requires: []`. Release discipline is independently useful — a project may want a repeatable release process without SDD ceremony. Projects that also use `sdd` benefit from plan-before-build, but it is not a prerequisite.
 
+<!-- INV-release-stability-experimental -->
 7. **Stability: experimental.** First release ships as experimental until self-hosted and validated on at least one real release cycle.
 
 ## Rationale

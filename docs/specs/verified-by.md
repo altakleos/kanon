@@ -24,7 +24,7 @@ This spec depends on `invariant-ids` (stable anchors must exist before traceabil
    invariant_coverage:
      INV-aspects-aspect-identity:
        - tests/test_kit_integrity.py::test_kit_root_has_expected_top_level_entries
-     INV-aspects-cross-aspect-ownership:
+     INV-aspects-cross-aspect-ownership-exclusive:
        - ci/check_kit_consistency.py
    ```
    This keeps invariant prose clean and supports many-to-many relationships.

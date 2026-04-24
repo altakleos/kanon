@@ -1301,3 +1301,61 @@ def test_release_depth_2_has_ci_files(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert (target / "ci" / "release-preflight.py").is_file()
     assert (target / ".github" / "workflows" / "release.yml").is_file()
+
+
+# --- fidelity lock tests ---
+
+
+def test_fidelity_update_creates_lock(tmp_path: Path) -> None:
+    """init tier 2, create a spec, run fidelity update, assert lock exists."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+    spec = target / "docs" / "specs" / "example.md"
+    spec.write_text("---\nstatus: accepted\ndate: 2026-01-01\n---\n# Spec: Example\n", encoding="utf-8")
+    result = runner.invoke(main, ["fidelity", "update", str(target)])
+    assert result.exit_code == 0, result.output
+    lock = target / ".kanon" / "fidelity.lock"
+    assert lock.is_file()
+    data = yaml.safe_load(lock.read_text(encoding="utf-8"))
+    assert data["lock_version"] == 1
+    assert "example" in data["entries"]
+    assert data["entries"]["example"]["spec_sha"].startswith("sha256:")
+
+
+def test_fidelity_update_idempotent(tmp_path: Path) -> None:
+    """Running fidelity update twice produces identical output (except locked_at)."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+    spec = target / "docs" / "specs" / "example.md"
+    spec.write_text("---\nstatus: accepted\ndate: 2026-01-01\n---\n# Spec: Example\n", encoding="utf-8")
+    runner.invoke(main, ["fidelity", "update", str(target)])
+    lock1 = yaml.safe_load((target / ".kanon" / "fidelity.lock").read_text(encoding="utf-8"))
+    runner.invoke(main, ["fidelity", "update", str(target)])
+    lock2 = yaml.safe_load((target / ".kanon" / "fidelity.lock").read_text(encoding="utf-8"))
+    assert lock1["entries"]["example"]["spec_sha"] == lock2["entries"]["example"]["spec_sha"]
+
+
+def test_verify_warns_on_stale_lock(tmp_path: Path) -> None:
+    """Modify spec after fidelity update, verify should warn."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+    spec = target / "docs" / "specs" / "example.md"
+    spec.write_text("---\nstatus: accepted\ndate: 2026-01-01\n---\n# Spec: Example\n", encoding="utf-8")
+    runner.invoke(main, ["fidelity", "update", str(target)])
+    spec.write_text("---\nstatus: accepted\ndate: 2026-01-01\n---\n# Spec: Example\nChanged.\n", encoding="utf-8")
+    result = runner.invoke(main, ["verify", str(target)])
+    parsed = _extract_verify_json(result.output)
+    assert any("fidelity" in w and "example" in w for w in parsed.get("warnings", []))
+
+
+def test_verify_no_warning_without_lock(tmp_path: Path) -> None:
+    """Without a lock file, verify should not emit fidelity warnings."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+    result = runner.invoke(main, ["verify", str(target)])
+    parsed = _extract_verify_json(result.output)
+    assert not any("fidelity" in w for w in parsed.get("warnings", []))

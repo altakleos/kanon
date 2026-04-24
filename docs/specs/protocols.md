@@ -21,25 +21,32 @@ The layer exists because some operations are judgment-shaped, not algorithm-shap
 
 ## Invariants
 
+<!-- INV-protocols-location -->
 1. **Location is `.kanon/protocols/` in consumer repos** and `src/kanon/kit/protocols/` in the kit source. Every file in the consumer path has a byte-identical mirror in the kit source, enforced by `ci/check_kit_consistency.py`.
+<!-- INV-protocols-frontmatter-schema -->
 2. **Frontmatter schema.** Every protocol file has YAML frontmatter with four required keys:
    - `status`: one of `draft | accepted | deferred | provisional | superseded`.
    - `date`: ISO-8601 date (YYYY-MM-DD).
    - `tier-min`: the lowest tier at which the protocol is scaffolded (integer 0–3).
    - `invoke-when`: one sentence stating the trigger condition.
+<!-- INV-protocols-tier-gating -->
 3. **Tier gating.** `tier-min` must equal the tier the protocol first appears in per `src/kanon/kit/manifest.yaml`. A protocol declared in the manifest under `tier-N.protocols` has `tier-min: N` in its frontmatter.
+<!-- INV-protocols-discoverability -->
 4. **Discoverability.** At tier ≥ 1, the consumer's `AGENTS.md` contains a `<!-- kanon:begin:protocols-index -->` / `<!-- kanon:end:protocols-index -->` marker block listing every active protocol by name, trigger, and tier-min. The block is regenerated from the manifest on every `init` / `tier set` / `upgrade`.
+<!-- INV-protocols-byte-equality -->
 5. **Byte-equality with kit source.** `kanon verify` fails if `.kanon/protocols/<name>.md` differs byte-for-byte from the kit's `src/kanon/kit/protocols/<name>.md` (for the installed `kit_version`). User edits to protocols are signalled as drift, not silently accepted.
+<!-- INV-protocols-additive-across-tier-up -->
 6. **Additive across tier-up.** Tier-up migrations add new protocol files without touching existing ones. Tier-down leaves protocol files on disk (per ADR-0008, tier-down is non-destructive); the `protocols-index` marker removes the entry, but the file remains until the user deletes it.
+<!-- INV-protocols-no-runtime-dispatch -->
 7. **No runtime dispatch.** There is no `kanon protocol <name>` CLI subcommand in v0.1. Protocols are invoked by the operating agent reading the file; the CLI's role is scaffolding and integrity-checking only.
 
 ## Rationale
 
-Byte-equality (invariant 5) enforces that the protocol text the agent reads in a consumer repo matches what the kit authored. Without it, a consumer's protocol could silently drift from the documented behavior, and a fresh agent session would execute unknowable steps. This mirrors the same enforcement applied to `docs/development-process.md` and `_template.md` files (per `template-bundle.md` invariant 3, carried forward into `kit-bundle.md`).
+Byte-equality (INV-protocols-byte-equality) enforces that the protocol text the agent reads in a consumer repo matches what the kit authored. Without it, a consumer's protocol could silently drift from the documented behavior, and a fresh agent session would execute unknowable steps. This mirrors the same enforcement applied to `docs/development-process.md` and `_template.md` files (per `template-bundle.md` INV-template-bundle-tier3-canonical-with-repo, carried forward into `kit-bundle.md`).
 
-The `tier-min` frontmatter field (invariant 2) is not just documentation — `ci/check_kit_consistency.py` cross-checks it against `manifest.yaml`, catching drift where a protocol is moved between tiers in the manifest but the frontmatter is forgotten.
+The `tier-min` frontmatter field (INV-protocols-frontmatter-schema) is not just documentation — `ci/check_kit_consistency.py` cross-checks it against `manifest.yaml`, catching drift where a protocol is moved between tiers in the manifest but the frontmatter is forgotten.
 
-The `protocols-index` marker block (invariant 4) is the discovery mechanism. A fresh LLM session reading `AGENTS.md` sees the catalog inline and can invoke protocols without knowing the directory structure.
+The `protocols-index` marker block (INV-protocols-discoverability) is the discovery mechanism. A fresh LLM session reading `AGENTS.md` sees the catalog inline and can invoke protocols without knowing the directory structure.
 
 ## Out of Scope
 

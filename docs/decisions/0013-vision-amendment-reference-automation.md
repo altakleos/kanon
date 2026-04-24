@@ -68,4 +68,4 @@ Without this narrowing, any aspect with a deterministic tail (release, publish, 
 - `docs/foundations/vision.md` — § Non-Goals clause this ADR supersedes; edited in place on landing.
 - ADR-0012 — the aspect model that makes this narrowing necessary.
 - ADR-0003 — canonical-AGENTS.md-with-shims (the cross-harness discipline this ADR preserves on the agent-behavior side).
-- `docs/specs/aspects.md` — invariant 8 (reference automation snippets are kit-shippable).
+- `docs/specs/aspects.md` — INV-aspects-reference-automation-shippable (reference automation snippets are kit-shippable).

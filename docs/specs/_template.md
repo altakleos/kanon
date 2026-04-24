@@ -16,8 +16,8 @@ date: YYYY-MM-DD
 
 ## Invariants
 
-1. <Observable property that must always hold.>
-2. <Another invariant.>
+<!-- INV-<spec-slug>-<short-name> -->
+1. **<Short name>.** <Observable property that must always hold.>
 
 ## Rationale
 

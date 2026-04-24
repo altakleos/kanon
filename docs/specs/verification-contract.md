@@ -15,14 +15,23 @@ Define the checks `kanon verify <target>` runs on a consumer repo, the error/war
 
 ## Invariants
 
+<!-- INV-verification-contract-tier-aware -->
 1. **Tier-aware.** `verify` reads `.kanon/config.yaml` → `tier: <N>` and computes the expected file set as a function of N. Absence of `config.yaml` is a hard error.
+<!-- INV-verification-contract-required-files-per-tier -->
 2. **Required files per tier.** For each tier, `verify` checks that the files named in the tier template's README/_template list all exist. Missing required files are hard errors (exit non-zero).
+<!-- INV-verification-contract-foundation-backreferences -->
 3. **Foundation backreferences.** For tier ≥ 3, `verify` walks every spec's `serves:`/`realizes:`/`stressed_by:` frontmatter and asserts every slug resolves to an existing foundation file of the matching type. This is the same check `ci/check_foundations.py` runs on the kit's own repo.
+<!-- INV-verification-contract-markdown-link-resolution -->
 4. **Markdown link resolution.** For tier ≥ 1, `verify` scans every `*.md` file under `docs/` and asserts every relative link resolves to an existing path. Identical to `ci/check_links.py`.
+<!-- INV-verification-contract-agents-md-marker-integrity -->
 5. **AGENTS.md marker integrity.** `verify` checks that every `<!-- kanon:begin:X -->` has a matching `<!-- kanon:end:X -->` and that the set of enabled sections matches the declared tier. Mismatches are hard errors.
+<!-- INV-verification-contract-model-version-compat -->
 6. **Model-version compatibility (warning-level).** Per ADR-0005, `verify` emits warnings for transcript fixtures whose `validated-against:` frontmatter does not include the consumer's declared default model. Warnings do not fail the exit code in v0.1.
+<!-- INV-verification-contract-changelog-entry -->
 7. **CHANGELOG entry for current version.** If the consumer declares a kit_version and `CHANGELOG.md` exists, `verify` checks for a dated entry matching the version. Mirrors `ci/check_package_contents.py` behaviour for the kit's own release.
+<!-- INV-verification-contract-output-format -->
 8. **Output format.** `verify` prints a JSON report to stdout (plus a short human-readable summary to stderr), with fields `{target, tier, status, errors: [...], warnings: [...]}`. Exit 0 on `status: ok`, non-zero otherwise.
+<!-- INV-verification-contract-does-not-execute-code -->
 9. **Does not execute code.** `verify` is read-only against the target repo. It never runs the consumer's tests, never imports consumer Python, never calls out to the consumer's LLM model. It is a static check.
 
 ## Rationale

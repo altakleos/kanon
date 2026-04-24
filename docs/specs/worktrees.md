@@ -19,21 +19,28 @@ The aspect's primary trigger is **change scope**, not concurrency detection. An 
 
 ## Invariants
 
-1. **Scaffolding location.** Each concurrent agent operates inside `.worktrees/<slug>/`, where `<slug>` is a short identifier derived from the plan or task (naming convention defined in the lifecycle protocol, invariant 3). The kit does not create `.worktrees/`; it reserves the path, documents the convention, and (at depth-2) ships setup/teardown helpers the consumer invokes.
+<!-- INV-worktrees-scaffolding-location -->
+1. **Scaffolding location.** Each concurrent agent operates inside `.worktrees/<slug>/`, where `<slug>` is a short identifier derived from the plan or task (naming convention defined in the lifecycle protocol, INV-worktrees-protocol-shaped). The kit does not create `.worktrees/`; it reserves the path, documents the convention, and (at depth-2) ships setup/teardown helpers the consumer invokes.
 
+<!-- INV-worktrees-depth-range -->
 2. **Depth range is 0–2.** The `worktrees` aspect declares `depth-range: [0, 2]`.
    - **Depth 0** — opt-out. Aspect enabled in config but no files scaffolded.
    - **Depth 1** — prose guidance. Protocol file and AGENTS.md section are scaffolded. Agents understand worktree hygiene and apply judgment based on change scope. Agents use `git worktree add/remove` directly.
    - **Depth 2** — prose guidance plus automation. Shell helper scripts are scaffolded alongside the protocol and AGENTS.md section. Agents use the project's standardized scripts for consistent worktree lifecycle management.
 
+<!-- INV-worktrees-protocol-shaped -->
 3. **Protocol-shaped.** The aspect ships one protocol at `.kanon/protocols/worktrees/worktree-lifecycle.md` (depth ≥ 1) covering: branch-naming convention, worktree creation steps, integration cadence (how often to rebase/merge main), teardown idempotence, and stale-worktree detection. Frontmatter `invoke-when` names **multi-file or multi-step changes** as the primary trigger, with `git worktree list` as a secondary heuristic for detecting concurrent work.
 
+<!-- INV-worktrees-reference-automation-snippets -->
 4. **Reference automation snippets** (per ADR-0013, depth-2 only). The aspect scaffolds host-neutral shell helpers under the consumer's tree: `scripts/worktree-setup.sh`, `scripts/worktree-teardown.sh`, `scripts/worktree-status.sh`. These are copy-in templates the consumer invokes directly — not agent-behavior hooks, and not kit-owned once scaffolded (byte-equality not enforced after init; consumers adapt them).
 
+<!-- INV-worktrees-non-destructive-teardown -->
 5. **Non-destructive teardown.** A worktree with uncommitted changes is reported and preserved; the helper (or raw `git worktree remove`) never forcibly removes in-flight work. The prose protocol describes how the operating agent should resolve (commit, stash, or escalate to the human).
 
+<!-- INV-worktrees-cross-aspect-dependency -->
 6. **Cross-aspect dependency.** `worktrees` requires `sdd >= 1` in the manifest. The SDD tier-1 plan-before-build gate is a prerequisite: worktree-per-plan correspondence depends on plans existing as first-class artifacts.
 
+<!-- INV-worktrees-namespaced-agents-md-section -->
 7. **Namespaced AGENTS.md section.** At depth ≥ 1, the aspect contributes one marker-delimited section `worktrees/branch-hygiene` to AGENTS.md — a short prose summary of the branch-naming convention, the change-scope trigger for worktree creation, and integration cadence, so an operating agent sees the rules on the boot chain without having to invoke the protocol file for routine decisions.
 
 ## Rationale

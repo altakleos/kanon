@@ -17,6 +17,8 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [worktrees](worktrees.md) | Isolated parallel execution for concurrent LLM agents | v0.2.0a2 |
 | [aspect-decoupling](aspect-decoupling.md) | Remove sdd as structurally privileged aspect | v0.2.0a4 |
 | [release](release.md) | Disciplined release publishing | v0.2.0a5 |
+| [invariant-ids](invariant-ids.md) | Stable anchors for spec invariants | v0.2.0a5 |
+| [fidelity-lock](fidelity-lock.md) | Spec-SHA drift detection | v0.2.0a5 |
 
 ## Deferred specs (scheduled for v0.2+)
 
@@ -24,12 +26,11 @@ See [`../plans/roadmap.md`](../plans/roadmap.md). Each is a real spec file with 
 
 | Spec | Capability | Target |
 |---|---|---|
-| [fidelity-lock](fidelity-lock.md) | Spec-SHA ↔ artifact-SHA commitment file | v0.2 |
+| [verified-by](verified-by.md) | Invariant-to-test traceability | v0.3 |
 | [spec-graph-tooling](spec-graph-tooling.md) | Atomic rename + orphan detection + spec-diff | v0.2 |
 | [ambiguity-budget](ambiguity-budget.md) | Two-agents-one-spec falsifier | v0.2 |
 | [multi-agent-coordination](multi-agent-coordination.md) | Reservations ledger + plan SHA + handshake | v0.2 |
 | [expand-and-contract-lifecycle](expand-and-contract-lifecycle.md) | Pattern for breaking spec changes | v0.3 |
-| [invariant-ids](invariant-ids.md) | Stable per-invariant anchors + `verified_by:` | v0.2 |
 
 ## Template
 

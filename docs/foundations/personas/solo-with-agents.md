@@ -27,7 +27,7 @@ This persona didn't exist when the tier model and earlier personas were authored
 
 ## What stresses the kit
 
-- **Agent-first aspect framing.** The `worktrees` aspect's `invoke-when` trigger must name agent-agent collision explicitly, not "second contributor." Tier-placement must reflect that this is a tier-1 pain, not a tier-2 one. See `docs/specs/aspects.md` invariant 9 and ADR-0012 § agent-first rationale.
+- **Agent-first aspect framing.** The `worktrees` aspect's `invoke-when` trigger must name agent-agent collision explicitly, not "second contributor." Tier-placement must reflect that this is a tier-1 pain, not a tier-2 one. See `docs/specs/aspects.md` INV-aspects-every-aspect-self-hosted and ADR-0012 § agent-first rationale.
 - **Cross-harness boot-chain consistency.** Every agent session — regardless of harness — lands on the same AGENTS.md, reads the same protocol catalog, obeys the same gates. Any drift between shim targets (ADR-0003) produces agent-vs-agent behavioral divergence.
 - **Reservation mechanics.** Two agents drafting ADRs in parallel can both claim `0014`; two agents approving plans can each believe their own plan is the approved one. The deferred `multi-agent-coordination` spec (reservations ledger, plan-SHA pins, decision handshake) is the mitigation — its elevation from "platform-team eventually" to "agent-first early" shifts with this persona.
 - **Atomicity under concurrent CLI invocation.** Two agents running `kanon aspect add` on the same target simultaneously must not corrupt `.kanon/config.yaml`. File-level atomicity (existing `_atomic.py`) covers the write; operation-level coordination is v0.2+.

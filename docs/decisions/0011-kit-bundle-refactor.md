@@ -6,7 +6,7 @@ date: 2026-04-22
 
 ## Context
 
-The v0.1 kit ships four per-tier directories at `src/kanon/templates/tier-{0,1,2,3}/`. Each holds a full copy of that tier's scaffolds: `AGENTS.md`, `CLAUDE.md`, `docs/*` subtrees. Strict-subset invariants (ADR-0006, `template-bundle.md` invariant 2) require every file in tier-N to be byte-identical to its counterpart in tier-(N+1). The `ci/check_template_consistency.py` validator enforces this by cross-tier byte comparison.
+The v0.1 kit ships four per-tier directories at `src/kanon/templates/tier-{0,1,2,3}/`. Each holds a full copy of that tier's scaffolds: `AGENTS.md`, `CLAUDE.md`, `docs/*` subtrees. Strict-subset invariants (ADR-0006, `template-bundle.md` INV-template-bundle-strict-subset) require every file in tier-N to be byte-identical to its counterpart in tier-(N+1). The `ci/check_template_consistency.py` validator enforces this by cross-tier byte comparison.
 
 Two problems with that shape:
 

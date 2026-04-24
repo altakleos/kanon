@@ -16,22 +16,29 @@ Define the four tiers — tier-0 through tier-3 — by what artifacts each inclu
 
 ## Invariants
 
+<!-- INV-tiers-tier-taxonomy -->
 1. **Tier taxonomy.** Four tiers, in strict inclusion order.
    - **Tier-0** — `AGENTS.md` + harness shims + `.kanon/config.yaml`. No `docs/` structure. No process gates active.
    - **Tier-1** — Tier-0 plus `docs/development-process.md` + `docs/decisions/` (README + _template) + `docs/plans/` (README + _template). **Plan-before-build gate active** in AGENTS.md.
    - **Tier-2** — Tier-1 plus `docs/specs/` (README + _template). **Spec-before-design gate active** in AGENTS.md.
    - **Tier-3** — Tier-2 plus `docs/design/` (README + _template) + `docs/foundations/` (vision, principles/, personas/, README).
+<!-- INV-tiers-triggers -->
 2. **Triggers (suggested, not enforced).**
    - Move to tier-1 when: shipping anything beyond a prototype; more than one session's worth of work; want to remember decisions.
    - Move to tier-2 when: making user-visible promises; specs constrain implementation; second developer joins.
    - Move to tier-3 when: multiple teams consume the project; cross-cutting vision needs capturing; compliance or audit requirements.
+<!-- INV-tiers-strict-inclusion -->
 3. **Strict inclusion.** Every file in tier-N exists in tier-(N+1). The converse — tier-(N+1) has files tier-N doesn't — is what makes tiers additive.
+<!-- INV-tiers-tier-stored-explicitly -->
 4. **Tier is stored explicitly** in `.kanon/config.yaml` (`tier: <N>`). Not inferred from filesystem contents (see ADR-0008 for rationale).
+<!-- INV-tiers-tier-is-mutable -->
 5. **Tier is mutable.** `kanon tier set` migrates between any two tiers; see `tier-migration.md`.
+<!-- INV-tiers-process-gates-tier-dependent -->
 6. **Process gates are tier-dependent.**
    - Plan-before-build: active at tier ≥ 1.
    - Spec-before-design: active at tier ≥ 2.
    - At tier-0, no gates are active — the kit is giving the consumer a pointer to AGENTS.md and nothing else.
+<!-- INV-tiers-agents-md-section-enablement -->
 7. **AGENTS.md section enablement.** The section-marker rewriter (see `tier-migration.md`) enables/disables kit-managed AGENTS.md sections according to tier. User content outside the markers is never touched.
 
 ## Rationale

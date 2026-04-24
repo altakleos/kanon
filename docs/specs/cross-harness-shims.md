@@ -15,10 +15,13 @@ Define the shim set that makes a consumer repo's SDD rules discoverable to every
 
 ## Invariants
 
+<!-- INV-cross-harness-shims-registry-externalised -->
 1. **Registry externalised.** The set of harnesses and their shim paths + frontmatter is defined in `src/kanon/templates/harnesses.yaml`, not hardcoded in Python.
+<!-- INV-cross-harness-shims-shims-are-pointers -->
 2. **Shims are pointers.** Every shim file is a single-line reference to `AGENTS.md`. The exact form depends on the harness:
    - `CLAUDE.md` — `See @AGENTS.md\n` (Claude Code reads `@AGENTS.md` as an import directive).
    - Harnesses that don't support imports — a one-line sentence `Read and follow the instructions in AGENTS.md at the repo root.` with any frontmatter the harness requires.
+<!-- INV-cross-harness-shims-v01-harness-set -->
 3. **V0.1 harness set.** `kanon init` writes all of these by default:
    - `CLAUDE.md` (Claude Code)
    - `.kiro/steering/kanon.md` (Kiro)
@@ -28,7 +31,9 @@ Define the shim set that makes a consumer repo's SDD rules discoverable to every
    - `.clinerules/kanon.md` (Cline)
    - `.roo/rules/kanon.md` (Roo Code)
    - `.aiassistant/rules/kanon.md` (JetBrains AI)
+<!-- INV-cross-harness-shims-agents-md-canonical-root -->
 4. **`AGENTS.md` at repo root is the canonical root.** No shim duplicates content from it.
+<!-- INV-cross-harness-shims-harness-yaml-schema -->
 5. **Harness YAML schema.** Each registry entry carries:
    ```yaml
    - name: cursor
@@ -39,7 +44,9 @@ Define the shim set that makes a consumer repo's SDD rules discoverable to every
      body: |
        Read and follow the instructions in `AGENTS.md` at the repo root.
    ```
+<!-- INV-cross-harness-shims-adding-new-harness -->
 6. **Adding a new harness.** A new entry in `harnesses.yaml` + a new kit release is sufficient. No Python change required.
+<!-- INV-cross-harness-shims-opt-out-deferred -->
 7. **Opt-out.** `init --skip-harness <name>` skipping is deferred to v0.2. In v0.1, all shims are written.
 
 ## Rationale

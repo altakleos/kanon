@@ -19,8 +19,10 @@ The primary user is a kit contributor adding a third or fourth aspect. The secon
 
 ## Invariants
 
+<!-- INV-aspect-decoupling-no-literal-aspect-names -->
 1. **No aspect name appears as a literal in Python source.** After this work, `grep -rE "'sdd'|\"sdd\"" src/kanon/ ci/` returns zero results outside of legacy-migration code guarded by a config format version check (e.g., `if config.get("format_version", 1) < 2:`). Aspect names live exclusively in YAML manifests and markdown templates.
 
+<!-- INV-aspect-decoupling-init-accepts-aspects -->
 2. **`kanon init` accepts `--aspects`.** The `--aspects` flag takes a comma-separated list of `name:depth` pairs (e.g., `--aspects sdd:1,worktrees:2`). The existing `--tier N` flag is preserved as sugar for `--aspects sdd:N`. When neither flag is provided, the kit's default aspect set is read from the top-level manifest under a `defaults:` key:
    ```yaml
    defaults:
@@ -29,12 +31,16 @@ The primary user is a kit contributor adding a third or fourth aspect. The secon
    ```
    Each listed aspect is enabled at its `default-depth` from the aspect registry. Aspects not in `defaults:` are opt-in only.
 
+<!-- INV-aspect-decoupling-agents-md-base-neutral -->
 3. **AGENTS.md base template is aspect-neutral.** A kit-level base template at `src/kanon/kit/agents-md-base.md` provides the document skeleton (heading, boot chain, project layout, key constraints, contribution conventions, references). Aspects inject sections into this skeleton via `<!-- kanon:begin:<aspect>/<section> -->` markers. No aspect owns the skeleton.
 
+<!-- INV-aspect-decoupling-aspect-add-remove -->
 4. **`kanon aspect add` and `kanon aspect remove` exist.** `add` enables an aspect at its default depth, enforcing `requires:` dependencies. `remove` deletes the aspect's AGENTS.md marker sections and its `.kanon/config.yaml` entry. Scaffolded files are left on disk (non-destructive, per ADR-0008).
 
+<!-- INV-aspect-decoupling-requires-enforced -->
 5. **`requires:` is enforced at runtime.** `_set_aspect_depth`, `aspect add`, and `aspect remove` parse the dependency predicate in `requires:` and fail with a clear error if dependencies are unmet. The predicate grammar is `<aspect> <op> <depth>` where `op` ∈ {`>=`, `>`, `==`, `<`, `<=`} and `depth` is an integer. Examples: `"sdd >= 1"`, `"worktrees == 2"`. `aspect remove` fails if other enabled aspects depend on the one being removed.
 
+<!-- INV-aspect-decoupling-ci-manifest-driven -->
 6. **CI validation is manifest-driven.** `check_package_contents.py` reads the top-level manifest to determine required files and directories instead of hardcoding paths. `check_kit_consistency.py` reads a `byte-equality:` key in per-aspect sub-manifests instead of a hardcoded whitelist:
    ```yaml
    byte-equality:
@@ -45,6 +51,7 @@ The primary user is a kit contributor adding a third or fourth aspect. The secon
    ```
    Each entry maps a kit-relative path to a repo-relative path. The CI script walks all aspects and unions their byte-equality entries.
 
+<!-- INV-aspect-decoupling-tier-placeholder-replaced -->
 7. **`${tier}` placeholder is replaced with `${sdd_depth}`.** The generic placeholder vocabulary is `${project_name}` and `${<aspect>_depth}` for any enabled aspect. kit.md and AGENTS.md templates use these. The bare `${tier}` alias is preserved in rendering for backward compatibility with existing consumer kit.md files but is not used in new templates.
 
 ## Rationale

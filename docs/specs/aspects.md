@@ -27,22 +27,31 @@ The model's primary user is an LLM-driven repo — often a solo developer runnin
 
 ## Invariants
 
+<!-- INV-aspects-aspect-identity -->
 1. **Aspect identity.** Each aspect has a unique kebab-case name, a stability label (`experimental | stable | deprecated`), a depth range (integer `min`–`max`), and optional `requires:` / `suggests:` declarations against other aspects. All four are declared in `src/kanon/kit/manifest.yaml` under `aspects.<name>`.
 
+<!-- INV-aspects-sdd-is-an-aspect -->
 2. **SDD is an aspect.** Every file currently scaffolded by the tier model (`docs/development-process.md`, `docs/{decisions,plans,specs,design,foundations}/`, the tier-specific `AGENTS.md` sections) lives under the `sdd` aspect at depth 0–3. Legacy `tier: N` in existing consumer `.kanon/config.yaml` auto-migrates to `aspects: {sdd: {depth: N}}` on first `kanon upgrade` after the aspect model ships.
 
+<!-- INV-aspects-per-aspect-depth-dial -->
 3. **Per-aspect depth dial.** Depth range is declared per-aspect in its sub-manifest. `sdd` spans 0–3; other aspects declare whatever range their scaffolds naturally partition into (e.g., `worktrees` is 0–2). Ghost cells (depth levels with no content) are not allowed.
 
+<!-- INV-aspects-opt-in-explicit-primary -->
 4. **Opt-in state is explicit and primary.** `.kanon/config.yaml` carries an `aspects:` mapping keyed by aspect name, each entry holding `depth`, `enabled_at` (ISO-8601), and a `config:` block for aspect-specific options. `kanon upgrade` replays only files for aspects present in the mapping. `kanon verify` warns (does not fail) when a config-named aspect is absent from the installed kit — the opt-in record survives a deprecation upstream.
 
+<!-- INV-aspects-namespaced-discovery -->
 5. **Namespaced discovery.** Protocol files live under `.kanon/protocols/<aspect>/<name>.md` in consumer repos and `src/kanon/kit/aspects/<aspect>/protocols/<name>.md` in the kit. AGENTS.md section markers gain an aspect prefix: `<!-- kanon:begin:<aspect>/<section> -->` / `<!-- kanon:end:<aspect>/<section> -->`. The `protocols-index` marker block renders a single unified table grouped by aspect. Existing flat-namespace protocols (`tier-up-advisor.md`, `verify-triage.md`, `spec-review.md`) migrate under `sdd/` in the v0.2 cut.
 
+<!-- INV-aspects-cross-aspect-ownership-exclusive -->
 6. **Cross-aspect file ownership is exclusive.** No two aspects may scaffold the same file path. `ci/check_kit_consistency.py` fails on conflict. Files outside every aspect's claim are consumer-authored and never touched by `init`, `upgrade`, `aspect add`, or `aspect remove`.
 
+<!-- INV-aspects-non-destructive-add-remove -->
 7. **Non-destructive add/remove.** `kanon aspect add <name>` is idempotent and additive — it scaffolds missing files and AGENTS.md sections without touching existing ones (ADR-0008 tier-up pattern, generalised). `kanon aspect remove <name>` deletes the aspect's AGENTS.md marker block and its `.kanon/config.yaml` entry, leaves its scaffolded files on disk, and reports them as "beyond required" (ADR-0008 tier-down pattern, generalised).
 
+<!-- INV-aspects-reference-automation-shippable -->
 8. **Reference automation snippets are kit-shippable.** Aspects governing cryptographic, irreversible, or persistent-state operations (e.g., `release` — tag signing, PyPI trusted publishing) may include reference CI templates under their scaffolded files (GitHub Actions YAML, pre-commit configs, Makefile snippets). These snippets do not gate agent behavior — they are copy-in templates the consumer executes deterministically. This narrows the previous "kit is prose-only" non-goal; see ADR-0013.
 
+<!-- INV-aspects-every-aspect-self-hosted -->
 9. **Every shipping aspect is self-hosted.** This repo enables every `stability: stable` aspect kanon ships before the release that ships it, per `P-self-hosted-bootstrap`. An aspect that cannot be used to develop kanon itself is not ready for the `stable` label.
 
 ## Rationale

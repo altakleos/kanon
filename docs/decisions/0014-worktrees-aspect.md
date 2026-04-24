@@ -36,7 +36,7 @@ Ship `worktrees` as a standalone aspect with the following properties:
 
 - A new aspect directory `src/kanon/kit/aspects/worktrees/` is added to the kit bundle with its own sub-manifest.
 - The top-level `manifest.yaml` gains a `worktrees` entry with `stability: experimental`, `depth-range: [0, 2]`, `default-depth: 1`, `requires: ["sdd >= 1"]`.
-- `aspects.md` invariant 3 is updated to reflect worktrees as 0–2 (no longer cited as a binary example).
+- `aspects.md` INV-aspects-per-aspect-depth-dial is updated to reflect worktrees as 0–2 (no longer cited as a binary example).
 - The `multi-agent-coordination` deferred spec retains its remaining primitives (ledgers, SHA pins, handshakes) as future work.
 - Runtime concurrency detection is explicitly out of scope — no lock files, heartbeats, or signal mechanisms.
 

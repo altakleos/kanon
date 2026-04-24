@@ -25,6 +25,8 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0015](0015-vision-amendment-aspect-identity.md) | Vision amendment — aspect-oriented identity | accepted |
 | [0016](0016-aspect-decoupling.md) | Aspect decoupling — remove sdd as structurally privileged | accepted |
 | [0017](0017-release-aspect.md) | Release aspect — disciplined release publishing | accepted |
+| [0018](0018-invariant-ids.md) | Invariant IDs — stable anchors for spec invariants | accepted |
+| [0019](0019-fidelity-lock.md) | Fidelity Lock — spec-SHA drift detection | accepted |
 
 ## ADR Template
 

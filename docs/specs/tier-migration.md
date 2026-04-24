@@ -16,17 +16,25 @@ Define the behaviour of `kanon tier set <target> <N>`: what it changes, what it 
 
 ## Invariants
 
+<!-- INV-tier-migration-mutable-tier -->
 1. **Mutable tier.** Tier is stored in `.kanon/config.yaml`. `tier set` writes this field to `<N>` and updates `tier_set_at` to the current ISO-8601 timestamp.
+<!-- INV-tier-migration-idempotent -->
 2. **Idempotent.** `tier set <target> <N>` run twice with the same target tier is a noop (exit 0, no filesystem changes beyond `tier_set_at`). This means the command can be safely run from scripts and CI.
+<!-- INV-tier-migration-tier-up-additive -->
 3. **Tier-up is additive only.** Moving tier-N to tier-(N+k) creates only the *new* files: the layer directories (`docs/specs/` if moving to tier-2, etc.), the new READMEs and _templates, and the newly enabled AGENTS.md sections. Existing user content is never modified, moved, or deleted. No files are renamed or reorganised.
+<!-- INV-tier-migration-tier-down-non-destructive -->
 4. **Tier-down is non-destructive.** Moving tier-N to tier-(N-k) updates `.kanon/config.yaml` and removes the now-disabled AGENTS.md sections (marker-delimited content only). **Existing artifact directories stay on disk.** The command prints a warning listing artifacts that are now "beyond required" so the consumer can choose to archive or delete. The kit does not delete artifacts unilaterally — they may still be valuable history.
+<!-- INV-tier-migration-agents-md-marker-delimited -->
 5. **AGENTS.md rewriting is marker-delimited.** The section-marker rewriter touches only content between `<!-- kanon:begin:<section-name> -->` and `<!-- kanon:end:<section-name> -->`. When a tier transition enables a new section, the rewriter inserts the delimited block in the canonical position (documented in `template-bundle.md`). When it disables a section, it removes the block including the markers. Content outside the markers is never modified. Manual edits inside the markers will be overwritten on the next `tier set` or `upgrade`.
+<!-- INV-tier-migration-atomic -->
 6. **Atomic.** Migration is a single filesystem transaction using the same atomic-replace primitives as `upgrade`. An interrupted migration leaves the target repo in either the pre-migration state or the post-migration state, never a mixed state.
+<!-- INV-tier-migration-section-list-per-tier -->
 7. **Section-list per tier.** The AGENTS.md sections enabled at each tier are:
    - Tier-0: (none beyond the boot chain and project-layout blocks, which are not marker-delimited)
    - Tier-1: `plan-before-build`
    - Tier-2: `plan-before-build`, `spec-before-design`
    - Tier-3: `plan-before-build`, `spec-before-design` (additional tier-3 sections may be added later; in v0.1 tier-2 and tier-3 have the same marker sections, but tier-3 additionally has `docs/foundations/` and `docs/design/` directories).
+<!-- INV-tier-migration-invalid-targets-rejected -->
 8. **Invalid targets rejected.** `tier set <target> <N>` with N ∉ {0, 1, 2, 3} exits with code 2 and a clear error message. A target path without `.kanon/config.yaml` exits with a clear error.
 
 ## Rationale
