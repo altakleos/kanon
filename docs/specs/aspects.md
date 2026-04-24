@@ -31,7 +31,7 @@ The model's primary user is an LLM-driven repo — often a solo developer runnin
 
 2. **SDD is an aspect.** Every file currently scaffolded by the tier model (`docs/development-process.md`, `docs/{decisions,plans,specs,design,foundations}/`, the tier-specific `AGENTS.md` sections) lives under the `sdd` aspect at depth 0–3. Legacy `tier: N` in existing consumer `.kanon/config.yaml` auto-migrates to `aspects: {sdd: {depth: N}}` on first `kanon upgrade` after the aspect model ships.
 
-3. **Per-aspect depth dial.** Depth range is declared per-aspect in its sub-manifest. `sdd` spans 0–3; binary aspects (e.g., `worktrees`) are 0–1; other aspects (e.g., `release`) declare whatever range their scaffolds naturally partition into. Ghost cells (depth levels with no content) are not allowed.
+3. **Per-aspect depth dial.** Depth range is declared per-aspect in its sub-manifest. `sdd` spans 0–3; other aspects declare whatever range their scaffolds naturally partition into (e.g., `worktrees` is 0–2). Ghost cells (depth levels with no content) are not allowed.
 
 4. **Opt-in state is explicit and primary.** `.kanon/config.yaml` carries an `aspects:` mapping keyed by aspect name, each entry holding `depth`, `enabled_at` (ISO-8601), and a `config:` block for aspect-specific options. `kanon upgrade` replays only files for aspects present in the mapping. `kanon verify` warns (does not fail) when a config-named aspect is absent from the installed kit — the opt-in record survives a deprecation upstream.
 
@@ -47,7 +47,7 @@ The model's primary user is an LLM-driven repo — often a solo developer runnin
 
 ## Rationale
 
-**Why aspects subsume tiers.** A 2D `tier × aspect` grid would force every aspect to fit a 0–3 depth analog. Versioning has no "tier-3 foundations"; worktrees are binary. Making depth a per-aspect property lets `sdd` keep 0–3 while other aspects declare whatever partitioning fits, without ghost cells. Legacy `tier: N` auto-migrates to `aspects: {sdd: {depth: N}}`, so the user-facing mental model is continuous rather than forked on day 1.
+**Why aspects subsume tiers.** A 2D `tier × aspect` grid would force every aspect to fit a 0–3 depth analog. Versioning has no "tier-3 foundations"; worktrees spans 0–2. Making depth a per-aspect property lets `sdd` keep 0–3 while other aspects declare whatever partitioning fits, without ghost cells. Legacy `tier: N` auto-migrates to `aspects: {sdd: {depth: N}}`, so the user-facing mental model is continuous rather than forked on day 1.
 
 **Why agent-first framing.** kanon's default user is a solo developer running several concurrent LLM agents, not a human team. The adoption trigger for `worktrees` is the first time a second concurrent agent reads what a first agent is writing — not the day a second human joins the repo. Aspects that solve agent-agent collisions (worktrees, plan-SHA pins from the deferred `multi-agent-coordination` spec, decision-handshake protocols) belong early in the recommended adoption sequence, ahead of human-team aspects such as code review or RFC ceremony. The personas under `docs/foundations/personas/` should be extended with at least one solo-human-plus-N-agents archetype before the v0.2 aspect model ships broadly — the current `solo-engineer` persona implicitly assumes a single executor.
 

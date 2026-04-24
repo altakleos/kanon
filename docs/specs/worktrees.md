@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-04-23
 realizes:
   - P-prose-is-code
@@ -7,33 +7,40 @@ realizes:
 stressed_by:
   - solo-with-agents
   - platform-team
-fixtures_deferred: "Worktree aspect tests land with the v0.3 worktrees-aspect implementation plan (plan file TBD)."
+fixtures_deferred: "Worktree aspect tests land with the worktrees-aspect implementation plan (docs/plans/worktrees-aspect.md, not yet authored)."
 ---
-# Spec: Worktrees — isolated parallel execution for concurrent agents
+# Spec: Worktrees — isolated parallel execution via git worktrees
 
 ## Intent
 
-Package the discipline of using git worktrees to isolate concurrent LLM agents operating on the same repo. When a solo developer runs two or more agents in parallel — the default configuration per the `solo-with-agents` persona — agents must not step on each other in a shared working tree. The `worktrees` aspect ships prose procedures (setup, teardown, integration) plus reference helper scripts so agents follow a predictable lifecycle without the human micromanaging the topology.
+Package the discipline of using git worktrees to isolate concurrent work streams in the same repo. When a solo developer runs multiple agents — or works alongside an agent — each work stream should operate in its own worktree to prevent filesystem collisions. The `worktrees` aspect ships prose procedures (setup, teardown, integration) and, at higher depth, reference helper scripts so agents follow a predictable lifecycle without the human micromanaging the topology.
 
-The aspect's primary trigger is agent-first: the moment a second concurrent agent will edit the same repo, not the day a second human joins. This places worktrees early in the adoption sequence (tier-1 for agent-driven projects) rather than "eventually" under the broader multi-agent-coordination deferred spec.
+The aspect's primary trigger is **change scope**, not concurrency detection. An agent cannot reliably detect whether other agents are running (no shared process table, no coordination bus). Instead, the protocol frames worktree creation as a function of the change's complexity: multi-file or multi-step changes warrant a worktree; trivial single-file edits do not. As a secondary heuristic, agents check `git worktree list` — if other worktrees exist, parallel work is likely in progress, reinforcing the decision to isolate.
 
 ## Invariants
 
-1. **Scaffolding location.** Each concurrent agent operates inside `.worktrees/<slug>/`, where `<slug>` is a short identifier derived from the plan or task. The kit does not create `.worktrees/`; it reserves the path, documents the convention, and ships setup/teardown helpers the consumer invokes.
+1. **Scaffolding location.** Each concurrent agent operates inside `.worktrees/<slug>/`, where `<slug>` is a short identifier derived from the plan or task (naming convention defined in the lifecycle protocol, invariant 3). The kit does not create `.worktrees/`; it reserves the path, documents the convention, and (at depth-2) ships setup/teardown helpers the consumer invokes.
 
-2. **Depth range is binary.** `worktrees` aspect declares `depth-range: [0, 1]`. Depth-0 is opt-out (aspect enabled in config but no files scaffolded). Depth-1 is the shipping form — protocol plus helper scripts present.
+2. **Depth range is 0–2.** The `worktrees` aspect declares `depth-range: [0, 2]`.
+   - **Depth 0** — opt-out. Aspect enabled in config but no files scaffolded.
+   - **Depth 1** — prose guidance. Protocol file and AGENTS.md section are scaffolded. Agents understand worktree hygiene and apply judgment based on change scope. Agents use `git worktree add/remove` directly.
+   - **Depth 2** — prose guidance plus automation. Shell helper scripts are scaffolded alongside the protocol and AGENTS.md section. Agents use the project's standardized scripts for consistent worktree lifecycle management.
 
-3. **Protocol-shaped.** The aspect ships one protocol at `.kanon/protocols/worktrees/worktree-lifecycle.md` covering: branch-naming convention, worktree creation steps, integration cadence (how often to rebase/merge main), teardown idempotence, and stale-worktree detection. Frontmatter `invoke-when` names agent-agent collision as the primary trigger, consistent with the solo-with-agents persona.
+3. **Protocol-shaped.** The aspect ships one protocol at `.kanon/protocols/worktrees/worktree-lifecycle.md` (depth ≥ 1) covering: branch-naming convention, worktree creation steps, integration cadence (how often to rebase/merge main), teardown idempotence, and stale-worktree detection. Frontmatter `invoke-when` names **multi-file or multi-step changes** as the primary trigger, with `git worktree list` as a secondary heuristic for detecting concurrent work.
 
-4. **Reference automation snippets** (per ADR-0013). The aspect scaffolds host-neutral shell helpers under the consumer's tree: `scripts/worktree-setup.sh`, `scripts/worktree-teardown.sh`, `scripts/worktree-status.sh`. These are copy-in templates the consumer invokes directly — not agent-behavior hooks, and not kit-owned once scaffolded (byte-equality not enforced after init; consumers adapt them).
+4. **Reference automation snippets** (per ADR-0013, depth-2 only). The aspect scaffolds host-neutral shell helpers under the consumer's tree: `scripts/worktree-setup.sh`, `scripts/worktree-teardown.sh`, `scripts/worktree-status.sh`. These are copy-in templates the consumer invokes directly — not agent-behavior hooks, and not kit-owned once scaffolded (byte-equality not enforced after init; consumers adapt them).
 
-5. **Non-destructive teardown.** A worktree with uncommitted changes is reported and preserved; the helper never forcibly removes in-flight work. The prose protocol describes how the operating agent should resolve (commit, stash, or escalate to the human).
+5. **Non-destructive teardown.** A worktree with uncommitted changes is reported and preserved; the helper (or raw `git worktree remove`) never forcibly removes in-flight work. The prose protocol describes how the operating agent should resolve (commit, stash, or escalate to the human).
 
 6. **Cross-aspect dependency.** `worktrees` requires `sdd >= 1` in the manifest. The SDD tier-1 plan-before-build gate is a prerequisite: worktree-per-plan correspondence depends on plans existing as first-class artifacts.
 
-7. **Namespaced AGENTS.md section.** At depth-1, the aspect contributes one marker-delimited section `worktrees/branch-hygiene` to AGENTS.md — a short prose summary of the branch-naming convention and integration cadence, so an operating agent sees the rule on the boot chain without having to invoke the protocol file for routine edits.
+7. **Namespaced AGENTS.md section.** At depth ≥ 1, the aspect contributes one marker-delimited section `worktrees/branch-hygiene` to AGENTS.md — a short prose summary of the branch-naming convention, the change-scope trigger for worktree creation, and integration cadence, so an operating agent sees the rules on the boot chain without having to invoke the protocol file for routine decisions.
 
 ## Rationale
+
+**Why change-scope, not concurrency detection.** An agent has no reliable way to detect whether other agents are running. Lock files are fragile (stale locks after crashes, race conditions, invisible across machines). Instead, the protocol uses change scope as a proxy: multi-file changes are the ones that cause collisions, regardless of whether another agent is active. As a lightweight heuristic, agents check `git worktree list` — existing worktrees signal that parallel work is likely. This approach is never wrong in a dangerous way: an unnecessary worktree is harmless; a missed collision is not.
+
+**Why depth 0–2, not binary.** The aspect has two separable layers of value: (a) the knowledge layer — protocol and AGENTS.md section that teach agents *when* and *why* to use worktrees, and (b) the automation layer — shell helpers that standardize the *how*. These layers are independently useful. A depth-1 user gets agents that make good worktree decisions using `git worktree add/remove` directly. A depth-2 user additionally gets consistent, project-specific helper scripts. This mirrors SDD's depth progression: depth-1 gives process (plan-before-build); depth-2 gives more structure (specs).
 
 **Why split from `multi-agent-coordination`.** The deferred `multi-agent-coordination` spec bundles reservation ledgers, plan-SHA pins, decision handshakes, and worktree isolation under a single banner. Those are separable primitives with very different landing costs: worktree isolation is cheap prose + ~100 LOC of shell; the others require real state machinery. Carving worktrees into its own aspect lets it ship first, validated against the agent-first persona, without blocking on the rest.
 
@@ -51,10 +58,11 @@ The aspect's primary trigger is agent-first: the moment a second concurrent agen
 - **Coordination beyond filesystem isolation.** Plan-SHA pinning, reservation ledgers, decision handshakes — those remain under the `multi-agent-coordination` deferred spec and may land as separate aspects.
 - **Host-specific integrations** beyond generic shell helpers. GitHub PR-close webhook cleanup, GitLab Duo integration, etc. are consumer extensions, not kit-owned content.
 - **Worktree-per-agent automation** (an orchestrator that spawns agents into worktrees). The kit describes the lifecycle; spawning is the user's harness choice.
+- **Runtime concurrency detection.** No lock files, heartbeats, or signal mechanisms. The protocol relies on change-scope judgment and `git worktree list` as a heuristic.
 
 ## Decisions
 
 See:
-- **ADR-0014** — worktrees aspect (scaffolding shape, lifecycle protocol, reference helper scripts, tier-1 placement).
+- **ADR-0014** — worktrees aspect (scaffolding shape, depth progression, lifecycle protocol, reference helper scripts, tier-1 placement).
 
 ADR number is provisional until authored alongside this spec's promotion from `draft` to `accepted`.

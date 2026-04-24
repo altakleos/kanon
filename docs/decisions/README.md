@@ -21,6 +21,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0011](0011-kit-bundle-refactor.md) | Kit bundle refactor — `templates/` → `kit/` with manifest-driven tier membership | accepted |
 | [0012](0012-aspect-model.md) | Aspect model — aspects subsume tiers; SDD becomes the first aspect | accepted |
 | [0013](0013-vision-amendment-reference-automation.md) | Vision amendment — reference automation snippets are kit-shippable | accepted |
+| [0014](0014-worktrees-aspect.md) | Worktrees aspect — isolated parallel execution via git worktrees | accepted |
 
 ## ADR Template
 
