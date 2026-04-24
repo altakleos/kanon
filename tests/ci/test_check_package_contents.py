@@ -6,6 +6,8 @@ import importlib.util
 import zipfile
 from pathlib import Path
 
+import yaml
+
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _SCRIPT_PATH = _REPO_ROOT / "ci" / "check_package_contents.py"
 assert _SCRIPT_PATH.is_file(), f"script not found: {_SCRIPT_PATH}"
@@ -24,36 +26,76 @@ mod = _load()
 _TAG = "v1.0.0"
 _VERSION = "1.0.0"
 
+# Read the real manifests so synthetic wheels match the actual kit shape.
+_KIT = _REPO_ROOT / "src" / "kanon" / "kit"
+_TOP_MANIFEST_TEXT = (_KIT / "manifest.yaml").read_text(encoding="utf-8")
+_TOP_MANIFEST = yaml.safe_load(_TOP_MANIFEST_TEXT)
+
 
 def _build_wheel(tmp_path: Path, *, extra_files: dict[str, str] | None = None,
                  omit: set[str] | None = None, version: str = _VERSION) -> Path:
-    """Create a minimal synthetic .whl with all required entries."""
+    """Create a minimal synthetic .whl with all required entries derived from manifests."""
     whl = tmp_path / "fake.whl"
     omit = omit or set()
     files: dict[str, str] = {}
-    # Required files
-    for f in mod.REQUIRED_FILES:
+
+    # Core files
+    for f in mod._CORE_REQUIRED_FILES:
         if f in omit:
             continue
         if f == "kanon/__init__.py":
             files[f] = f'__version__ = "{version}"\n'
+        elif f == "kanon/kit/manifest.yaml":
+            files[f] = _TOP_MANIFEST_TEXT
         else:
             files[f] = ""
-    # Ensure required dirs have at least one entry
-    for d in mod.REQUIRED_DIRS:
-        if not any(k.startswith(d) for k in files):
-            files[d + "_placeholder.txt"] = ""
+
+    # Aspect files derived from manifests (same logic the script uses)
+    for _name, entry in _TOP_MANIFEST["aspects"].items():
+        aspect_base = "kanon/kit/" + entry["path"]
+        sub_path = _KIT / entry["path"] / "manifest.yaml"
+        sub_text = sub_path.read_text(encoding="utf-8")
+        sub = yaml.safe_load(sub_text)
+
+        mf = f"{aspect_base}/manifest.yaml"
+        if mf not in omit:
+            files[mf] = sub_text
+
+        rng = entry["depth-range"]
+        for d in range(int(rng[0]), int(rng[1]) + 1):
+            depth_entry = sub.get(f"depth-{d}", {})
+            if not isinstance(depth_entry, dict):
+                continue
+            amd = f"{aspect_base}/agents-md/depth-{d}.md"
+            if amd not in omit:
+                files[amd] = ""
+            for rel in depth_entry.get("files", []) or []:
+                fp = f"{aspect_base}/files/{rel}"
+                if fp not in omit:
+                    files[fp] = ""
+            for rel in depth_entry.get("protocols", []) or []:
+                fp = f"{aspect_base}/protocols/{rel}"
+                if fp not in omit:
+                    files[fp] = ""
+            for sec in depth_entry.get("sections", []) or []:
+                if sec == "protocols-index":
+                    continue
+                fp = f"{aspect_base}/sections/{sec}.md"
+                if fp not in omit:
+                    files[fp] = ""
+
     if extra_files:
         files.update(extra_files)
-    # Also need a changelog for version concordance
+
+    # Changelog for version concordance
     changelog = tmp_path / "CHANGELOG.md"
     changelog.write_text(
         f"# Changelog\n\n## [{version}] \u2014 2025-01-01\n\n- Initial\n",
         encoding="utf-8",
     )
     with zipfile.ZipFile(whl, "w") as z:
-        for name, content in files.items():
-            z.writestr(name, content)
+        for fname, content in files.items():
+            z.writestr(fname, content)
     return whl
 
 

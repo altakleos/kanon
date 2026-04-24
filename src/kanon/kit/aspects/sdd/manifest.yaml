@@ -9,6 +9,18 @@
 #
 # See docs/design/aspect-model.md and ADR-0012.
 
+byte-equality:
+  - kit: docs/development-process.md
+    repo: docs/development-process.md
+  - kit: docs/decisions/_template.md
+    repo: docs/decisions/_template.md
+  - kit: docs/plans/_template.md
+    repo: docs/plans/_template.md
+  - kit: docs/specs/_template.md
+    repo: docs/specs/_template.md
+  - kit: docs/design/_template.md
+    repo: docs/design/_template.md
+
 depth-0:
   files:
     - CLAUDE.md

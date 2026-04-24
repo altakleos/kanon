@@ -37,32 +37,21 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-REQUIRED_FILES: tuple[str, ...] = (
+import yaml
+
+# Core files that must always be present regardless of aspects.
+_CORE_REQUIRED_FILES: tuple[str, ...] = (
     "kanon/__init__.py",
     "kanon/cli.py",
     "kanon/_atomic.py",
     "kanon/kit/manifest.yaml",
     "kanon/kit/kit.md",
     "kanon/kit/harnesses.yaml",
-    "kanon/kit/aspects/sdd/manifest.yaml",
-    "kanon/kit/aspects/sdd/agents-md/depth-0.md",
-    "kanon/kit/aspects/sdd/agents-md/depth-1.md",
-    "kanon/kit/aspects/sdd/agents-md/depth-2.md",
-    "kanon/kit/aspects/sdd/agents-md/depth-3.md",
-    "kanon/kit/aspects/sdd/files/CLAUDE.md",
-    "kanon/kit/aspects/sdd/files/docs/development-process.md",
-    "kanon/kit/aspects/sdd/sections/plan-before-build.md",
-    "kanon/kit/aspects/sdd/sections/spec-before-design.md",
 )
 
-REQUIRED_DIRS: tuple[str, ...] = (
-    "kanon/kit/",
-    "kanon/kit/aspects/sdd/",
-    "kanon/kit/aspects/sdd/agents-md/",
-    "kanon/kit/aspects/sdd/files/",
-    "kanon/kit/aspects/sdd/sections/",
-    "kanon/kit/aspects/sdd/protocols/",
-)
+# Populated at wheel-check time from the manifest inside the wheel.
+REQUIRED_FILES: tuple[str, ...] = ()
+REQUIRED_DIRS: tuple[str, ...] = ()
 
 FORBIDDEN_PREFIXES: tuple[str, ...] = (
     # Consumer-state paths that should never leak into the distributed wheel.
@@ -108,6 +97,55 @@ def _changelog_entry_status(changelog_path: Path, version: str) -> tuple[str, st
     return "missing_entry", f"no dated entry for version {version!r} in {changelog_path}"
 
 
+def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list[str]]:
+    """Read manifest.yaml from the wheel and derive required files and dirs."""
+    required_files = list(_CORE_REQUIRED_FILES)
+    required_dirs = ["kanon/kit/"]
+    try:
+        top = yaml.safe_load(z.read("kanon/kit/manifest.yaml").decode("utf-8"))
+    except (KeyError, yaml.YAMLError):
+        return required_files, required_dirs
+    if not isinstance(top, dict) or not isinstance(top.get("aspects"), dict):
+        return required_files, required_dirs
+    for name, entry in top["aspects"].items():
+        if not isinstance(entry, dict):
+            continue
+        aspect_base = "kanon/kit/" + entry.get("path", f"aspects/{name}")
+        required_files.append(f"{aspect_base}/manifest.yaml")
+        required_dirs.append(f"{aspect_base}/")
+        # Load sub-manifest to get depth-specific files, protocols, sections
+        sub_path = f"{aspect_base}/manifest.yaml"
+        try:
+            sub = yaml.safe_load(z.read(sub_path).decode("utf-8"))
+        except (KeyError, yaml.YAMLError):
+            continue
+        if not isinstance(sub, dict):
+            continue
+        rng = entry.get("depth-range", [0, 0])
+        for d in range(int(rng[0]), int(rng[1]) + 1):
+            depth_entry = sub.get(f"depth-{d}", {})
+            if not isinstance(depth_entry, dict):
+                continue
+            # agents-md depth file
+            required_files.append(f"{aspect_base}/agents-md/depth-{d}.md")
+            for rel in depth_entry.get("files", []) or []:
+                required_files.append(f"{aspect_base}/files/{rel}")
+            for rel in depth_entry.get("protocols", []) or []:
+                required_files.append(f"{aspect_base}/protocols/{rel}")
+            for sec in depth_entry.get("sections", []) or []:
+                if sec == "protocols-index":
+                    continue  # cross-aspect, not a file
+                required_files.append(f"{aspect_base}/sections/{sec}.md")
+        # Add subdirs that should be non-empty
+        for subdir in ("agents-md", "files", "sections", "protocols"):
+            sub_dir_path = f"{aspect_base}/{subdir}/"
+            # Only require dirs that have entries in the manifest
+            names = z.namelist()
+            if any(n.startswith(sub_dir_path) for n in names):
+                required_dirs.append(sub_dir_path)
+    return required_files, required_dirs
+
+
 def check_wheel(wheel_path: Path, tag: str, changelog_path: Path | None = None) -> tuple[int, dict[str, Any]]:
     """Validate `wheel_path` against `tag`. Returns (exit_code, report)."""
     with zipfile.ZipFile(wheel_path) as z:
@@ -116,10 +154,11 @@ def check_wheel(wheel_path: Path, tag: str, changelog_path: Path | None = None) 
             init_content = z.read("kanon/__init__.py").decode("utf-8")
         except KeyError:
             init_content = ""
+        required_files, required_dirs = _derive_requirements_from_wheel(z)
     name_set = set(names)
 
-    missing_files = [f for f in REQUIRED_FILES if f not in name_set]
-    missing_dirs = [d for d in REQUIRED_DIRS if not any(n.startswith(d) for n in names)]
+    missing_files = [f for f in required_files if f not in name_set]
+    missing_dirs = [d for d in required_dirs if not any(n.startswith(d) for n in names)]
 
     forbidden: list[str] = []
     for n in names:

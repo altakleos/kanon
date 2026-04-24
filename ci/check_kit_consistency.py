@@ -52,15 +52,6 @@ _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
 _UNPREFIXED_SECTIONS: frozenset[str] = frozenset({"protocols-index"})
 _STABILITY_VALUES: frozenset[str] = frozenset({"experimental", "stable", "deprecated"})
 
-# Per-aspect byte-equality whitelist: (aspect_name, relative_to_files, repo_relative).
-_BYTE_EQUAL_WHITELIST: tuple[tuple[str, str, str], ...] = (
-    ("sdd", "docs/development-process.md", "docs/development-process.md"),
-    ("sdd", "docs/decisions/_template.md", "docs/decisions/_template.md"),
-    ("sdd", "docs/plans/_template.md", "docs/plans/_template.md"),
-    ("sdd", "docs/specs/_template.md", "docs/specs/_template.md"),
-    ("sdd", "docs/design/_template.md", "docs/design/_template.md"),
-)
-
 _SECTION_RE = re.compile(r"<!-- kanon:(begin|end):([a-z0-9/_-]+) -->")
 
 
@@ -104,26 +95,27 @@ def _check_byte_equality(errors: list[str]) -> None:
     top, err = _load_top_manifest()
     if err:
         return
-    # Whitelist entries
-    for aspect, kit_rel, repo_rel in _BYTE_EQUAL_WHITELIST:
-        if aspect not in top["aspects"]:
-            errors.append(
-                f"byte-equality whitelist references unknown aspect: {aspect}"
-            )
+    # Build whitelist from per-aspect sub-manifests' byte-equality key
+    for aspect in top["aspects"]:
+        sub, err2 = _load_aspect_manifest(aspect, top)
+        if err2:
             continue
-        aspect_path = _KIT / top["aspects"][aspect]["path"] / "files" / kit_rel
-        repo_path = _REPO_ROOT / repo_rel
-        if not aspect_path.is_file():
-            errors.append(f"missing kit file: {aspect_path.relative_to(_REPO_ROOT)}")
-            continue
-        if not repo_path.is_file():
-            errors.append(f"missing repo canonical: {repo_rel}")
-            continue
-        if aspect_path.read_bytes() != repo_path.read_bytes():
-            errors.append(
-                f"byte-equality drift: {repo_rel} and "
-                f"{aspect_path.relative_to(_REPO_ROOT)} differ — must be identical."
-            )
+        for entry in sub.get("byte-equality", []) or []:
+            kit_rel = entry["kit"]
+            repo_rel = entry["repo"]
+            aspect_path = _KIT / top["aspects"][aspect]["path"] / "files" / kit_rel
+            repo_path = _REPO_ROOT / repo_rel
+            if not aspect_path.is_file():
+                errors.append(f"missing kit file: {aspect_path.relative_to(_REPO_ROOT)}")
+                continue
+            if not repo_path.is_file():
+                errors.append(f"missing repo canonical: {repo_rel}")
+                continue
+            if aspect_path.read_bytes() != repo_path.read_bytes():
+                errors.append(
+                    f"byte-equality drift: {repo_rel} and "
+                    f"{aspect_path.relative_to(_REPO_ROOT)} differ — must be identical."
+                )
     # Per-aspect protocols byte-equality
     for aspect in top["aspects"]:
         aspect_root = _KIT / top["aspects"][aspect]["path"]
