@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 import click
 import yaml
@@ -32,6 +33,7 @@ from kanon import __version__
 from kanon._manifest import (
     _aspect_depth_range,
     _aspect_sections,
+    _default_aspects,
     _expected_files,
     _load_aspect_manifest,
     _load_top_manifest,
@@ -56,6 +58,38 @@ from kanon._scaffold import (
 # --- CLI commands ---
 
 
+def _parse_aspects_flag(raw: str, top: dict[str, Any]) -> dict[str, int]:
+    """Parse ``--aspects sdd:1,worktrees:2`` into a validated dict."""
+    result: dict[str, int] = {}
+    for token in raw.split(","):
+        token = token.strip()
+        if ":" not in token:
+            raise click.ClickException(
+                f"Invalid aspect token {token!r}: expected name:depth."
+            )
+        name, depth_s = token.split(":", 1)
+        if name not in top["aspects"]:
+            raise click.ClickException(
+                f"Unknown aspect {name!r}. See `kanon aspect list`."
+            )
+        try:
+            depth = int(depth_s)
+        except ValueError:
+            raise click.ClickException(
+                f"Invalid depth {depth_s!r} for aspect {name!r}: must be an integer."
+            ) from None
+        rng = top["aspects"][name]["depth-range"]
+        min_d, max_d = int(rng[0]), int(rng[1])
+        if not (min_d <= depth <= max_d):
+            raise click.ClickException(
+                f"Aspect {name!r}: depth {depth} outside range [{min_d},{max_d}]."
+            )
+        result[name] = depth
+    if not result:
+        raise click.ClickException("--aspects requires at least one aspect:depth pair.")
+    return result
+
+
 @click.group()
 @click.version_option(__version__, prog_name="kanon")
 def main() -> None:
@@ -72,9 +106,18 @@ def main() -> None:
     show_default=False,
     help="Shorthand for `sdd` aspect depth. Defaults to sdd's default-depth.",
 )
+@click.option(
+    "--aspects",
+    "aspects_arg",
+    default=None,
+    help="Comma-separated aspect:depth pairs (e.g., sdd:1,worktrees:2).",
+)
 @click.option("--force", is_flag=True, help="Overwrite an existing .kanon/ directory.")
-def init(target: Path, tier_arg: int | None, force: bool) -> None:
+def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: bool) -> None:
     """Scaffold a new kanon project at TARGET."""
+    if tier_arg is not None and aspects_arg is not None:
+        raise click.ClickException("--tier and --aspects are mutually exclusive.")
+
     target = target.resolve()
     target.mkdir(parents=True, exist_ok=True)
 
@@ -86,11 +129,17 @@ def init(target: Path, tier_arg: int | None, force: bool) -> None:
         )
 
     top = _load_top_manifest()
-    sdd_default = int(top["aspects"]["sdd"]["default-depth"])
-    depth = tier_arg if tier_arg is not None else sdd_default
-    aspects_to_enable = {"sdd": depth}
 
-    context = {"project_name": target.name, "tier": str(depth)}
+    if aspects_arg is not None:
+        aspects_to_enable = _parse_aspects_flag(aspects_arg, top)
+    elif tier_arg is not None:
+        aspects_to_enable = {"sdd": tier_arg}
+    else:
+        aspects_to_enable = _default_aspects()
+
+    # Use the sdd depth as the tier context value if sdd is enabled, else "0".
+    tier_ctx = str(aspects_to_enable.get("sdd", 0))
+    context = {"project_name": target.name, "tier": tier_ctx}
 
     bundle = _build_bundle(aspects_to_enable, context)
     bundle["AGENTS.md"] = _assemble_agents_md(aspects_to_enable, target.name)

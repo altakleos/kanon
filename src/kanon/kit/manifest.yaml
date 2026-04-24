@@ -17,6 +17,9 @@
 #
 # See docs/design/aspect-model.md and ADR-0012.
 
+defaults:
+  - sdd
+
 aspects:
   sdd:
     path: aspects/sdd

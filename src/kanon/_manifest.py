@@ -141,6 +141,20 @@ def _namespaced_section(aspect: str, section: str) -> str:
     return f"{aspect}/{section}"
 
 
+def _default_aspects() -> dict[str, int]:
+    """Read the ``defaults:`` key from the top manifest and return {name: default-depth}."""
+    top = _load_top_manifest()
+    names: list[str] = top.get("defaults", [])
+    result: dict[str, int] = {}
+    for name in names:
+        if name not in top["aspects"]:
+            raise click.ClickException(
+                f"defaults: lists unknown aspect {name!r}."
+            )
+        result[name] = int(top["aspects"][name]["default-depth"])
+    return result
+
+
 def _expected_files(aspects: dict[str, int]) -> list[str]:
     """Return the full path list a project with these aspects must have."""
     paths: list[str] = list(_ALWAYS_SYNTHESIZED)
