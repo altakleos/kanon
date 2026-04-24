@@ -8,7 +8,7 @@ date: 2026-04-22
 
 ## Statement
 
-`kanon` is developed using `kanon`. The repo is a tier-3 `kanon` project. Its own `docs/` tree and the tier-3 template it ships share source of truth (byte-identical where files are shared), enforced by CI. A kit that can't be used to develop itself is by definition not ready to ship.
+`kanon` is developed using `kanon`. The repo runs `sdd` at depth 3 and `worktrees` at depth 2. Its own `docs/` tree and the templates it ships share source of truth (byte-identical where files are shared), enforced by CI. A kit that can't be used to develop itself is by definition not ready to ship.
 
 ## Rationale
 

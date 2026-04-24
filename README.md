@@ -14,7 +14,7 @@ cd ~/myproject           # open with any LLM coding agent
 
 The kit is **tiered** — start at tier-0 (just an `AGENTS.md` for vibe-coding), grow to tier-3 (full platform-scale stack) as the project matures. `kanon tier set <N>` moves any project between tiers non-destructively.
 
-The kit is **self-hosting** — this repo is itself a tier-3 `kanon` project. The tier-3 scaffolded bundle and this repo's own `docs/` share source of truth, enforced by CI.
+The kit is **self-hosting** — this repo is itself a `kanon` project running `sdd` at depth 3 and `worktrees` at depth 2. The scaffolded bundle and this repo's own `docs/` share source of truth, enforced by CI.
 
 ## Quickstart
 

@@ -43,7 +43,7 @@ The model's primary user is an LLM-driven repo — often a solo developer runnin
 
 8. **Reference automation snippets are kit-shippable.** Aspects governing cryptographic, irreversible, or persistent-state operations (e.g., `release` — tag signing, PyPI trusted publishing) may include reference CI templates under their scaffolded files (GitHub Actions YAML, pre-commit configs, Makefile snippets). These snippets do not gate agent behavior — they are copy-in templates the consumer executes deterministically. This narrows the previous "kit is prose-only" non-goal; see ADR-0013.
 
-9. **Every shipping aspect is self-hosted.** This repo (tier-3 kanon consumer) enables every `stability: stable` aspect kanon ships before the release that ships it, per `P-self-hosted-bootstrap`. An aspect that cannot be used to develop kanon itself is not ready for the `stable` label.
+9. **Every shipping aspect is self-hosted.** This repo enables every `stability: stable` aspect kanon ships before the release that ships it, per `P-self-hosted-bootstrap`. An aspect that cannot be used to develop kanon itself is not ready for the `stable` label.
 
 ## Rationale
 
