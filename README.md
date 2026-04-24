@@ -91,7 +91,7 @@ Run tests:
 
 ## Status
 
-**Early alpha.** v0.1 ships the minimum viable kit: CLI, four tier templates, tier migration, cross-harness shims, self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
+**Early alpha (v0.2).** The kit ships two aspects (`sdd` at depth 0–3, `worktrees` at depth 0–2), the aspect model, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
 
 ## License
 

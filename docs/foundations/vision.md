@@ -6,21 +6,23 @@ date: 2026-04-23
 
 ## What `kanon` Is
 
-`kanon` is a portable, self-hosting kit that packages Spec-Driven Development (SDD) as prose an LLM agent reads and obeys. A single pointer in the consumer repo's `CLAUDE.md` or `AGENTS.md` is enough to make any LLM-agent-driven project process-disciplined: plans before building, specs before designing, verification alongside implementation.
+`kanon` is a portable, self-hosting kit that packages development disciplines — starting with Spec-Driven Development (SDD) and worktree isolation — as prose an LLM agent reads and obeys. A single pointer in the consumer repo's `CLAUDE.md` or `AGENTS.md` is enough to make any LLM-agent-driven project process-disciplined: plans before building, specs before designing, verification alongside implementation.
 
 Three properties define the kit:
 
 1. **Portable.** Works across Claude Code, OpenAI Codex, Cursor, GitHub Copilot, Windsurf, Cline, Roo Code, JetBrains AI, and Kiro via a per-harness shim registry. New harnesses are added to a data file; no code change required.
-2. **Tiered.** Start at tier-0 (just an AGENTS.md, for vibe-coding) and grow to tier-3 (full foundations + specs + design + ADRs + plans + verification stack) as the project matures. `kanon tier set` moves any project between any two tiers non-destructively.
-3. **Self-hosting.** The kit is itself a tier-3 `kanon` project. Its own `docs/` tree shares source of truth with the tier-3 template it ships; CI enforces byte-equality. If you can't use the kit to develop the kit, the kit isn't good enough.
+2. **Aspect-oriented.** Disciplines are packaged as *aspects* — opt-in bundles of prose rules, protocols, AGENTS.md sections, and scaffolded files. Each aspect has its own depth dial: `sdd` spans 0–3 (vibe-coding to full platform-scale SDD); `worktrees` spans 0–2 (prose guidance to scripted automation). `kanon aspect set-depth` moves any aspect between depths non-destructively. The legacy `kanon tier set` command is preserved as sugar for the `sdd` aspect's depth.
+3. **Self-hosting.** The kit is itself a `kanon` project running `sdd` at depth 3 and `worktrees` at depth 2. Its own `docs/` tree shares source of truth with the templates it ships; CI enforces byte-equality. If you can't use the kit to develop the kit, the kit isn't good enough.
 
 ## Current Promises
 
 A consumer repo that adopts `kanon` gets:
 
-- **Plan-before-build and spec-before-design gates** in AGENTS.md that any major LLM agent harness will read and honour.
+- **Aspect-based opt-in discipline** — enable only the aspects you need (`sdd`, `worktrees`, and future aspects). Each aspect has a depth dial; projects grow without ceremony they don't need yet.
+- **Plan-before-build and spec-before-design gates** in AGENTS.md that any major LLM agent harness will read and honour (via the `sdd` aspect).
+- **Worktree isolation for concurrent agents** — prose guidance and optional shell helpers so parallel agents don't collide in a shared working tree (via the `worktrees` aspect).
 - **Cross-harness consistency** — the same rules apply in Claude Code, Cursor, Codex, and the rest, via pointer shims that never duplicate content.
-- **Non-destructive tier migration** — projects aren't locked into their initial tier; they grow (or contract) without losing user content.
+- **Non-destructive aspect lifecycle** — aspects are added, depth-adjusted, or removed without losing user content. Files scaffolded by a removed aspect stay on disk.
 - **Verification as first-class authoritative source** (per ADR-0004) — tests and fixtures are co-authored with specs, not derived from them.
 - **Model-version compatibility signals** (per ADR-0005) — transcript fixtures declare which model versions they were validated against; `kanon verify` warns when a fixture hasn't been re-run on the current model.
 - **A roadmap of `status: deferred` specs** so a fresh session can discover what's coming without reading external plans.
@@ -45,11 +47,25 @@ Sensei, the reference implementation, is a pedagogy product built under propriet
 
 In an AI-coded future where humans read specs far more than they read generated code, SDD artifacts become the authoritative source. A spec is not documentation of code; the code is a compiled artifact of the spec. This stance reframes the value of more SDD layers: under "specs are overhead" logic, fewer layers is better; under "specs are source" logic, each layer captures authoritative knowledge no other layer can. The kit is opinionated toward the latter frame — captured as principle `P-specs-are-source` (Phase B).
 
-## Success Criteria (v0.1)
+## Success Criteria
+
+### v0.1 (achieved)
 
 - The `kanon` repo itself passes `kanon verify .` as a tier-3 consumer.
 - `kanon init <target> --tier <N>` produces a valid project for every N ∈ {0, 1, 2, 3}.
 - Tier migration chain (0 → 1 → 2 → 3 → back) preserves user-authored content end-to-end.
-- PyPI release `v0.1.0a1` cut without manual intervention beyond the trusted-publishing gate.
+- PyPI release cut without manual intervention beyond the trusted-publishing gate.
 
-Longer-term success (v0.2+) is measured by the deferred specs in [`../plans/roadmap.md`](../plans/roadmap.md) landing one by one without forcing a method redesign.
+### v0.2 (in progress)
+
+- Aspects subsume tiers: `sdd` is the first aspect; `kanon tier set` is preserved as sugar.
+- A second aspect (`worktrees`) ships at `stability: experimental` with depth 0–2.
+- The kit self-hosts both aspects (`sdd:3`, `worktrees:2`) and `kanon verify .` passes.
+- Deferred specs land one by one without forcing a second method redesign.
+
+## Amendment Trail
+
+| Date | ADR | What changed |
+|---|---|---|
+| 2026-04-23 | [ADR-0013](../decisions/0013-vision-amendment-reference-automation.md) | Non-Goal #2 scope carve-out for reference automation snippets |
+| 2026-04-23 | [ADR-0015](../decisions/0015-vision-amendment-aspect-identity.md) | §What kanon Is, §Current Promises, §Success Criteria updated to reflect aspect model |

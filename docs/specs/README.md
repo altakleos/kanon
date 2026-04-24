@@ -14,12 +14,7 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [verification-contract](verification-contract.md) | What `kanon verify` guarantees about a consumer repo | v0.1 |
 | [protocols](protocols.md) | Prose-as-code judgment procedures at `.kanon/protocols/` | v0.1.0a2 |
 | [aspects](aspects.md) | Opt-in discipline bundles; aspects subsume tiers | v0.2.0a1 |
-
-## Draft specs (in progress)
-
-| Spec | Intent | Target |
-|---|---|---|
-| [worktrees](worktrees.md) | Isolated parallel execution for concurrent LLM agents | v0.3 |
+| [worktrees](worktrees.md) | Isolated parallel execution for concurrent LLM agents | v0.2.0a2 |
 
 ## Deferred specs (scheduled for v0.2+)
 

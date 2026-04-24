@@ -22,6 +22,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0012](0012-aspect-model.md) | Aspect model — aspects subsume tiers; SDD becomes the first aspect | accepted |
 | [0013](0013-vision-amendment-reference-automation.md) | Vision amendment — reference automation snippets are kit-shippable | accepted |
 | [0014](0014-worktrees-aspect.md) | Worktrees aspect — isolated parallel execution via git worktrees | accepted |
+| [0015](0015-vision-amendment-aspect-identity.md) | Vision amendment — aspect-oriented identity | accepted |
 
 ## ADR Template
 
