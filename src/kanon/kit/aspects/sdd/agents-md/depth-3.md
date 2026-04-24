@@ -1,5 +1,3 @@
-# AGENTS.md — ${project_name}
-
 A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + design + ADRs + plans + verification. All process gates are active.
 
 ## Boot chain
@@ -24,11 +22,6 @@ A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + desig
 
 <!-- kanon:begin:protocols-index -->
 <!-- kanon:end:protocols-index -->
-
-## Contribution Conventions
-
-- **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes.
-- **Changelog** — append every user-visible change to `## [Unreleased]` in `CHANGELOG.md` in the same commit.
 
 ## References
 

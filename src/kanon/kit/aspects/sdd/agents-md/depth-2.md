@@ -1,5 +1,3 @@
-# AGENTS.md — ${project_name}
-
 A `kanon` project with `sdd` at depth 2. Plan-before-build and spec-before-design gates are both active; specs are tracked under `docs/specs/`.
 
 ## Boot chain
@@ -23,11 +21,6 @@ A `kanon` project with `sdd` at depth 2. Plan-before-build and spec-before-desig
 
 <!-- kanon:begin:protocols-index -->
 <!-- kanon:end:protocols-index -->
-
-## Contribution Conventions
-
-- **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes.
-- **Changelog** — append every user-visible change to `## [Unreleased]` in `CHANGELOG.md` in the same commit.
 
 ## References
 

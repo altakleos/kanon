@@ -216,10 +216,18 @@ def test_tier_up_additive_only(tmp_path: Path) -> None:
         assert p.is_file(), f"tier-up removed file: {rel}"
         if rel == Path("AGENTS.md"):
             # AGENTS.md may have gained new marker sections; that's expected.
-            # But every non-marker line from the original must still be present.
+            # But every non-marker line from the original must still be present,
+            # unless it's inside a kit-managed marker block (body, sections).
             new_content = p.read_text(encoding="utf-8")
+            marker_depth = 0
             for line in content.splitlines():
-                if "<!-- kanon:" in line or not line.strip():
+                if "<!-- kanon:begin:" in line:
+                    marker_depth += 1
+                    continue
+                if "<!-- kanon:end:" in line:
+                    marker_depth -= 1
+                    continue
+                if marker_depth > 0 or not line.strip():
                     continue
                 assert line in new_content or line.startswith("#"), f"tier-up lost non-marker line: {line!r}"
         else:

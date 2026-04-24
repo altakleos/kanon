@@ -1,5 +1,3 @@
-# AGENTS.md — ${project_name}
-
 A `kanon` project with `sdd` at depth 0. The kit is installed but no process gates are active yet — ideal for vibe-coding, prototypes, or short-lived utilities.
 
 ## Boot chain
@@ -20,8 +18,3 @@ kanon aspect set-depth <project-path> sdd 1
 ```
 
 Depth migration is non-destructive — your existing files are never modified, moved, or deleted by the kit. Increasing depth only adds new structure; decreasing depth only relaxes gates.
-
-## Contribution Conventions (suggested)
-
-- **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`).
-- **Changelog** — append user-visible changes to a `CHANGELOG.md` if the project has one.

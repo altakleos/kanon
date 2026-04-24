@@ -207,18 +207,24 @@ def _render_kit_md(aspects: dict[str, int], project_name: str) -> str | None:
 def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
     """Build AGENTS.md for a project with the given aspect→depth mapping.
 
-    Uses sdd's depth-N.md as the base template. Fills namespaced marker sections
-    from each aspect's sections/ fragments; renders the unified protocols-index.
-    Removes inactive sections from the base template.
+    Loads the kit-level base template, injects each aspect's depth-specific body,
+    fills namespaced marker sections from each aspect's sections/ fragments,
+    renders the unified protocols-index, and removes inactive sections.
     """
     sdd_depth = aspects.get("sdd", 0)
-    base = _aspect_path("sdd") / "agents-md" / f"depth-{sdd_depth}.md"
+    base = _kit_root() / "agents-md-base.md"
     if not base.is_file():
         raise click.ClickException(f"Missing AGENTS.md base: {base}")
-    text = _render_placeholder(
-        base.read_text(encoding="utf-8"),
-        {"project_name": project_name, "tier": str(sdd_depth)},
-    )
+    context = {"project_name": project_name, "tier": str(sdd_depth)}
+    text = _render_placeholder(base.read_text(encoding="utf-8"), context)
+    # Inject each aspect's depth-specific body before the Contribution Conventions anchor.
+    for aspect, depth in sorted(aspects.items()):
+        body_path = _aspect_path(aspect) / "agents-md" / f"depth-{depth}.md"
+        if body_path.is_file():
+            body = _render_placeholder(
+                body_path.read_text(encoding="utf-8"), context
+            )
+            text = _insert_section(text, f"{aspect}/body", body)
     # Fill active marker sections for each aspect.
     for aspect, depth in sorted(aspects.items()):
         aspect_root = _aspect_path(aspect)
@@ -239,11 +245,13 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
     # Remove inactive marker sections the base template may carry.
     active: set[str] = set()
     for aspect, depth in aspects.items():
+        active.add(f"{aspect}/body")
         for section in _aspect_sections(aspect, depth):
             active.add(_namespaced_section(aspect, section))
     top = _load_top_manifest()
     possible: set[str] = set()
     for aspect_name in top["aspects"]:
+        possible.add(f"{aspect_name}/body")
         for section in _all_aspect_sections(aspect_name):
             possible.add(_namespaced_section(aspect_name, section))
     for section in possible - active:
@@ -335,6 +343,7 @@ def _merge_agents_md(existing: str, new: str) -> str:
     top = _load_top_manifest()
     possible: set[str] = set()
     for aspect_name in top["aspects"]:
+        possible.add(f"{aspect_name}/body")
         for section in _all_aspect_sections(aspect_name):
             possible.add(_namespaced_section(aspect_name, section))
 

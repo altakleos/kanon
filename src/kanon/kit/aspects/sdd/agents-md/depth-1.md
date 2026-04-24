@@ -1,5 +1,3 @@
-# AGENTS.md — ${project_name}
-
 A `kanon` project with `sdd` at depth 1. The plan-before-build gate is active; ADRs and plans are tracked under `docs/`.
 
 ## Boot chain
@@ -19,11 +17,6 @@ A `kanon` project with `sdd` at depth 1. The plan-before-build gate is active; A
 
 <!-- kanon:begin:protocols-index -->
 <!-- kanon:end:protocols-index -->
-
-## Contribution Conventions
-
-- **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes.
-- **Changelog** — append every user-visible change to `## [Unreleased]` in `CHANGELOG.md` in the same commit.
 
 ## References
 
