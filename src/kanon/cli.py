@@ -29,18 +29,15 @@ from pathlib import Path
 from typing import Any
 
 import click
-import yaml
 
 from kanon import __version__
 from kanon._manifest import (
     _aspect_depth_range,
-    _aspect_sections,
     _default_aspects,
     _expected_files,
     _load_aspect_manifest,
     _load_top_manifest,
     _load_yaml,
-    _namespaced_section,
     _now_iso,
     _parse_frontmatter,
 )
@@ -283,6 +280,14 @@ def upgrade(target: Path) -> None:
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def verify(target: Path) -> None:
     """Verify TARGET conforms to its declared aspects."""
+    from kanon._verify import (
+        check_agents_md_markers,
+        check_aspects_known,
+        check_fidelity_lock,
+        check_required_files,
+        check_verified_by,
+    )
+
     target = target.resolve()
     errors: list[str] = []
     warnings: list[str] = []
@@ -302,111 +307,14 @@ def verify(target: Path) -> None:
         _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status="fail")
         sys.exit(2)
 
-    top = _load_top_manifest()
-    for name, depth in aspects.items():
-        if name not in top["aspects"]:
-            warnings.append(
-                f"config.aspects.{name}: aspect not in installed kit registry."
-            )
-            continue
-        min_d, max_d = _aspect_depth_range(name)
-        if not (min_d <= depth <= max_d):
-            errors.append(
-                f"config.aspects.{name}.depth={depth}: outside range [{min_d},{max_d}]."
-            )
-
-    # File and marker checks operate only on aspects the installed kit knows
-    # about. An unknown aspect already produced a warning above; resolving its
-    # files/sections would raise (its sub-manifest doesn't exist).
-    known_aspects = {n: d for n, d in aspects.items() if n in top["aspects"]}
-
-    for rel in _expected_files(known_aspects):
-        p = target / rel
-        if not p.exists():
-            errors.append(f"missing required file: {rel}")
-
-    agents_md_path = target / "AGENTS.md"
-    if agents_md_path.is_file():
-        agents_text = agents_md_path.read_text(encoding="utf-8")
-        for aspect, depth in aspects.items():
-            if aspect not in top["aspects"]:
-                continue
-            for section in _aspect_sections(aspect, depth):
-                namespaced = _namespaced_section(aspect, section)
-                begin = f"<!-- kanon:begin:{namespaced} -->"
-                end = f"<!-- kanon:end:{namespaced} -->"
-                if begin not in agents_text or end not in agents_text:
-                    errors.append(
-                        f"AGENTS.md missing marker pair for section '{namespaced}' "
-                        f"(aspect {aspect}, depth {depth})."
-                    )
-        begins = agents_text.count("<!-- kanon:begin:")
-        ends = agents_text.count("<!-- kanon:end:")
-        if begins != ends:
-            errors.append(
-                f"AGENTS.md marker imbalance: {begins} begin(s), {ends} end(s)."
-            )
-
-    # Fidelity lock checks (depth >= 2, lock file present)
-    sdd_depth = aspects.get("sdd", 0)
-    lock_path = target / ".kanon" / "fidelity.lock"
-    if sdd_depth >= 2 and lock_path.is_file():
-        lock_data = yaml.safe_load(lock_path.read_text(encoding="utf-8"))
-        if isinstance(lock_data, dict) and "entries" in lock_data:
-            lock_entries = lock_data["entries"] or {}
-            specs_dir = target / "docs" / "specs"
-            current_specs = _accepted_or_draft_specs(specs_dir)
-            for slug, entry in sorted(lock_entries.items()):
-                spec_path = specs_dir / f"{slug}.md"
-                if spec_path.is_file():
-                    current_sha = _spec_sha(spec_path)
-                    if current_sha != entry.get("spec_sha"):
-                        warnings.append(
-                            f"fidelity: spec {slug} has changed since last fidelity update."
-                        )
-                # Phase 2: check fixture SHAs
-                for fpath, locked_sha in sorted(
-                    (entry.get("fixture_shas") or {}).items()
-                ):
-                    full = target / fpath
-                    if not full.is_file():
-                        warnings.append(
-                            f"fidelity: fixture {fpath} no longer exists (spec: {slug})."
-                        )
-                    elif _spec_sha(full) != locked_sha:
-                        warnings.append(
-                            f"fidelity: fixture {fpath} has changed since last fidelity update (spec: {slug})."
-                        )
-            for p in current_specs:
-                if p.stem not in lock_entries:
-                    warnings.append(
-                        f"fidelity: spec {p.stem} is not tracked in fidelity.lock."
-                    )
-
-    # Verified-by checks (depth >= 2)
-    if sdd_depth >= 2:
-        import re as _re
-
-        _inv_re = _re.compile(r"<!--\s*(INV-[a-z][a-z0-9-]*-[a-z][a-z0-9-]*)\s*-->")
-        specs_dir = target / "docs" / "specs"
-        if specs_dir.is_dir():
-            for sp in sorted(specs_dir.glob("*.md")):
-                if sp.name.startswith("_") or sp.name == "README.md":
-                    continue
-                text = sp.read_text(encoding="utf-8")
-                fm = _parse_frontmatter(text)
-                if fm.get("status") != "accepted" or fm.get("fixtures_deferred"):
-                    continue
-                anchors = _inv_re.findall(text)
-                if not anchors:
-                    continue
-                coverage = fm.get("invariant_coverage") or {}
-                missing = [a for a in anchors if a not in coverage]
-                if missing:
-                    warnings.append(
-                        f"verified-by: {sp.name} missing invariant_coverage "
-                        f"for {len(missing)} anchor(s)."
-                    )
+    known_aspects = check_aspects_known(aspects, errors, warnings)
+    check_required_files(target, known_aspects, errors)
+    check_agents_md_markers(target, aspects, known_aspects, errors)
+    check_fidelity_lock(
+        target, aspects.get("sdd", 0), warnings,
+        spec_sha_fn=_spec_sha, accepted_specs_fn=_accepted_or_draft_specs,
+    )
+    check_verified_by(target, aspects.get("sdd", 0), warnings)
 
     status = "fail" if errors else "ok"
     _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status=status)
