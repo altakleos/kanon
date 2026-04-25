@@ -11,6 +11,7 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [v0.1-bootstrap](v0.1-bootstrap.md) | Initial kit bootstrap through v0.1.0a1 release | in-progress |
 | [v0.1-kit-refactor-and-protocols](v0.1-kit-refactor-and-protocols.md) | Kit bundle refactor + three protocols | done |
 | [v0.2-aspect-model](v0.2-aspect-model.md) | Aspects subsume tiers; SDD becomes the first aspect | planned |
+| [cli-spec-realignment](cli-spec-realignment.md) | CLI spec realignment — fix 6 drifted invariants, ADR-0024, crash-recovery sentinel | in-progress |
 
 ## Roadmap
 
