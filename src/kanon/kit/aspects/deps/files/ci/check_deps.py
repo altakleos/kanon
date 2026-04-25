@@ -12,6 +12,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 # Directories to skip.
 _SKIP_DIRS = {".git", "node_modules", ".venv", "__pycache__", "dist", "build"}
@@ -49,9 +50,9 @@ def _find_manifests(root: Path) -> list[Path]:
     return manifests
 
 
-def _check_requirements_txt(path: Path) -> list[dict]:
+def _check_requirements_txt(path: Path) -> list[dict[str, Any]]:
     """Check requirements.txt for unpinned versions."""
-    findings: list[dict] = []
+    findings: list[dict[str, Any]] = []
     for i, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         line = raw.strip()
         if not line or line.startswith("#") or line.startswith("-"):
@@ -70,9 +71,9 @@ def _check_requirements_txt(path: Path) -> list[dict]:
     return findings
 
 
-def _check_pyproject_toml(path: Path) -> list[dict]:
+def _check_pyproject_toml(path: Path) -> list[dict[str, Any]]:
     """Check pyproject.toml for unpinned dependency versions."""
-    findings: list[dict] = []
+    findings: list[dict[str, Any]] = []
     text = path.read_text(encoding="utf-8")
     in_deps = False
     for i, raw in enumerate(text.splitlines(), 1):
@@ -89,9 +90,9 @@ def _check_pyproject_toml(path: Path) -> list[dict]:
     return findings
 
 
-def _check_package_json(path: Path) -> list[dict]:
+def _check_package_json(path: Path) -> list[dict[str, Any]]:
     """Check package.json for ^ or ~ version prefixes."""
-    findings: list[dict] = []
+    findings: list[dict[str, Any]] = []
     for i, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         if _PKG_JSON_UNPINNED.search(raw):
             findings.append({"file": str(path), "line": i, "rule": "unpinned-version",
@@ -99,9 +100,9 @@ def _check_package_json(path: Path) -> list[dict]:
     return findings
 
 
-def _check_duplicates(root: Path) -> list[dict]:
+def _check_duplicates(root: Path) -> list[dict[str, Any]]:
     """Best-effort detection of duplicate-purpose packages across manifests."""
-    findings: list[dict] = []
+    findings: list[dict[str, Any]] = []
     all_deps: set[str] = set()
 
     for p in _find_manifests(root):
@@ -128,7 +129,7 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    all_findings: list[dict] = []
+    all_findings: list[dict[str, Any]] = []
 
     for manifest in _find_manifests(root):
         if manifest.name == "requirements.txt":
