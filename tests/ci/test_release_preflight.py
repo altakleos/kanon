@@ -78,9 +78,8 @@ def test_main_all_pass(
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("sys.argv", ["prog", "--tag", "v1.2.3"])
 
-    with patch.object(mod, "_check", return_value=True):
-        with pytest.raises(SystemExit) as exc_info:
-            mod.main()
+    with patch.object(mod, "_check", return_value=True), pytest.raises(SystemExit) as exc_info:
+        mod.main()
 
     assert exc_info.value.code == 0
     out = json.loads(capsys.readouterr().out)
@@ -102,9 +101,8 @@ def test_main_version_mismatch(
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("sys.argv", ["prog", "--tag", "v1.2.3"])
 
-    with patch.object(mod, "_check", return_value=True):
-        with pytest.raises(SystemExit) as exc_info:
-            mod.main()
+    with patch.object(mod, "_check", return_value=True), pytest.raises(SystemExit) as exc_info:
+        mod.main()
 
     assert exc_info.value.code == 1
     out = json.loads(capsys.readouterr().out)
@@ -126,9 +124,8 @@ def test_main_missing_changelog(
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("sys.argv", ["prog", "--tag", "v1.2.3"])
 
-    with patch.object(mod, "_check", return_value=True):
-        with pytest.raises(SystemExit) as exc_info:
-            mod.main()
+    with patch.object(mod, "_check", return_value=True), pytest.raises(SystemExit) as exc_info:
+        mod.main()
 
     assert exc_info.value.code == 1
     out = json.loads(capsys.readouterr().out)
