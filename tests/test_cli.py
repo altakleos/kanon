@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from unittest.mock import patch
 
 import click
 import pytest
@@ -1298,6 +1299,41 @@ def test_aspect_remove_leaves_files(tmp_path: Path) -> None:
     # Scripts still on disk (non-destructive)
     assert (target / "scripts" / "worktree-setup.sh").is_file()
     assert "non-destructive" in result.output.lower() or "left on disk" in result.output.lower()
+
+
+def test_aspect_remove_clears_sentinel_on_success(tmp_path: Path) -> None:
+    """`aspect remove` writes `.kanon/.pending` during the mutation and
+    clears it on success — symmetric with the other mutating commands.
+    """
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+
+    pending = target / ".kanon" / ".pending"
+    assert not pending.exists(), "sentinel should be absent before remove"
+
+    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    assert result.exit_code == 0, result.output
+    assert not pending.exists(), "sentinel must be cleared after successful remove"
+
+
+def test_aspect_remove_persists_sentinel_on_mid_write_failure(tmp_path: Path) -> None:
+    """If `_write_config` raises mid-`aspect remove`, the sentinel must
+    persist so the next CLI invocation warns the user (ADR-0024 contract).
+    """
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+
+    pending = target / ".kanon" / ".pending"
+
+    # Patch _write_config to raise after the sentinel write but before clear.
+    with patch("kanon.cli._write_config", side_effect=OSError("simulated disk full")):
+        runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    assert pending.is_file(), "sentinel must persist after mid-write failure"
+    assert pending.read_text(encoding="utf-8").strip() == "aspect-remove"
 
 
 def test_init_with_aspects_flag(tmp_path: Path) -> None:
