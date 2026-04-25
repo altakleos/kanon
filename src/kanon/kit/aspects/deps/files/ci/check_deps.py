@@ -72,13 +72,22 @@ def _check_requirements_txt(path: Path) -> list[dict[str, Any]]:
 
 
 def _check_pyproject_toml(path: Path) -> list[dict[str, Any]]:
-    """Check pyproject.toml for unpinned dependency versions."""
+    """Check pyproject.toml for unpinned dependency versions.
+
+    Only the bodies of `dependencies = [...]` and `<group> = [...]` arrays
+    inside `[project.optional-dependencies]` are scanned. Scalar fields like
+    `requires-python`, `name`, `version`, etc. — which can match the unpinned
+    regex incidentally — are not dependency declarations and are skipped.
+    """
     findings: list[dict[str, Any]] = []
     text = path.read_text(encoding="utf-8")
     in_deps = False
     for i, raw in enumerate(text.splitlines(), 1):
         line = raw.strip()
-        if line in ("[project]", "dependencies = ["):
+        # Trigger on `dependencies = [` or any `<name> = [` (covers
+        # `optional-dependencies` blocks like `dev = [...]`). The `[project]`
+        # section header itself is no longer a state-flip trigger.
+        if not in_deps and re.match(r"^[A-Za-z_][\w-]*\s*=\s*\[\s*$", line):
             in_deps = True
             continue
         if in_deps and line.startswith("]"):

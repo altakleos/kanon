@@ -99,3 +99,64 @@ def test_main_exits_zero(tmp_path: Path, capsys: pytest.CaptureFixture[str], mon
     out = capsys.readouterr().out
     report = json.loads(out)
     assert report["status"] == "ok"
+
+
+def test_pyproject_requires_python_alone_is_not_a_dependency(tmp_path: Path) -> None:
+    """`requires-python = \">=3.10\"` is a PEP 621 Python-version constraint, not a dep.
+
+    Pre-fix, the in_deps state machine treated `[project]` itself as the entry
+    boundary, so the value `\">=3.10\"` matched `_PYPROJECT_UNPINNED` and was
+    reported. Post-fix, only the body of `<name> = [...]` arrays is scanned.
+    """
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(
+        '[project]\nname = "x"\nrequires-python = ">=3.10"\n',
+        encoding="utf-8",
+    )
+    assert mod._check_pyproject_toml(pyproject) == []
+
+
+def test_pyproject_requires_python_skipped_alongside_dependencies(tmp_path: Path) -> None:
+    """`requires-python` outside any array is skipped even when a deps array follows."""
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(
+        '[project]\n'
+        'name = "x"\n'
+        'requires-python = ">=3.10"\n'
+        'dependencies = [\n'
+        '    "click==8.1.7",\n'
+        ']\n',
+        encoding="utf-8",
+    )
+    assert mod._check_pyproject_toml(pyproject) == []
+
+
+def test_pyproject_dependency_array_still_scanned(tmp_path: Path) -> None:
+    """Entries inside `dependencies = [` still match the scanner regex."""
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(
+        '[project]\n'
+        'requires-python = ">=3.10"\n'
+        'dependencies = [\n'
+        '    ">=1.0",\n'  # exotic but matches `_PYPROJECT_UNPINNED`
+        ']\n',
+        encoding="utf-8",
+    )
+    findings = mod._check_pyproject_toml(pyproject)
+    assert len(findings) == 1
+    assert "requires-python" not in findings[0]["message"]
+
+
+def test_pyproject_optional_dependencies_block_scanned(tmp_path: Path) -> None:
+    """Arrays inside `[project.optional-dependencies]` are scanned by the same rule."""
+    pyproject = tmp_path / "pyproject.toml"
+    pyproject.write_text(
+        '[project]\n'
+        '[project.optional-dependencies]\n'
+        'dev = [\n'
+        '    ">=7.0",\n'  # exotic but matches `_PYPROJECT_UNPINNED`
+        ']\n',
+        encoding="utf-8",
+    )
+    findings = mod._check_pyproject_toml(pyproject)
+    assert len(findings) == 1

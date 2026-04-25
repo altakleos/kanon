@@ -98,3 +98,22 @@ def test_main_exits_one_on_trivial(
     monkeypatch.setattr("sys.argv", ["check_test_quality", "--root", str(tmp_path)])
     with pytest.raises(SystemExit, match="1"):
         mod.main()
+
+
+def test_skip_dirs_excludes_venv_and_friends(tmp_path: Path) -> None:
+    """Test files inside `.venv/`, `node_modules/`, etc. are not collected."""
+    real = tmp_path / "tests" / "test_real.py"
+    real.parent.mkdir(parents=True)
+    real.write_text(
+        "def test_one():\n    assert 1 == 1\n", encoding="utf-8",
+    )
+    venv_test = tmp_path / ".venv" / "lib" / "python3.11" / "site-packages" / "mypy" / "test_skip.py"
+    venv_test.parent.mkdir(parents=True)
+    venv_test.write_text("# would otherwise warn: zero test functions\n", encoding="utf-8")
+    node_test = tmp_path / "node_modules" / "foo" / "test_skip.py"
+    node_test.parent.mkdir(parents=True)
+    node_test.write_text("# would otherwise warn: zero test functions\n", encoding="utf-8")
+
+    found = mod._find_test_files(tmp_path)
+    found_relative = {p.relative_to(tmp_path).as_posix() for p in found}
+    assert found_relative == {"tests/test_real.py"}
