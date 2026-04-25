@@ -1230,6 +1230,27 @@ def test_aspect_add_already_enabled(tmp_path: Path) -> None:
     assert "already enabled" in result.output.lower()
 
 
+def test_aspect_add_with_depth(tmp_path: Path) -> None:
+    """aspect add --depth N enables at the specified depth."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees", "--depth", "2"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert config["aspects"]["worktrees"]["depth"] == 2
+
+
+def test_aspect_add_depth_out_of_range(tmp_path: Path) -> None:
+    """aspect add --depth with invalid depth fails."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees", "--depth", "9"])
+    assert result.exit_code != 0
+    assert "outside range" in result.output.lower()
+
+
 def test_aspect_add_unknown(tmp_path: Path) -> None:
     """aspect add with an unknown aspect name fails."""
     runner = CliRunner()

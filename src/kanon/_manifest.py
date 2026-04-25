@@ -112,31 +112,26 @@ def _aspect_path(aspect: str) -> Path:
     return _kit_root() / str(top["aspects"][aspect]["path"])
 
 
-def _aspect_files(aspect: str, depth: int) -> list[str]:
+def _aspect_items(aspect: str, depth: int, key: str) -> list[str]:
+    """Return the union of *key* entries from depth-0 through *depth*."""
     sub = _load_aspect_manifest(aspect)
     min_d, _ = _aspect_depth_range(aspect)
-    paths: list[str] = []
+    items: list[str] = []
     for d in range(min_d, depth + 1):
-        paths.extend(sub.get(f"depth-{d}", {}).get("files", []) or [])
-    return paths
+        items.extend(sub.get(f"depth-{d}", {}).get(key, []) or [])
+    return items
+
+
+def _aspect_files(aspect: str, depth: int) -> list[str]:
+    return _aspect_items(aspect, depth, "files")
 
 
 def _aspect_protocols(aspect: str, depth: int) -> list[str]:
-    sub = _load_aspect_manifest(aspect)
-    min_d, _ = _aspect_depth_range(aspect)
-    paths: list[str] = []
-    for d in range(min_d, depth + 1):
-        paths.extend(sub.get(f"depth-{d}", {}).get("protocols", []) or [])
-    return paths
+    return _aspect_items(aspect, depth, "protocols")
 
 
 def _aspect_sections(aspect: str, depth: int) -> list[str]:
-    sub = _load_aspect_manifest(aspect)
-    min_d, _ = _aspect_depth_range(aspect)
-    sections: list[str] = []
-    for d in range(min_d, depth + 1):
-        sections.extend(sub.get(f"depth-{d}", {}).get("sections", []) or [])
-    return sections
+    return _aspect_items(aspect, depth, "sections")
 
 
 def _all_aspect_sections(aspect: str) -> set[str]:

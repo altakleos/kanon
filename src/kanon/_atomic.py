@@ -24,7 +24,7 @@ def atomic_write_text(path: Path, content: str) -> None:
        but not the containing directory entry. No-op on non-POSIX.
     5. On any exception, remove the tmp file to avoid leaving debris.
     """
-    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
     try:
         with tmp.open("w", encoding="utf-8") as fh:
             fh.write(content)

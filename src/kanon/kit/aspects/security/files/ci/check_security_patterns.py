@@ -109,6 +109,7 @@ def _collect_files(root: Path) -> list[Path]:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Security pattern scanner")
     parser.add_argument("--root", default=".", help="Project root directory")
+    parser.add_argument("--strict", action="store_true", help="Exit non-zero on findings")
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
@@ -119,7 +120,7 @@ def main() -> None:
     status = "warn" if all_findings else "ok"
     report = {"status": status, "findings": all_findings}
     print(json.dumps(report, indent=2))
-    sys.exit(0)
+    sys.exit(1 if args.strict and all_findings else 0)
 
 
 if __name__ == "__main__":
