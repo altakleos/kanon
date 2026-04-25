@@ -73,10 +73,10 @@ def check_plan_status_drift(root: Path) -> list[str]:
         status = fm.get("status", "")
         checked = len(checked_re.findall(text))
         unchecked = len(unchecked_re.findall(text))
-        if status == "done" and unchecked > 0 and checked == 0:
+        if status == "done" and unchecked > 0:
             warnings.append(
                 f"{p.name}: status is 'done' but has {unchecked} unchecked "
-                f"task(s) and 0 checked tasks"
+                f"task(s) (use `- [x]` for done, or `- [~]` with a NOTE to defer)"
             )
         if status == "planned" and checked > 0:
             warnings.append(
