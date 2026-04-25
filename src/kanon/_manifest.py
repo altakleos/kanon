@@ -161,6 +161,46 @@ def _load_top_manifest() -> dict[str, Any]:
     return data
 
 
+# Recognised value types in an aspect's `config-schema:`. Anything else is
+# rejected at sub-manifest load time.
+_CONFIG_SCHEMA_TYPES = frozenset({"string", "integer", "boolean", "number"})
+# Permitted descriptor fields under each `config-schema.<key>` entry.
+_CONFIG_SCHEMA_FIELDS = frozenset({"type", "default", "description"})
+
+
+def _validate_config_schema(sub_path: Path, schema: Any) -> None:
+    """Validate the optional ``config-schema:`` block at sub-manifest load time."""
+    if not isinstance(schema, dict):
+        raise click.ClickException(
+            f"{sub_path}: 'config-schema' must be a mapping of key → descriptor."
+        )
+    for key, descriptor in schema.items():
+        if not isinstance(key, str) or not key:
+            raise click.ClickException(
+                f"{sub_path}: config-schema key must be a non-empty string, got {key!r}."
+            )
+        if not isinstance(descriptor, dict):
+            raise click.ClickException(
+                f"{sub_path}: config-schema.{key} must be a mapping (got {type(descriptor).__name__})."
+            )
+        if "type" not in descriptor:
+            raise click.ClickException(
+                f"{sub_path}: config-schema.{key} is missing required field 'type'."
+            )
+        type_val = descriptor["type"]
+        if type_val not in _CONFIG_SCHEMA_TYPES:
+            raise click.ClickException(
+                f"{sub_path}: config-schema.{key}.type {type_val!r} is invalid; "
+                f"expected one of {sorted(_CONFIG_SCHEMA_TYPES)}."
+            )
+        unknown = set(descriptor) - _CONFIG_SCHEMA_FIELDS
+        if unknown:
+            raise click.ClickException(
+                f"{sub_path}: config-schema.{key} has unknown field(s) {sorted(unknown)!r}; "
+                f"only {sorted(_CONFIG_SCHEMA_FIELDS)} are permitted."
+            )
+
+
 @cache
 def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
     """Load src/kanon/kit/aspects/<aspect>/manifest.yaml."""
@@ -178,7 +218,18 @@ def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
             raise click.ClickException(f"{sub_path}: missing {key!r} entry.")
         if not isinstance(data[key], dict):
             raise click.ClickException(f"{sub_path}: {key} must be a mapping.")
+    if "config-schema" in data:
+        _validate_config_schema(sub_path, data["config-schema"])
     return data
+
+
+def _aspect_config_schema(aspect: str) -> dict[str, dict[str, Any]] | None:
+    """Return the aspect's ``config-schema:`` mapping, or None when none is declared."""
+    sub = _load_aspect_manifest(aspect)
+    schema = sub.get("config-schema")
+    if schema is None:
+        return None
+    return dict(schema)
 
 
 def _aspect_depth_range(aspect: str) -> tuple[int, int]:

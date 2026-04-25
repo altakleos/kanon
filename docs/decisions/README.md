@@ -32,6 +32,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0022](0022-security-aspect.md) | Security aspect — hardened defaults for LLM-agent-authored code | accepted |
 | [0023](0023-deps-aspect.md) | Deps aspect — dependency hygiene for LLM-agent-driven repos | accepted |
 | [0024](0024-crash-consistent-atomicity.md) | Crash-consistent atomicity for multi-file CLI operations | accepted |
+| [0025](0025-aspect-config-parsing.md) | Aspect-config CLI parsing — YAML scalar + optional schema | accepted (lite) |
 
 ## ADR Template
 
