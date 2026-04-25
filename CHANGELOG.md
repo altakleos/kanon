@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 - **Kit-shipped reference release workflow** (`src/kanon/kit/aspects/release/files/.github/workflows/release.yml`) now uses Node-24-compatible action majors: `actions/checkout@v5` and `actions/setup-python@v6`. New consumers enabling the `release` aspect at depth 2 inherit the bumped versions; existing consumers can refresh by re-running `kanon upgrade` (or apply the bump manually). The repo's own workflows were already bumped in v0.2.0a6 (PRs #10, #12); this aligns the consumer-facing template.
 
+### Fixed
+
+- **Recovery warning after an interrupted operation now suggests the correct user-facing command.** Previously, if a `.kanon/.pending` sentinel was found from an interrupted `aspect set-depth` / `aspect set-config` / `aspect remove` / `fidelity update`, the warning suggested invalid forms like `kanon set-depth` or `kanon aspect-remove`. The recovery message now consults a single source-of-truth mapping (`_PENDING_OP_TO_COMMAND` in `src/kanon/cli.py`) and produces the correct sub-group form (e.g., `kanon aspect remove`, with a space). Internal sentinel operation strings are now named constants (`_OP_INIT`, `_OP_UPGRADE`, `_OP_SET_DEPTH`, `_OP_SET_CONFIG`, `_OP_ASPECT_REMOVE`, `_OP_FIDELITY_UPDATE`) — no more free-form string literals at `write_sentinel(...)` callsites.
+
 ## [0.2.0a6] — 2026-04-25
 
 ### Added
