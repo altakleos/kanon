@@ -100,6 +100,57 @@ def test_superseded_spec_exempt_from_fixtures_check(tmp_path: Path) -> None:
     assert not any("'fixtures:'" in e for e in errors), errors
 
 
+def test_orphan_exempt_requires_reason(tmp_path: Path) -> None:
+    """Per spec-graph-orphans INV-5, `orphan-exempt: true` MUST pair
+    with a non-empty `orphan-exempt-reason:`. Missing reason is an error."""
+    foundations = tmp_path / "foundations"
+    foundations.mkdir()
+    principles = foundations / "principles"
+    principles.mkdir()
+    (principles / "P-bare.md").write_text(
+        "---\nid: P-bare\nkind: pedagogical\nstatus: accepted\n"
+        "orphan-exempt: true\n---\n# P-bare\n",
+        encoding="utf-8",
+    )
+    specs = tmp_path / "specs"
+    specs.mkdir()
+    errors, _ = mod.check(foundations, specs)
+    assert any("orphan-exempt-reason" in e for e in errors), errors
+
+
+def test_orphan_exempt_with_reason_passes(tmp_path: Path) -> None:
+    foundations = tmp_path / "foundations"
+    foundations.mkdir()
+    principles = foundations / "principles"
+    principles.mkdir()
+    (principles / "P-conduct.md").write_text(
+        "---\nid: P-conduct\nkind: pedagogical\nstatus: accepted\n"
+        "orphan-exempt: true\norphan-exempt-reason: agent stance\n---\n",
+        encoding="utf-8",
+    )
+    specs = tmp_path / "specs"
+    specs.mkdir()
+    errors, _ = mod.check(foundations, specs)
+    assert not any("orphan-exempt" in e for e in errors), errors
+
+
+def test_orphan_exempt_empty_reason_fails(tmp_path: Path) -> None:
+    """Whitespace-only or empty reason strings are rejected."""
+    foundations = tmp_path / "foundations"
+    foundations.mkdir()
+    principles = foundations / "principles"
+    principles.mkdir()
+    (principles / "P-bare.md").write_text(
+        "---\nid: P-bare\nkind: pedagogical\nstatus: accepted\n"
+        "orphan-exempt: true\norphan-exempt-reason: '   '\n---\n",
+        encoding="utf-8",
+    )
+    specs = tmp_path / "specs"
+    specs.mkdir()
+    errors, _ = mod.check(foundations, specs)
+    assert any("orphan-exempt-reason" in e for e in errors), errors
+
+
 def test_deferred_spec_still_exempt_from_fixtures_check(tmp_path: Path) -> None:
     """Regression: extending the exemption to `superseded` must NOT remove
     the existing `deferred` exemption."""

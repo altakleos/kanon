@@ -34,6 +34,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0024](0024-crash-consistent-atomicity.md) | Crash-consistent atomicity for multi-file CLI operations | accepted |
 | [0025](0025-aspect-config-parsing.md) | Aspect-config CLI parsing — YAML scalar + optional schema | accepted (lite) |
 | [0026](0026-aspect-provides-and-generalised-requires.md) | `provides:` capability registry + generalised `requires:` | accepted (lite) |
+| [0027](0027-graph-rename-ops-manifest.md) | Ops-manifest extension to ADR-0024 for `kanon graph rename` | accepted (lite) |
 
 ## ADR Template
 
