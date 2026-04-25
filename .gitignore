@@ -17,3 +17,10 @@ htmlcov/
 .omc/
 .yolo-sisyphus/
 .worktrees/
+
+# Claude Code — personal/runtime state. Project-shared settings (.claude/settings.json,
+# .claude/commands/, .claude/hooks/) ARE checked in; only personal overrides and
+# runtime artefacts are excluded.
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+CLAUDE.local.md
