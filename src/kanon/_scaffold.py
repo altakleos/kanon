@@ -24,6 +24,7 @@ from kanon._manifest import (
     _kit_root,
     _load_aspect_manifest,
     _load_top_manifest,
+    _load_yaml,
     _namespaced_section,
     _now_iso,
     _parse_frontmatter,
@@ -40,9 +41,7 @@ def _read_config(target: Path) -> dict[str, Any]:
         raise click.ClickException(
             f"Not a kanon project: {target} (missing .kanon/config.yaml)."
         )
-    data = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise click.ClickException(f"Malformed {config_path}: expected a YAML mapping.")
+    data = _load_yaml(config_path)
     return _migrate_legacy_config(data)
 
 
@@ -100,10 +99,8 @@ def _load_harnesses() -> list[dict[str, Any]]:
     path = _kit_root() / "harnesses.yaml"
     if not path.is_file():
         return []
-    data = yaml.safe_load(path.read_text(encoding="utf-8")) or []
-    if not isinstance(data, list):
-        raise click.ClickException(f"Malformed {path}: expected a YAML list.")
-    return data
+    result: list[dict[str, Any]] = _load_yaml(path, expected_type=list)
+    return result
 
 
 def _render_shims() -> dict[str, str]:

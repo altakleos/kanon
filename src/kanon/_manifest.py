@@ -17,6 +17,26 @@ import yaml
 
 import kanon
 
+
+def _load_yaml(path: Path, expected_type: type = dict) -> Any:
+    """Load a YAML file and validate its top-level type.
+
+    Wraps ``yaml.safe_load`` so that parse errors produce a clear
+    :class:`click.ClickException` instead of a raw ``yaml.YAMLError``
+    traceback.
+    """
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise click.ClickException(f"Invalid YAML in {path}: {exc}") from None
+    if not isinstance(data, expected_type):
+        type_name = "mapping" if expected_type is dict else expected_type.__name__
+        raise click.ClickException(
+            f"Malformed {path}: expected a YAML {type_name}."
+        )
+    return data
+
+
 # Files the CLI always synthesizes (not sourced from any aspect's files/ tree).
 _ALWAYS_SYNTHESIZED = ("AGENTS.md", ".kanon/config.yaml")
 
@@ -37,9 +57,7 @@ def _load_top_manifest() -> dict[str, Any]:
     path = _kit_root() / "manifest.yaml"
     if not path.is_file():
         raise click.ClickException(f"kit manifest missing: {path}")
-    data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise click.ClickException(f"malformed {path}: expected a YAML mapping.")
+    data: dict[str, Any] = _load_yaml(path)
     aspects = data.get("aspects")
     if not isinstance(aspects, dict) or not aspects:
         raise click.ClickException(f"{path}: missing or empty 'aspects' mapping.")
@@ -72,9 +90,7 @@ def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
     sub_path = _kit_root() / top["aspects"][aspect]["path"] / "manifest.yaml"
     if not sub_path.is_file():
         raise click.ClickException(f"aspect sub-manifest missing: {sub_path}")
-    data = yaml.safe_load(sub_path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise click.ClickException(f"malformed {sub_path}: expected a YAML mapping.")
+    data: dict[str, Any] = _load_yaml(sub_path)
     min_d, max_d = _aspect_depth_range(aspect)
     for d in range(min_d, max_d + 1):
         key = f"depth-{d}"

@@ -793,6 +793,26 @@ def test_read_config_malformed(tmp_path: Path) -> None:
         _read_config(tmp_path)
 
 
+def test_load_yaml_invalid_syntax(tmp_path: Path) -> None:
+    """_load_yaml wraps yaml.YAMLError into ClickException."""
+    from kanon._manifest import _load_yaml
+
+    bad = tmp_path / "bad.yaml"
+    bad.write_text(":\n  - :\n  bad: [unterminated", encoding="utf-8")
+    with pytest.raises(click.ClickException, match="Invalid YAML"):
+        _load_yaml(bad)
+
+
+def test_load_yaml_wrong_type(tmp_path: Path) -> None:
+    """_load_yaml raises ClickException when top-level type doesn't match."""
+    from kanon._manifest import _load_yaml
+
+    f = tmp_path / "list.yaml"
+    f.write_text("- one\n- two\n", encoding="utf-8")
+    with pytest.raises(click.ClickException, match="expected a YAML mapping"):
+        _load_yaml(f, expected_type=dict)
+
+
 def test_migrate_legacy_config_no_tier_no_aspects() -> None:
     """Line 54: config has neither 'aspects' nor 'tier'."""
     from kanon._scaffold import _migrate_legacy_config

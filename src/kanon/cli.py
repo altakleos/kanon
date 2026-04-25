@@ -39,6 +39,7 @@ from kanon._manifest import (
     _expected_files,
     _load_aspect_manifest,
     _load_top_manifest,
+    _load_yaml,
     _namespaced_section,
     _now_iso,
     _parse_frontmatter,
@@ -235,9 +236,7 @@ def upgrade(target: Path) -> None:
             f"Not a kanon project: {target} (missing .kanon/config.yaml)."
         )
     _check_pending_recovery(target)
-    raw = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    if not isinstance(raw, dict):
-        raise click.ClickException(f"Malformed {config_path}: expected a YAML mapping.")
+    raw = _load_yaml(config_path)
     was_legacy = "aspects" not in raw and "tier" in raw
     config = _migrate_legacy_config(raw)
     aspects = _config_aspects(config)
