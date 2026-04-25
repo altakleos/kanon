@@ -8,6 +8,8 @@ kanon init ~/myproject --tier 1
 cd ~/myproject           # open with any LLM coding agent
 ```
 
+**Requires POSIX (Linux / macOS).** Windows is not supported.
+
 ---
 
 `kanon` packages development disciplines — starting with Spec-Driven Development and worktree isolation — as a pip-installable kit. Drop it into any repo, point your LLM agent at the scaffolded `AGENTS.md`, and the agent becomes a process-disciplined contributor: plans before building, specs before designing, worktrees for parallel work, verification as a first-class layer.

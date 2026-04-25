@@ -1,6 +1,6 @@
 ---
 status: accepted
-date: 2026-04-22
+date: 2026-04-25
 realizes:
   - P-prose-is-code
   - P-self-hosted-bootstrap
@@ -8,6 +8,11 @@ stressed_by:
   - solo-engineer
   - platform-team
 fixtures_deferred: "Pytest CLI test suite lands in Phase D of v0.1 bootstrap (tests/test_cli.py)"
+invariant_coverage:
+  INV-cli-posix-only:
+    - pyproject.toml
+    - README.md
+    - tests/test_atomic.py::test_fsyncs_parent_directory
 ---
 # Spec: `kanon` CLI surface
 
@@ -35,6 +40,8 @@ Provide a single `kanon` command with a small set of subcommands that cover the 
 8. **Atomicity.** Every command that modifies files is atomic — the target repo is either in the pre-command state or the post-command state, never partial. Implemented via the tmp-dir swap pattern.
 <!-- INV-cli-consumer-friendly-errors -->
 9. **Consumer-friendly errors.** Missing `.kanon/config.yaml`, broken shim targets, or tier mismatches emit single-line human-readable messages with the offending path.
+<!-- INV-cli-posix-only -->
+10. **POSIX-only.** The `kanon` CLI assumes a POSIX filesystem (Linux, macOS) for its atomic-write primitives (write-to-tmp + `fsync` of parent directory + `rename`). Windows is not supported. The `pyproject.toml` `classifiers` and the README quickstart record this constraint.
 
 ## Rationale
 

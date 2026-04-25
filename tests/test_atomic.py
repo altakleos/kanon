@@ -1,4 +1,9 @@
-"""Tests for the atomic_write_text helper, ported from Sensei."""
+"""Tests for the atomic_write_text helper, ported from Sensei.
+
+kanon is POSIX-only (Linux / macOS); these tests assume POSIX semantics —
+in particular, the parent-directory fsync that test_fsyncs_parent_directory
+asserts. See pyproject.toml's OS classifiers and the README.
+"""
 
 from __future__ import annotations
 
@@ -48,7 +53,6 @@ def test_overwrites_existing_file(tmp_path: Path) -> None:
     assert target.read_text(encoding="utf-8") == "new: data\n"
 
 
-@pytest.mark.skipif(os.name != "posix", reason="parent-dir fsync is POSIX-only")
 def test_fsyncs_parent_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     import kanon._atomic as atomic_mod
 
