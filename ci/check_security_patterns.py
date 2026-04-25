@@ -13,6 +13,7 @@ import math
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 # File extensions to scan.
 _EXTENSIONS = {".py", ".js", ".ts", ".go", ".rs", ".java", ".rb", ".sh"}
@@ -60,8 +61,8 @@ def _shannon_entropy(s: str) -> float:
 _HIGH_ENTROPY_TOKEN = re.compile(r"""['"][A-Za-z0-9+/=_\-]{21,}['"]""")
 
 
-def _scan_file(path: Path) -> list[dict]:
-    findings: list[dict] = []
+def _scan_file(path: Path) -> list[dict[str, Any]]:
+    findings: list[dict[str, Any]] = []
     try:
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     except OSError:
@@ -113,7 +114,7 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    all_findings: list[dict] = []
+    all_findings: list[dict[str, Any]] = []
     for f in _collect_files(root):
         all_findings.extend(_scan_file(f))
 
