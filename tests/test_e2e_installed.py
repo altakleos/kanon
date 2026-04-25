@@ -89,11 +89,6 @@ def test_installed_worktrees_aspect(installed_venv: Path, tmp_path: Path) -> Non
     assert r.returncode == 0, r.stderr
     assert (target / "scripts" / "worktree-setup.sh").is_file()
 
-    # Demote to depth 0 before verify (matches in-process test pattern —
-    # depth-2 branch-hygiene marker not yet injected into AGENTS.md)
-    r = _run_kanon(installed_venv, "aspect", "set-depth", str(target), "worktrees", "0")
-    assert r.returncode == 0, r.stderr
-
     r = _run_kanon(installed_venv, "verify", str(target))
     assert r.returncode == 0, r.stderr
 
