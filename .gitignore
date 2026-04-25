@@ -15,3 +15,4 @@ htmlcov/
 *.tmp
 .omc/
 .yolo-sisyphus/
+.worktrees/
