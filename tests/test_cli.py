@@ -1555,3 +1555,60 @@ def test_deps_depth_2_has_ci_script(tmp_path: Path) -> None:
     result = runner.invoke(main, ["aspect", "set-depth", str(target), "deps", "2"])
     assert result.exit_code == 0, result.output
     assert (target / "ci" / "check_deps.py").is_file()
+
+
+# --- Sentinel crash-recovery integration tests (ADR-0024) ---
+
+
+def test_sentinel_absent_after_successful_init(tmp_path: Path) -> None:
+    """After a successful init, .kanon/.pending must not exist."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+    assert result.exit_code == 0, result.output
+    assert not (target / ".kanon" / ".pending").exists()
+
+
+def test_sentinel_absent_after_successful_upgrade(tmp_path: Path) -> None:
+    """After a successful upgrade, .kanon/.pending must not exist."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+    assert not (target / ".kanon" / ".pending").exists()
+
+
+def test_sentinel_absent_after_successful_set_depth(tmp_path: Path) -> None:
+    """After a successful set-depth, .kanon/.pending must not exist."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "sdd", "2"])
+    assert result.exit_code == 0, result.output
+    assert not (target / ".kanon" / ".pending").exists()
+
+
+def test_pending_sentinel_triggers_warning_on_upgrade(tmp_path: Path) -> None:
+    """If .kanon/.pending exists, upgrade warns about interrupted operation."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    # Simulate interrupted operation by writing sentinel manually.
+    (target / ".kanon" / ".pending").write_text("set-depth\n", encoding="utf-8")
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+    assert "interrupted" in result.output.lower()
+    # Sentinel should be cleared after successful upgrade.
+    assert not (target / ".kanon" / ".pending").exists()
+
+
+def test_pending_sentinel_triggers_warning_on_verify(tmp_path: Path) -> None:
+    """If .kanon/.pending exists, verify warns about interrupted operation."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    (target / ".kanon" / ".pending").write_text("upgrade\n", encoding="utf-8")
+    result = runner.invoke(main, ["verify", str(target)])
+    # Verify outputs to stderr; CliRunner mixes stdout+stderr by default.
+    assert "interrupted" in result.output.lower()
