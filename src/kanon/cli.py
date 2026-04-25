@@ -513,13 +513,10 @@ def aspect_set_depth(target: Path, aspect_name: str, n: int) -> None:
     _set_aspect_depth(target, aspect_name, n)
 
 
-def _set_aspect_depth(
-    target: Path, aspect_name: str, n: int, legacy_tier_verb: bool = False
+def _validate_aspect_and_depth(
+    aspect_name: str, n: int, top: dict[str, Any]
 ) -> None:
-    target = target.resolve()
-    config = _read_config(target)
-    _check_pending_recovery(target)
-    top = _load_top_manifest()
+    """Raise ``click.ClickException`` if *aspect_name* is unknown or *n* is out of range."""
     if aspect_name not in top["aspects"]:
         raise click.ClickException(f"Unknown aspect: {aspect_name!r}.")
     min_d, max_d = _aspect_depth_range(aspect_name)
@@ -528,11 +525,87 @@ def _set_aspect_depth(
             f"aspect {aspect_name}: depth {n} outside range [{min_d},{max_d}]."
         )
 
-    aspects = _config_aspects(config)
 
-    # Enforce requires: predicates
-    proposed = dict(aspects)
-    proposed[aspect_name] = n
+def _apply_tier_up(target: Path, target_bundle: dict[str, str]) -> int:
+    """Write any new-bundle files that don't yet exist; return the count added."""
+    from kanon._atomic import atomic_write_text
+
+    added = 0
+    for rel, content in sorted(target_bundle.items()):
+        dst = target / rel
+        if dst.exists():
+            continue
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        atomic_write_text(dst, content)
+        added += 1
+    return added
+
+
+def _apply_tier_down(
+    target: Path, old_aspects: dict[str, int], new_aspects: dict[str, int]
+) -> list[str]:
+    """Return paths that exist on disk but are no longer required at the new depth.
+
+    Pure compute: no file writes, no deletions. Tier-down is non-destructive
+    by design (ADR-0008); the caller surfaces the list to the user.
+    """
+    required = set(_expected_files(new_aspects))
+    return [
+        rel
+        for rel in _expected_files(old_aspects)
+        if rel not in required and (target / rel).exists()
+    ]
+
+
+def _rewrite_assembled_views(
+    target: Path, new_aspects: dict[str, int], project_name: str
+) -> None:
+    """Re-merge AGENTS.md and re-render kit.md. Skips no-op AGENTS.md writes."""
+    from kanon._atomic import atomic_write_text
+
+    new_agents = _assemble_agents_md(new_aspects, project_name)
+    existing_agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    merged = _merge_agents_md(existing_agents, new_agents)
+    if merged != existing_agents:
+        atomic_write_text(target / "AGENTS.md", merged)
+
+    kit_md = _render_kit_md(new_aspects, project_name)
+    if kit_md is not None:
+        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
+
+
+def _commit_aspect_meta(
+    target: Path,
+    kit_version: str,
+    aspects_meta: dict[str, dict[str, Any]],
+    aspect_name: str,
+    depth: int,
+) -> None:
+    """Stamp ``aspects_meta[aspect_name]`` and atomically write config.yaml.
+
+    config.yaml is the commit marker for the multi-file `aspect set-depth`
+    sequence (ADR-0024); this is the single callsite that mutates it during
+    that operation.
+    """
+    entry = dict(aspects_meta.get(aspect_name, {}))
+    entry["depth"] = depth
+    entry["enabled_at"] = _now_iso()
+    entry.setdefault("config", {})
+    aspects_meta[aspect_name] = entry
+    _write_config(target, kit_version, aspects_meta)
+
+
+def _set_aspect_depth(
+    target: Path, aspect_name: str, n: int, legacy_tier_verb: bool = False
+) -> None:
+    target = target.resolve()
+    config = _read_config(target)
+    _check_pending_recovery(target)
+    top = _load_top_manifest()
+    _validate_aspect_and_depth(aspect_name, n, top)
+
+    aspects = _config_aspects(config)
+    proposed = {**aspects, aspect_name: n}
     err = _check_requires(aspect_name, proposed, top)
     if err:
         raise click.ClickException(err)
@@ -541,46 +614,31 @@ def _set_aspect_depth(
     current = aspects.get(aspect_name, -1)
     aspects_meta = dict(config.get("aspects", {}))
 
-    if current == n:
-        entry = dict(aspects_meta.get(aspect_name, {}))
-        entry["depth"] = n
-        entry["enabled_at"] = _now_iso()
-        entry.setdefault("config", {})
-        aspects_meta[aspect_name] = entry
-        from kanon._atomic import clear_sentinel, write_sentinel
+    from kanon._atomic import clear_sentinel, write_sentinel
 
-        write_sentinel(target / ".kanon", "set-depth")
-        _write_config(target, kit_version, aspects_meta)
+    # Single sentinel wraps every mutation (file writes + AGENTS.md/kit.md
+    # rewrites + config.yaml). Cleared only on the success path; if any call
+    # below raises, the sentinel persists for the next invocation to detect.
+    write_sentinel(target / ".kanon", "set-depth")
+
+    if current == n:
+        _commit_aspect_meta(target, kit_version, aspects_meta, aspect_name, n)
         clear_sentinel(target / ".kanon")
         verb = "Tier" if legacy_tier_verb else f"Aspect {aspect_name} depth"
         click.echo(f"{verb} already {n}. Noop (timestamp refreshed).")
         return
 
-    new_aspects_snapshot = dict(aspects)
-    new_aspects_snapshot[aspect_name] = n
-    context = {"project_name": target.name, "tier": str(n)}
-    target_bundle = _build_bundle(new_aspects_snapshot, context)
+    new_aspects = {**aspects, aspect_name: n}
+    target_bundle = _build_bundle(
+        new_aspects, {"project_name": target.name, "tier": str(n)}
+    )
 
-    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
-
-    write_sentinel(target / ".kanon", "set-depth")
     if n > current:
-        added = 0
-        for rel, content in sorted(target_bundle.items()):
-            dst = target / rel
-            if dst.exists():
-                continue
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            atomic_write_text(dst, content)
-            added += 1
+        added = _apply_tier_up(target, target_bundle)
         verb = "Tier-up" if legacy_tier_verb else f"Aspect-up ({aspect_name})"
         click.echo(f"{verb} {current} → {n}: added {added} new file(s).")
     else:
-        beyond: list[str] = []
-        required = set(_expected_files(new_aspects_snapshot))
-        for rel in _expected_files(aspects):
-            if rel not in required and (target / rel).exists():
-                beyond.append(rel)
+        beyond = _apply_tier_down(target, aspects, new_aspects)
         verb = "Tier-down" if legacy_tier_verb else f"Aspect-down ({aspect_name})"
         click.echo(f"{verb} {current} → {n} is non-destructive.")
         if beyond:
@@ -589,22 +647,8 @@ def _set_aspect_depth(
                 click.echo(f"  - {rel}")
             click.echo("You may keep, archive, or delete them as you choose.")
 
-    new_agents = _assemble_agents_md(new_aspects_snapshot, target.name)
-    existing_agents = (target / "AGENTS.md").read_text(encoding="utf-8")
-    merged = _merge_agents_md(existing_agents, new_agents)
-    if merged != existing_agents:
-        atomic_write_text(target / "AGENTS.md", merged)
-
-    kit_md = _render_kit_md(new_aspects_snapshot, target.name)
-    if kit_md is not None:
-        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
-
-    entry = dict(aspects_meta.get(aspect_name, {}))
-    entry["depth"] = n
-    entry["enabled_at"] = _now_iso()
-    entry.setdefault("config", {})
-    aspects_meta[aspect_name] = entry
-    _write_config(target, kit_version, aspects_meta)
+    _rewrite_assembled_views(target, new_aspects, target.name)
+    _commit_aspect_meta(target, kit_version, aspects_meta, aspect_name, n)
     clear_sentinel(target / ".kanon")
 
     verb = "Tier" if legacy_tier_verb else f"Aspect {aspect_name} depth"
