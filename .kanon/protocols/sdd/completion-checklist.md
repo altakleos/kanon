@@ -57,9 +57,17 @@ Verify that work is actually done before declaring it complete. LLM agents tend 
 - Do linters and type checkers pass?
 - Is coverage at or above the configured floor?
 
+### 9. Artifact status reconciliation
+
+- For each artifact touched or completed by this work:
+  - **Plans:** if all acceptance criteria are met, set `status: done`. If work has started but isn't complete, set `status: in-progress`.
+  - **Specs:** if `fixtures_deferred` no longer applies (test files exist), replace it with `fixtures:` and `invariant_coverage:`.
+  - **Design docs:** if the feature has shipped and the implementing spec is `status: accepted`, set the design doc to `status: accepted`.
+- If any status field is stale, update it in this commit.
+
 ## Exit criteria
 
-You have checked all 8 items and can state: "All acceptance criteria met. No test regressions. Docs updated. No unrelated changes." If you cannot truthfully state this, the work is not done — identify what remains.
+You have checked all 9 items and can state: "All acceptance criteria met. No test regressions. Docs updated. No unrelated changes. Artifact statuses current." If you cannot truthfully state this, the work is not done — identify what remains.
 
 ## Anti-patterns
 
