@@ -9,6 +9,9 @@ if [[ ! -d .worktrees ]]; then
   exit 0
 fi
 
+# Clean up stale worktree metadata
+git worktree prune
+
 for wt in .worktrees/*/; do
   [[ -d "$wt" ]] || continue
   slug="$(basename "$wt")"

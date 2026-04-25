@@ -49,6 +49,18 @@ Develop normally inside `.worktrees/<slug>/`. Commit frequently to the `wt/<slug
 - Delete the branch only if it has been merged: `git branch -d wt/<slug>`.
 - If the branch has not been merged and work is abandoned, escalate to the human before deleting.
 
+### Known gotchas
+
+**Submodules.** Git worktrees are NOT recommended for repos with git submodules. The official git documentation (BUGS section) warns: "Multiple checkouts of a superproject are not recommended." If your repo uses submodules, consider separate clones instead.
+
+**Dependency install required.** New worktrees do not contain gitignored files (`.venv/`, `node_modules/`, `dist/`, `build/`). After creating a worktree, run your project's dependency install command (`uv sync`, `npm install`, `pip install -e .`, etc.) before working.
+
+**Git hooks are shared.** Hooks in `.git/hooks/` are shared across all worktrees. Pre-commit hooks or scripts that assume `.git` is a directory (not a file) may break in worktrees — `.git` in a worktree is a file pointing to the main checkout's `.git` directory.
+
+**`git clean -dfx` destroys worktrees.** Never run `git clean -dfx` in the main checkout. The `-x` flag ignores `.gitignore`, which means it will delete `.worktrees/` and all active worktrees. Use `git clean -df` (without `-x`) instead.
+
+**Stale worktree metadata.** If a worktree directory is manually deleted (instead of using `git worktree remove`), git retains stale metadata. Run `git worktree prune` periodically to clean up.
+
 ## Exit criteria
 
 - The worktree has been removed cleanly (no uncommitted changes lost).

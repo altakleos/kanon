@@ -25,3 +25,4 @@ fi
 
 git worktree add "$wt_dir" -b "$branch"
 echo "Worktree created: ${wt_dir} (branch: ${branch})"
+echo "NOTE: Run your dependency install command (uv sync, npm install, etc.) in the new worktree."
