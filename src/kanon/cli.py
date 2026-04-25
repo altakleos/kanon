@@ -357,6 +357,11 @@ def tier() -> None:
 @click.argument("n", type=click.IntRange(0, 3))
 def tier_set(target: Path, n: int) -> None:
     """Migrate TARGET's sdd aspect depth to N (sugar for aspect set-depth)."""
+    click.echo(
+        "Warning: 'kanon tier set' is deprecated. "
+        "Use 'kanon aspect set-depth <target> sdd <N>'.",
+        err=True,
+    )
     _set_aspect_depth(target, "sdd", n, legacy_tier_verb=True)
 
 
