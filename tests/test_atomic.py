@@ -26,8 +26,9 @@ def test_happy_path(tmp_path: Path) -> None:
 def test_no_tmp_left_after_success(tmp_path: Path) -> None:
     target = tmp_path / "file.yaml"
     atomic_write_text(target, "key: value\n")
-    tmp = target.with_suffix(target.suffix + ".tmp")
-    assert not tmp.exists()
+    # Temp file includes PID: file.yaml.<pid>.tmp
+    leftovers = list(tmp_path.glob("*.tmp"))
+    assert leftovers == []
 
 
 def test_crash_on_replace_leaves_original_untouched(tmp_path: Path) -> None:
@@ -42,8 +43,8 @@ def test_crash_on_replace_leaves_original_untouched(tmp_path: Path) -> None:
         atomic_write_text(target, "new: content\n")
 
     assert target.read_text(encoding="utf-8") == original_content
-    tmp = target.with_suffix(target.suffix + ".tmp")
-    assert not tmp.exists()
+    leftovers = list(tmp_path.glob("*.tmp"))
+    assert leftovers == []
 
 
 def test_overwrites_existing_file(tmp_path: Path) -> None:
