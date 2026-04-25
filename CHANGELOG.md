@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ### Fixed
 
+- **AGENTS.md marker matching is now line-anchored and fenced-block-aware.** Quoting a `<!-- kanon:begin:... -->` or `<!-- kanon:end:... -->` marker inside user prose, an inline-code span, a blockquote, or a fenced code block (``` or `~~~`) no longer risks corruption on `kanon upgrade` or `kanon aspect set-depth`. The matcher requires the marker to occupy a line by itself (leading or trailing tabs/spaces tolerated). Behaviour for well-formed kit markers is unchanged. The same matcher now backs `_scaffold` merge logic, `kanon verify`'s marker-balance check, and `ci/check_kit_consistency.py`.
 - **`ci/check_package_contents.py` docstring** no longer references nonexistent specs (`docs/specs/release-process.md`, `docs/specs/release-communication.md`) or sibling-project symbols (`sensei/__init__.py.__version__`, `prompts/`/`schemas/`/`profiles/`). Rewritten to describe what the validator actually asserts about a kanon-kit wheel.
 - **`tests/test_e2e_installed.py::test_installed_worktrees_aspect`** now exercises `verify` directly at `worktrees=2` instead of pre-demoting to depth 0; the original hedge was stale (matched the in-process lifecycle test which has been passing at depth 2 since the cross-aspect injection fix).
 
