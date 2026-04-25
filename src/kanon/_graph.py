@@ -604,3 +604,130 @@ def build_graph(repo_root: Path) -> GraphData:
         inbound_all=inbound_all,
         inbound_live=inbound_live,
     )
+
+
+# ---------------------------------------------------------------------------
+# Orphan detection (`kanon graph orphans` core)
+
+
+ORPHAN_CANDIDATE_NAMESPACES: tuple[str, ...] = (
+    NAMESPACE_PRINCIPLE,
+    NAMESPACE_PERSONA,
+    NAMESPACE_SPEC,
+    NAMESPACE_CAPABILITY,
+)
+"""Namespaces that participate in orphan reporting.
+
+Per orphans-spec INV-1, vision is excluded (it's a singleton intent
+node), aspects are excluded (they aren't required to be referenced from
+elsewhere — they're top-level features), and plans aren't first-class
+nodes. ADRs are excluded by spec out-of-scope rule.
+"""
+
+
+@dataclass(frozen=True)
+class OrphanRecord:
+    """Single orphan entry — one row in the `kanon graph orphans` report."""
+
+    slug: str
+    namespace: str
+    exempt: bool
+    reason: str | None
+
+
+def compute_orphans(
+    graph: GraphData,
+    filter_namespace: str | None = None,
+) -> dict[str, list[OrphanRecord]]:
+    """Return orphans keyed by namespace, applying orphans-spec INV-2..INV-5.
+
+    Per INV-3, only live source nodes contribute inbound edges — the
+    ``inbound_live`` index already encodes that. Per INV-4, deferred
+    specs are themselves never reported as orphans (their lack of
+    inbound is by design — work hasn't started). Per INV-5, nodes with
+    ``orphan-exempt: true`` are still listed but flagged exempt.
+
+    The persona rule (INV-2) has a second clause: a persona is
+    non-orphan when its own ``stresses:`` list points at any live spec
+    or principle, even if no spec stresses it back. This is checked
+    explicitly here since the inbound index alone does not capture it.
+    """
+    namespaces: tuple[str, ...] = (
+        (filter_namespace,) if filter_namespace is not None
+        else ORPHAN_CANDIDATE_NAMESPACES
+    )
+    result: dict[str, list[OrphanRecord]] = {ns: [] for ns in namespaces}
+
+    persona_outbound_live = _persona_outbound_live(graph)
+    capability_inbound = _capability_inbound_count(graph)
+
+    for ns in namespaces:
+        if ns not in ORPHAN_CANDIDATE_NAMESPACES:
+            continue  # silently no-op for namespaces that aren't candidates
+        for node in graph.nodes:
+            if node.namespace != ns:
+                continue
+            # INV-3: deferred/superseded specs are excluded from the
+            # orphan-candidate list (they aren't load-bearing yet).
+            if not node.is_live():
+                continue
+            # INV-4: deferred-spec self-orphan rule is the same predicate
+            # as INV-3 since `is_live()` rejects deferred status.
+            inbound_count = len(graph.inbound_live.get((ns, node.slug), []))
+            is_orphan: bool
+            if ns == NAMESPACE_PERSONA:
+                outbound = persona_outbound_live.get(node.slug, 0)
+                is_orphan = inbound_count == 0 and outbound == 0
+            elif ns == NAMESPACE_CAPABILITY:
+                # Capability orphan = no `requires:` predicate names it.
+                is_orphan = capability_inbound.get(node.slug, 0) == 0
+            else:
+                is_orphan = inbound_count == 0
+
+            if not is_orphan:
+                continue
+
+            result[ns].append(OrphanRecord(
+                slug=node.slug,
+                namespace=ns,
+                exempt=node.is_orphan_exempt(),
+                reason=node.orphan_exempt_reason() if node.is_orphan_exempt() else None,
+            ))
+
+    # Stable ordering: alphabetical by slug within each namespace
+    # (orphans-spec INV-7 last bullet).
+    for rows in result.values():
+        rows.sort(key=lambda r: r.slug)
+    return result
+
+
+def _persona_outbound_live(graph: GraphData) -> dict[str, int]:
+    """Count of `stresses:` edges from each persona that resolve to a
+    LIVE spec or principle. Personas whose outbound only points at
+    deferred targets count as 0 (the spec deems them effectively
+    unreferenced)."""
+    out: dict[str, int] = {}
+    for edge in graph.edges:
+        if edge.kind != EDGE_STRESSES or edge.dst_namespace is None:
+            continue
+        target = graph.by_slug.get((edge.dst_namespace, edge.dst_slug))
+        if target is None or not target.is_live():
+            continue
+        out[edge.src_slug] = out.get(edge.src_slug, 0) + 1
+    return out
+
+
+def _capability_inbound_count(graph: GraphData) -> dict[str, int]:
+    """Count of capability-presence ``requires:`` edges pointing at each
+    capability. The orphans-spec capability rule (INV-2 last bullet)
+    asks whether ANY aspect's ``requires:`` list contains the capability
+    as a 1-token predicate; the count is just the size of that set.
+    """
+    out: dict[str, int] = {}
+    for edge in graph.edges:
+        if edge.kind != EDGE_REQUIRES:
+            continue
+        if edge.dst_namespace != NAMESPACE_CAPABILITY:
+            continue
+        out[edge.dst_slug] = out.get(edge.dst_slug, 0) + 1
+    return out

@@ -133,6 +133,24 @@ def _iter_spec_files(specs_root: Path):
         yield p
 
 
+def _iter_orphan_exempt_candidates(foundations_root: Path, specs_root: Path):
+    """Yield every foundation/spec markdown path whose frontmatter may
+    declare `orphan-exempt:`. Excludes README and template files (they
+    cannot be orphan candidates).
+    """
+    for sub in ("principles", "personas"):
+        d = foundations_root / sub
+        if d.is_dir():
+            for p in sorted(d.glob("*.md")):
+                if p.name == "README.md":
+                    continue
+                yield p
+    vision = foundations_root / "vision.md"
+    if vision.is_file():
+        yield vision
+    yield from _iter_spec_files(specs_root)
+
+
 def check(foundations_root: Path, specs_root: Path) -> tuple[list[str], list[str]]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -148,6 +166,20 @@ def check(foundations_root: Path, specs_root: Path) -> tuple[list[str], list[str
                     f"{info['path']}: invalid kind {kind!r}; "
                     f"must be one of {sorted(VALID_KINDS)}"
                 )
+
+    # `orphan-exempt:` pairing rule — per docs/specs/spec-graph-orphans.md
+    # INV-5 a node opting out of the orphan check MUST name a non-empty
+    # `orphan-exempt-reason:` so the audit trail captures why.
+    for fm_path in _iter_orphan_exempt_candidates(foundations_root, specs_root):
+        fm = _load_md(fm_path, errors)
+        if not fm.get("orphan-exempt"):
+            continue
+        reason = fm.get("orphan-exempt-reason")
+        if not isinstance(reason, str) or not reason.strip():
+            errors.append(
+                f"{fm_path}: 'orphan-exempt: true' requires a non-empty "
+                f"'orphan-exempt-reason:' string per spec-graph-orphans INV-5"
+            )
 
     # Scan specs for references to foundations
     referenced: set[str] = set()

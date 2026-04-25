@@ -33,6 +33,11 @@ import click
 import yaml
 
 from kanon import __version__
+from kanon._graph import (
+    ORPHAN_CANDIDATE_NAMESPACES,
+    build_graph,
+    compute_orphans,
+)
 from kanon._manifest import (
     _CAPABILITY_NAME_RE,
     _aspect_config_schema,
@@ -1023,6 +1028,77 @@ def fidelity_update(target: Path) -> None:
     atomic_write_text(lock_path, "".join(lines))
     clear_sentinel(target / ".kanon")
     click.echo(f"Wrote {lock_path} with {len(entries)} entries.")
+
+
+@main.group()
+def graph() -> None:
+    """Cross-link graph queries (orphans)."""
+
+
+@graph.command("orphans")
+@click.option(
+    "--type",
+    "namespace",
+    type=click.Choice(list(ORPHAN_CANDIDATE_NAMESPACES)),
+    default=None,
+    help="Filter to one namespace (default: all candidate namespaces).",
+)
+@click.option(
+    "--format",
+    "output_format",
+    type=click.Choice(["text", "json"]),
+    default="text",
+    help="Output format (default: text).",
+)
+@click.option(
+    "--target",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Repo root (default: current directory).",
+)
+def graph_orphans(
+    namespace: str | None,
+    output_format: str,
+    target: Path | None,
+) -> None:
+    """Report unreferenced nodes in the cross-link graph.
+
+    Per docs/specs/spec-graph-orphans.md: a node is an orphan when no
+    other live artifact in the graph cites it. Deferred and superseded
+    specs are excluded both as inbound-edge sources and as orphan
+    candidates. Exit code is always 0 — orphans are informational.
+    """
+    root = Path(target).resolve() if target else Path.cwd()
+    graph_data = build_graph(root)
+    orphans = compute_orphans(graph_data, filter_namespace=namespace)
+
+    if output_format == "json":
+        payload = {
+            "orphans": {
+                ns: [
+                    {"slug": r.slug, "exempt": r.exempt, "reason": r.reason}
+                    for r in rows
+                ]
+                for ns, rows in orphans.items()
+            },
+            "status": "ok",
+        }
+        click.echo(json.dumps(payload, indent=2))
+        return
+
+    # Text mode: one line per orphan, "<namespace>: <slug>" with optional
+    # "(orphan-exempt: <reason>)" suffix when the node opts out.
+    total = sum(len(v) for v in orphans.values())
+    if total == 0:
+        click.echo("No orphans found.")
+        return
+    for ns in sorted(orphans):
+        for record in orphans[ns]:
+            line = f"{ns}: {record.slug}"
+            if record.exempt:
+                reason = record.reason or "no reason given"
+                line += f" (orphan-exempt: {reason})"
+            click.echo(line)
 
 
 if __name__ == "__main__":

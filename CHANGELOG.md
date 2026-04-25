@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- **`kanon graph orphans`** — read-only report listing principles, personas, specs, and capabilities with no inbound edges in the cross-link graph. Supports `--type <namespace>` to filter and `--format json|text` (default text). Per [`docs/specs/spec-graph-orphans.md`](docs/specs/spec-graph-orphans.md): deferred and superseded specs are excluded both as inbound-edge sources and as orphan candidates; nodes may opt out via `orphan-exempt: true` paired with a required `orphan-exempt-reason:`. The command always exits 0 — orphans are informational, not errors. Underlying primitive (`src/kanon/_graph.py`) is shared with the in-flight `kanon graph rename` command. `ci/check_foundations.py` now validates the `orphan-exempt:` / `orphan-exempt-reason:` pairing rule.
+
 ### Changed
 
 - **Kit-shipped reference release workflow** (`src/kanon/kit/aspects/release/files/.github/workflows/release.yml`) now uses Node-24-compatible action majors: `actions/checkout@v5` and `actions/setup-python@v6`. New consumers enabling the `release` aspect at depth 2 inherit the bumped versions; existing consumers can refresh by re-running `kanon upgrade` (or apply the bump manually). The repo's own workflows were already bumped in v0.2.0a6 (PRs #10, #12); this aligns the consumer-facing template.
