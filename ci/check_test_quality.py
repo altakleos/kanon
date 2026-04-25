@@ -18,6 +18,10 @@ _TEST_PATTERNS = (
     "*_test.go", "*_test.rs",
 )
 
+# Directories to skip when collecting test files (vendored deps, build outputs,
+# version-control metadata). Mirrors `check_deps.py`.
+_SKIP_DIRS = {".git", "node_modules", ".venv", "__pycache__", "dist", "build"}
+
 # Patterns that indicate an empty or trivial test body.
 _TRIVIAL_BODY = re.compile(
     r"^\s*(?:pass|assert\s+True|expect\(true\)|t\.Log\(|\/\/\s*no-op)\s*$",
@@ -33,7 +37,10 @@ _TEST_FUNC = re.compile(
 def _find_test_files(root: Path) -> list[Path]:
     files: list[Path] = []
     for pattern in _TEST_PATTERNS:
-        files.extend(root.rglob(pattern))
+        for p in root.rglob(pattern):
+            if any(part in _SKIP_DIRS for part in p.relative_to(root).parts):
+                continue
+            files.append(p)
     return sorted(set(files))
 
 
