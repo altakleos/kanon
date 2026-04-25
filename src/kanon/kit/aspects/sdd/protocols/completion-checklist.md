@@ -46,7 +46,12 @@ Verify that work is actually done before declaring it complete. LLM agents tend 
 - Does the diff contain anything not described in the plan?
 - If so, either remove it or document why it's necessary.
 
-### 7. Verification
+### 7. Worktree discipline
+
+- Was this a multi-file change? If so, was it done in a worktree (`.worktrees/<slug>/`)?
+- If not, why not? (Trivial change is acceptable; "forgot" is not.)
+
+### 8. Verification
 
 - Does `kanon verify` pass (if the project uses kanon)?
 - Do linters and type checkers pass?
@@ -54,7 +59,7 @@ Verify that work is actually done before declaring it complete. LLM agents tend 
 
 ## Exit criteria
 
-You have checked all 7 items and can state: "All acceptance criteria met. No test regressions. Docs updated. No unrelated changes." If you cannot truthfully state this, the work is not done — identify what remains.
+You have checked all 8 items and can state: "All acceptance criteria met. No test regressions. Docs updated. No unrelated changes." If you cannot truthfully state this, the work is not done — identify what remains.
 
 ## Anti-patterns
 

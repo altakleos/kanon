@@ -2,6 +2,8 @@
 
 Use a dedicated git worktree for any change that touches multiple files or requires multiple steps. Trivial single-file edits (typos, one-liner fixes) stay in the main checkout.
 
+**Before your first file-modifying tool call on a multi-file change, state in one sentence:** "Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`." If the change is trivial (single file, one-liner), state: "Trivial change — staying in main checkout." If you cannot truthfully emit either sentence, stop and create the worktree. This sentence is the audit trail — its absence in a transcript is how violations get caught.
+
 **When to create a worktree:**
 
 - The change is multi-file or multi-step.
