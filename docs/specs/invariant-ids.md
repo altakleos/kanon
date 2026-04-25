@@ -7,7 +7,30 @@ realizes:
 stressed_by:
   - solo-with-agents
   - platform-team
-fixtures_deferred: "Tests land with the implementation plan (docs/plans/invariant-ids.md, not yet authored)."
+fixtures:
+  - tests/ci/test_check_invariant_ids.py
+  - tests/test_cli.py
+invariant_coverage:
+  INV-invariant-ids-anchor-format:
+    - tests/ci/test_check_invariant_ids.py::test_real_repo_passes
+    - tests/ci/test_check_invariant_ids.py::test_missing_anchor_detected
+  INV-invariant-ids-spec-slug-derivation:
+    - tests/ci/test_check_invariant_ids.py::test_real_repo_passes
+  INV-invariant-ids-short-name-grammar:
+    - tests/ci/test_check_invariant_ids.py::test_real_repo_passes
+  INV-invariant-ids-anchors-append-only:
+    - tests/ci/test_check_invariant_ids.py::test_duplicate_anchor_detected
+  INV-invariant-ids-reference-syntax:
+    - tests/ci/test_check_invariant_ids.py::test_real_repo_passes
+  INV-invariant-ids-validator:
+    - tests/ci/test_check_invariant_ids.py::test_real_repo_passes
+    - tests/ci/test_check_invariant_ids.py::test_main_exits_zero_on_ok
+  INV-invariant-ids-verify-integration:
+    - tests/test_cli.py::test_init_verify_returns_ok
+  INV-invariant-ids-spec-template-updated:
+    - tests/ci/test_check_invariant_ids.py::test_real_repo_passes
+  INV-invariant-ids-migration:
+    - tests/ci/test_check_invariant_ids.py::test_real_repo_passes
 ---
 # Spec: Invariant IDs — stable anchors for spec invariants
 

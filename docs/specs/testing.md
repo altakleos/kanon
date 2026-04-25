@@ -8,7 +8,30 @@ stressed_by:
   - solo-engineer
   - solo-with-agents
   - platform-team
-fixtures_deferred: "Tests land with the implementation plan (docs/plans/testing-aspect.md, not yet authored)."
+fixtures:
+  - tests/test_cli.py
+  - tests/test_kit_integrity.py
+  - tests/ci/test_check_test_quality.py
+invariant_coverage:
+  INV-testing-depth-range:
+    - tests/test_kit_integrity.py::test_testing_manifest_has_expected_depths
+  INV-testing-test-discipline-protocol:
+    - tests/test_cli.py::test_aspect_add_testing
+  INV-testing-ac-first-protocol:
+    - tests/test_cli.py::test_aspect_add_testing
+  INV-testing-agents-md-section:
+    - tests/test_kit_integrity.py::test_testing_agents_md_exists_per_depth
+  INV-testing-coverage-floor-config:
+    - tests/test_cli.py::test_aspect_add_testing
+  INV-testing-ci-validator:
+    - tests/test_cli.py::test_testing_depth_3_has_ci_script
+    - tests/ci/test_check_test_quality.py::test_trivial_pass_body_detected
+  INV-testing-no-dependency:
+    - tests/test_kit_integrity.py::test_testing_manifest_paths_resolve
+  INV-testing-language-agnostic:
+    - tests/ci/test_check_test_quality.py::test_find_test_files_patterns
+  INV-testing-stability:
+    - tests/test_kit_integrity.py::test_kit_testing_aspect_dir_exists
 ---
 # Spec: Testing — test discipline for LLM-agent-driven repos
 

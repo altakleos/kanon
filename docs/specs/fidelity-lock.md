@@ -7,7 +7,27 @@ realizes:
 stressed_by:
   - platform-team
   - solo-with-agents
-fixtures_deferred: "Tests land with the implementation plan (docs/plans/fidelity-lock.md, not yet authored)."
+fixtures:
+  - tests/test_cli.py
+invariant_coverage:
+  INV-fidelity-lock-lock-file-location-format:
+    - tests/test_cli.py::test_fidelity_update_creates_lock
+  INV-fidelity-lock-sha-computation:
+    - tests/test_cli.py::test_fidelity_update_creates_lock
+  INV-fidelity-lock-included-specs:
+    - tests/test_cli.py::test_fidelity_update_creates_lock
+  INV-fidelity-lock-fidelity-update-command:
+    - tests/test_cli.py::test_fidelity_update_creates_lock
+    - tests/test_cli.py::test_fidelity_update_idempotent
+  INV-fidelity-lock-verify-integration:
+    - tests/test_cli.py::test_verify_warns_on_stale_lock
+    - tests/test_cli.py::test_verify_warns_on_stale_fixture
+  INV-fidelity-lock-lock-generated-not-edited:
+    - tests/test_cli.py::test_fidelity_update_creates_lock
+  INV-fidelity-lock-entries-sorted-alphabetically:
+    - tests/test_cli.py::test_fidelity_update_creates_lock
+  INV-fidelity-lock-core-feature-not-aspect:
+    - tests/test_cli.py::test_fidelity_update_creates_lock
 ---
 # Spec: Fidelity Lock — spec-SHA drift detection
 

@@ -5,7 +5,24 @@ realizes:
   - P-cross-link-dont-duplicate
 stressed_by:
   - onboarding-agent
-fixtures_deferred: "Shim-integrity test suite lands in Phase D (tests/test_shims.py)"
+fixtures:
+  - tests/test_cli.py
+  - tests/test_kit_integrity.py
+invariant_coverage:
+  INV-cross-harness-shims-registry-externalised:
+    - tests/test_kit_integrity.py::test_harnesses_yaml_is_valid
+  INV-cross-harness-shims-shims-are-pointers:
+    - tests/test_cli.py::test_shims_are_pointers_not_duplicates
+  INV-cross-harness-shims-v01-harness-set:
+    - tests/test_cli.py::test_init_writes_all_shims
+  INV-cross-harness-shims-agents-md-canonical-root:
+    - tests/test_cli.py::test_shims_are_pointers_not_duplicates
+  INV-cross-harness-shims-harness-yaml-schema:
+    - tests/test_kit_integrity.py::test_harnesses_yaml_is_valid
+  INV-cross-harness-shims-adding-new-harness:
+    - tests/test_cli.py::test_load_harnesses_missing_file
+  INV-cross-harness-shims-opt-out-deferred:
+    - tests/test_cli.py::test_init_writes_all_shims
 ---
 # Spec: Cross-harness shims — the registry and per-harness contracts
 

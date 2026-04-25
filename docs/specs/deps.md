@@ -7,7 +7,26 @@ realizes:
 stressed_by:
   - solo-with-agents
   - platform-team
-fixtures_deferred: "Tests land with the implementation plan (docs/plans/deps-aspect.md, not yet authored)."
+fixtures:
+  - tests/test_cli.py
+  - tests/test_kit_integrity.py
+  - tests/ci/test_check_deps.py
+invariant_coverage:
+  INV-deps-depth-range:
+    - tests/test_kit_integrity.py::test_deps_manifest_has_expected_depths
+  INV-deps-protocol:
+    - tests/test_cli.py::test_aspect_add_deps
+  INV-deps-agents-md-section:
+    - tests/test_kit_integrity.py::test_deps_agents_md_exists_per_depth
+  INV-deps-ci-validator:
+    - tests/test_cli.py::test_deps_depth_2_has_ci_script
+    - tests/ci/test_check_deps.py::test_requirements_unpinned_detected
+  INV-deps-no-dependency:
+    - tests/test_kit_integrity.py::test_deps_manifest_paths_resolve
+  INV-deps-language-agnostic:
+    - tests/ci/test_check_deps.py::test_package_json_caret_detected
+  INV-deps-stability:
+    - tests/test_kit_integrity.py::test_kit_deps_aspect_dir_exists
 ---
 # Spec: Deps — dependency hygiene for LLM-agent-driven repos
 

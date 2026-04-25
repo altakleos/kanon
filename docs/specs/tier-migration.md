@@ -6,7 +6,25 @@ realizes:
   - P-cross-link-dont-duplicate
 stressed_by:
   - solo-engineer
-fixtures_deferred: "Tier-migration round-trip tests land in Phase D (tests/test_cli.py::test_tier_migration_*)"
+fixtures:
+  - tests/test_cli.py
+invariant_coverage:
+  INV-tier-migration-mutable-tier:
+    - tests/test_cli.py::test_tier_set_idempotent
+  INV-tier-migration-idempotent:
+    - tests/test_cli.py::test_tier_set_idempotent
+  INV-tier-migration-tier-up-additive:
+    - tests/test_cli.py::test_tier_up_additive_only
+  INV-tier-migration-tier-down-non-destructive:
+    - tests/test_cli.py::test_tier_down_is_non_destructive
+  INV-tier-migration-agents-md-marker-delimited:
+    - tests/test_cli.py::test_init_preserves_user_content_outside_markers
+  INV-tier-migration-atomic:
+    - tests/test_cli.py::test_tier_migration_round_trip_preserves_user_file
+  INV-tier-migration-section-list-per-tier:
+    - tests/test_cli.py::test_tier_up_additive_only
+  INV-tier-migration-invalid-targets-rejected:
+    - tests/test_cli.py::test_aspect_set_depth_invalid
 ---
 # Spec: Tier migration — `kanon tier set`
 

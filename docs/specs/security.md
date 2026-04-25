@@ -7,7 +7,28 @@ realizes:
 stressed_by:
   - solo-with-agents
   - platform-team
-fixtures_deferred: "Tests land with the implementation plan (docs/plans/security-aspect.md, not yet authored)."
+fixtures:
+  - tests/test_cli.py
+  - tests/test_kit_integrity.py
+  - tests/ci/test_check_security_patterns.py
+invariant_coverage:
+  INV-security-depth-range:
+    - tests/test_kit_integrity.py::test_security_manifest_has_expected_depths
+  INV-security-protocol:
+    - tests/test_cli.py::test_aspect_add_security
+  INV-security-agents-md-section:
+    - tests/test_kit_integrity.py::test_security_agents_md_exists_per_depth
+  INV-security-ci-validator:
+    - tests/test_cli.py::test_security_depth_2_has_ci_script
+    - tests/ci/test_check_security_patterns.py::test_sql_interpolation_detected
+  INV-security-no-dependency:
+    - tests/test_kit_integrity.py::test_security_manifest_paths_resolve
+  INV-security-language-agnostic:
+    - tests/ci/test_check_security_patterns.py::test_clean_file_no_findings
+  INV-security-non-destructive:
+    - tests/test_cli.py::test_aspect_remove_leaves_files
+  INV-security-stability:
+    - tests/test_kit_integrity.py::test_kit_security_aspect_dir_exists
 ---
 # Spec: Security — hardened defaults for LLM-agent-authored code
 

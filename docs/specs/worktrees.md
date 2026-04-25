@@ -7,7 +7,26 @@ realizes:
 stressed_by:
   - solo-with-agents
   - platform-team
-fixtures_deferred: "Worktree aspect tests land with the worktrees-aspect implementation plan (docs/plans/worktrees-aspect.md, not yet authored)."
+fixtures:
+  - tests/test_cli.py
+  - tests/test_kit_integrity.py
+invariant_coverage:
+  INV-worktrees-scaffolding-location:
+    - tests/test_cli.py::test_init_with_worktrees_depth_1
+    - tests/test_cli.py::test_init_with_worktrees_depth_2
+  INV-worktrees-depth-range:
+    - tests/test_kit_integrity.py::test_worktrees_manifest_has_expected_depths
+  INV-worktrees-protocol-shaped:
+    - tests/test_cli.py::test_aspect_add
+  INV-worktrees-reference-automation-snippets:
+    - tests/test_cli.py::test_init_with_worktrees_depth_2
+  INV-worktrees-non-destructive-teardown:
+    - tests/test_cli.py::test_aspect_remove_leaves_files
+  INV-worktrees-cross-aspect-dependency:
+    - tests/test_cli.py::test_aspect_add_requires_unmet
+    - tests/test_cli.py::test_aspect_add_requires_met
+  INV-worktrees-namespaced-agents-md-section:
+    - tests/test_kit_integrity.py::test_worktrees_agents_md_exists_per_depth
 ---
 # Spec: Worktrees — isolated parallel execution via git worktrees
 

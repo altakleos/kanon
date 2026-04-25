@@ -5,7 +5,31 @@ realizes:
   - P-verification-co-authored
 stressed_by:
   - platform-team
-fixtures_deferred: "`kanon verify` integration tests land in Phase D/F"
+fixtures:
+  - tests/test_cli.py
+  - tests/ci/test_check_foundations.py
+  - tests/ci/test_check_links.py
+  - tests/ci/test_release_preflight.py
+invariant_coverage:
+  INV-verification-contract-tier-aware:
+    - tests/test_cli.py::test_init_verify_returns_ok
+  INV-verification-contract-required-files-per-tier:
+    - tests/test_cli.py::test_verify_fails_on_missing_file
+  INV-verification-contract-foundation-backreferences:
+    - tests/ci/test_check_foundations.py::test_real_repo_passes
+  INV-verification-contract-markdown-link-resolution:
+    - tests/ci/test_check_links.py::test_real_repo_passes
+  INV-verification-contract-agents-md-marker-integrity:
+    - tests/test_cli.py::test_verify_fails_on_missing_marker
+    - tests/test_cli.py::test_verify_marker_imbalance
+  INV-verification-contract-changelog-entry:
+    - tests/ci/test_release_preflight.py::test_changelog_entry_present
+  INV-verification-contract-output-format:
+    - tests/test_cli.py::test_init_verify_returns_ok
+  INV-verification-contract-does-not-execute-code:
+    - tests/test_cli.py::test_init_verify_returns_ok
+  INV-verification-contract-model-version-compat:
+    - tests/test_cli.py::test_init_verify_returns_ok
 ---
 # Spec: Verification contract — what `kanon verify` guarantees
 

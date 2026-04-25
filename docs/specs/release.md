@@ -7,7 +7,24 @@ realizes:
 stressed_by:
   - solo-with-agents
   - platform-team
-fixtures_deferred: "Tests land with the implementation plan (docs/plans/release-aspect.md, not yet authored)."
+fixtures:
+  - tests/test_cli.py
+  - tests/test_kit_integrity.py
+invariant_coverage:
+  INV-release-depth-range:
+    - tests/test_kit_integrity.py::test_release_manifest_has_expected_depths
+  INV-release-protocol-shaped:
+    - tests/test_cli.py::test_aspect_add_release
+  INV-release-agents-md-section:
+    - tests/test_kit_integrity.py::test_release_agents_md_exists_per_depth
+  INV-release-reference-automation-snippets:
+    - tests/test_cli.py::test_release_depth_2_has_ci_files
+  INV-release-non-destructive-lifecycle:
+    - tests/test_cli.py::test_aspect_remove_leaves_files
+  INV-release-no-cross-aspect-dependency:
+    - tests/test_kit_integrity.py::test_release_manifest_paths_resolve
+  INV-release-stability-experimental:
+    - tests/test_kit_integrity.py::test_kit_release_aspect_dir_exists
 ---
 # Spec: Release — disciplined release publishing for LLM-agent-driven repos
 

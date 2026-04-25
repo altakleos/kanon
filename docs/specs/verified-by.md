@@ -7,7 +7,27 @@ realizes:
 stressed_by:
   - platform-team
   - solo-with-agents
-fixtures_deferred: "Tests land with the implementation plan (docs/plans/verified-by.md, not yet authored)."
+fixtures:
+  - tests/ci/test_check_verified_by.py
+  - tests/test_cli.py
+invariant_coverage:
+  INV-verified-by-frontmatter-mapping:
+    - tests/ci/test_check_verified_by.py::test_real_repo_passes
+  INV-verified-by-target-syntax:
+    - tests/ci/test_check_verified_by.py::test_unresolved_target_detected
+  INV-verified-by-resolution:
+    - tests/ci/test_check_verified_by.py::test_unresolved_target_detected
+  INV-verified-by-completeness:
+    - tests/ci/test_check_verified_by.py::test_missing_coverage_detected
+  INV-verified-by-stale-entries:
+    - tests/ci/test_check_verified_by.py::test_stale_entry_detected
+  INV-verified-by-many-to-many:
+    - tests/ci/test_check_verified_by.py::test_real_repo_passes
+  INV-verified-by-validator:
+    - tests/ci/test_check_verified_by.py::test_real_repo_passes
+    - tests/ci/test_check_verified_by.py::test_main_exits_zero_on_ok
+  INV-verified-by-verify-integration:
+    - tests/test_cli.py::test_init_verify_returns_ok
 ---
 # Spec: Verified-By — invariant-to-test traceability
 
