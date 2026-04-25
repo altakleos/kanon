@@ -148,20 +148,20 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
-| [`worktree-lifecycle`](.kanon/protocols/worktrees/worktree-lifecycle.md) | 1 | A multi-file or multi-step change is about to begin, or `git worktree list` shows active worktrees from other work streams |
+| [`worktree-lifecycle`](.kanon/protocols/worktrees/worktree-lifecycle.md) | 1 | A file-modifying operation is about to begin, or `git worktree list` shows active worktrees from other work streams |
 <!-- kanon:end:protocols-index -->
 
 <!-- kanon:begin:worktrees/branch-hygiene -->
 ## Worktree Branch Hygiene
 
-Use a dedicated git worktree for any change that touches multiple files or requires multiple steps. Trivial single-file edits (typos, one-liner fixes) stay in the main checkout.
+Use a dedicated git worktree for any change that modifies files. Read-only operations (reviewing code, running builds, answering questions) stay in the main checkout.
 
-**Before your first file-modifying tool call on a multi-file change, state in one sentence:** "Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`." If the change is trivial (single file, one-liner), state: "Trivial change — staying in main checkout." If you cannot truthfully emit either sentence, stop and create the worktree. This sentence is the audit trail — its absence in a transcript is how violations get caught.
+**Before your first file-modifying tool call, state in one sentence:** "Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`." If you cannot truthfully emit this sentence, stop and create the worktree. This sentence is the audit trail — its absence in a transcript is how violations get caught.
 
 **When to create a worktree:**
 
-- The change is multi-file or multi-step.
-- `git worktree list` shows other worktrees — parallel work is likely in progress.
+- You are about to modify any file — no exceptions.
+- `git worktree list` shows other worktrees — parallel work is in progress.
 - You are unsure — prefer isolation; an unnecessary worktree is harmless.
 
 **Worktree location and naming:**
@@ -182,11 +182,11 @@ Use a dedicated git worktree for any change that touches multiple files or requi
 <!-- kanon:end:worktrees/branch-hygiene -->
 
 <!-- kanon:begin:worktrees/body -->
-The `worktrees` aspect is active with automation helpers. Multi-file or multi-step changes should be isolated in git worktrees under `.worktrees/<slug>/`.
+The `worktrees` aspect is active with automation helpers. All file-modifying changes should be isolated in git worktrees under `.worktrees/<slug>/`.
 
 ## Key Constraints
 
-- Worktree creation is triggered by **change scope**, not concurrency detection.
+- Worktree creation is triggered by **any file modification**, not concurrency detection.
 - Never force-remove a worktree with uncommitted changes.
 - Branch naming convention: `wt/<slug>`.
 - Use the helper scripts in `scripts/` for consistent lifecycle management:

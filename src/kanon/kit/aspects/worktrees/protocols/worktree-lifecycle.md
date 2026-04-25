@@ -2,25 +2,25 @@
 status: accepted
 date: 2026-04-23
 depth-min: 1
-invoke-when: A multi-file or multi-step change is about to begin, or `git worktree list` shows active worktrees from other work streams
+invoke-when: A file-modifying operation is about to begin, or `git worktree list` shows active worktrees from other work streams
 ---
 # Protocol: Worktree lifecycle
 
 ## Purpose
 
-Guide agents through the full lifecycle of a git worktree — from deciding whether isolation is warranted, through setup, development, integration, and teardown. The primary trigger is change scope (multi-file or multi-step), not concurrency detection. As a secondary heuristic, `git worktree list` reveals whether parallel work is already in progress.
+Guide agents through the full lifecycle of a git worktree — from deciding whether isolation is warranted, through setup, development, integration, and teardown. The trigger is unconditional for file-modifying operations: when the worktrees aspect is enabled, every file-modifying operation uses a worktree. Read-only operations do not require isolation. As a secondary heuristic, `git worktree list` reveals whether parallel work is already in progress.
 
 ## Steps
 
 ### 1. Decision
 
-Assess the change scope:
+If you are about to modify any file:
+- Create a worktree. No exceptions.
 
-- **Multi-file or multi-step change** → create a worktree.
-- **Single-file typo or one-liner fix** → work in the main checkout.
-- **Uncertain** → prefer a worktree; an unnecessary worktree is harmless, a missed collision is not.
+If you are only reading files, running builds, or answering questions:
+- No worktree needed.
 
-Run `git worktree list` as a secondary check. If other worktrees exist under `.worktrees/`, parallel work is likely — isolate.
+Run `git worktree list` to see what branches are active — useful context for naming your worktree branch.
 
 ### 2. Setup
 
@@ -59,5 +59,4 @@ Develop normally inside `.worktrees/<slug>/`. Commit frequently to the `wt/<slug
 
 - **Force-removing dirty worktrees.** `git worktree remove --force` with uncommitted changes destroys work. Never do this.
 - **Long-lived worktrees without rebasing.** Divergence from `main` compounds merge conflicts. Rebase regularly.
-- **Worktrees for trivial changes.** A single-file typo fix does not need isolation — the overhead is not justified.
-- **Concurrency detection via lock files.** Lock files are fragile (stale after crashes, race conditions). Use change scope as the trigger instead.
+- **Concurrency detection via lock files.** Lock files are fragile (stale after crashes, race conditions, invisible across machines). Use the unconditional isolation rule instead.

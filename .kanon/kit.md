@@ -1,4 +1,4 @@
-# kanon kit — kanon
+# kanon kit — worktree-always-isolate
 
 > **Kernel doc.** Scaffolded by `kanon init` and refreshed by `kanon upgrade` / `kanon aspect set-depth`. This file describes what the kanon kit gives this repo at its current depth, where to find the pieces, and which procedures are available to you (the operating LLM agent).
 
