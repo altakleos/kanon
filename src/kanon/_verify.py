@@ -17,6 +17,8 @@ from kanon._manifest import (
     _aspect_depth_range,
     _aspect_sections,
     _expected_files,
+    _find_section_pair,
+    _iter_markers,
     _load_top_manifest,
     _namespaced_section,
     _parse_frontmatter,
@@ -66,7 +68,11 @@ def check_agents_md_markers(
     known_aspects: dict[str, int],
     errors: list[str],
 ) -> None:
-    """Check AGENTS.md for expected section markers and marker balance."""
+    """Check AGENTS.md for expected section markers and marker balance.
+
+    Uses line-anchored, fenced-block-aware marker detection so quoted markers
+    in user prose or code blocks do not influence the check.
+    """
     agents_md_path = target / "AGENTS.md"
     if not agents_md_path.is_file():
         return
@@ -77,15 +83,18 @@ def check_agents_md_markers(
             continue
         for section in _aspect_sections(aspect, depth):
             namespaced = _namespaced_section(aspect, section)
-            begin = f"<!-- kanon:begin:{namespaced} -->"
-            end = f"<!-- kanon:end:{namespaced} -->"
-            if begin not in agents_text or end not in agents_text:
+            if _find_section_pair(agents_text, namespaced) is None:
                 errors.append(
                     f"AGENTS.md missing marker pair for section '{namespaced}' "
                     f"(aspect {aspect}, depth {depth})."
                 )
-    begins = agents_text.count("<!-- kanon:begin:")
-    ends = agents_text.count("<!-- kanon:end:")
+    begins = 0
+    ends = 0
+    for kind, _, _, _ in _iter_markers(agents_text):
+        if kind == "begin":
+            begins += 1
+        else:
+            ends += 1
     if begins != ends:
         errors.append(
             f"AGENTS.md marker imbalance: {begins} begin(s), {ends} end(s)."

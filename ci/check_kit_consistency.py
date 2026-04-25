@@ -39,7 +39,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -49,10 +48,12 @@ import yaml
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
 
+# Allow this script to run from a fresh clone without an installed kanon.
+sys.path.insert(0, str(_REPO_ROOT / "src"))
+from kanon._manifest import _iter_markers  # noqa: E402
+
 _UNPREFIXED_SECTIONS: frozenset[str] = frozenset({"protocols-index"})
 _STABILITY_VALUES: frozenset[str] = frozenset({"experimental", "stable", "deprecated"})
-
-_SECTION_RE = re.compile(r"<!-- kanon:(begin|end):([a-z0-9/_-]+) -->")
 
 
 def _load_top_manifest() -> tuple[dict[str, Any], str | None]:
@@ -251,8 +252,7 @@ def _check_agents_md_markers(errors: list[str]) -> None:
             text = agents_md.read_text(encoding="utf-8")
             begins: dict[str, int] = {}
             ends: dict[str, int] = {}
-            for m in _SECTION_RE.finditer(text):
-                kind, section = m.group(1), m.group(2)
+            for kind, section, _, _ in _iter_markers(text):
                 if section in _UNPREFIXED_SECTIONS:
                     pass  # cross-aspect sections are allowed unprefixed
                 elif "/" in section:

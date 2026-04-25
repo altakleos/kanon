@@ -21,6 +21,8 @@ from kanon._manifest import (
     _aspect_path,
     _aspect_protocols,
     _aspect_sections,
+    _find_section_pair,
+    _iter_markers,
     _kit_root,
     _load_aspect_manifest,
     _load_top_manifest,
@@ -266,30 +268,24 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
 
 
 def _replace_section(text: str, section: str, content: str) -> str:
-    begin = f"<!-- kanon:begin:{section} -->"
-    end = f"<!-- kanon:end:{section} -->"
-    bi = text.find(begin)
-    ei = text.find(end, bi + len(begin)) if bi >= 0 else -1
-    if bi < 0 or ei < 0:
+    pair = _find_section_pair(text, section)
+    if pair is None:
         return text
-    before = text[: bi + len(begin)]
-    after = text[ei:]
-    return f"{before}\n{content.strip()}\n{after}"
+    _, begin_line_end, end_line_start, _ = pair
+    return text[:begin_line_end] + content.strip() + "\n" + text[end_line_start:]
 
 
 def _remove_section(text: str, section: str) -> str:
-    begin = f"<!-- kanon:begin:{section} -->"
-    end = f"<!-- kanon:end:{section} -->"
-    bi = text.find(begin)
-    ei = text.find(end, bi + len(begin)) if bi >= 0 else -1
-    if bi < 0 or ei < 0:
+    pair = _find_section_pair(text, section)
+    if pair is None:
         return text
-    before = text[:bi].rstrip() + "\n"
-    after = text[ei + len(end):]
-    if after.startswith("\n"):
-        after = after.lstrip("\n")
-        after = "\n\n" + after if after else "\n"
-    return before + after
+    begin_line_start, _, _, end_line_end = pair
+    head = text[:begin_line_start].rstrip() + "\n"
+    tail = text[end_line_end:]
+    if tail.startswith("\n"):
+        stripped = tail.lstrip("\n")
+        tail = ("\n\n" + stripped) if stripped else "\n"
+    return head + tail
 
 
 _SECTION_INSERT_ANCHOR = "## Contribution Conventions"
@@ -314,26 +310,34 @@ def _rewrite_legacy_markers(text: str) -> str:
 
     Only runs on sections that are known to belong to the `sdd` aspect in v2
     (plan-before-build, spec-before-design). `protocols-index` stays unprefixed.
+    Markers inside fenced code blocks or with leading non-whitespace prefixes
+    are skipped (see `_iter_markers`).
     """
     top = _load_top_manifest()
     if "sdd" not in top["aspects"]:
         return text
-    for section in _all_aspect_sections("sdd"):
-        if section in _UNPREFIXED_SECTIONS:
+    legacy_sections = {
+        s for s in _all_aspect_sections("sdd") if s not in _UNPREFIXED_SECTIONS
+    }
+    if not legacy_sections:
+        return text
+    namespaced_targets = {f"sdd/{s}" for s in legacy_sections}
+    for _, sec, _, _ in _iter_markers(text):
+        if sec in namespaced_targets:
+            return text  # already migrated
+    pieces: list[str] = []
+    last = 0
+    for kind, sec, line_start, line_end in _iter_markers(text):
+        if sec not in legacy_sections:
             continue
-        namespaced = f"sdd/{section}"
-        # Skip if already namespaced in this text.
-        if f"<!-- kanon:begin:{namespaced} -->" in text:
-            continue
-        text = text.replace(
-            f"<!-- kanon:begin:{section} -->",
-            f"<!-- kanon:begin:{namespaced} -->",
-        )
-        text = text.replace(
-            f"<!-- kanon:end:{section} -->",
-            f"<!-- kanon:end:{namespaced} -->",
-        )
-    return text
+        pieces.append(text[last:line_start])
+        new_line = f"<!-- kanon:{kind}:sdd/{sec} -->"
+        if line_end > 0 and text[line_end - 1: line_end] == "\n":
+            new_line += "\n"
+        pieces.append(new_line)
+        last = line_end
+    pieces.append(text[last:])
+    return "".join(pieces)
 
 
 def _merge_agents_md(existing: str, new: str) -> str:
@@ -356,15 +360,13 @@ def _merge_agents_md(existing: str, new: str) -> str:
     result = _rewrite_legacy_markers(existing)
 
     for section in possible:
-        begin = f"<!-- kanon:begin:{section} -->"
-        end = f"<!-- kanon:end:{section} -->"
-        nb = new.find(begin)
-        ne = new.find(end, nb + len(begin)) if nb >= 0 else -1
-        if nb < 0 or ne < 0:
+        new_pair = _find_section_pair(new, section)
+        if new_pair is None:
             result = _remove_section(result, section)
             continue
-        new_body = new[nb + len(begin): ne].strip()
-        if begin in result and end in result:
+        _, nbe, nes, _ = new_pair
+        new_body = new[nbe:nes].strip()
+        if _find_section_pair(result, section) is not None:
             result = _replace_section(result, section, new_body)
         else:
             result = _insert_section(result, section, new_body)

@@ -6,7 +6,9 @@ YAML manifests with no side effects except caching.
 
 from __future__ import annotations
 
+import re
 import string
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from functools import cache, lru_cache
 from pathlib import Path
@@ -42,6 +44,84 @@ _ALWAYS_SYNTHESIZED = ("AGENTS.md", ".kanon/config.yaml")
 
 # Section names that stay unprefixed in AGENTS.md markers (cross-aspect by design).
 _UNPREFIXED_SECTIONS = frozenset({"protocols-index"})
+
+# Marker grammar — line-anchored (whitespace tolerated either side) so that a
+# quoted marker inside user prose, an inline-code span, or a fenced code block
+# is never mistaken for kit-managed content.
+_MARKER_RE = re.compile(
+    r"^[ \t]*<!-- kanon:(begin|end):([a-z0-9/_-]+) -->[ \t]*$",
+    re.MULTILINE,
+)
+# A fence opener is a line beginning with 3+ backticks or 3+ tildes (the two
+# CommonMark fence delimiters). The closing fence must use the same character.
+_FENCE_RE = re.compile(r"^[ \t]*(`{3,}|~{3,})[^\n]*$", re.MULTILINE)
+
+
+def _fenced_ranges(text: str) -> list[tuple[int, int]]:
+    """Byte ranges covered by fenced code blocks.
+
+    A range starts at the opening fence's first character and ends one past the
+    closing fence's trailing newline (or end-of-text if unclosed).
+    """
+    ranges: list[tuple[int, int]] = []
+    matches = list(_FENCE_RE.finditer(text))
+    i = 0
+    while i < len(matches):
+        opener = matches[i]
+        delim_char = opener.group(1)[0]
+        delim_len = len(opener.group(1))
+        j = i + 1
+        while j < len(matches):
+            cand = matches[j]
+            if cand.group(1)[0] == delim_char and len(cand.group(1)) >= delim_len:
+                break
+            j += 1
+        if j < len(matches):
+            close_end = matches[j].end()
+            if close_end < len(text) and text[close_end] == "\n":
+                close_end += 1
+            ranges.append((opener.start(), close_end))
+            i = j + 1
+        else:
+            ranges.append((opener.start(), len(text)))
+            i = len(matches)
+    return ranges
+
+
+def _iter_markers(text: str) -> Iterator[tuple[str, str, int, int]]:
+    """Yield ``(kind, section, line_start, line_end)`` for each kanon marker.
+
+    Only matches markers that occupy a line by themselves (leading or trailing
+    tabs and spaces tolerated) and are not inside a fenced code block.
+    ``line_end`` is one past the marker line's trailing newline (or ``len(text)``).
+    """
+    fences = _fenced_ranges(text)
+    for m in _MARKER_RE.finditer(text):
+        if any(s <= m.start() < e for s, e in fences):
+            continue
+        line_end = m.end() + 1 if m.end() < len(text) and text[m.end()] == "\n" else m.end()
+        yield m.group(1), m.group(2), m.start(), line_end
+
+
+def _find_section_pair(
+    text: str, section: str
+) -> tuple[int, int, int, int] | None:
+    """Find the first well-ordered begin/end pair for *section*.
+
+    Returns ``(begin_line_start, begin_line_end, end_line_start, end_line_end)``
+    or ``None`` if the section has no recognised pair (only-begin and only-end
+    both return ``None``). End markers without a preceding begin are ignored.
+    """
+    begin_bounds: tuple[int, int] | None = None
+    for kind, sec, ls, le in _iter_markers(text):
+        if sec != section:
+            continue
+        if kind == "begin":
+            if begin_bounds is None:
+                begin_bounds = (ls, le)
+        elif begin_bounds is not None:
+            return (begin_bounds[0], begin_bounds[1], ls, le)
+    return None
 
 
 def _kit_root() -> Path:
