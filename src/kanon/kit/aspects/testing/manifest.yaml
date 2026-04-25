@@ -35,3 +35,12 @@ depth-3:
     - ci/check_test_quality.py
   protocols: []
   sections: []
+
+# Optional: aspect config schema. When present, `kanon aspect set-config` and
+# `kanon aspect add --config` validate keys/types against these entries.
+# Allowed `type:` values: string, integer, boolean, number.
+config-schema:
+  coverage_floor:
+    type: integer
+    default: 80
+    description: Minimum total test-coverage percentage the project must maintain.

@@ -22,7 +22,8 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [invariant-ids](invariant-ids.md) | Invariant IDs — stable anchors for spec invariants | done |
 | [verified-by](verified-by.md) | Verified-by — invariant-to-test traceability | done |
 | [close-test-gaps](close-test-gaps.md) | Close test coverage gaps | done |
-| [cli-spec-realignment](cli-spec-realignment.md) | CLI spec realignment + crash-recovery sentinel (ADR-0024) | done |
+| [cli-spec-realignment](cli-spec-realignment.md) | CLI spec realignment + crash-recovery sentinel (ADR-0024) | in-progress |
+| [aspect-config](aspect-config.md) | `kanon aspect set-config` and `aspect add --config` | done |
 
 ## Roadmap
 

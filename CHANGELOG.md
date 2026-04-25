@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- **`kanon aspect set-config <target> <name> <key>=<value>`** — set one config value on an enabled aspect. Each invocation sets exactly one key; the command is idempotent. Value is parsed as a YAML scalar (e.g., `coverage_floor=80` stores `80` as int; `flag=true` stores `True` as bool). Lists and mappings are rejected — hand-edit `.kanon/config.yaml` for structured values. Atomic write under the standard `.kanon/.pending` sentinel (ADR-0024).
+- **`--config <key>=<value>` (repeatable) on `kanon aspect add`** — populate aspect-config keys at enable time. Same parsing rules as `set-config`.
+- **Optional `config-schema:` per aspect** — aspects may now declare a typed config schema in their sub-manifest (`src/kanon/kit/aspects/<name>/manifest.yaml`). When present, `set-config` and `--config` reject unknown keys and type mismatches. Permitted `type:` values: `string`, `integer`, `boolean`, `number`. The `testing` aspect declares `coverage_floor: integer` as the first lived example.
+- **`kanon aspect info` surfaces the schema** — when an aspect declares a `config-schema:` block, `aspect info <name>` prints each key with its type, default (when set), and description (when set). See [ADR-0025](docs/decisions/0025-aspect-config-parsing.md) and [`docs/specs/aspect-config.md`](docs/specs/aspect-config.md).
+
 ### Fixed
 
 - **AGENTS.md marker matching is now line-anchored and fenced-block-aware.** Quoting a `<!-- kanon:begin:... -->` or `<!-- kanon:end:... -->` marker inside user prose, an inline-code span, a blockquote, or a fenced code block (``` or `~~~`) no longer risks corruption on `kanon upgrade` or `kanon aspect set-depth`. The matcher requires the marker to occupy a line by itself (leading or trailing tabs/spaces tolerated). Behaviour for well-formed kit markers is unchanged. The same matcher now backs `_scaffold` merge logic, `kanon verify`'s marker-balance check, and `ci/check_kit_consistency.py`.

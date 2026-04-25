@@ -24,14 +24,17 @@ from __future__ import annotations
 import hashlib
 import json
 import operator
+import re
 import sys
 from pathlib import Path
 from typing import Any
 
 import click
+import yaml
 
 from kanon import __version__
 from kanon._manifest import (
+    _aspect_config_schema,
     _aspect_depth_range,
     _default_aspects,
     _expected_files,
@@ -55,6 +58,76 @@ from kanon._scaffold import (
     _write_config,
     _write_tree_atomically,
 )
+
+# Aspect config-key grammar (INV-aspect-config-key-format).
+_CONFIG_KEY_RE = re.compile(r"^[a-z][a-z0-9_-]*$")
+
+
+def _value_matches_schema_type(value: Any, expected: str) -> bool:
+    """Return True iff a parsed YAML scalar satisfies the schema's ``type:``.
+
+    `bool` is a subtype of `int` in Python; reject `bool` for integer / number
+    checks so a stray `coverage_floor=true` does not silently pass.
+    """
+    if isinstance(value, bool):
+        return expected == "boolean"
+    if expected == "string":
+        return isinstance(value, str)
+    if expected == "integer":
+        return isinstance(value, int)
+    if expected == "boolean":
+        return isinstance(value, bool)
+    if expected == "number":
+        return isinstance(value, (int, float))
+    return False
+
+
+def _parse_config_pair(
+    raw: str, schema: dict[str, dict[str, Any]] | None
+) -> tuple[str, Any]:
+    """Parse one ``key=value`` token for ``aspect set-config`` / ``aspect add --config``.
+
+    Value parsed via :func:`yaml.safe_load` (INV-aspect-config-yaml-scalar-parsing);
+    lists and mappings rejected. When *schema* is non-None, the key must appear
+    in it and the parsed value's type must satisfy the declared schema ``type:``.
+    """
+    if "=" not in raw:
+        raise click.ClickException(
+            f"Invalid config token {raw!r}: expected key=value."
+        )
+    key, _, value_str = raw.partition("=")
+    key = key.strip()
+    if not _CONFIG_KEY_RE.match(key):
+        raise click.ClickException(
+            f"Invalid config key {key!r}: must match {_CONFIG_KEY_RE.pattern}."
+        )
+    try:
+        parsed = yaml.safe_load(value_str)
+    except yaml.YAMLError as exc:
+        raise click.ClickException(
+            f"Invalid config value for {key!r}: {exc}"
+        ) from None
+    if isinstance(parsed, (list, dict)):
+        raise click.ClickException(
+            f"Invalid config value for {key!r}: lists and mappings are not "
+            f"supported on the CLI; hand-edit .kanon/config.yaml for structured values."
+        )
+    if schema is not None:
+        if key not in schema:
+            raise click.ClickException(
+                f"Unknown config key {key!r}: not declared in this aspect's "
+                f"config-schema. Allowed keys: {sorted(schema.keys())}."
+            )
+        # `type:` presence is enforced by `_validate_config_schema` at manifest
+        # load time; cast to str here so mypy --strict is satisfied.
+        expected = str(schema[key]["type"])
+        if not _value_matches_schema_type(parsed, expected):
+            raise click.ClickException(
+                f"Invalid type for config key {key!r}: expected {expected}, "
+                f"got {type(parsed).__name__} ({parsed!r})."
+            )
+    return key, parsed
+
 
 # --- CLI commands ---
 
@@ -405,13 +478,38 @@ def aspect_info(name: str) -> None:
         files = depth_entry.get("files", []) or []
         protos = depth_entry.get("protocols", []) or []
         click.echo(f"  Depth {d}: {len(files)} file(s), {len(protos)} protocol(s)")
+    schema = _aspect_config_schema(name)
+    if schema:
+        click.echo("  Config keys:")
+        for key in sorted(schema):
+            descriptor = schema[key]
+            tline = f"    {key}: {descriptor.get('type', '?')}"
+            if "default" in descriptor:
+                tline += f" (default: {descriptor['default']!r})"
+            click.echo(tline)
+            description = descriptor.get("description")
+            if description:
+                click.echo(f"      {description}")
 
 
 @aspect.command("add")
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 @click.argument("aspect_name")
 @click.option("--depth", type=int, default=None, help="Initial depth (default: aspect's default-depth).")
-def aspect_add(target: Path, aspect_name: str, depth: int | None) -> None:
+@click.option(
+    "--config",
+    "config_pairs",
+    multiple=True,
+    metavar="KEY=VALUE",
+    help="Set an aspect-config key at enable time. Repeatable. "
+         "VALUE is parsed as a YAML scalar (e.g., 80, true, foo).",
+)
+def aspect_add(
+    target: Path,
+    aspect_name: str,
+    depth: int | None,
+    config_pairs: tuple[str, ...],
+) -> None:
     """Enable an aspect at its default depth (or --depth N)."""
     target = target.resolve()
     config = _read_config(target)
@@ -438,7 +536,15 @@ def aspect_add(target: Path, aspect_name: str, depth: int | None) -> None:
     err = _check_requires(aspect_name, proposed, top)
     if err:
         raise click.ClickException(err)
-    _set_aspect_depth(target, aspect_name, chosen_depth)
+    # Parse --config pairs against the aspect's optional schema before any I/O.
+    schema = _aspect_config_schema(aspect_name)
+    config_values: dict[str, Any] = {}
+    for raw in config_pairs:
+        key, value = _parse_config_pair(raw, schema)
+        config_values[key] = value
+    _set_aspect_depth(
+        target, aspect_name, chosen_depth, extra_config=config_values or None
+    )
 
 
 @aspect.command("remove")
@@ -513,6 +619,44 @@ def aspect_set_depth(target: Path, aspect_name: str, n: int) -> None:
     _set_aspect_depth(target, aspect_name, n)
 
 
+@aspect.command("set-config")
+@click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.argument("aspect_name")
+@click.argument("pair", metavar="KEY=VALUE")
+def aspect_set_config(target: Path, aspect_name: str, pair: str) -> None:
+    """Set one config value on an enabled aspect (KEY=VALUE; YAML-scalar value)."""
+    target = target.resolve()
+    config = _read_config(target)
+    _check_pending_recovery(target)
+    top = _load_top_manifest()
+    if aspect_name not in top["aspects"]:
+        raise click.ClickException(
+            f"Unknown aspect: {aspect_name!r}. See `kanon aspect list`."
+        )
+    aspects = _config_aspects(config)
+    if aspect_name not in aspects or aspects[aspect_name] <= 0:
+        raise click.ClickException(
+            f"Aspect {aspect_name!r} is not enabled in this project. "
+            f"Run `kanon aspect add {target} {aspect_name}` first."
+        )
+    schema = _aspect_config_schema(aspect_name)
+    key, value = _parse_config_pair(pair, schema)
+
+    from kanon._atomic import clear_sentinel, write_sentinel
+
+    aspects_meta = dict(config.get("aspects", {}))
+    kit_version = config.get("kit_version", __version__)
+    write_sentinel(target / ".kanon", "set-config")
+    _commit_aspect_meta(
+        target, kit_version, aspects_meta, aspect_name, aspects[aspect_name],
+        extra_config={key: value},
+    )
+    clear_sentinel(target / ".kanon")
+    click.echo(
+        f"Set aspects.{aspect_name}.config.{key} = {value!r} in .kanon/config.yaml."
+    )
+
+
 def _validate_aspect_and_depth(
     aspect_name: str, n: int, top: dict[str, Any]
 ) -> None:
@@ -580,23 +724,36 @@ def _commit_aspect_meta(
     aspects_meta: dict[str, dict[str, Any]],
     aspect_name: str,
     depth: int,
+    extra_config: dict[str, Any] | None = None,
 ) -> None:
     """Stamp ``aspects_meta[aspect_name]`` and atomically write config.yaml.
 
     config.yaml is the commit marker for the multi-file `aspect set-depth`
     sequence (ADR-0024); this is the single callsite that mutates it during
     that operation.
+
+    When *extra_config* is supplied, its keys are merged into the entry's
+    ``config:`` block (overwriting prior values for shared keys). This lets
+    ``aspect add --config k=v`` populate config keys at enable time without a
+    second config write.
     """
     entry = dict(aspects_meta.get(aspect_name, {}))
     entry["depth"] = depth
     entry["enabled_at"] = _now_iso()
-    entry.setdefault("config", {})
+    config_block = dict(entry.get("config") or {})
+    if extra_config:
+        config_block.update(extra_config)
+    entry["config"] = config_block
     aspects_meta[aspect_name] = entry
     _write_config(target, kit_version, aspects_meta)
 
 
 def _set_aspect_depth(
-    target: Path, aspect_name: str, n: int, legacy_tier_verb: bool = False
+    target: Path,
+    aspect_name: str,
+    n: int,
+    legacy_tier_verb: bool = False,
+    extra_config: dict[str, Any] | None = None,
 ) -> None:
     target = target.resolve()
     config = _read_config(target)
@@ -622,7 +779,10 @@ def _set_aspect_depth(
     write_sentinel(target / ".kanon", "set-depth")
 
     if current == n:
-        _commit_aspect_meta(target, kit_version, aspects_meta, aspect_name, n)
+        _commit_aspect_meta(
+            target, kit_version, aspects_meta, aspect_name, n,
+            extra_config=extra_config,
+        )
         clear_sentinel(target / ".kanon")
         verb = "Tier" if legacy_tier_verb else f"Aspect {aspect_name} depth"
         click.echo(f"{verb} already {n}. Noop (timestamp refreshed).")
@@ -648,7 +808,10 @@ def _set_aspect_depth(
             click.echo("You may keep, archive, or delete them as you choose.")
 
     _rewrite_assembled_views(target, new_aspects, target.name)
-    _commit_aspect_meta(target, kit_version, aspects_meta, aspect_name, n)
+    _commit_aspect_meta(
+        target, kit_version, aspects_meta, aspect_name, n,
+        extra_config=extra_config,
+    )
     clear_sentinel(target / ".kanon")
 
     verb = "Tier" if legacy_tier_verb else f"Aspect {aspect_name} depth"
