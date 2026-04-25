@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a6] — 2026-04-25
+
 ### Added
 
 - **Aspect capability registry — `provides:` and generalised `requires:`.** Each top-level aspect entry in `src/kanon/kit/manifest.yaml` may now declare `provides: [<capability>, ...]`. The existing `requires:` field accepts two forms in the same list: depth predicates (`"sdd >= 1"`, semantics unchanged) or capability presence (`"planning-discipline"`, satisfied iff at least one enabled aspect declares the capability in its `provides:`). The token-count discriminator routes parsing unambiguously; no existing predicate changes meaning. All six shipped aspects now declare a capability — `sdd: planning-discipline, spec-discipline`; `worktrees: worktree-isolation`; `release: release-discipline`; `testing: test-discipline`; `security: security-discipline`; `deps: dependency-hygiene`. `kanon aspect info` surfaces the new `Provides:` line. `ci/check_kit_consistency.py` hard-fails on dangling capability-presence predicates. See [ADR-0026](docs/decisions/0026-aspect-provides-and-generalised-requires.md) and [`docs/specs/aspect-provides.md`](docs/specs/aspect-provides.md).
@@ -173,7 +175,8 @@ First public alpha under the name `kanon`. The project was previously developed 
 - Spec-graph tooling (rename, orphan detection, spec-diff rendering) is deferred to v0.2. See `docs/specs/spec-graph-tooling.md`.
 - Multi-agent coordination primitives (reservations ledger, plan-SHA pins, decision handshake) deferred to v0.2. See `docs/specs/multi-agent-coordination.md`.
 
-[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a5...HEAD
+[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a6...HEAD
+[0.2.0a6]: https://github.com/altakleos/kanon/compare/v0.2.0a5...v0.2.0a6
 [0.2.0a5]: https://github.com/altakleos/kanon/compare/v0.2.0a4...v0.2.0a5
 [0.2.0a4]: https://github.com/altakleos/kanon/compare/v0.2.0a3...v0.2.0a4
 [0.2.0a3]: https://github.com/altakleos/kanon/compare/v0.2.0a2...v0.2.0a3
