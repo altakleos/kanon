@@ -99,8 +99,12 @@ def test_plan_done_all_checked_no_warning(tmp_path: Path) -> None:
     assert warnings == []
 
 
-def test_plan_done_with_unchecked_but_some_checked_no_warning(tmp_path: Path) -> None:
-    """Plan done with mixed checkboxes is OK (common pattern — not all boxes ticked)."""
+def test_plan_done_with_mixed_checkboxes_warns(tmp_path: Path) -> None:
+    """Plan done with ANY unchecked task triggers warning. The rule no longer
+    requires `checked == 0` — a mix of [x] and [ ] is the same kind of
+    contradiction as all-unchecked: a `done` plan claims all work shipped,
+    `- [ ]` says otherwise. Use `- [~]` with NOTE to defer.
+    """
     plans_dir = tmp_path / "docs" / "plans"
     plans_dir.mkdir(parents=True)
     (plans_dir / "foo.md").write_text(
@@ -108,7 +112,9 @@ def test_plan_done_with_unchecked_but_some_checked_no_warning(tmp_path: Path) ->
         encoding="utf-8",
     )
     warnings = mod.check_plan_status_drift(tmp_path)
-    assert warnings == []
+    assert len(warnings) == 1
+    assert "done" in warnings[0]
+    assert "unchecked" in warnings[0]
 
 
 def test_plan_done_zero_checked_all_unchecked_warns(tmp_path: Path) -> None:
@@ -123,3 +129,18 @@ def test_plan_done_zero_checked_all_unchecked_warns(tmp_path: Path) -> None:
     assert len(warnings) == 1
     assert "done" in warnings[0]
     assert "unchecked" in warnings[0]
+
+
+def test_plan_done_with_deferred_items_no_warning(tmp_path: Path) -> None:
+    """`- [~]` deferred items don't count as unchecked. A plan with all
+    [x] and [~] (and zero [ ]) is internally consistent under the
+    project's checkbox convention.
+    """
+    plans_dir = tmp_path / "docs" / "plans"
+    plans_dir.mkdir(parents=True)
+    (plans_dir / "foo.md").write_text(
+        "---\nstatus: done\n---\n# Plan\n- [x] T1\n- [~] T2 — DEFERRED. NOTE: out of scope.\n",
+        encoding="utf-8",
+    )
+    warnings = mod.check_plan_status_drift(tmp_path)
+    assert warnings == []
