@@ -633,6 +633,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
     """Remove an aspect (non-destructive: scaffolded files are left on disk)."""
     target = target.resolve()
     config = _read_config(target)
+    _check_pending_recovery(target)
     aspects = _config_aspects(config)
     if aspect_name not in aspects:
         raise click.ClickException(
@@ -646,7 +647,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
     if err:
         raise click.ClickException(err)
 
-    from kanon._atomic import atomic_write_text
+    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
     # Remove aspect from config
     aspects_meta = dict(config.get("aspects", {}))
@@ -655,6 +656,11 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
 
     # Remaining aspects for AGENTS.md reassembly
     remaining = {k: int(v["depth"]) for k, v in aspects_meta.items()}
+
+    # Sentinel wraps the multi-file mutation: AGENTS.md + kit.md + config.yaml.
+    # Cleared only on the success path; an exception below leaves the sentinel
+    # so the next CLI invocation warns the user (ADR-0024 contract).
+    write_sentinel(target / ".kanon", "aspect-remove")
 
     # Re-assemble and merge AGENTS.md without the removed aspect
     new_agents = _assemble_agents_md(remaining, target.name)
@@ -671,6 +677,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
         atomic_write_text(target / ".kanon" / "kit.md", kit_md)
 
     _write_config(target, kit_version, aspects_meta)
+    clear_sentinel(target / ".kanon")
 
     # List aspect-specific files left on disk
     from kanon._manifest import _aspect_files, _aspect_protocols
