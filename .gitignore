@@ -12,6 +12,7 @@ venv/
 htmlcov/
 .kanon.tmp/
 .kanon.old/
+.kanon/.pending
 *.tmp
 .omc/
 .yolo-sisyphus/

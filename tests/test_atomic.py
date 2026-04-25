@@ -80,3 +80,47 @@ def test_fsyncs_parent_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     atomic_write_text(target, "key: value\n")
 
     assert events == ["fsync:file", "replace", "fsync:dir"]
+
+
+# --- Sentinel tests (ADR-0024) ---
+
+
+def test_sentinel_write_and_read(tmp_path: Path) -> None:
+    """write_sentinel creates .pending; read_sentinel returns the operation."""
+    from kanon._atomic import read_sentinel, write_sentinel
+
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    write_sentinel(kanon_dir, "upgrade")
+    assert (kanon_dir / ".pending").exists()
+    assert read_sentinel(kanon_dir) == "upgrade"
+
+
+def test_sentinel_clear(tmp_path: Path) -> None:
+    """clear_sentinel removes .pending; read_sentinel returns None."""
+    from kanon._atomic import clear_sentinel, read_sentinel, write_sentinel
+
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    write_sentinel(kanon_dir, "init")
+    clear_sentinel(kanon_dir)
+    assert not (kanon_dir / ".pending").exists()
+    assert read_sentinel(kanon_dir) is None
+
+
+def test_read_sentinel_absent(tmp_path: Path) -> None:
+    """read_sentinel returns None when no sentinel exists."""
+    from kanon._atomic import read_sentinel
+
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    assert read_sentinel(kanon_dir) is None
+
+
+def test_clear_sentinel_idempotent(tmp_path: Path) -> None:
+    """clear_sentinel does not raise when .pending is already absent."""
+    from kanon._atomic import clear_sentinel
+
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    clear_sentinel(kanon_dir)  # should not raise

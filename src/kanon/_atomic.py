@@ -42,3 +42,30 @@ def atomic_write_text(path: Path, content: str) -> None:
         with contextlib.suppress(OSError):
             tmp.unlink(missing_ok=True)
         raise
+
+
+def write_sentinel(kanon_dir: Path, operation: str) -> None:
+    """Write a crash-recovery sentinel before a multi-file mutation.
+
+    The sentinel records the operation name so that if the process is
+    interrupted, the next kanon invocation can detect and re-execute
+    the incomplete operation.
+    """
+    sentinel = kanon_dir / ".pending"
+    atomic_write_text(sentinel, operation + "\n")
+
+
+def clear_sentinel(kanon_dir: Path) -> None:
+    """Remove the crash-recovery sentinel after successful completion."""
+    sentinel = kanon_dir / ".pending"
+    with contextlib.suppress(FileNotFoundError):
+        sentinel.unlink()
+
+
+def read_sentinel(kanon_dir: Path) -> str | None:
+    """Return the pending operation name, or None if no sentinel exists."""
+    sentinel = kanon_dir / ".pending"
+    try:
+        return sentinel.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return None

@@ -135,6 +135,20 @@ def _check_removal_dependents(
     return None
 
 
+def _check_pending_recovery(target: Path) -> None:
+    """If a previous operation was interrupted, warn the user."""
+    from kanon._atomic import read_sentinel
+
+    pending = read_sentinel(target / ".kanon")
+    if pending is not None:
+        click.echo(
+            f"Warning: previous '{pending}' operation was interrupted. "
+            f"Re-run 'kanon {pending}' to complete it, or run "
+            f"'kanon upgrade' to re-render all files.",
+            err=True,
+        )
+
+
 @click.group()
 @click.version_option(__version__, prog_name="kanon")
 def main() -> None:
@@ -194,8 +208,13 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
         bundle[".kanon/kit.md"] = kit_md
     bundle.update(_render_shims())
 
+    from kanon._atomic import clear_sentinel, write_sentinel
+
+    (target / ".kanon").mkdir(parents=True, exist_ok=True)
+    write_sentinel(target / ".kanon", "init")
     _write_tree_atomically(target, bundle, force=force)
     _write_config(target, __version__, _aspects_with_meta(aspects_to_enable))
+    clear_sentinel(target / ".kanon")
 
     click.echo(f"Created kanon project at {target}.")
     click.echo(f"Wrote {len(bundle) + 1} files plus .kanon/config.yaml.")
@@ -215,6 +234,7 @@ def upgrade(target: Path) -> None:
         raise click.ClickException(
             f"Not a kanon project: {target} (missing .kanon/config.yaml)."
         )
+    _check_pending_recovery(target)
     raw = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     if not isinstance(raw, dict):
         raise click.ClickException(f"Malformed {config_path}: expected a YAML mapping.")
@@ -229,8 +249,9 @@ def upgrade(target: Path) -> None:
             f"Already at {__version__}. Re-rendering kit-managed sections."
         )
 
-    from kanon._atomic import atomic_write_text
+    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
+    write_sentinel(target / ".kanon", "upgrade")
     migrated_flat = _migrate_flat_protocols(target, aspects)
 
     new_agents_md = _assemble_agents_md(aspects, target.name)
@@ -249,6 +270,7 @@ def upgrade(target: Path) -> None:
 
     if version_changed:
         _write_config(target, __version__, _aspects_with_meta(aspects))
+    clear_sentinel(target / ".kanon")
 
     if was_legacy:
         click.echo("Migrated legacy tier config to aspect model.")
@@ -265,6 +287,7 @@ def verify(target: Path) -> None:
     target = target.resolve()
     errors: list[str] = []
     warnings: list[str] = []
+    _check_pending_recovery(target)
 
     try:
         config = _read_config(target)
@@ -577,6 +600,7 @@ def _set_aspect_depth(
 ) -> None:
     target = target.resolve()
     config = _read_config(target)
+    _check_pending_recovery(target)
     top = _load_top_manifest()
     if aspect_name not in top["aspects"]:
         raise click.ClickException(f"Unknown aspect: {aspect_name!r}.")
@@ -605,7 +629,11 @@ def _set_aspect_depth(
         entry["enabled_at"] = _now_iso()
         entry.setdefault("config", {})
         aspects_meta[aspect_name] = entry
+        from kanon._atomic import clear_sentinel, write_sentinel
+
+        write_sentinel(target / ".kanon", "set-depth")
         _write_config(target, kit_version, aspects_meta)
+        clear_sentinel(target / ".kanon")
         verb = "Tier" if legacy_tier_verb else f"Aspect {aspect_name} depth"
         click.echo(f"{verb} already {n}. Noop (timestamp refreshed).")
         return
@@ -615,8 +643,9 @@ def _set_aspect_depth(
     context = {"project_name": target.name, "tier": str(n)}
     target_bundle = _build_bundle(new_aspects_snapshot, context)
 
-    from kanon._atomic import atomic_write_text
+    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
+    write_sentinel(target / ".kanon", "set-depth")
     if n > current:
         added = 0
         for rel, content in sorted(target_bundle.items()):
@@ -658,6 +687,7 @@ def _set_aspect_depth(
     entry.setdefault("config", {})
     aspects_meta[aspect_name] = entry
     _write_config(target, kit_version, aspects_meta)
+    clear_sentinel(target / ".kanon")
 
     verb = "Tier" if legacy_tier_verb else f"Aspect {aspect_name} depth"
     click.echo(f"{verb} set to {n} in .kanon/config.yaml.")
@@ -715,9 +745,10 @@ def fidelity() -> None:
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def fidelity_update(target: Path) -> None:
     """Generate or refresh .kanon/fidelity.lock."""
-    from kanon._atomic import atomic_write_text
+    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
     target = target.resolve()
+    _check_pending_recovery(target)
     specs_dir = target / "docs" / "specs"
     specs = _accepted_or_draft_specs(specs_dir)
     if not specs:
@@ -749,7 +780,9 @@ def fidelity_update(target: Path) -> None:
                 lines.append(f"      {fp}: \"{fixture_map[slug][fp]}\"\n")
         lines.append(f"    locked_at: \"{e['locked_at']}\"\n")
 
+    write_sentinel(target / ".kanon", "fidelity-update")
     atomic_write_text(lock_path, "".join(lines))
+    clear_sentinel(target / ".kanon")
     click.echo(f"Wrote {lock_path} with {len(entries)} entries.")
 
 
