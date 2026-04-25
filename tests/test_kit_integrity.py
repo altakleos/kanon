@@ -60,13 +60,11 @@ def test_dev_process_byte_equal_to_canonical() -> None:
 
 
 @pytest.mark.parametrize("depth", [1, 2, 3])
-def test_depth_agents_md_contains_expected_markers(depth: int) -> None:
+def test_depth_agents_md_has_no_section_markers(depth: int) -> None:
+    """Depth templates must not contain section markers — assembly injects them."""
     agents_md = (_SDD / "agents-md" / f"depth-{depth}.md").read_text(encoding="utf-8")
-    assert "<!-- kanon:begin:sdd/plan-before-build -->" in agents_md
-    assert "<!-- kanon:end:sdd/plan-before-build -->" in agents_md
-    if depth >= 2:
-        assert "<!-- kanon:begin:sdd/spec-before-design -->" in agents_md
-        assert "<!-- kanon:end:sdd/spec-before-design -->" in agents_md
+    assert "<!-- kanon:begin:" not in agents_md
+    assert "<!-- kanon:end:" not in agents_md
 
 
 def test_depth_0_agents_md_has_no_gate_markers() -> None:
@@ -204,9 +202,11 @@ def test_worktrees_agents_md_exists_per_depth(depth: int) -> None:
     assert (_WORKTREES / "agents-md" / f"depth-{depth}.md").is_file()
 
 
-def test_worktrees_depth_1_has_branch_hygiene_marker() -> None:
+def test_worktrees_depth_1_has_no_section_markers() -> None:
+    """Depth templates must not contain section markers — assembly injects them."""
     text = (_WORKTREES / "agents-md" / "depth-1.md").read_text(encoding="utf-8")
-    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in text
+    assert "<!-- kanon:begin:" not in text
+    assert "<!-- kanon:end:" not in text
 
 
 # --- release aspect ---

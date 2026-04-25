@@ -4,5 +4,3 @@ The `testing` aspect is active with automated enforcement. Follow the test-disci
 - For spec invariants: red-green-refactor loop.
 - `ci/check_test_quality.py` — validates test quality (no empty tests, no assert-True-only, coverage floor).
 
-<!-- kanon:begin:testing/test-discipline -->
-<!-- kanon:end:testing/test-discipline -->

@@ -14,15 +14,6 @@ A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + desig
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 - Principles in `docs/foundations/principles/` are the project's cross-cutting stances. Specs and ADRs reference them via frontmatter.
 
-<!-- kanon:begin:sdd/plan-before-build -->
-<!-- kanon:end:sdd/plan-before-build -->
-
-<!-- kanon:begin:sdd/spec-before-design -->
-<!-- kanon:end:sdd/spec-before-design -->
-
-<!-- kanon:begin:protocols-index -->
-<!-- kanon:end:protocols-index -->
-
 ## References
 
 - [`docs/foundations/vision.md`](docs/foundations/vision.md) — product vision

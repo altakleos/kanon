@@ -21,7 +21,7 @@ invariant_coverage:
     - tests/test_cli.py::test_shims_are_pointers_not_duplicates
     - tests/test_cli.py::test_init_writes_all_shims
   INV-template-bundle-html-comment-markers:
-    - tests/test_kit_integrity.py::test_depth_agents_md_contains_expected_markers
+    - tests/test_kit_integrity.py::test_depth_agents_md_has_no_section_markers
     - tests/test_kit_integrity.py::test_depth_0_agents_md_has_no_gate_markers
   INV-template-bundle-config-and-kit-md-seed:
     - tests/test_cli.py::test_kit_md_scaffolded_at_all_tiers

@@ -10,5 +10,3 @@ The `worktrees` aspect is active with automation helpers. Multi-file or multi-st
   - `scripts/worktree-teardown.sh <slug>` — safely remove a worktree
   - `scripts/worktree-status.sh` — list all active worktrees
 
-<!-- kanon:begin:worktrees/branch-hygiene -->
-<!-- kanon:end:worktrees/branch-hygiene -->

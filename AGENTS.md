@@ -191,34 +191,6 @@ The `worktrees` aspect is active with automation helpers. Multi-file or multi-st
   - `scripts/worktree-setup.sh <slug>` — create a worktree
   - `scripts/worktree-teardown.sh <slug>` — safely remove a worktree
   - `scripts/worktree-status.sh` — list all active worktrees
-
-<!-- kanon:begin:worktrees/branch-hygiene -->
-## Worktree Branch Hygiene
-
-Use a dedicated git worktree for any change that touches multiple files or requires multiple steps. Trivial single-file edits (typos, one-liner fixes) stay in the main checkout.
-
-**When to create a worktree:**
-
-- The change is multi-file or multi-step.
-- `git worktree list` shows other worktrees — parallel work is likely in progress.
-- You are unsure — prefer isolation; an unnecessary worktree is harmless.
-
-**Worktree location and naming:**
-
-- Path: `.worktrees/<slug>/` where `<slug>` derives from the plan or task name.
-- Branch: `wt/<slug>` — always use this prefix for worktree branches.
-
-**Integration cadence:**
-
-- Rebase from `main` before starting significant new work in the worktree.
-- Resolve conflicts immediately — do not let them accumulate.
-
-**Teardown rules:**
-
-- Never force-remove a worktree with uncommitted changes.
-- Commit or stash all work before running `git worktree remove`.
-- Delete the `wt/<slug>` branch only after it has been merged.
-<!-- kanon:end:worktrees/branch-hygiene -->
 <!-- kanon:end:worktrees/body -->
 
 <!-- kanon:begin:sdd/body -->
@@ -238,104 +210,6 @@ A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + desig
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 - Principles in `docs/foundations/principles/` are the project's cross-cutting stances. Specs and ADRs reference them via frontmatter.
 
-<!-- kanon:begin:sdd/plan-before-build -->
-## Required: Plan Before Build
-
-For any non-trivial change, your **first output** is a plan file under `docs/plans/<slug>.md`, followed by explicit user approval. You may not call Edit, Write, or mutating Bash on source files before the user has approved the plan.
-
-A change is **non-trivial** (plan first) if any of these apply:
-
-- touches more than one function, file, or public symbol
-- adds, removes, or pins a dependency
-- changes a CLI flag, public schema, JSON/YAML shape, or protocol prose
-- warrants a CHANGELOG entry
-- multiple agents will collaborate on it
-- you are unsure which side of this line it falls on
-
-A change is **trivial** (act directly, no plan needed) only if:
-
-- typo in a comment or string literal
-- fixing a single failing assertion with an unambiguous fix
-- renaming a local variable
-- deleting code the caller can prove is unreachable
-
-**Before your first source-modifying tool call, state in one sentence:** "Plan at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and plan. This sentence is the audit trail — its absence in a transcript is how violations get caught.
-
-**Retroactive plans are evidence of past violation, not a norm.** Do not add to that pile.
-<!-- kanon:end:sdd/plan-before-build -->
-
-<!-- kanon:begin:sdd/spec-before-design -->
-## Required: Spec Before Design
-
-For any change that introduces a new user-visible capability, your **first output** is a spec file at `docs/specs/<slug>.md`, followed by explicit user approval. You may not write a design doc, ADR, plan, or implementation before the spec is approved.
-
-A change **needs a spec** (spec first) if any of these apply:
-
-- introduces a new CLI command, mode, or subcommand
-- adds a new output dimension users can observe or consume
-- makes a new guarantee to users that must survive implementation changes
-- multiple design approaches exist and the spec constrains which are viable
-- you are unsure whether it falls below this line
-
-A change **does NOT need a spec** (skip directly to design/plan/implementation) if it is:
-
-- an implementation refactor that preserves observable behaviour
-- a configuration-value or threshold adjustment
-- a single-file bug fix
-- adding a check, validator, or test
-- adding a new output type that follows an existing pattern already governed by a spec
-
-**Before your first design-doc, ADR, plan, or source-modifying tool call, state in one sentence:** "Spec at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and write the spec.
-<!-- kanon:end:sdd/spec-before-design -->
-
-<!-- kanon:begin:protocols-index -->
-## Active protocols
-
-Prose-as-code procedures available at this depth. When a trigger fires, read the protocol file in full and follow its numbered steps.
-
-### deps (depth 2)
-
-| Protocol | Depth-min | Invoke when |
-| --- | --- | --- |
-| [`dependency-hygiene`](.kanon/protocols/deps/dependency-hygiene.md) | 1 | Adding, removing, or updating project dependencies |
-
-### release (depth 2)
-
-| Protocol | Depth-min | Invoke when |
-| --- | --- | --- |
-| [`release-checklist`](.kanon/protocols/release/release-checklist.md) | 1 | A release is being prepared, or the user asks to cut a release |
-
-### sdd (depth 3)
-
-| Protocol | Depth-min | Invoke when |
-| --- | --- | --- |
-| [`tier-up-advisor`](.kanon/protocols/sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's sdd depth, or asks "should we increase depth?" |
-| [`verify-triage`](.kanon/protocols/sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
-| [`completion-checklist`](.kanon/protocols/sdd/completion-checklist.md) | 1 | An agent is about to declare a plan or task complete, or the user asks "is this done?" |
-| [`scope-check`](.kanon/protocols/sdd/scope-check.md) | 1 | An agent discovers during implementation that the current task requires changes not described in the approved plan |
-| [`spec-review`](.kanon/protocols/sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
-
-### security (depth 2)
-
-| Protocol | Depth-min | Invoke when |
-| --- | --- | --- |
-| [`secure-defaults`](.kanon/protocols/security/secure-defaults.md) | 1 | Writing or modifying code that handles secrets, user input, network requests, file operations, or authentication |
-
-### testing (depth 3)
-
-| Protocol | Depth-min | Invoke when |
-| --- | --- | --- |
-| [`test-discipline`](.kanon/protocols/testing/test-discipline.md) | 1 | Writing or modifying code |
-| [`error-diagnosis`](.kanon/protocols/testing/error-diagnosis.md) | 1 | A test fails, a build breaks, or a command produces an unexpected error during implementation |
-| [`ac-first-tdd`](.kanon/protocols/testing/ac-first-tdd.md) | 2 | Implementing a plan or spec invariant at testing depth >= 2 |
-
-### worktrees (depth 2)
-
-| Protocol | Depth-min | Invoke when |
-| --- | --- | --- |
-| [`worktree-lifecycle`](.kanon/protocols/worktrees/worktree-lifecycle.md) | 1 | A multi-file or multi-step change is about to begin, or `git worktree list` shows active worktrees from other work streams |
-<!-- kanon:end:protocols-index -->
-
 ## References
 
 - [`docs/foundations/vision.md`](docs/foundations/vision.md) — product vision
@@ -352,28 +226,6 @@ The `release` aspect is active with automation helpers. Follow the release check
 
 - `ci/release-preflight.py` — validates version, changelog, tests, and lint before publish.
 - `.github/workflows/release.yml` — reference CI workflow triggered by version tags.
-
-<!-- kanon:begin:release/publishing-discipline -->
-## Release Publishing Discipline
-
-Every release follows a strict sequence: prepare, validate, tag, publish.
-
-**Version bump:** Update `__version__` in `__init__.py` (or the project's canonical version source) and add a CHANGELOG entry for the new version before any other release step.
-
-**Pre-release checks:** All of the following must pass before tagging:
-
-- Full test suite (`pytest`)
-- Lint (`ruff check`)
-- `kanon verify .`
-
-**Tag creation:** Create an annotated tag `vX.Y.Z` only after all checks pass. Never tag a dirty tree or a commit with failing checks.
-
-**Publish gate:** CI workflow triggered by tag push handles build and publish. Manual `twine upload` or equivalent is a fallback, not the default.
-
-**CHANGELOG is the source of truth** for release notes. Every user-visible change gets an entry before the release tag is created.
-
-**Never publish without passing preflight checks.** A release that skips validation is a rollback waiting to happen.
-<!-- kanon:end:release/publishing-discipline -->
 <!-- kanon:end:release/body -->
 
 <!-- kanon:begin:testing/body -->
@@ -382,24 +234,6 @@ The `testing` aspect is active with automated enforcement. Follow the test-disci
 - At depth 2+: translate plan acceptance criteria into failing tests before implementation.
 - For spec invariants: red-green-refactor loop.
 - `ci/check_test_quality.py` — validates test quality (no empty tests, no assert-True-only, coverage floor).
-
-<!-- kanon:begin:testing/test-discipline -->
-## Test Discipline
-
-Tests exist to protect behavior, not to produce a green badge. Every code change follows these rules:
-
-**Tests accompany code changes.** Every new function, behavior change, or bug fix gets a test in the same commit or adjacent commit. No untested code ships.
-
-**Tests are not deleted without justification.** When removing a test, document what now covers the behavior it protected, or acknowledge the coverage gap. Never delete a test solely because it's failing — fix the code or fix the test.
-
-**Assertions are not weakened to make tests pass.** Changing an expected value requires explaining why the old value was wrong. If the test is failing, the implementation is wrong — not the test.
-
-**Prefer test-first.** Before implementing, consider "how will I verify this works?" and let that shape the implementation. Write the test, watch it fail, then implement.
-
-**Maintain coverage at or above the configured floor.** The coverage floor is declared in `.kanon/config.yaml` under `aspects.testing.config.coverage_floor` (default 80%). Do not merge changes that drop coverage below this threshold.
-
-**At depth 2+: AC-first testing.** Translate plan acceptance criteria into failing tests before implementation. For spec invariants, follow the red-green-refactor loop. See the `ac-first-tdd` protocol.
-<!-- kanon:end:testing/test-discipline -->
 <!-- kanon:end:testing/body -->
 
 <!-- kanon:begin:security/secure-defaults -->
@@ -426,26 +260,6 @@ LLM agents produce predictable security anti-patterns. Every code change follows
 The `security` aspect is active with CI enforcement. Follow the secure-defaults protocol when writing or modifying code.
 
 - `ci/check_security_patterns.py` — language-agnostic regex scanner for common security anti-patterns.
-
-<!-- kanon:begin:security/secure-defaults -->
-## Secure Defaults
-
-LLM agents produce predictable security anti-patterns. Every code change follows these rules:
-
-**Never hardcode secrets.** API keys, tokens, passwords, and credentials go in environment variables or a secret manager — never in source code. If a value looks like a secret, it is one.
-
-**Always use parameterized queries.** Never string-interpolate SQL, shell commands, or LDAP queries. Use the language's parameterized query API or prepared statements.
-
-**Never disable TLS verification.** No `verify=False`, no `rejectUnauthorized: false`, no `NODE_TLS_REJECT_UNAUTHORIZED=0`. If a certificate is invalid, fix the certificate — don't disable the check.
-
-**Use least-privilege file permissions.** Never `chmod 777` or `0o777`. Files default to owner-only unless there is a documented reason for broader access.
-
-**Never use wildcard CORS in production.** `Access-Control-Allow-Origin: *` is acceptable only in local development. Production CORS must specify allowed origins explicitly.
-
-**Validate all external input.** User input, API responses, file contents, and environment variables are untrusted. Validate type, length, and format before use. Reject unexpected values rather than coercing them.
-
-**At depth 2: CI pattern scanner.** `ci/check_security_patterns.py` detects common anti-patterns via regex. It is a safety net, not a SAST replacement — passing the scanner does not mean the code is secure.
-<!-- kanon:end:security/secure-defaults -->
 <!-- kanon:end:security/body -->
 
 <!-- kanon:begin:deps/dependency-hygiene -->
@@ -470,25 +284,47 @@ LLM agents add dependencies casually. Every dependency change follows these rule
 The `deps` aspect is active with CI enforcement. Follow the dependency-hygiene protocol when adding or modifying dependencies.
 
 - `ci/check_deps.py` — scans manifest files for unpinned versions and duplicate-purpose packages.
-
-<!-- kanon:begin:deps/dependency-hygiene -->
-## Dependency Hygiene
-
-LLM agents add dependencies casually. Every dependency change follows these rules:
-
-**Always pin exact versions.** Use `==` in requirements.txt, exact versions in pyproject.toml, and exact versions (no `^` or `~`) in package.json. Unpinned dependencies break reproducibility.
-
-**Never add a dependency without justification.** Before adding a package, check whether the standard library or an existing dependency already covers the need. Duplicate-purpose libraries bloat the dependency tree and create maintenance burden.
-
-**Audit before adding.** Verify the package is actively maintained, has a compatible license, and is not a typosquat. Prefer well-known packages over obscure alternatives.
-
-**Remove unused dependencies.** When removing code that was the sole consumer of a dependency, remove the dependency too. Phantom dependencies are tech debt.
-
-**Keep manifests consistent.** If the project uses multiple manifest formats (e.g., pyproject.toml and requirements.txt), keep them in sync. Conflicting version constraints across manifests cause silent failures.
-
-**At depth 2: CI dependency scanner.** `ci/check_deps.py` detects unpinned versions and duplicate-purpose packages. It is a safety net — passing the scanner does not mean the dependency tree is optimal.
-<!-- kanon:end:deps/dependency-hygiene -->
 <!-- kanon:end:deps/body -->
+
+<!-- kanon:begin:testing/test-discipline -->
+## Test Discipline
+
+Tests exist to protect behavior, not to produce a green badge. Every code change follows these rules:
+
+**Tests accompany code changes.** Every new function, behavior change, or bug fix gets a test in the same commit or adjacent commit. No untested code ships.
+
+**Tests are not deleted without justification.** When removing a test, document what now covers the behavior it protected, or acknowledge the coverage gap. Never delete a test solely because it's failing — fix the code or fix the test.
+
+**Assertions are not weakened to make tests pass.** Changing an expected value requires explaining why the old value was wrong. If the test is failing, the implementation is wrong — not the test.
+
+**Prefer test-first.** Before implementing, consider "how will I verify this works?" and let that shape the implementation. Write the test, watch it fail, then implement.
+
+**Maintain coverage at or above the configured floor.** The coverage floor is declared in `.kanon/config.yaml` under `aspects.testing.config.coverage_floor` (default 80%). Do not merge changes that drop coverage below this threshold.
+
+**At depth 2+: AC-first testing.** Translate plan acceptance criteria into failing tests before implementation. For spec invariants, follow the red-green-refactor loop. See the `ac-first-tdd` protocol.
+<!-- kanon:end:testing/test-discipline -->
+
+<!-- kanon:begin:release/publishing-discipline -->
+## Release Publishing Discipline
+
+Every release follows a strict sequence: prepare, validate, tag, publish.
+
+**Version bump:** Update `__version__` in `__init__.py` (or the project's canonical version source) and add a CHANGELOG entry for the new version before any other release step.
+
+**Pre-release checks:** All of the following must pass before tagging:
+
+- Full test suite (`pytest`)
+- Lint (`ruff check`)
+- `kanon verify .`
+
+**Tag creation:** Create an annotated tag `vX.Y.Z` only after all checks pass. Never tag a dirty tree or a commit with failing checks.
+
+**Publish gate:** CI workflow triggered by tag push handles build and publish. Manual `twine upload` or equivalent is a fallback, not the default.
+
+**CHANGELOG is the source of truth** for release notes. Every user-visible change gets an entry before the release tag is created.
+
+**Never publish without passing preflight checks.** A release that skips validation is a rollback waiting to happen.
+<!-- kanon:end:release/publishing-discipline -->
 
 ## Contribution Conventions
 

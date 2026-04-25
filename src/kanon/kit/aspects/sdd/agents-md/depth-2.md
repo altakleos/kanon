@@ -13,15 +13,6 @@ A `kanon` project with `sdd` at depth 2. Plan-before-build and spec-before-desig
 - Process rules belong in `docs/development-process.md`. README files in artifact directories carry indexes and templates, not process definitions.
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 
-<!-- kanon:begin:sdd/plan-before-build -->
-<!-- kanon:end:sdd/plan-before-build -->
-
-<!-- kanon:begin:sdd/spec-before-design -->
-<!-- kanon:end:sdd/spec-before-design -->
-
-<!-- kanon:begin:protocols-index -->
-<!-- kanon:end:protocols-index -->
-
 ## References
 
 - [`docs/development-process.md`](docs/development-process.md) — the SDD method
