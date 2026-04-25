@@ -23,6 +23,9 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [verified-by](verified-by.md) | Verified-by — invariant-to-test traceability | done |
 | [close-test-gaps](close-test-gaps.md) | Close test coverage gaps | done |
 | [cli-spec-realignment](cli-spec-realignment.md) | CLI spec realignment + crash-recovery sentinel (ADR-0024) | in-progress |
+| [agents-md-marker-hardening](agents-md-marker-hardening.md) | Line-anchored, fenced-block-aware AGENTS.md marker matching | done |
+| [ci-scanner-fixes](ci-scanner-fixes.md) | CI scanner false-positive fixes (`check_deps`, `check_test_quality`) | done |
+| [aspect-depth-refactor](aspect-depth-refactor.md) | Refactor `_set_aspect_depth` into named helpers | done |
 | [aspect-config](aspect-config.md) | `kanon aspect set-config` and `aspect add --config` | done |
 | [aspect-provides](aspect-provides.md) | `provides:` capability registry + generalised `requires:` | done |
 
