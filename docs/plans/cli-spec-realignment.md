@@ -1,7 +1,7 @@
 ---
 feature: cli-spec-realignment
 serves: docs/specs/cli.md
-status: done
+status: in-progress
 date: 2026-04-25
 ---
 # Plan: CLI Spec Realignment
