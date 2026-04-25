@@ -1,14 +1,15 @@
 """Wheel contents validator (maintainer-side, CI only).
 
-Asserts a built wheel satisfies the invariants in docs/specs/release-process.md
-and docs/specs/release-communication.md:
+Asserts a built kanon-kit wheel ships the invariants the release pipeline
+relies on:
 
-- **Required files present.** The engine bundle ships complete.
-- **Required directories non-empty.** `prompts/`, `schemas/`, `profiles/` each
-  contain at least one entry.
-- **No forbidden path prefixes.** User-instance content never leaks into the
-  wheel.
-- **Version concordance.** `sensei/__init__.py.__version__` matches the
+- **Required files present.** The kit bundle ships complete — every aspect's
+  manifest, agents-md templates, sections, protocols, and files declared in
+  the kit's manifests are present in the wheel.
+- **No forbidden path prefixes.** Repo-only content (consumer state under
+  `.kanon/`, the kit's own `docs/`, `tests/`, `ci/`, `.github/`, `.venv/`,
+  and the kit's own `AGENTS.md` / `CLAUDE.md`) never leaks into the wheel.
+- **Version concordance.** `kanon/__init__.py.__version__` matches the
   supplied `--tag` (leading `v` stripped). Literal string comparison — the
   release process requires the maintainer to keep them exactly in sync.
 - **Changelog entry.** `CHANGELOG.md` (repo root, not in the wheel — ships
