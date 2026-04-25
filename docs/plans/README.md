@@ -24,6 +24,7 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [close-test-gaps](close-test-gaps.md) | Close test coverage gaps | done |
 | [cli-spec-realignment](cli-spec-realignment.md) | CLI spec realignment + crash-recovery sentinel (ADR-0024) | in-progress |
 | [aspect-config](aspect-config.md) | `kanon aspect set-config` and `aspect add --config` | done |
+| [aspect-provides](aspect-provides.md) | `provides:` capability registry + generalised `requires:` | done |
 
 ## Roadmap
 

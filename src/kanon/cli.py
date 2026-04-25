@@ -34,8 +34,11 @@ import yaml
 
 from kanon import __version__
 from kanon._manifest import (
+    _CAPABILITY_NAME_RE,
     _aspect_config_schema,
     _aspect_depth_range,
+    _aspect_provides,
+    _capability_suppliers,
     _default_aspects,
     _expected_files,
     _load_aspect_manifest,
@@ -173,36 +176,111 @@ _OPS: dict[str, Any] = {
 }
 
 
+def _classify_predicate(predicate: str) -> tuple[Any, ...]:
+    """Classify a ``requires:`` predicate as a depth predicate or capability presence.
+
+    Returns one of:
+        ``("depth", name: str, op: str, depth: int)`` for a 3-token form like ``"sdd >= 1"``,
+        ``("capability", name: str)`` for a 1-token form like ``"planning-discipline"``.
+
+    Raises :class:`click.ClickException` on malformed input — designed to fire
+    eagerly at manifest-load time so kit-author mistakes fail fast.
+    """
+    tokens = predicate.split()
+    if len(tokens) == 3:
+        name, op, depth_s = tokens
+        if op not in _OPS:
+            raise click.ClickException(
+                f"Invalid requires predicate {predicate!r}: unknown operator {op!r}; "
+                f"expected one of {sorted(_OPS)}."
+            )
+        try:
+            depth = int(depth_s)
+        except ValueError:
+            raise click.ClickException(
+                f"Invalid requires predicate {predicate!r}: depth {depth_s!r} is not an integer."
+            ) from None
+        return ("depth", name, op, depth)
+    if len(tokens) == 1:
+        token = tokens[0]
+        if not _CAPABILITY_NAME_RE.match(token):
+            raise click.ClickException(
+                f"Invalid requires predicate {predicate!r}: 1-token form must be a "
+                f"capability name matching {_CAPABILITY_NAME_RE.pattern}."
+            )
+        return ("capability", token)
+    raise click.ClickException(
+        f"Invalid requires predicate {predicate!r}: expected either "
+        f"'<aspect> <op> <depth>' (3 tokens) or '<capability>' (1 token), "
+        f"got {len(tokens)} tokens."
+    )
+
+
 def _check_requires(
     aspect_name: str, proposed_aspects: dict[str, int], top: dict[str, Any]
 ) -> str | None:
     """Return error message if requires: predicates are unmet, else None."""
     for predicate in top["aspects"][aspect_name].get("requires", []):
-        dep_name, op, dep_depth_s = predicate.split()
-        dep_depth = int(dep_depth_s)
-        actual = proposed_aspects.get(dep_name, 0)
-        if not _OPS[op](actual, dep_depth):
-            return (
-                f"Aspect {aspect_name!r} requires {predicate!r}, "
-                f"but {dep_name!r} is at depth {actual}."
-            )
+        classified = _classify_predicate(predicate)
+        if classified[0] == "depth":
+            _, dep_name, op, dep_depth = classified
+            actual = proposed_aspects.get(dep_name, 0)
+            if not _OPS[op](actual, dep_depth):
+                return (
+                    f"Aspect {aspect_name!r} requires {predicate!r}, "
+                    f"but {dep_name!r} is at depth {actual}."
+                )
+        else:  # "capability"
+            _, capability = classified
+            suppliers = _capability_suppliers(top, capability)
+            if not any(proposed_aspects.get(s, 0) >= 1 for s in suppliers):
+                kit_suppliers = ", ".join(suppliers) if suppliers else "(none)"
+                return (
+                    f"Aspect {aspect_name!r} requires capability {capability!r}, "
+                    f"but no enabled aspect provides it. "
+                    f"Suppliers in this kit: {kit_suppliers}."
+                )
     return None
 
 
 def _check_removal_dependents(
     aspect_name: str, remaining_aspects: dict[str, int], top: dict[str, Any]
 ) -> str | None:
-    """Return error if any remaining aspect depends on the one being removed."""
+    """Return error if any remaining aspect depends on the one being removed.
+
+    Handles both depth-predicate references (must name the aspect being removed)
+    and capability-presence predicates (the removed aspect must be the *only*
+    enabled supplier).
+    """
+    being_removed_provides = set(
+        top["aspects"][aspect_name].get("provides", []) or []
+    )
     for name, depth in remaining_aspects.items():
         if depth <= 0:
             continue
         for predicate in top["aspects"][name].get("requires", []):
-            dep_name = predicate.split()[0]
-            if dep_name == aspect_name:
-                return (
-                    f"Cannot remove {aspect_name!r}: "
-                    f"aspect {name!r} requires {predicate!r}."
-                )
+            classified = _classify_predicate(predicate)
+            if classified[0] == "depth":
+                if classified[1] == aspect_name:
+                    return (
+                        f"Cannot remove {aspect_name!r}: "
+                        f"aspect {name!r} requires {predicate!r}."
+                    )
+            else:  # capability
+                capability = classified[1]
+                if capability not in being_removed_provides:
+                    continue
+                # Removed aspect supplied this capability. Check whether any
+                # other still-enabled aspect also supplies it.
+                others = [
+                    s for s in _capability_suppliers(top, capability)
+                    if s != aspect_name
+                ]
+                if not any(remaining_aspects.get(s, 0) >= 1 for s in others):
+                    return (
+                        f"Cannot remove {aspect_name!r}: aspect {name!r} requires "
+                        f"capability {capability!r}, which would no longer be provided."
+                    )
     return None
 
 
@@ -472,6 +550,7 @@ def aspect_info(name: str) -> None:
     click.echo(f"  Depth range:   {entry['depth-range'][0]}-{entry['depth-range'][1]}")
     click.echo(f"  Default depth: {entry['default-depth']}")
     click.echo(f"  Requires:      {', '.join(entry.get('requires', [])) or '(none)'}")
+    click.echo(f"  Provides:      {', '.join(_aspect_provides(name)) or '(none)'}")
     min_d, max_d = _aspect_depth_range(name)
     for d in range(min_d, max_d + 1):
         depth_entry = sub.get(f"depth-{d}", {})
