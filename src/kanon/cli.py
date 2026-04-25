@@ -410,8 +410,9 @@ def aspect_info(name: str) -> None:
 @aspect.command("add")
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 @click.argument("aspect_name")
-def aspect_add(target: Path, aspect_name: str) -> None:
-    """Enable an aspect at its default depth."""
+@click.option("--depth", type=int, default=None, help="Initial depth (default: aspect's default-depth).")
+def aspect_add(target: Path, aspect_name: str, depth: int | None) -> None:
+    """Enable an aspect at its default depth (or --depth N)."""
     target = target.resolve()
     config = _read_config(target)
     top = _load_top_manifest()
@@ -425,14 +426,19 @@ def aspect_add(target: Path, aspect_name: str) -> None:
             f"Aspect {aspect_name!r} is already enabled at depth {aspects[aspect_name]}. "
             f"Use `kanon aspect set-depth` to change depth."
         )
-    default_depth = int(top["aspects"][aspect_name]["default-depth"])
+    chosen_depth = depth if depth is not None else int(top["aspects"][aspect_name]["default-depth"])
+    min_d, max_d = _aspect_depth_range(aspect_name)
+    if not (min_d <= chosen_depth <= max_d):
+        raise click.ClickException(
+            f"Depth {chosen_depth} is outside range [{min_d},{max_d}] for aspect {aspect_name!r}."
+        )
     # Check requires before enabling
     proposed = dict(aspects)
-    proposed[aspect_name] = default_depth
+    proposed[aspect_name] = chosen_depth
     err = _check_requires(aspect_name, proposed, top)
     if err:
         raise click.ClickException(err)
-    _set_aspect_depth(target, aspect_name, default_depth)
+    _set_aspect_depth(target, aspect_name, chosen_depth)
 
 
 @aspect.command("remove")
