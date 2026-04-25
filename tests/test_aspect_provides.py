@@ -37,7 +37,6 @@ from kanon.cli import (
     main,
 )
 
-
 # --- INV-aspect-provides-provides-field ---
 
 
