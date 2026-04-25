@@ -1,12 +1,25 @@
 ---
-status: deferred
+status: superseded
 date: 2026-04-22
 realizes:
   - P-specs-are-source
   - P-cross-link-dont-duplicate
 target-release: v0.2
+superseded-by:
+  - docs/specs/spec-graph-rename.md
+  - docs/specs/spec-graph-orphans.md
+  - docs/specs/spec-graph-diff.md
+superseded-date: 2026-04-25
 ---
-# Spec: Spec-graph tooling — rename, orphan detection, spec-diff
+# Spec: Spec-graph tooling — rename, orphan detection, spec-diff (SUPERSEDED)
+
+> **Superseded 2026-04-25.** This umbrella spec bundled three independent capabilities (rename, orphan detection, invariant-level diff) into one. A multi-lens panel review found that the bundle hid material differences in implementation cost, failure modes, and consumer demand: rename is high-stakes and consequential; orphans is read-only and small; diff is the long pole. The umbrella has been split into three independent specs:
+>
+> - [`spec-graph-rename.md`](spec-graph-rename.md) — `status: draft`, target v0.3. Atomic slug rename with `--type` discriminator and ops-manifest extension to ADR-0024.
+> - [`spec-graph-orphans.md`](spec-graph-orphans.md) — `status: draft`, target v0.3. Read-only report with `orphan-exempt:` opt-out; deferred specs excluded from the live graph.
+> - [`spec-graph-diff.md`](spec-graph-diff.md) — `status: deferred`, target v0.3+. Anchor-keyed diff (depends on `invariant-ids.md`); ancestor-required ordering. Refined to draft-grade rigor for promotion later.
+>
+> The original text below is preserved for archaeology. Do not promote this spec; the three replacements own the contract.
 
 ## Intent
 

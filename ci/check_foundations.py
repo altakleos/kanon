@@ -174,10 +174,12 @@ def check(foundations_root: Path, specs_root: Path) -> tuple[list[str], list[str
         # a foundation must name a fixture (or explicitly defer). Specs with
         # status: deferred are exempt — they describe capabilities not yet
         # implemented, so requiring fixtures would be premature (per ADR-0007
-        # introducing the deferred status value).
+        # introducing the deferred status value). Specs with status: superseded
+        # are equally exempt — their contract has been replaced by another
+        # spec; fixtures, if any, live in the replacement.
         spec_status = fm.get("status")
-        if spec_status == "deferred":
-            continue  # deferred specs don't yet need fixtures
+        if spec_status in {"deferred", "superseded"}:
+            continue  # deferred / superseded specs don't need fixtures
         has_ref = bool(fm.get("realizes") or fm.get("serves"))
         has_fixtures = bool(fm.get("fixtures"))
         has_defer = bool(fm.get("fixtures_deferred"))

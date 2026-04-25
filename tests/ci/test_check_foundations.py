@@ -73,3 +73,49 @@ def test_invalid_principle_kind(tmp_path: Path) -> None:
     errors, _ = mod.check(foundations, specs)
     assert len(errors) > 0
     assert "invalid" in errors[0]
+
+
+def test_superseded_spec_exempt_from_fixtures_check(tmp_path: Path) -> None:
+    """A superseded spec with `realizes:` but no `fixtures:`/`fixtures_deferred:`
+    is exempt — its contract has been replaced by another spec, so requiring
+    fixtures would be wrong (the fixtures, if any, live in the replacement).
+    Mirrors the existing exemption for status: deferred.
+    """
+    foundations = tmp_path / "foundations"
+    foundations.mkdir()
+    principles = foundations / "principles"
+    principles.mkdir()
+    (principles / "P-foo.md").write_text(
+        "---\nid: P-foo\nkind: pedagogical\nstatus: accepted\n---\n# P-foo\n",
+        encoding="utf-8",
+    )
+    specs = tmp_path / "specs"
+    specs.mkdir()
+    (specs / "old-umbrella.md").write_text(
+        "---\nstatus: superseded\nrealizes:\n  - P-foo\nsuperseded-by:\n  - docs/specs/new.md\n---\n# Old umbrella\n",
+        encoding="utf-8",
+    )
+    errors, _ = mod.check(foundations, specs)
+    # No fixtures rule violation despite `realizes:` + no `fixtures:`/`fixtures_deferred:`.
+    assert not any("'fixtures:'" in e for e in errors), errors
+
+
+def test_deferred_spec_still_exempt_from_fixtures_check(tmp_path: Path) -> None:
+    """Regression: extending the exemption to `superseded` must NOT remove
+    the existing `deferred` exemption."""
+    foundations = tmp_path / "foundations"
+    foundations.mkdir()
+    principles = foundations / "principles"
+    principles.mkdir()
+    (principles / "P-bar.md").write_text(
+        "---\nid: P-bar\nkind: pedagogical\nstatus: accepted\n---\n# P-bar\n",
+        encoding="utf-8",
+    )
+    specs = tmp_path / "specs"
+    specs.mkdir()
+    (specs / "future-thing.md").write_text(
+        "---\nstatus: deferred\nrealizes:\n  - P-bar\n---\n# Future\n",
+        encoding="utf-8",
+    )
+    errors, _ = mod.check(foundations, specs)
+    assert not any("'fixtures:'" in e for e in errors), errors
