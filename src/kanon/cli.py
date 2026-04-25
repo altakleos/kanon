@@ -279,7 +279,7 @@ def verify(target: Path) -> None:
     top = _load_top_manifest()
     for name, depth in aspects.items():
         if name not in top["aspects"]:
-            errors.append(
+            warnings.append(
                 f"config.aspects.{name}: aspect not in installed kit registry."
             )
             continue
@@ -289,7 +289,12 @@ def verify(target: Path) -> None:
                 f"config.aspects.{name}.depth={depth}: outside range [{min_d},{max_d}]."
             )
 
-    for rel in _expected_files(aspects):
+    # File and marker checks operate only on aspects the installed kit knows
+    # about. An unknown aspect already produced a warning above; resolving its
+    # files/sections would raise (its sub-manifest doesn't exist).
+    known_aspects = {n: d for n, d in aspects.items() if n in top["aspects"]}
+
+    for rel in _expected_files(known_aspects):
         p = target / rel
         if not p.exists():
             errors.append(f"missing required file: {rel}")
@@ -400,6 +405,10 @@ def _emit_verify_report(
     click.echo(json.dumps(report, indent=2))
     if status == "ok":
         click.echo(f"OK — kanon project at {target} is valid.", err=True)
+        if warnings:
+            click.echo("  warnings:", err=True)
+            for w in warnings:
+                click.echo(f"    - {w}", err=True)
     else:
         click.echo(f"FAIL — {len(errors)} error(s) at {target}.", err=True)
 

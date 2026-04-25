@@ -904,22 +904,29 @@ def test_verify_empty_aspects(tmp_path: Path) -> None:
 
 
 def test_verify_unknown_aspect(tmp_path: Path) -> None:
-    """Lines 187-190: aspect in config not in kit registry."""
+    """Spec invariant 4: an aspect in config not in the installed kit registry
+    emits a warning, exit 0 — not a hard failure (`docs/specs/aspects.md`).
+
+    Models the upstream-deprecation scenario: a consumer had aspect X enabled,
+    upgraded the kit, and X no longer ships. The opt-in record survives so they
+    can clean up — verify must not brick them.
+    """
     runner = CliRunner()
-    config_dir = tmp_path / ".kanon"
-    config_dir.mkdir()
-    (config_dir / "config.yaml").write_text(
-        yaml.safe_dump(
-            {
-                "kit_version": "0.1",
-                "aspects": {"bogus": {"depth": 1, "enabled_at": "now", "config": {}}},
-            }
-        ),
-        encoding="utf-8",
-    )
-    result = runner.invoke(main, ["verify", str(tmp_path)])
-    assert result.exit_code != 0
-    assert "unknown aspect" in result.output.lower() or "bogus" in result.output.lower()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    # Inject a fake aspect into a real, otherwise-valid project.
+    config_path = target / ".kanon" / "config.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["aspects"]["bogus"] = {"depth": 1, "enabled_at": "now", "config": {}}
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    result = runner.invoke(main, ["verify", str(target)])
+    assert result.exit_code == 0, result.output
+    report = _extract_verify_json(result.output)
+    assert report["status"] == "ok"
+    assert report["errors"] == []
+    assert any("bogus" in w for w in report["warnings"])
+    assert "warnings:" in result.output
 
 
 def test_verify_depth_out_of_range(tmp_path: Path) -> None:
