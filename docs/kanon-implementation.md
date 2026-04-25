@@ -4,7 +4,7 @@ The development process in [`development-process.md`](development-process.md) de
 
 For the generic method, read `development-process.md`. For `kanon`'s artifact choices, read this doc.
 
-> **Status: bootstrap.** This file is intentionally minimal during Phase A of v0.1. It is fleshed out in Phase C (Implementation) and Phase D (Verification) as those layers land.
+> **Status: current.** This file describes `kanon`'s instantiation as of v0.2.
 
 ## Implementation Layer
 

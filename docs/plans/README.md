@@ -8,10 +8,21 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 
 | Plan | Feature | Status |
 |---|---|---|
-| [v0.1-bootstrap](v0.1-bootstrap.md) | Initial kit bootstrap through v0.1.0a1 release | in-progress |
+| [v0.1-bootstrap](v0.1-bootstrap.md) | Initial kit bootstrap through v0.1.0a1 release | done |
 | [v0.1-kit-refactor-and-protocols](v0.1-kit-refactor-and-protocols.md) | Kit bundle refactor + three protocols | done |
-| [v0.2-aspect-model](v0.2-aspect-model.md) | Aspects subsume tiers; SDD becomes the first aspect | planned |
-| [cli-spec-realignment](cli-spec-realignment.md) | CLI spec realignment — fix 6 drifted invariants, ADR-0024, crash-recovery sentinel | in-progress |
+| [v0.2-aspect-model](v0.2-aspect-model.md) | Aspects subsume tiers; SDD becomes the first aspect | done |
+| [v0.2-invariant-alignment](v0.2-invariant-alignment.md) | Invariant alignment — verify, upgrade, POSIX-only | done |
+| [aspect-decoupling](aspect-decoupling.md) | Aspect decoupling — remove sdd as structurally privileged | done |
+| [worktrees-aspect](worktrees-aspect.md) | Worktrees aspect implementation | done |
+| [release-aspect](release-aspect.md) | Release aspect implementation | done |
+| [testing-aspect](testing-aspect.md) | Testing aspect implementation | done |
+| [security-aspect](security-aspect.md) | Security aspect implementation | done |
+| [deps-aspect](deps-aspect.md) | Deps aspect implementation | done |
+| [fidelity-lock](fidelity-lock.md) | Fidelity lock — spec-SHA drift detection | done |
+| [invariant-ids](invariant-ids.md) | Invariant IDs — stable anchors for spec invariants | done |
+| [verified-by](verified-by.md) | Verified-by — invariant-to-test traceability | done |
+| [close-test-gaps](close-test-gaps.md) | Close test coverage gaps | done |
+| [cli-spec-realignment](cli-spec-realignment.md) | CLI spec realignment + crash-recovery sentinel (ADR-0024) | done |
 
 ## Roadmap
 
