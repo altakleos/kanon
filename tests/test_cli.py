@@ -1689,3 +1689,47 @@ def test_pending_sentinel_triggers_warning_on_verify(tmp_path: Path) -> None:
     result = runner.invoke(main, ["verify", str(target)])
     # Verify outputs to stderr; CliRunner mixes stdout+stderr by default.
     assert "interrupted" in result.output.lower()
+
+
+@pytest.mark.parametrize(
+    "pending_op,expected_command",
+    [
+        ("init", "kanon init"),
+        ("upgrade", "kanon upgrade"),
+        ("set-depth", "kanon aspect set-depth"),
+        ("set-config", "kanon aspect set-config"),
+        ("aspect-remove", "kanon aspect remove"),
+        ("fidelity-update", "kanon fidelity update"),
+    ],
+)
+def test_pending_recovery_warning_uses_correct_user_command(
+    tmp_path: Path, pending_op: str, expected_command: str
+) -> None:
+    """The recovery warning must suggest a valid `kanon` command for each
+    known sentinel operation. Sub-group commands like `aspect remove`
+    appear with a space, not as `kanon aspect-remove` (which isn't a
+    valid CLI invocation)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    (target / ".kanon" / ".pending").write_text(f"{pending_op}\n", encoding="utf-8")
+    # Any mutating command path triggers _check_pending_recovery; verify
+    # also prints it. Use verify because it's idempotent and won't clear
+    # the sentinel (it has no write side effect).
+    result = runner.invoke(main, ["verify", str(target)])
+    assert f"Re-run '{expected_command}'" in result.output, (
+        f"expected suggestion {expected_command!r} for pending {pending_op!r}; "
+        f"got output: {result.output!r}"
+    )
+
+
+def test_pending_recovery_warning_falls_back_for_unknown_op(tmp_path: Path) -> None:
+    """An unknown sentinel operation falls back to `kanon {pending}`
+    rather than crashing — defensive against future operation strings
+    not yet mapped in `_PENDING_OP_TO_COMMAND`."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    (target / ".kanon" / ".pending").write_text("future-op\n", encoding="utf-8")
+    result = runner.invoke(main, ["verify", str(target)])
+    assert "Re-run 'kanon future-op'" in result.output

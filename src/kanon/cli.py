@@ -284,15 +284,43 @@ def _check_removal_dependents(
     return None
 
 
+# Sentinel operation strings written to .kanon/.pending. Single source of
+# truth — every `write_sentinel(...)` callsite uses one of these constants,
+# and `_check_pending_recovery` maps them to the correct user-facing
+# command form via `_PENDING_OP_TO_COMMAND`.
+_OP_INIT = "init"
+_OP_UPGRADE = "upgrade"
+_OP_SET_DEPTH = "set-depth"
+_OP_SET_CONFIG = "set-config"
+_OP_ASPECT_REMOVE = "aspect-remove"
+_OP_FIDELITY_UPDATE = "fidelity-update"
+
+_PENDING_OP_TO_COMMAND: dict[str, str] = {
+    _OP_INIT: "kanon init",
+    _OP_UPGRADE: "kanon upgrade",
+    _OP_SET_DEPTH: "kanon aspect set-depth",
+    _OP_SET_CONFIG: "kanon aspect set-config",
+    _OP_ASPECT_REMOVE: "kanon aspect remove",
+    _OP_FIDELITY_UPDATE: "kanon fidelity update",
+}
+
+
 def _check_pending_recovery(target: Path) -> None:
-    """If a previous operation was interrupted, warn the user."""
+    """If a previous operation was interrupted, warn the user.
+
+    Looks up the pretty user-facing command via `_PENDING_OP_TO_COMMAND`
+    so the warning suggests something the user can actually type
+    (e.g., `kanon aspect remove`, not `kanon aspect-remove`). Falls back
+    to `kanon {pending}` for unknown operation strings (defensive).
+    """
     from kanon._atomic import read_sentinel
 
     pending = read_sentinel(target / ".kanon")
     if pending is not None:
+        rerun = _PENDING_OP_TO_COMMAND.get(pending, f"kanon {pending}")
         click.echo(
             f"Warning: previous '{pending}' operation was interrupted. "
-            f"Re-run 'kanon {pending}' to complete it, or run "
+            f"Re-run '{rerun}' to complete it, or run "
             f"'kanon upgrade' to re-render all files.",
             err=True,
         )
@@ -360,7 +388,7 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
     from kanon._atomic import clear_sentinel, write_sentinel
 
     (target / ".kanon").mkdir(parents=True, exist_ok=True)
-    write_sentinel(target / ".kanon", "init")
+    write_sentinel(target / ".kanon", _OP_INIT)
     _write_tree_atomically(target, bundle, force=force)
     _write_config(target, __version__, _aspects_with_meta(aspects_to_enable))
     clear_sentinel(target / ".kanon")
@@ -398,7 +426,7 @@ def upgrade(target: Path) -> None:
 
     from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
-    write_sentinel(target / ".kanon", "upgrade")
+    write_sentinel(target / ".kanon", _OP_UPGRADE)
     migrated_flat = _migrate_flat_protocols(target, aspects)
 
     new_agents_md = _assemble_agents_md(aspects, target.name)
@@ -660,7 +688,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
     # Sentinel wraps the multi-file mutation: AGENTS.md + kit.md + config.yaml.
     # Cleared only on the success path; an exception below leaves the sentinel
     # so the next CLI invocation warns the user (ADR-0024 contract).
-    write_sentinel(target / ".kanon", "aspect-remove")
+    write_sentinel(target / ".kanon", _OP_ASPECT_REMOVE)
 
     # Re-assemble and merge AGENTS.md without the removed aspect
     new_agents = _assemble_agents_md(remaining, target.name)
@@ -732,7 +760,7 @@ def aspect_set_config(target: Path, aspect_name: str, pair: str) -> None:
 
     aspects_meta = dict(config.get("aspects", {}))
     kit_version = config.get("kit_version", __version__)
-    write_sentinel(target / ".kanon", "set-config")
+    write_sentinel(target / ".kanon", _OP_SET_CONFIG)
     _commit_aspect_meta(
         target, kit_version, aspects_meta, aspect_name, aspects[aspect_name],
         extra_config={key: value},
@@ -862,7 +890,7 @@ def _set_aspect_depth(
     # Single sentinel wraps every mutation (file writes + AGENTS.md/kit.md
     # rewrites + config.yaml). Cleared only on the success path; if any call
     # below raises, the sentinel persists for the next invocation to detect.
-    write_sentinel(target / ".kanon", "set-depth")
+    write_sentinel(target / ".kanon", _OP_SET_DEPTH)
 
     if current == n:
         _commit_aspect_meta(
@@ -991,7 +1019,7 @@ def fidelity_update(target: Path) -> None:
                 lines.append(f"      {fp}: \"{fixture_map[slug][fp]}\"\n")
         lines.append(f"    locked_at: \"{e['locked_at']}\"\n")
 
-    write_sentinel(target / ".kanon", "fidelity-update")
+    write_sentinel(target / ".kanon", _OP_FIDELITY_UPDATE)
     atomic_write_text(lock_path, "".join(lines))
     clear_sentinel(target / ".kanon")
     click.echo(f"Wrote {lock_path} with {len(entries)} entries.")
