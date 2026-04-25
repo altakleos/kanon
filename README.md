@@ -48,6 +48,10 @@ Disciplines are packaged as *aspects* — opt-in bundles of prose rules, protoco
 |--------|-------------|-----------|------------------|
 | `sdd` | 0–3 | stable | Spec-Driven Development: plans, specs, design docs, foundations, verification |
 | `worktrees` | 0–2 | experimental | Worktree isolation: prose guidance (depth 1) + shell helpers (depth 2) |
+| `release` | 0–2 | experimental | Disciplined release publishing: protocol (depth 1) + preflight script + reference workflow (depth 2) |
+| `testing` | 0–3 | experimental | Test discipline + AC-first TDD: protocols (depth 1–2) + automated quality enforcement (depth 3) |
+| `security` | 0–2 | experimental | Secure-by-default protocols (depth 1) + CI pattern scanner for common anti-patterns (depth 2) |
+| `deps` | 0–2 | experimental | Dependency hygiene protocol (depth 1) + CI scanner for unpinned versions and duplicate-purpose packages (depth 2) |
 
 ### SDD depths
 
@@ -107,7 +111,7 @@ Run tests:
 
 ## Status
 
-**Early alpha (v0.2.0a5).** The kit ships two aspects (`sdd` at depth 0–3, `worktrees` at depth 0–2), the aspect model, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
+**Early alpha (v0.2.0a6).** The kit ships six aspects (`sdd` at depth 0–3; `worktrees`, `release`, `testing`, `security`, `deps` at depth 0–2 or 0–3), the aspect model with a `provides:` capability registry, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
 
 ## License
 

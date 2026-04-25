@@ -56,12 +56,17 @@ In an AI-coded future where humans read specs far more than they read generated 
 - Tier migration chain (0 → 1 → 2 → 3 → back) preserves user-authored content end-to-end.
 - PyPI release cut without manual intervention beyond the trusted-publishing gate.
 
-### v0.2 (in progress)
+### v0.2 (achieved)
 
 - Aspects subsume tiers: `sdd` is the first aspect; `kanon tier set` is preserved as sugar.
-- A second aspect (`worktrees`) ships at `stability: experimental` with depth 0–2.
-- The kit self-hosts both aspects (`sdd:3`, `worktrees:2`) and `kanon verify .` passes.
-- Deferred specs land one by one without forcing a second method redesign.
+- The kit ships **six aspects**: `sdd` (stable, depth 0–3), `worktrees`, `release`, `testing`, `security`, `deps` (all `experimental`, depths 0–2 or 0–3). Each declares a capability under the `provides:` registry (ADR-0026), so future aspects can substitute without breaking dependents.
+- The kit self-hosts the full set (`sdd:3`, `worktrees:2`, `release:2`, `testing:3`, `security:2`, `deps:2`) and `kanon verify .` passes with no warnings.
+- `kanon aspect set-config` and `aspect add --config` give consumers a typed CLI surface for per-aspect configuration values (ADR-0025).
+- Two deferred specs from the v0.1 roadmap have shipped: `fidelity-lock` (spec-SHA drift detection) and `invariant-ids` (stable per-invariant anchors with `verified-by` traceability).
+
+### v0.2 (ongoing)
+
+- The remaining deferred specs (`spec-graph-tooling`, `ambiguity-budget`, `multi-agent-coordination`, `expand-and-contract-lifecycle`) land one by one without forcing a second method redesign.
 
 ## Amendment Trail
 
