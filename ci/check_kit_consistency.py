@@ -51,6 +51,7 @@ _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
 # Allow this script to run from a fresh clone without an installed kanon.
 sys.path.insert(0, str(_REPO_ROOT / "src"))
 from kanon._manifest import _iter_markers  # noqa: E402
+from kanon.cli import _classify_predicate  # noqa: E402
 
 _UNPREFIXED_SECTIONS: frozenset[str] = frozenset({"protocols-index"})
 _STABILITY_VALUES: frozenset[str] = frozenset({"experimental", "stable", "deprecated"})
@@ -310,6 +311,48 @@ def _check_harnesses_yaml(errors: list[str]) -> None:
                 )
 
 
+def _check_requires_resolution(errors: list[str]) -> None:
+    """Hard-fail when any `requires:` predicate cannot resolve in this kit.
+
+    For depth predicates: the named aspect must be registered.
+    For capability predicates: at least one aspect must declare it in `provides:`.
+    Malformed predicates are also reported.
+    """
+    top, err = _load_top_manifest()
+    if err:
+        return
+    aspects = top.get("aspects", {})
+    # Build the universe of provided capabilities once.
+    provided: set[str] = set()
+    for entry in aspects.values():
+        for cap in entry.get("provides", []) or []:
+            if isinstance(cap, str):
+                provided.add(cap)
+    for name, entry in aspects.items():
+        for predicate in entry.get("requires", []) or []:
+            try:
+                classified = _classify_predicate(predicate)
+            except Exception as exc:
+                errors.append(
+                    f"manifest.yaml: aspects.{name}.requires: {exc}"
+                )
+                continue
+            if classified[0] == "depth":
+                ref = classified[1]
+                if ref not in aspects:
+                    errors.append(
+                        f"manifest.yaml: aspects.{name}.requires {predicate!r} "
+                        f"references unknown aspect {ref!r}."
+                    )
+            else:  # capability
+                cap = classified[1]
+                if cap not in provided:
+                    errors.append(
+                        f"manifest.yaml: aspects.{name}.requires {predicate!r} "
+                        f"references capability {cap!r} that no aspect provides."
+                    )
+
+
 def run_checks() -> list[str]:
     errors: list[str] = []
     _check_byte_equality(errors)
@@ -318,6 +361,7 @@ def run_checks() -> list[str]:
     _check_cross_aspect_exclusivity(errors)
     _check_agents_md_markers(errors)
     _check_harnesses_yaml(errors)
+    _check_requires_resolution(errors)
     return errors
 
 

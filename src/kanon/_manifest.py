@@ -131,6 +131,31 @@ def _kit_root() -> Path:
 # --- Manifest loaders ---
 
 
+# Capability name grammar (INV-aspect-provides-capability-name-format).
+# No underscores — keeps the namespace visually distinct from aspect names
+# (which permit underscores) and prevents 1-token capability predicates from
+# colliding with the depth-predicate parser's whitespace-tokenised form.
+_CAPABILITY_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+
+
+def _validate_provides_field(path: Path, name: str, provides: Any) -> None:
+    """Validate the optional ``provides:`` block at top-manifest load time."""
+    if not isinstance(provides, list):
+        raise click.ClickException(
+            f"{path}: aspects.{name}.provides must be a list (got {type(provides).__name__})."
+        )
+    for capability in provides:
+        if not isinstance(capability, str):
+            raise click.ClickException(
+                f"{path}: aspects.{name}.provides entry {capability!r} must be a string."
+            )
+        if not _CAPABILITY_NAME_RE.match(capability):
+            raise click.ClickException(
+                f"{path}: aspects.{name}.provides entry {capability!r} is invalid; "
+                f"capability names must match {_CAPABILITY_NAME_RE.pattern}."
+            )
+
+
 @lru_cache(maxsize=1)
 def _load_top_manifest() -> dict[str, Any]:
     """Load the aspect registry at src/kanon/kit/manifest.yaml."""
@@ -158,7 +183,29 @@ def _load_top_manifest() -> dict[str, Any]:
             raise click.ClickException(
                 f"{path}: aspects.{name}.depth-range must be [min, max]."
             )
+        if "provides" in entry:
+            _validate_provides_field(path, name, entry["provides"])
     return data
+
+
+def _aspect_provides(aspect: str) -> list[str]:
+    """Return the capabilities declared by *aspect* (empty list when none)."""
+    top = _load_top_manifest()
+    if aspect not in top["aspects"]:
+        raise click.ClickException(f"Unknown aspect: {aspect!r}.")
+    return list(top["aspects"][aspect].get("provides", []) or [])
+
+
+def _capability_suppliers(top: dict[str, Any], capability: str) -> list[str]:
+    """Return the aspect names whose ``provides:`` includes *capability*.
+
+    Pure compute against the loaded top manifest; sorted for determinism.
+    """
+    return sorted(
+        name
+        for name, entry in top["aspects"].items()
+        if capability in (entry.get("provides", []) or [])
+    )
 
 
 # Recognised value types in an aspect's `config-schema:`. Anything else is
