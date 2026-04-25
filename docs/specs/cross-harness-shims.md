@@ -16,7 +16,7 @@ Define the shim set that makes a consumer repo's SDD rules discoverable to every
 ## Invariants
 
 <!-- INV-cross-harness-shims-registry-externalised -->
-1. **Registry externalised.** The set of harnesses and their shim paths + frontmatter is defined in `src/kanon/templates/harnesses.yaml`, not hardcoded in Python.
+1. **Registry externalised.** The set of harnesses and their shim paths + frontmatter is defined in `src/kanon/kit/harnesses.yaml`, not hardcoded in Python.
 <!-- INV-cross-harness-shims-shims-are-pointers -->
 2. **Shims are pointers.** Every shim file is a single-line reference to `AGENTS.md`. The exact form depends on the harness:
    - `CLAUDE.md` — `See @AGENTS.md\n` (Claude Code reads `@AGENTS.md` as an import directive).
