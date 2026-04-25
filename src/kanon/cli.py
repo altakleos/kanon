@@ -223,9 +223,11 @@ def upgrade(target: Path) -> None:
     aspects = _config_aspects(config)
     old_version = config.get("kit_version", "unknown")
 
-    if old_version == __version__ and not was_legacy:
-        click.echo(f"Already at {__version__}. Nothing to upgrade.")
-        return
+    version_changed = old_version != __version__ or was_legacy
+    if not version_changed:
+        click.echo(
+            f"Already at {__version__}. Re-rendering kit-managed sections."
+        )
 
     from kanon._atomic import atomic_write_text
 
@@ -245,13 +247,15 @@ def upgrade(target: Path) -> None:
     if kit_md is not None:
         atomic_write_text(target / ".kanon" / "kit.md", kit_md)
 
-    _write_config(target, __version__, _aspects_with_meta(aspects))
+    if version_changed:
+        _write_config(target, __version__, _aspects_with_meta(aspects))
 
     if was_legacy:
         click.echo("Migrated legacy tier config to aspect model.")
     if migrated_flat:
         click.echo("Namespaced flat .kanon/protocols/*.md under sdd/.")
-    click.echo(f"Upgraded kanon project at {target}: {old_version} → {__version__}")
+    if version_changed:
+        click.echo(f"Upgraded kanon project at {target}: {old_version} → {__version__}")
 
 
 @main.command()

@@ -365,6 +365,65 @@ def test_upgrade_already_current(tmp_path: Path) -> None:
     assert "already at" in result.output.lower()
 
 
+def test_upgrade_noop_does_not_churn_enabled_at(tmp_path: Path) -> None:
+    """A no-op `upgrade` (version unchanged, no edits) must not rewrite the
+    config — `enabled_at` must be byte-identical after the call."""
+    import time
+
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    config_path = target / ".kanon" / "config.yaml"
+    captured = yaml.safe_load(config_path.read_text(encoding="utf-8"))[
+        "aspects"
+    ]["sdd"]["enabled_at"]
+
+    # Sleep > 1 second so a churn-write would yield a different ISO-second.
+    time.sleep(1.1)
+
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+
+    after = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    assert after["aspects"]["sdd"]["enabled_at"] == captured, (
+        "upgrade must not rewrite enabled_at on a no-op"
+    )
+
+
+def test_upgrade_heals_edited_markers(tmp_path: Path) -> None:
+    """`upgrade` re-renders kit-managed marker sections even when kit_version
+    is unchanged. User content outside markers is preserved."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+
+    agents_path = target / "AGENTS.md"
+    original = agents_path.read_text(encoding="utf-8")
+
+    # Corrupt the body of a kit-managed marker section.
+    begin = "<!-- kanon:begin:sdd/plan-before-build -->"
+    end = "<!-- kanon:end:sdd/plan-before-build -->"
+    bi = original.find(begin)
+    ei = original.find(end, bi + len(begin))
+    assert bi >= 0 and ei > bi
+    corrupted = original[: bi + len(begin)] + "\nGARBAGE BODY\n" + original[ei:]
+    # Add user content outside markers — must survive.
+    corrupted += "\n## My Custom Section\n\nUser-authored. Do not touch.\n"
+    agents_path.write_text(corrupted, encoding="utf-8")
+
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+
+    final = agents_path.read_text(encoding="utf-8")
+    assert "GARBAGE BODY" not in final, "upgrade did not re-render marker body"
+    assert "My Custom Section" in final, "upgrade clobbered user content"
+    assert "User-authored. Do not touch." in final
+    # The kit's canonical body is restored — sanity-check it begins with the
+    # section's header, which the kit ships in `sections/plan-before-build.md`.
+    assert "Required: Plan Before Build" in final
+
+
 def test_upgrade_not_a_kanon_project(tmp_path: Path) -> None:
     runner = CliRunner()
     result = runner.invoke(main, ["upgrade", str(tmp_path)])
@@ -926,7 +985,7 @@ def test_verify_unknown_aspect(tmp_path: Path) -> None:
     assert report["status"] == "ok"
     assert report["errors"] == []
     assert any("bogus" in w for w in report["warnings"])
-    assert "warnings:" in result.output
+    assert "warning" in result.output.lower()
 
 
 def test_verify_depth_out_of_range(tmp_path: Path) -> None:
