@@ -14,9 +14,9 @@ import pytest
 import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-_SDD_PROTOCOLS = _REPO_ROOT / "src" / "kanon" / "kit" / "aspects" / "sdd" / "protocols"
-_REPO_SDD_PROTOCOLS = _REPO_ROOT / ".kanon" / "protocols" / "sdd"
-_SDD_MANIFEST = _REPO_ROOT / "src" / "kanon" / "kit" / "aspects" / "sdd" / "manifest.yaml"
+_SDD_PROTOCOLS = _REPO_ROOT / "src" / "kanon" / "kit" / "aspects" / "kanon-sdd" / "protocols"
+_REPO_SDD_PROTOCOLS = _REPO_ROOT / ".kanon" / "protocols" / "kanon-sdd"
+_SDD_MANIFEST = _REPO_ROOT / "src" / "kanon" / "kit" / "aspects" / "kanon-sdd" / "manifest.yaml"
 
 _REQUIRED_FRONTMATTER_KEYS = ("status", "date", "depth-min", "invoke-when")
 
@@ -41,7 +41,7 @@ def _all_sdd_protocol_files() -> list[Path]:
 
 def test_sdd_protocols_directory_exists() -> None:
     assert _SDD_PROTOCOLS.is_dir()
-    assert _all_sdd_protocol_files(), "expected at least one protocol under aspects/sdd/protocols/"
+    assert _all_sdd_protocol_files(), "expected at least one protocol under aspects/kanon-sdd/protocols/"
 
 
 @pytest.mark.parametrize("proto", _all_sdd_protocol_files(), ids=lambda p: p.name)
@@ -74,7 +74,7 @@ def test_protocol_depth_min_matches_sub_manifest(proto: Path) -> None:
             declared_depth = d
             break
     assert declared_depth is not None, (
-        f"{proto.name}: not declared in aspects/sdd/manifest.yaml"
+        f"{proto.name}: not declared in aspects/kanon-sdd/manifest.yaml"
     )
     assert fm["depth-min"] == declared_depth, (
         f"{proto.name}: frontmatter depth-min={fm['depth-min']} "
@@ -91,8 +91,8 @@ def test_protocol_invoke_when_is_nonempty(proto: Path) -> None:
 @pytest.mark.parametrize("proto", _all_sdd_protocol_files(), ids=lambda p: p.name)
 def test_protocol_byte_equals_repo_canonical(proto: Path) -> None:
     """Spec invariant 1 (updated for aspect namespace): kit mirror byte-identical
-    to .kanon/protocols/sdd/<name>.md.
+    to .kanon/protocols/kanon-sdd/<name>.md.
     """
     repo_copy = _REPO_SDD_PROTOCOLS / proto.name
-    assert repo_copy.is_file(), f"repo canonical missing: .kanon/protocols/sdd/{proto.name}"
+    assert repo_copy.is_file(), f"repo canonical missing: .kanon/protocols/kanon-sdd/{proto.name}"
     assert proto.read_bytes() == repo_copy.read_bytes()

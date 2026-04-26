@@ -14,6 +14,8 @@ import yaml
 
 from kanon import __version__
 from kanon._manifest import (
+    _ASPECT_NAME_RE,
+    _BARE_ASPECT_NAME_RE,
     _UNPREFIXED_SECTIONS,
     _all_aspect_sections,
     _aspect_depth_range,
@@ -47,23 +49,55 @@ def _read_config(target: Path) -> dict[str, Any]:
     return _migrate_legacy_config(data)
 
 
-# Legacy v1→v2 migration: "sdd" reference required (v1 config had tier:N → sdd aspect)
+# Legacy v1 (tier:) and v2 (bare aspects:) → v3 (namespaced aspects:) migration.
+# v1: `tier: N` (kanon < 0.2)
+# v2: `aspects: {sdd: {...}, worktrees: {...}}` (kanon 0.2.x; bare aspect names)
+# v3: `aspects: {kanon-sdd: {...}, kanon-worktrees: {...}}` (kanon 0.3+; namespaced
+#     per ADR-0028, with `project-<local>` reserved for project-aspects)
 def _migrate_legacy_config(config: dict[str, Any]) -> dict[str, Any]:
-    """One-way v1 (tier:) → v2 (aspects:) transformer. Idempotent if already v2."""
-    if "aspects" in config:
+    """One-way v1/v2 → v3 transformer. Idempotent if already v3.
+
+    v1 (`tier: N`) → v3 (`aspects: {kanon-sdd: {depth: N, ...}}`).
+    v2 (`aspects: {sdd: {...}}`) → v3 (`aspects: {kanon-sdd: {...}}`).
+    v3 (already-namespaced) → no-op.
+    """
+    # v1 → v3: synthesise `aspects:` from the legacy `tier:` field.
+    if "aspects" not in config:
+        if "tier" not in config:
+            return config
+        return {
+            "kit_version": config.get("kit_version", __version__),
+            "aspects": {
+                "kanon-sdd": {
+                    "depth": int(config["tier"]),
+                    "enabled_at": config.get("tier_set_at") or _now_iso(),
+                    "config": {},
+                }
+            },
+        }
+    # v2 → v3: rewrite bare aspect keys to the `kanon-<local>` form. Idempotent
+    # for already-namespaced keys (which match `_ASPECT_NAME_RE`).
+    aspects = config["aspects"]
+    if not isinstance(aspects, dict):
         return config
-    if "tier" not in config:
+    needs_bump = any(
+        isinstance(name, str)
+        and not _ASPECT_NAME_RE.match(name)
+        and _BARE_ASPECT_NAME_RE.match(name)
+        for name in aspects
+    )
+    if not needs_bump:
         return config
-    return {
-        "kit_version": config.get("kit_version", __version__),
-        "aspects": {
-            "sdd": {
-                "depth": int(config["tier"]),
-                "enabled_at": config.get("tier_set_at") or _now_iso(),
-                "config": {},
-            }
-        },
-    }
+    new_aspects: dict[str, Any] = {}
+    for name, entry in aspects.items():
+        if isinstance(name, str) and _BARE_ASPECT_NAME_RE.match(name) \
+                and not _ASPECT_NAME_RE.match(name):
+            new_aspects[f"kanon-{name}"] = entry
+        else:
+            new_aspects[name] = entry
+    out = dict(config)
+    out["aspects"] = new_aspects
+    return out
 
 
 def _config_aspects(config: dict[str, Any]) -> dict[str, int]:
@@ -203,7 +237,16 @@ def _render_kit_md(aspects: dict[str, int], project_name: str) -> str | None:
         return None
     context: dict[str, str] = {"project_name": project_name}
     for aspect, depth in aspects.items():
-        context[f"{aspect}_depth"] = str(depth)
+        # Strip the `kanon-` prefix for context keys so existing templates'
+        # `${sdd_depth}` / `${worktrees_depth}` placeholders keep working
+        # (ADR-0028 backward-compat for kit-aspect templates). For project-
+        # aspects, replace hyphens with underscores so `${project_foo_depth}`
+        # is a valid `string.Template` identifier.
+        if aspect.startswith("kanon-"):
+            _ctx_local = aspect[len("kanon-"):]
+            context[f"{_ctx_local}_depth"] = str(depth)
+        else:
+            context[f"{aspect.replace('-', '_')}_depth"] = str(depth)
     # Backward-compat alias: ${tier} → sdd depth.
     context.setdefault("tier", context.get("sdd_depth", "0"))
     return _render_placeholder(src.read_text(encoding="utf-8"), context)
@@ -221,7 +264,16 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
         raise click.ClickException(f"Missing AGENTS.md base: {base}")
     context: dict[str, str] = {"project_name": project_name}
     for aspect, depth in aspects.items():
-        context[f"{aspect}_depth"] = str(depth)
+        # Strip the `kanon-` prefix for context keys so existing templates'
+        # `${sdd_depth}` / `${worktrees_depth}` placeholders keep working
+        # (ADR-0028 backward-compat for kit-aspect templates). For project-
+        # aspects, replace hyphens with underscores so `${project_foo_depth}`
+        # is a valid `string.Template` identifier.
+        if aspect.startswith("kanon-"):
+            _ctx_local = aspect[len("kanon-"):]
+            context[f"{_ctx_local}_depth"] = str(depth)
+        else:
+            context[f"{aspect.replace('-', '_')}_depth"] = str(depth)
     # Backward-compat alias: ${tier} → sdd depth.
     context.setdefault("tier", context.get("sdd_depth", "0"))
     text = _render_placeholder(base.read_text(encoding="utf-8"), context)
@@ -306,32 +358,51 @@ def _insert_section(text: str, section: str, content: str) -> str:
 
 
 def _rewrite_legacy_markers(text: str) -> str:
-    """Rename v1 unprefixed section markers to v2 namespaced form.
+    """Migrate legacy AGENTS.md markers to v3 (namespaced) form.
 
-    Only runs on sections that are known to belong to the `sdd` aspect in v2
-    (plan-before-build, spec-before-design). `protocols-index` stays unprefixed.
+    Two legacy shapes are recognised and rewritten:
+
+    - **v0.1 unprefixed**: ``<!-- kanon:begin:plan-before-build -->`` →
+      ``<!-- kanon:begin:kanon-sdd/plan-before-build -->`` for sections that
+      belong to ``kanon-sdd`` per the kit registry.
+    - **v0.2 bare-prefixed**: ``<!-- kanon:begin:sdd/plan-before-build -->``
+      → ``<!-- kanon:begin:kanon-sdd/plan-before-build -->``. Same rewrite
+      for the other five bare aspect names registered in the kit.
+
+    ``protocols-index`` stays unprefixed (cross-aspect catalog by design).
     Markers inside fenced code blocks or with leading non-whitespace prefixes
-    are skipped (see `_iter_markers`).
+    are skipped (see ``_iter_markers``). Idempotent on already-namespaced markers.
     """
     top = _load_top_manifest()
-    if "sdd" not in top["aspects"]:
-        return text
-    legacy_sections = {
-        s for s in _all_aspect_sections("sdd") if s not in _UNPREFIXED_SECTIONS
-    }
-    if not legacy_sections:
-        return text
-    namespaced_targets = {f"sdd/{s}" for s in legacy_sections}
-    for _, sec, _, _ in _iter_markers(text):
-        if sec in namespaced_targets:
-            return text  # already migrated
+    # Map of bare aspect name → kanon-prefixed canonical, for currently-registered aspects.
+    bare_to_canonical: dict[str, str] = {}
+    for canonical in top["aspects"]:
+        if canonical.startswith("kanon-"):
+            bare_to_canonical[canonical[len("kanon-"):]] = canonical
+
+    # v0.1 → v0.3: only kanon-sdd's section names are unprefixed legacy candidates.
+    sdd_sections: set[str] = set()
+    if "kanon-sdd" in top["aspects"]:
+        sdd_sections = {
+            s for s in _all_aspect_sections("kanon-sdd") if s not in _UNPREFIXED_SECTIONS
+        }
+
     pieces: list[str] = []
     last = 0
     for kind, sec, line_start, line_end in _iter_markers(text):
-        if sec not in legacy_sections:
+        new_sec: str | None = None
+        if "/" in sec:
+            prefix, _, leaf = sec.partition("/")
+            if prefix in bare_to_canonical:
+                # v0.2 bare-prefixed → v0.3 namespaced.
+                new_sec = f"{bare_to_canonical[prefix]}/{leaf}"
+        elif sec in sdd_sections:
+            # v0.1 unprefixed → v0.3 namespaced (kanon-sdd's own sections).
+            new_sec = f"kanon-sdd/{sec}"
+        if new_sec is None:
             continue
         pieces.append(text[last:line_start])
-        new_line = f"<!-- kanon:{kind}:sdd/{sec} -->"
+        new_line = f"<!-- kanon:{kind}:{new_sec} -->"
         if line_end > 0 and text[line_end - 1: line_end] == "\n":
             new_line += "\n"
         pieces.append(new_line)
@@ -387,9 +458,10 @@ def _write_tree_atomically(
 
 
 def _migrate_flat_protocols(target: Path, aspects: dict[str, int]) -> bool:
-    """Move .kanon/protocols/*.md (flat, v1) under .kanon/protocols/sdd/ (v2 namespace).
+    """Move .kanon/protocols/*.md (flat, v0.1) under .kanon/protocols/kanon-sdd/.
 
-    Returns True if any file was migrated.
+    Per ADR-0028 the v3 namespace is `kanon-sdd` (was bare `sdd` in v0.2 and
+    flat in v0.1). Returns True if any file was migrated.
     """
     protocols_dir = target / ".kanon" / "protocols"
     if not protocols_dir.is_dir():
@@ -397,9 +469,9 @@ def _migrate_flat_protocols(target: Path, aspects: dict[str, int]) -> bool:
     flat = [p for p in protocols_dir.glob("*.md") if p.is_file()]
     if not flat:
         return False
-    if "sdd" not in aspects:
+    if "kanon-sdd" not in aspects:
         return False
-    sdd_dir = protocols_dir / "sdd"
+    sdd_dir = protocols_dir / "kanon-sdd"
     sdd_dir.mkdir(parents=True, exist_ok=True)
     for p in flat:
         dest = sdd_dir / p.name

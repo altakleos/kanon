@@ -21,8 +21,8 @@ def test_apply_tier_down_returns_only_existing_files(tmp_path: Path) -> None:
     # snapshots whose `_expected_files` differ in known ways via the live
     # manifest. We use real aspect names + depths so `_expected_files` returns
     # genuine, non-overlapping path sets.
-    sdd_at_3 = {"sdd": 3}
-    sdd_at_1 = {"sdd": 1}
+    sdd_at_3 = {"kanon-sdd": 3}
+    sdd_at_1 = {"kanon-sdd": 1}
 
     # No files on disk at all → nothing to surface.
     assert _apply_tier_down(tmp_path, sdd_at_3, sdd_at_1) == []
@@ -53,8 +53,8 @@ def test_apply_tier_down_does_not_mutate_filesystem(tmp_path: Path) -> None:
     """Calling `_apply_tier_down` must not delete or modify any files."""
     from kanon._manifest import _expected_files
 
-    sdd_at_3 = {"sdd": 3}
-    sdd_at_1 = {"sdd": 1}
+    sdd_at_3 = {"kanon-sdd": 3}
+    sdd_at_1 = {"kanon-sdd": 1}
 
     only_in_3 = [
         p for p in _expected_files(sdd_at_3) if p not in set(_expected_files(sdd_at_1))

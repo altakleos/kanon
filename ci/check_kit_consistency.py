@@ -39,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -55,6 +56,11 @@ from kanon.cli import _classify_predicate  # noqa: E402
 
 _UNPREFIXED_SECTIONS: frozenset[str] = frozenset({"protocols-index"})
 _STABILITY_VALUES: frozenset[str] = frozenset({"experimental", "stable", "deprecated"})
+
+# Kit-side aspect-name grammar (ADR-0028). Every kit-shipped aspect must match
+# this pattern; any other namespace (e.g., `project-`) is forbidden in a kit
+# directory because project-aspects live under `.kanon/aspects/` in the consumer.
+_KIT_ASPECT_NAME_RE = re.compile(r"^kanon-[a-z][a-z0-9-]*$")
 
 
 def _load_top_manifest() -> tuple[dict[str, Any], str | None]:
@@ -161,6 +167,16 @@ def _check_registry_and_manifests(errors: list[str]) -> None:
     for name, entry in top["aspects"].items():
         if not isinstance(entry, dict):
             errors.append(f"manifest.yaml: aspects.{name}: must be a mapping")
+            continue
+        # Kit-side aspect names must use the `kanon-` namespace per ADR-0028.
+        # The corresponding runtime check in `kanon._manifest._load_top_manifest`
+        # is the load-time gate; this CI check is the kit-author belt-and-
+        # suspenders against an accidentally-misnamed kit-side aspect.
+        if not isinstance(name, str) or not _KIT_ASPECT_NAME_RE.match(name):
+            errors.append(
+                f"manifest.yaml: aspects.{name!r}: kit-side aspect names must "
+                f"match `^kanon-[a-z][a-z0-9-]*$` (ADR-0028 namespace ownership)."
+            )
             continue
         for field in ("path", "stability", "depth-range", "default-depth"):
             if field not in entry:

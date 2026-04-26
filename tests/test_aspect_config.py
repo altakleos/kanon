@@ -35,16 +35,16 @@ def test_set_config_idempotent_apart_from_timestamp(tmp_path: Path) -> None:
     target = tmp_path / "p"
     _init_with(runner, target, "sdd:1", "testing:3")
 
-    r1 = runner.invoke(main, ["aspect", "set-config", str(target), "testing", "coverage_floor=80"])
+    r1 = runner.invoke(main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=80"])
     assert r1.exit_code == 0, r1.output
     cfg1 = _config(target)
-    coverage1 = cfg1["aspects"]["testing"]["config"]["coverage_floor"]
+    coverage1 = cfg1["aspects"]["kanon-testing"]["config"]["coverage_floor"]
     assert coverage1 == 80
 
-    r2 = runner.invoke(main, ["aspect", "set-config", str(target), "testing", "coverage_floor=80"])
+    r2 = runner.invoke(main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=80"])
     assert r2.exit_code == 0, r2.output
     cfg2 = _config(target)
-    coverage2 = cfg2["aspects"]["testing"]["config"]["coverage_floor"]
+    coverage2 = cfg2["aspects"]["kanon-testing"]["config"]["coverage_floor"]
     assert coverage2 == 80
     # Spec INV-1: idempotent — value unchanged. enabled_at refresh on noop is OK.
 
@@ -59,11 +59,11 @@ def test_aspect_add_config_flag_populates_config_at_enable_time(tmp_path: Path) 
 
     result = runner.invoke(
         main,
-        ["aspect", "add", str(target), "testing", "--depth", "3", "--config", "coverage_floor=85"],
+        ["aspect", "add", str(target), "kanon-testing", "--depth", "3", "--config", "coverage_floor=85"],
     )
     assert result.exit_code == 0, result.output
     cfg = _config(target)
-    assert cfg["aspects"]["testing"]["config"]["coverage_floor"] == 85
+    assert cfg["aspects"]["kanon-testing"]["config"]["coverage_floor"] == 85
 
 
 def test_aspect_add_config_flag_repeatable(tmp_path: Path) -> None:
@@ -76,13 +76,13 @@ def test_aspect_add_config_flag_repeatable(tmp_path: Path) -> None:
     result = runner.invoke(
         main,
         [
-            "aspect", "add", str(target), "worktrees", "--depth", "1",
+            "aspect", "add", str(target), "kanon-worktrees", "--depth", "1",
             "--config", "alpha=1",
             "--config", "beta=foo",
         ],
     )
     assert result.exit_code == 0, result.output
-    cfg_block = _config(target)["aspects"]["worktrees"]["config"]
+    cfg_block = _config(target)["aspects"]["kanon-worktrees"]["config"]
     assert cfg_block == {"alpha": 1, "beta": "foo"}
 
 
@@ -149,7 +149,7 @@ def test_set_config_rejects_unknown_key_against_schema(tmp_path: Path) -> None:
     _init_with(runner, target, "sdd:1", "testing:3")
 
     result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "testing", "unknown_key=1"]
+        main, ["aspect", "set-config", str(target), "kanon-testing", "unknown_key=1"]
     )
     assert result.exit_code != 0
     assert "Unknown config key 'unknown_key'" in result.output
@@ -161,7 +161,7 @@ def test_set_config_rejects_type_mismatch_against_schema(tmp_path: Path) -> None
     _init_with(runner, target, "sdd:1", "testing:3")
 
     result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "testing", "coverage_floor=hello"]
+        main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=hello"]
     )
     assert result.exit_code != 0
     assert "Invalid type for config key 'coverage_floor'" in result.output
@@ -175,7 +175,7 @@ def test_set_config_rejects_bool_for_integer_schema(tmp_path: Path) -> None:
     _init_with(runner, target, "sdd:1", "testing:3")
 
     result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "testing", "coverage_floor=true"]
+        main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=true"]
     )
     assert result.exit_code != 0
     assert "expected integer" in result.output
@@ -191,11 +191,11 @@ def test_set_config_accepts_any_key_when_no_schema(tmp_path: Path) -> None:
     _init_with(runner, target, "sdd:1", "worktrees:1")
 
     result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "worktrees", "anything=42"]
+        main, ["aspect", "set-config", str(target), "kanon-worktrees", "anything=42"]
     )
     assert result.exit_code == 0, result.output
     cfg = _config(target)
-    assert cfg["aspects"]["worktrees"]["config"]["anything"] == 42
+    assert cfg["aspects"]["kanon-worktrees"]["config"]["anything"] == 42
 
 
 # --- INV-aspect-config-config-schema-shape (manifest validation) ---
@@ -246,7 +246,7 @@ def test_set_config_clears_sentinel_on_success(tmp_path: Path) -> None:
     pending = target / ".kanon" / ".pending"
     assert not pending.exists()
 
-    runner.invoke(main, ["aspect", "set-config", str(target), "testing", "coverage_floor=90"])
+    runner.invoke(main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=90"])
     assert not pending.exists()
 
 
@@ -261,7 +261,7 @@ def test_set_config_persists_sentinel_on_mid_write_failure(tmp_path: Path) -> No
     # Patch _write_config to raise after the sentinel write but before clear.
     with patch("kanon.cli._write_config", side_effect=OSError("simulated disk full")):
         runner.invoke(
-            main, ["aspect", "set-config", str(target), "testing", "coverage_floor=90"]
+            main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=90"]
         )
     assert pending.is_file()
     assert pending.read_text(encoding="utf-8").strip() == "set-config"
@@ -272,7 +272,7 @@ def test_set_config_persists_sentinel_on_mid_write_failure(tmp_path: Path) -> No
 
 def test_aspect_info_renders_schema_when_declared() -> None:
     runner = CliRunner()
-    result = runner.invoke(main, ["aspect", "info", "testing"])
+    result = runner.invoke(main, ["aspect", "info", "kanon-testing"])
     assert result.exit_code == 0, result.output
     assert "Config keys:" in result.output
     assert "coverage_floor" in result.output
@@ -281,7 +281,7 @@ def test_aspect_info_renders_schema_when_declared() -> None:
 
 def test_aspect_info_omits_config_block_when_no_schema() -> None:
     runner = CliRunner()
-    result = runner.invoke(main, ["aspect", "info", "worktrees"])
+    result = runner.invoke(main, ["aspect", "info", "kanon-worktrees"])
     assert result.exit_code == 0, result.output
     assert "Config keys:" not in result.output
 
@@ -295,7 +295,7 @@ def test_set_config_errors_when_aspect_not_enabled(tmp_path: Path) -> None:
     _init_with(runner, target, "sdd:1")  # testing not enabled
 
     result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "testing", "coverage_floor=85"]
+        main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=85"]
     )
     assert result.exit_code != 0
     assert "is not enabled" in result.output
@@ -306,16 +306,16 @@ def test_set_config_errors_when_aspect_not_enabled(tmp_path: Path) -> None:
 
 
 def test_testing_config_schema_round_trips() -> None:
-    """`_aspect_config_schema('testing')` returns the same shape that's on disk."""
+    """`_aspect_config_schema('kanon-testing')` returns the same shape that's on disk."""
     import kanon
     from kanon._manifest import _aspect_config_schema
 
-    loaded = _aspect_config_schema("testing")
+    loaded = _aspect_config_schema("kanon-testing")
     assert loaded is not None, "testing aspect should declare a config-schema"
 
     manifest_path = (
         Path(kanon.__file__).parent
-        / "kit" / "aspects" / "testing" / "manifest.yaml"
+        / "kit" / "aspects" / "kanon-testing" / "manifest.yaml"
     )
     on_disk = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     assert loaded == on_disk["config-schema"]

@@ -53,7 +53,7 @@ kanon/
 - The kit bundle at `src/kanon/kit/` shares source of truth with this repo's own `docs/`, `AGENTS.md` section markers, and `.kanon/protocols/`. `ci/check_kit_consistency.py` enforces byte-equality against a narrow whitelist (see ADR-0011).
 - Aspect membership is data in `src/kanon/kit/manifest.yaml` (aspect registry) and per-aspect sub-manifests at `src/kanon/kit/aspects/<name>/manifest.yaml`. To scaffold a new file at depth-N for consumers, add it under `kit/aspects/<name>/files/` or `kit/aspects/<name>/protocols/` and list its path under the appropriate `depth-N` entry in the sub-manifest. Strict-superset semantics are preserved by manifest-union.
 
-<!-- kanon:begin:sdd/plan-before-build -->
+<!-- kanon:begin:kanon-sdd/plan-before-build -->
 ## Required: Plan Before Build
 
 For any non-trivial change, your **first output** is a plan file under `docs/plans/<slug>.md`, followed by explicit user approval. You may not call Edit, Write, or mutating Bash on source files before the user has approved the plan.
@@ -77,9 +77,9 @@ A change is **trivial** (act directly, no plan needed) only if:
 **Before your first source-modifying tool call, state in one sentence:** "Plan at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and plan. This sentence is the audit trail — its absence in a transcript is how violations get caught.
 
 **Retroactive plans are evidence of past violation, not a norm.** Do not add to that pile.
-<!-- kanon:end:sdd/plan-before-build -->
+<!-- kanon:end:kanon-sdd/plan-before-build -->
 
-<!-- kanon:begin:sdd/spec-before-design -->
+<!-- kanon:begin:kanon-sdd/spec-before-design -->
 ## Required: Spec Before Design
 
 For any change that introduces a new user-visible capability, your **first output** is a spec file at `docs/specs/<slug>.md`, followed by explicit user approval. You may not write a design doc, ADR, plan, or implementation before the spec is approved.
@@ -101,57 +101,57 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 - adding a new output type that follows an existing pattern already governed by a spec
 
 **Before your first design-doc, ADR, plan, or source-modifying tool call, state in one sentence:** "Spec at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and write the spec.
-<!-- kanon:end:sdd/spec-before-design -->
+<!-- kanon:end:kanon-sdd/spec-before-design -->
 
 <!-- kanon:begin:protocols-index -->
 ## Active protocols
 
 Prose-as-code procedures available at this depth. When a trigger fires, read the protocol file in full and follow its numbered steps.
 
-### deps (depth 2)
+### kanon-deps (depth 2)
 
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
-| [`dependency-hygiene`](.kanon/protocols/deps/dependency-hygiene.md) | 1 | Adding, removing, or updating project dependencies |
+| [`dependency-hygiene`](.kanon/protocols/kanon-deps/dependency-hygiene.md) | 1 | Adding, removing, or updating project dependencies |
 
-### release (depth 2)
-
-| Protocol | Depth-min | Invoke when |
-| --- | --- | --- |
-| [`release-checklist`](.kanon/protocols/release/release-checklist.md) | 1 | A release is being prepared, or the user asks to cut a release |
-
-### sdd (depth 3)
+### kanon-release (depth 2)
 
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
-| [`tier-up-advisor`](.kanon/protocols/sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's sdd depth, or asks "should we increase depth?" |
-| [`verify-triage`](.kanon/protocols/sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
-| [`completion-checklist`](.kanon/protocols/sdd/completion-checklist.md) | 1 | An agent is about to declare a plan or task complete, or the user asks "is this done?" |
-| [`scope-check`](.kanon/protocols/sdd/scope-check.md) | 1 | An agent discovers during implementation that the current task requires changes not described in the approved plan |
-| [`spec-review`](.kanon/protocols/sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
+| [`release-checklist`](.kanon/protocols/kanon-release/release-checklist.md) | 1 | A release is being prepared, or the user asks to cut a release |
 
-### security (depth 2)
+### kanon-sdd (depth 3)
 
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
-| [`secure-defaults`](.kanon/protocols/security/secure-defaults.md) | 1 | Writing or modifying code that handles secrets, user input, network requests, file operations, or authentication |
+| [`tier-up-advisor`](.kanon/protocols/kanon-sdd/tier-up-advisor.md) | 1 | The user or agent is considering raising this project's sdd depth, or asks "should we increase depth?" |
+| [`verify-triage`](.kanon/protocols/kanon-sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
+| [`completion-checklist`](.kanon/protocols/kanon-sdd/completion-checklist.md) | 1 | An agent is about to declare a plan or task complete, or the user asks "is this done?" |
+| [`scope-check`](.kanon/protocols/kanon-sdd/scope-check.md) | 1 | An agent discovers during implementation that the current task requires changes not described in the approved plan |
+| [`spec-review`](.kanon/protocols/kanon-sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
 
-### testing (depth 3)
-
-| Protocol | Depth-min | Invoke when |
-| --- | --- | --- |
-| [`test-discipline`](.kanon/protocols/testing/test-discipline.md) | 1 | Writing or modifying code |
-| [`error-diagnosis`](.kanon/protocols/testing/error-diagnosis.md) | 1 | A test fails, a build breaks, or a command produces an unexpected error during implementation |
-| [`ac-first-tdd`](.kanon/protocols/testing/ac-first-tdd.md) | 2 | Implementing a plan or spec invariant at testing depth >= 2 |
-
-### worktrees (depth 2)
+### kanon-security (depth 2)
 
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
-| [`worktree-lifecycle`](.kanon/protocols/worktrees/worktree-lifecycle.md) | 1 | A file-modifying operation is about to begin, or `git worktree list` shows active worktrees from other work streams |
+| [`secure-defaults`](.kanon/protocols/kanon-security/secure-defaults.md) | 1 | Writing or modifying code that handles secrets, user input, network requests, file operations, or authentication |
+
+### kanon-testing (depth 3)
+
+| Protocol | Depth-min | Invoke when |
+| --- | --- | --- |
+| [`test-discipline`](.kanon/protocols/kanon-testing/test-discipline.md) | 1 | Writing or modifying code |
+| [`error-diagnosis`](.kanon/protocols/kanon-testing/error-diagnosis.md) | 1 | A test fails, a build breaks, or a command produces an unexpected error during implementation |
+| [`ac-first-tdd`](.kanon/protocols/kanon-testing/ac-first-tdd.md) | 2 | Implementing a plan or spec invariant at testing depth >= 2 |
+
+### kanon-worktrees (depth 2)
+
+| Protocol | Depth-min | Invoke when |
+| --- | --- | --- |
+| [`worktree-lifecycle`](.kanon/protocols/kanon-worktrees/worktree-lifecycle.md) | 1 | A file-modifying operation is about to begin, or `git worktree list` shows active worktrees from other work streams |
 <!-- kanon:end:protocols-index -->
 
-<!-- kanon:begin:worktrees/branch-hygiene -->
+<!-- kanon:begin:kanon-worktrees/branch-hygiene -->
 ## Worktree Branch Hygiene
 
 Use a dedicated git worktree for any change that modifies files. Read-only operations (reviewing code, running builds, answering questions) stay in the main checkout.
@@ -179,9 +179,9 @@ Use a dedicated git worktree for any change that modifies files. Read-only opera
 - Never force-remove a worktree with uncommitted changes.
 - Commit or stash all work before running `git worktree remove`.
 - Delete the `wt/<slug>` branch only after it has been merged.
-<!-- kanon:end:worktrees/branch-hygiene -->
+<!-- kanon:end:kanon-worktrees/branch-hygiene -->
 
-<!-- kanon:begin:worktrees/body -->
+<!-- kanon:begin:kanon-worktrees/body -->
 The `worktrees` aspect is active with automation helpers. All file-modifying changes should be isolated in git worktrees under `.worktrees/<slug>/`.
 
 ## Key Constraints
@@ -193,9 +193,9 @@ The `worktrees` aspect is active with automation helpers. All file-modifying cha
   - `scripts/worktree-setup.sh <slug>` — create a worktree
   - `scripts/worktree-teardown.sh <slug>` — safely remove a worktree
   - `scripts/worktree-status.sh` — list all active worktrees
-<!-- kanon:end:worktrees/body -->
+<!-- kanon:end:kanon-worktrees/body -->
 
-<!-- kanon:begin:sdd/body -->
+<!-- kanon:begin:kanon-sdd/body -->
 A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + design + ADRs + plans + verification. All process gates are active.
 
 ## Boot chain
@@ -221,24 +221,24 @@ A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + desig
 - [`docs/specs/README.md`](docs/specs/README.md) — spec index
 - [`docs/design/README.md`](docs/design/README.md) — design doc index
 - [`docs/plans/README.md`](docs/plans/README.md) — plan index
-<!-- kanon:end:sdd/body -->
+<!-- kanon:end:kanon-sdd/body -->
 
-<!-- kanon:begin:release/body -->
+<!-- kanon:begin:kanon-release/body -->
 The `release` aspect is active with automation helpers. Follow the release checklist protocol before cutting any release.
 
 - `ci/release-preflight.py` — validates version, changelog, tests, and lint before publish.
 - `.github/workflows/release.yml` — reference CI workflow triggered by version tags.
-<!-- kanon:end:release/body -->
+<!-- kanon:end:kanon-release/body -->
 
-<!-- kanon:begin:testing/body -->
+<!-- kanon:begin:kanon-testing/body -->
 The `testing` aspect is active with automated enforcement. Follow the test-discipline and ac-first-tdd protocols when writing or modifying code.
 
 - At depth 2+: translate plan acceptance criteria into failing tests before implementation.
 - For spec invariants: red-green-refactor loop.
 - `ci/check_test_quality.py` — validates test quality (no empty tests, no assert-True-only, coverage floor).
-<!-- kanon:end:testing/body -->
+<!-- kanon:end:kanon-testing/body -->
 
-<!-- kanon:begin:security/secure-defaults -->
+<!-- kanon:begin:kanon-security/secure-defaults -->
 ## Secure Defaults
 
 LLM agents produce predictable security anti-patterns. Every code change follows these rules:
@@ -256,15 +256,15 @@ LLM agents produce predictable security anti-patterns. Every code change follows
 **Validate all external input.** User input, API responses, file contents, and environment variables are untrusted. Validate type, length, and format before use. Reject unexpected values rather than coercing them.
 
 **At depth 2: CI pattern scanner.** `ci/check_security_patterns.py` detects common anti-patterns via regex. It is a safety net, not a SAST replacement — passing the scanner does not mean the code is secure.
-<!-- kanon:end:security/secure-defaults -->
+<!-- kanon:end:kanon-security/secure-defaults -->
 
-<!-- kanon:begin:security/body -->
+<!-- kanon:begin:kanon-security/body -->
 The `security` aspect is active with CI enforcement. Follow the secure-defaults protocol when writing or modifying code.
 
 - `ci/check_security_patterns.py` — language-agnostic regex scanner for common security anti-patterns.
-<!-- kanon:end:security/body -->
+<!-- kanon:end:kanon-security/body -->
 
-<!-- kanon:begin:deps/dependency-hygiene -->
+<!-- kanon:begin:kanon-deps/dependency-hygiene -->
 ## Dependency Hygiene
 
 LLM agents add dependencies casually. Every dependency change follows these rules:
@@ -280,15 +280,15 @@ LLM agents add dependencies casually. Every dependency change follows these rule
 **Keep manifests consistent.** If the project uses multiple manifest formats (e.g., pyproject.toml and requirements.txt), keep them in sync. Conflicting version constraints across manifests cause silent failures.
 
 **At depth 2: CI dependency scanner.** `ci/check_deps.py` detects unpinned versions and duplicate-purpose packages. It is a safety net — passing the scanner does not mean the dependency tree is optimal.
-<!-- kanon:end:deps/dependency-hygiene -->
+<!-- kanon:end:kanon-deps/dependency-hygiene -->
 
-<!-- kanon:begin:deps/body -->
+<!-- kanon:begin:kanon-deps/body -->
 The `deps` aspect is active with CI enforcement. Follow the dependency-hygiene protocol when adding or modifying dependencies.
 
 - `ci/check_deps.py` — scans manifest files for unpinned versions and duplicate-purpose packages.
-<!-- kanon:end:deps/body -->
+<!-- kanon:end:kanon-deps/body -->
 
-<!-- kanon:begin:testing/test-discipline -->
+<!-- kanon:begin:kanon-testing/test-discipline -->
 ## Test Discipline
 
 Tests exist to protect behavior, not to produce a green badge. Every code change follows these rules:
@@ -304,9 +304,9 @@ Tests exist to protect behavior, not to produce a green badge. Every code change
 **Maintain coverage at or above the configured floor.** The coverage floor is declared in `.kanon/config.yaml` under `aspects.testing.config.coverage_floor` (default 80%). Do not merge changes that drop coverage below this threshold.
 
 **At depth 2+: AC-first testing.** Translate plan acceptance criteria into failing tests before implementation. For spec invariants, follow the red-green-refactor loop. See the `ac-first-tdd` protocol.
-<!-- kanon:end:testing/test-discipline -->
+<!-- kanon:end:kanon-testing/test-discipline -->
 
-<!-- kanon:begin:release/publishing-discipline -->
+<!-- kanon:begin:kanon-release/publishing-discipline -->
 ## Release Publishing Discipline
 
 Every release follows a strict sequence: prepare, validate, tag, publish.
@@ -326,7 +326,7 @@ Every release follows a strict sequence: prepare, validate, tag, publish.
 **CHANGELOG is the source of truth** for release notes. Every user-visible change gets an entry before the release tag is created.
 
 **Never publish without passing preflight checks.** A release that skips validation is a rollback waiting to happen.
-<!-- kanon:end:release/publishing-discipline -->
+<!-- kanon:end:kanon-release/publishing-discipline -->
 
 ## Contribution Conventions
 

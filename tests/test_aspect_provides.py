@@ -41,8 +41,8 @@ from kanon.cli import (
 
 
 def test_provides_field_round_trips() -> None:
-    """`_aspect_provides('sdd')` returns the declared list."""
-    assert _aspect_provides("sdd") == ["planning-discipline", "spec-discipline"]
+    """`_aspect_provides('kanon-sdd')` returns the declared list."""
+    assert _aspect_provides("kanon-sdd") == ["planning-discipline", "spec-discipline"]
 
 
 def test_provides_empty_list_is_valid(tmp_path: Path) -> None:
@@ -65,7 +65,7 @@ def test_provides_invalid_capability_name_rejected(tmp_path: Path) -> None:
 
 
 def test_classify_depth_predicate_three_tokens() -> None:
-    assert _classify_predicate("sdd >= 1") == ("depth", "sdd", ">=", 1)
+    assert _classify_predicate("sdd >= 1") == ("depth", "kanon-sdd", ">=", 1)
 
 
 def test_classify_capability_one_token() -> None:
@@ -110,7 +110,7 @@ def test_check_requires_capability_satisfied() -> None:
     top = _load_top_manifest()
     # synthesise a fake consumer aspect that requires planning-discipline
     fake_top = {"aspects": {**top["aspects"], "fake": {"requires": ["planning-discipline"]}}}
-    result = _check_requires("fake", {"sdd": 1}, fake_top)
+    result = _check_requires("fake", {"kanon-sdd": 1}, fake_top)
     assert result is None
 
 
@@ -127,7 +127,7 @@ def test_check_requires_capability_unsatisfied() -> None:
 def test_check_requires_capability_unsatisfied_when_supplier_at_depth_zero() -> None:
     top = _load_top_manifest()
     fake_top = {"aspects": {**top["aspects"], "fake": {"requires": ["planning-discipline"]}}}
-    result = _check_requires("fake", {"sdd": 0}, fake_top)  # depth 0 = not enabled
+    result = _check_requires("fake", {"kanon-sdd": 0}, fake_top)  # depth 0 = not enabled
     assert result is not None
 
 
@@ -135,10 +135,10 @@ def test_check_requires_depth_predicate_unchanged() -> None:
     """Existing depth-predicate behaviour is byte-identical."""
     top = _load_top_manifest()
     # worktrees requires "sdd >= 1" — satisfied with sdd at 1
-    assert _check_requires("worktrees", {"sdd": 1, "worktrees": 1}, top) is None
-    err = _check_requires("worktrees", {"worktrees": 1}, top)
+    assert _check_requires("kanon-worktrees", {"kanon-sdd": 1, "kanon-worktrees": 1}, top) is None
+    err = _check_requires("kanon-worktrees", {"kanon-worktrees": 1}, top)
     assert err is not None
-    assert "'sdd'" in err and "is at depth 0" in err
+    assert "'kanon-sdd'" in err and "is at depth 0" in err
 
 
 def test_check_requires_mixed_depth_and_capability() -> None:
@@ -151,7 +151,7 @@ def test_check_requires_mixed_depth_and_capability() -> None:
         }
     }
     # both satisfied
-    assert _check_requires("fake", {"sdd": 1}, fake_top) is None
+    assert _check_requires("fake", {"kanon-sdd": 1}, fake_top) is None
     # depth fails first → depth error returned
     err = _check_requires("fake", {}, fake_top)
     assert err is not None
@@ -163,9 +163,9 @@ def test_check_requires_mixed_depth_and_capability() -> None:
 def test_removal_blocked_by_depth_dependent() -> None:
     top = _load_top_manifest()
     # Removing sdd while worktrees still enabled (worktrees requires sdd >= 1)
-    err = _check_removal_dependents("sdd", {"worktrees": 1}, top)
+    err = _check_removal_dependents("kanon-sdd", {"kanon-worktrees": 1}, top)
     assert err is not None
-    assert "worktrees" in err and "requires" in err
+    assert "kanon-worktrees" in err and "requires" in err
 
 
 def test_removal_blocked_when_only_supplier_being_removed() -> None:
@@ -180,7 +180,7 @@ def test_removal_blocked_when_only_supplier_being_removed() -> None:
             },
         }
     }
-    err = _check_removal_dependents("sdd", {"consumer": 1}, fake_top)
+    err = _check_removal_dependents("kanon-sdd", {"consumer": 1}, fake_top)
     assert err is not None
     assert "planning-discipline" in err
 
@@ -196,7 +196,7 @@ def test_removal_allowed_when_alternative_supplier_remains() -> None:
         }
     }
     # `alt` (depth 1) still supplies planning-discipline after sdd removal
-    err = _check_removal_dependents("sdd", {"alt": 1, "consumer": 1}, fake_top)
+    err = _check_removal_dependents("kanon-sdd", {"alt": 1, "consumer": 1}, fake_top)
     assert err is None
 
 
@@ -205,7 +205,7 @@ def test_removal_allowed_when_alternative_supplier_remains() -> None:
 
 def test_aspect_info_surfaces_provides_for_sdd() -> None:
     runner = CliRunner()
-    result = runner.invoke(main, ["aspect", "info", "sdd"])
+    result = runner.invoke(main, ["aspect", "info", "kanon-sdd"])
     assert result.exit_code == 0, result.output
     assert "Provides:" in result.output
     assert "planning-discipline" in result.output
@@ -220,7 +220,7 @@ def test_aspect_info_provides_none_when_aspect_has_no_provides(tmp_path: Path) -
     """
     runner = CliRunner()
     with patch("kanon.cli._aspect_provides", return_value=[]):
-        result = runner.invoke(main, ["aspect", "info", "sdd"])
+        result = runner.invoke(main, ["aspect", "info", "kanon-sdd"])
     assert result.exit_code == 0, result.output
     assert "Provides:      (none)" in result.output
 
@@ -284,7 +284,7 @@ def test_multiple_suppliers_recognised() -> None:
         }
     }
     suppliers = _capability_suppliers(fake_top, "planning-discipline")
-    assert "sdd" in suppliers
+    assert "kanon-sdd" in suppliers
     assert "alt-sdd" in suppliers
 
 
@@ -294,12 +294,12 @@ def test_multiple_suppliers_recognised() -> None:
 @pytest.mark.parametrize(
     "aspect,expected",
     [
-        ("sdd", ["planning-discipline", "spec-discipline"]),
-        ("worktrees", ["worktree-isolation"]),
-        ("release", ["release-discipline"]),
-        ("testing", ["test-discipline"]),
-        ("security", ["security-discipline"]),
-        ("deps", ["dependency-hygiene"]),
+        ("kanon-sdd", ["planning-discipline", "spec-discipline"]),
+        ("kanon-worktrees", ["worktree-isolation"]),
+        ("kanon-release", ["release-discipline"]),
+        ("kanon-testing", ["test-discipline"]),
+        ("kanon-security", ["security-discipline"]),
+        ("kanon-deps", ["dependency-hygiene"]),
     ],
 )
 def test_every_shipped_aspect_declares_capability(
@@ -342,3 +342,65 @@ def test_existing_kit_requires_predicates_classify_as_depth() -> None:
                 f"out of scope for this spec."
             )
     assert seen_any, "Expected at least one existing `requires:` predicate in the kit."
+
+
+# --- ADR-0028: bare-name sugar (T12) ---
+
+
+def test_normalise_aspect_name_bare_sugars_to_kanon() -> None:
+    """A bare aspect name resolves to the `kanon-` namespace by default."""
+    from kanon._manifest import _normalise_aspect_name
+    assert _normalise_aspect_name("sdd") == "kanon-sdd"
+    assert _normalise_aspect_name("worktrees") == "kanon-worktrees"
+    assert _normalise_aspect_name("graph-rename") == "kanon-graph-rename"
+
+
+def test_normalise_aspect_name_namespaced_passes_through() -> None:
+    """A name already in canonical form is returned unchanged."""
+    from kanon._manifest import _normalise_aspect_name
+    assert _normalise_aspect_name("kanon-sdd") == "kanon-sdd"
+    assert _normalise_aspect_name("kanon-worktrees") == "kanon-worktrees"
+    assert _normalise_aspect_name("project-auth-policy") == "project-auth-policy"
+
+
+def test_normalise_aspect_name_invalid_rejected() -> None:
+    """Anything that fails both regexes (e.g., uppercase, leading dash) is rejected."""
+    import click
+    import pytest
+
+    from kanon._manifest import _normalise_aspect_name
+    with pytest.raises(click.ClickException, match="Invalid aspect name"):
+        _normalise_aspect_name("SDD")
+    with pytest.raises(click.ClickException, match="Invalid aspect name"):
+        _normalise_aspect_name("-sdd")
+    with pytest.raises(click.ClickException, match="Invalid aspect name"):
+        _normalise_aspect_name("")
+
+
+def test_split_aspect_name() -> None:
+    """`_split_aspect_name` returns (namespace, local) where local may contain dashes."""
+    from kanon._manifest import _split_aspect_name
+    assert _split_aspect_name("kanon-sdd") == ("kanon", "sdd")
+    assert _split_aspect_name("kanon-graph-rename") == ("kanon", "graph-rename")
+    assert _split_aspect_name("project-auth-policy") == ("project", "auth-policy")
+
+
+def test_classify_predicate_bare_aspect_name_sugars() -> None:
+    """A 3-token depth predicate with a bare aspect name sugars to `kanon-` form."""
+    from kanon.cli import _classify_predicate
+    classified = _classify_predicate("sdd >= 1")
+    assert classified == ("depth", "kanon-sdd", ">=", 1)
+
+
+def test_classify_predicate_namespaced_aspect_name_unchanged() -> None:
+    """A 3-token depth predicate with a namespaced aspect name passes through."""
+    from kanon.cli import _classify_predicate
+    classified = _classify_predicate("kanon-sdd >= 1")
+    assert classified == ("depth", "kanon-sdd", ">=", 1)
+
+
+def test_classify_predicate_capability_unaffected_by_namespace_grammar() -> None:
+    """A 1-token capability predicate is not subject to aspect-name sugar."""
+    from kanon.cli import _classify_predicate
+    classified = _classify_predicate("planning-discipline")
+    assert classified == ("capability", "planning-discipline")

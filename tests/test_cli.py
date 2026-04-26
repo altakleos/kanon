@@ -32,9 +32,9 @@ def test_init_scaffolds_all_required_files(tmp_path: Path, tier: int) -> None:
     assert (target / "AGENTS.md").is_file()
     assert (target / "CLAUDE.md").is_file()
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert config["aspects"]["sdd"]["depth"] == tier
+    assert config["aspects"]["kanon-sdd"]["depth"] == tier
     assert config["kit_version"] == __version__
-    assert "enabled_at" in config["aspects"]["sdd"]
+    assert "enabled_at" in config["aspects"]["kanon-sdd"]
 
 
 def _extract_verify_json(output: str) -> dict:
@@ -53,7 +53,7 @@ def test_init_verify_returns_ok(tmp_path: Path, tier: int) -> None:
     assert result.exit_code == 0, result.output
     report = _extract_verify_json(result.output)
     assert report["status"] == "ok"
-    assert report["aspects"]["sdd"] == tier
+    assert report["aspects"]["kanon-sdd"] == tier
 
 
 def test_init_rejects_existing_without_force(tmp_path: Path) -> None:
@@ -114,7 +114,7 @@ def test_protocols_scaffolded_at_correct_tier(tmp_path: Path, tier: int) -> None
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", str(tier)])
-    protocols_dir = target / ".kanon" / "protocols" / "sdd"
+    protocols_dir = target / ".kanon" / "protocols" / "kanon-sdd"
     actual: set[str] = (
         {p.name for p in protocols_dir.glob("*.md")}
         if protocols_dir.exists()
@@ -310,8 +310,8 @@ def test_verify_fails_on_missing_marker(tmp_path: Path) -> None:
     # Strip all marker sections.
     text = agents.read_text(encoding="utf-8")
     # Remove plan-before-build markers entirely.
-    text = text.replace("<!-- kanon:begin:sdd/plan-before-build -->", "")
-    text = text.replace("<!-- kanon:end:sdd/plan-before-build -->", "")
+    text = text.replace("<!-- kanon:begin:kanon-sdd/plan-before-build -->", "")
+    text = text.replace("<!-- kanon:end:kanon-sdd/plan-before-build -->", "")
     agents.write_text(text, encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert result.exit_code != 0
@@ -378,7 +378,7 @@ def test_upgrade_noop_does_not_churn_enabled_at(tmp_path: Path) -> None:
     config_path = target / ".kanon" / "config.yaml"
     captured = yaml.safe_load(config_path.read_text(encoding="utf-8"))[
         "aspects"
-    ]["sdd"]["enabled_at"]
+    ]["kanon-sdd"]["enabled_at"]
 
     # Sleep > 1 second so a churn-write would yield a different ISO-second.
     time.sleep(1.1)
@@ -387,7 +387,7 @@ def test_upgrade_noop_does_not_churn_enabled_at(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
 
     after = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    assert after["aspects"]["sdd"]["enabled_at"] == captured, (
+    assert after["aspects"]["kanon-sdd"]["enabled_at"] == captured, (
         "upgrade must not rewrite enabled_at on a no-op"
     )
 
@@ -403,8 +403,8 @@ def test_upgrade_heals_edited_markers(tmp_path: Path) -> None:
     original = agents_path.read_text(encoding="utf-8")
 
     # Corrupt the body of a kit-managed marker section.
-    begin = "<!-- kanon:begin:sdd/plan-before-build -->"
-    end = "<!-- kanon:end:sdd/plan-before-build -->"
+    begin = "<!-- kanon:begin:kanon-sdd/plan-before-build -->"
+    end = "<!-- kanon:end:kanon-sdd/plan-before-build -->"
     bi = original.find(begin)
     ei = original.find(end, bi + len(begin))
     assert bi >= 0 and ei > bi
@@ -506,16 +506,16 @@ def test_aspect_list() -> None:
     runner = CliRunner()
     result = runner.invoke(main, ["aspect", "list"])
     assert result.exit_code == 0, result.output
-    assert "sdd" in result.output
+    assert "kanon-sdd" in result.output
     assert "stable" in result.output
     assert "0-3" in result.output
 
 
 def test_aspect_info() -> None:
     runner = CliRunner()
-    result = runner.invoke(main, ["aspect", "info", "sdd"])
+    result = runner.invoke(main, ["aspect", "info", "kanon-sdd"])
     assert result.exit_code == 0, result.output
-    assert "Aspect: sdd" in result.output
+    assert "Aspect: kanon-sdd" in result.output
     assert "Stability:" in result.output
     assert "Depth range:" in result.output
     assert "Default depth:" in result.output
@@ -533,11 +533,11 @@ def test_aspect_set_depth(tmp_path: Path) -> None:
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
 
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "sdd", "3"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-sdd", "3"])
     assert result.exit_code == 0, result.output
 
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert config["aspects"]["sdd"]["depth"] == 3
+    assert config["aspects"]["kanon-sdd"]["depth"] == 3
 
     # Tier-3 files should exist.
     assert (target / "docs" / "design").is_dir()
@@ -548,12 +548,12 @@ def test_aspect_set_depth_down(tmp_path: Path) -> None:
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "3"])
 
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "sdd", "1"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-sdd", "1"])
     assert result.exit_code == 0, result.output
     assert "non-destructive" in result.output.lower()
 
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert config["aspects"]["sdd"]["depth"] == 1
+    assert config["aspects"]["kanon-sdd"]["depth"] == 1
 
     # Tier-3-only files still exist (non-destructive demotion).
     assert (target / "docs" / "design").is_dir()
@@ -564,7 +564,7 @@ def test_aspect_set_depth_invalid(tmp_path: Path) -> None:
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
 
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "sdd", "99"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-sdd", "99"])
     assert result.exit_code != 0
     assert "outside range" in result.output.lower()
 
@@ -593,8 +593,8 @@ def test_upgrade_migrates_flat_protocols(tmp_path: Path) -> None:
 
     # Flat file should be moved into sdd/ subdirectory.
     assert not flat_file.exists(), "flat protocol file should have been moved"
-    migrated = protocols_dir / "sdd" / "some-protocol.md"
-    assert migrated.is_file(), "protocol should be at .kanon/protocols/sdd/some-protocol.md"
+    migrated = protocols_dir / "kanon-sdd" / "some-protocol.md"
+    assert migrated.is_file(), "protocol should be at .kanon/protocols/kanon-sdd/some-protocol.md"
     assert "Custom protocol" in migrated.read_text(encoding="utf-8")
     assert "namespaced" in result.output.lower()
 
@@ -644,7 +644,7 @@ def test_load_top_manifest_aspect_not_mapping(
     _load_top_manifest.cache_clear()
     monkeypatch.setattr(
         "kanon._manifest._kit_root",
-        lambda: _make_fake_kit(tmp=None, content="aspects:\n  sdd: not-a-dict"),
+        lambda: _make_fake_kit(tmp=None, content="aspects:\n  kanon-sdd: not-a-dict"),
     )
     with pytest.raises(click.ClickException, match="must be a mapping"):
         _load_top_manifest()
@@ -658,7 +658,7 @@ def test_load_top_manifest_missing_field(monkeypatch: pytest.MonkeyPatch) -> Non
     from kanon._manifest import _load_top_manifest
 
     _load_top_manifest.cache_clear()
-    content = yaml.safe_dump({"aspects": {"sdd": {"path": "x"}}})
+    content = yaml.safe_dump({"aspects": {"kanon-sdd": {"path": "x"}}})
     monkeypatch.setattr(
         "kanon._manifest._kit_root",
         lambda: _make_fake_kit(tmp=None, content=content),
@@ -680,8 +680,8 @@ def test_load_top_manifest_invalid_stability(
     content = yaml.safe_dump(
         {
             "aspects": {
-                "sdd": {
-                    "path": "aspects/sdd",
+                "kanon-sdd": {
+                    "path": "aspects/kanon-sdd",
                     "stability": "bogus",
                     "depth-range": [0, 3],
                     "default-depth": 1,
@@ -710,8 +710,8 @@ def test_load_top_manifest_bad_depth_range(
     content = yaml.safe_dump(
         {
             "aspects": {
-                "sdd": {
-                    "path": "aspects/sdd",
+                "kanon-sdd": {
+                    "path": "aspects/kanon-sdd",
                     "stability": "stable",
                     "depth-range": [0],
                     "default-depth": 1,
@@ -777,7 +777,7 @@ def test_namespaced_section_unprefixed() -> None:
     """Line 147→149: section in _UNPREFIXED_SECTIONS stays unprefixed."""
     from kanon._manifest import _namespaced_section
 
-    assert _namespaced_section("sdd", "protocols-index") == "protocols-index"
+    assert _namespaced_section("kanon-sdd", "protocols-index") == "protocols-index"
 
 
 # --- _scaffold.py: _read_config / _migrate_legacy_config ---
@@ -908,7 +908,7 @@ def test_render_protocols_index_no_protocols() -> None:
     """Line 217: no protocols at depth 0 → 'No protocols active' message."""
     from kanon._scaffold import _render_protocols_index
 
-    result = _render_protocols_index({"sdd": 0})
+    result = _render_protocols_index({"kanon-sdd": 0})
     assert "No protocols active" in result
 
 
@@ -926,7 +926,7 @@ def test_render_kit_md_no_kit_file(monkeypatch: pytest.MonkeyPatch) -> None:
         p = Path(d)
         monkeypatch.setattr("kanon._manifest._kit_root", lambda: p)
         monkeypatch.setattr("kanon._scaffold._kit_root", lambda: p)
-        result = _render_kit_md({"sdd": 0}, "test")
+        result = _render_kit_md({"kanon-sdd": 0}, "test")
     assert result is None
 
 
@@ -939,11 +939,11 @@ def test_migrate_flat_protocols_no_flat_files(tmp_path: Path) -> None:
 
     protocols_dir = tmp_path / ".kanon" / "protocols"
     protocols_dir.mkdir(parents=True)
-    assert _migrate_flat_protocols(tmp_path, {"sdd": 1}) is False
+    assert _migrate_flat_protocols(tmp_path, {"kanon-sdd": 1}) is False
 
 
 def test_migrate_flat_protocols_no_sdd_aspect(tmp_path: Path) -> None:
-    """Line 380: flat files exist but 'sdd' not in aspects."""
+    """Line 380: flat files exist but 'kanon-sdd' not in aspects."""
     from kanon._scaffold import _migrate_flat_protocols
 
     protocols_dir = tmp_path / ".kanon" / "protocols"
@@ -957,11 +957,11 @@ def test_migrate_flat_protocols_dest_exists(tmp_path: Path) -> None:
     from kanon._scaffold import _migrate_flat_protocols
 
     protocols_dir = tmp_path / ".kanon" / "protocols"
-    sdd_dir = protocols_dir / "sdd"
+    sdd_dir = protocols_dir / "kanon-sdd"
     sdd_dir.mkdir(parents=True)
     (protocols_dir / "dup.md").write_text("flat version", encoding="utf-8")
     (sdd_dir / "dup.md").write_text("already there", encoding="utf-8")
-    assert _migrate_flat_protocols(tmp_path, {"sdd": 1}) is True
+    assert _migrate_flat_protocols(tmp_path, {"kanon-sdd": 1}) is True
     assert not (protocols_dir / "dup.md").exists()
     assert (sdd_dir / "dup.md").read_text() == "already there"
 
@@ -1017,7 +1017,7 @@ def test_verify_depth_out_of_range(tmp_path: Path) -> None:
     # Manually set depth to 99
     config_path = target / ".kanon" / "config.yaml"
     config = yaml.safe_load(config_path.read_text())
-    config["aspects"]["sdd"]["depth"] = 99
+    config["aspects"]["kanon-sdd"]["depth"] = 99
     config_path.write_text(yaml.safe_dump(config), encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert result.exit_code != 0
@@ -1033,7 +1033,7 @@ def test_verify_marker_imbalance(tmp_path: Path) -> None:
     agents = target / "AGENTS.md"
     text = agents.read_text(encoding="utf-8")
     # Remove one end marker to create imbalance
-    text = text.replace("<!-- kanon:end:sdd/plan-before-build -->", "", 1)
+    text = text.replace("<!-- kanon:end:kanon-sdd/plan-before-build -->", "", 1)
     agents.write_text(text, encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert result.exit_code != 0
@@ -1067,7 +1067,7 @@ def test_init_force_overwrites(tmp_path: Path) -> None:
     result = runner.invoke(main, ["init", str(target), "--tier", "2", "--force"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert config["aspects"]["sdd"]["depth"] == 2
+    assert config["aspects"]["kanon-sdd"]["depth"] == 2
 
 
 # --- cli.py: init with default tier (no --tier flag) ---
@@ -1081,7 +1081,7 @@ def test_init_default_tier(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
     # default-depth for sdd is 1
-    assert config["aspects"]["sdd"]["depth"] == 1
+    assert config["aspects"]["kanon-sdd"]["depth"] == 1
 
 
 # --- cli.py: tier set with legacy verb messaging ---
@@ -1122,8 +1122,8 @@ def test_rewrite_legacy_markers() -> None:
         "<!-- kanon:end:plan-before-build -->\n"
     )
     result = _rewrite_legacy_markers(text)
-    assert "<!-- kanon:begin:sdd/plan-before-build -->" in result
-    assert "<!-- kanon:end:sdd/plan-before-build -->" in result
+    assert "<!-- kanon:begin:kanon-sdd/plan-before-build -->" in result
+    assert "<!-- kanon:end:kanon-sdd/plan-before-build -->" in result
 
 
 # --- cli.py: upgrade where AGENTS.md content actually changes ---
@@ -1138,8 +1138,8 @@ def test_upgrade_modifies_agents_md(tmp_path: Path) -> None:
     agents = target / "AGENTS.md"
     text = agents.read_text(encoding="utf-8")
     text = text.replace(
-        "<!-- kanon:begin:sdd/plan-before-build -->",
-        "<!-- kanon:begin:sdd/plan-before-build -->\nCORRUPTED CONTENT",
+        "<!-- kanon:begin:kanon-sdd/plan-before-build -->",
+        "<!-- kanon:begin:kanon-sdd/plan-before-build -->\nCORRUPTED CONTENT",
     )
     agents.write_text(text, encoding="utf-8")
     # Patch config to old version so upgrade runs
@@ -1162,15 +1162,15 @@ def test_init_with_worktrees_depth_1(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "1"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "1"])
     assert result.exit_code == 0, result.output
 
-    assert (target / ".kanon" / "protocols" / "worktrees" / "worktree-lifecycle.md").is_file()
+    assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-lifecycle.md").is_file()
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree-lifecycle" in agents
     assert "worktrees (depth 1)" in agents
-    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in agents
-    assert "<!-- kanon:end:worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:end:kanon-worktrees/branch-hygiene -->" in agents
     assert not (target / "scripts").exists()
 
 
@@ -1179,14 +1179,14 @@ def test_init_with_worktrees_depth_2(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "2"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "2"])
     assert result.exit_code == 0, result.output
 
-    assert (target / ".kanon" / "protocols" / "worktrees" / "worktree-lifecycle.md").is_file()
+    assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-lifecycle.md").is_file()
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree-lifecycle" in agents
-    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in agents
-    assert "<!-- kanon:end:worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:end:kanon-worktrees/branch-hygiene -->" in agents
     for script in ("worktree-setup.sh", "worktree-teardown.sh", "worktree-status.sh"):
         assert (target / "scripts" / script).is_file(), f"missing scripts/{script}"
 
@@ -1196,13 +1196,13 @@ def test_worktrees_depth_0_scaffolds_nothing(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "0"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "0"])
     assert result.exit_code == 0, result.output
 
-    assert not (target / ".kanon" / "protocols" / "worktrees").exists()
+    assert not (target / ".kanon" / "protocols" / "kanon-worktrees").exists()
     assert not (target / "scripts").exists()
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
-    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" not in agents
+    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" not in agents
 
 
 # --- aspect add / remove commands ---
@@ -1213,11 +1213,11 @@ def test_aspect_add(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert "worktrees" in config["aspects"]
-    assert (target / ".kanon" / "protocols" / "worktrees" / "worktree-lifecycle.md").is_file()
+    assert "kanon-worktrees" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-lifecycle.md").is_file()
 
 
 def test_aspect_add_already_enabled(tmp_path: Path) -> None:
@@ -1225,8 +1225,8 @@ def test_aspect_add_already_enabled(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
     assert result.exit_code != 0
     assert "already enabled" in result.output.lower()
 
@@ -1236,10 +1236,10 @@ def test_aspect_add_with_depth(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees", "--depth", "2"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees", "--depth", "2"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert config["aspects"]["worktrees"]["depth"] == 2
+    assert config["aspects"]["kanon-worktrees"]["depth"] == 2
 
 
 def test_aspect_add_depth_out_of_range(tmp_path: Path) -> None:
@@ -1247,7 +1247,7 @@ def test_aspect_add_depth_out_of_range(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees", "--depth", "9"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees", "--depth", "9"])
     assert result.exit_code != 0
     assert "outside range" in result.output.lower()
 
@@ -1267,13 +1267,13 @@ def test_aspect_remove(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
-    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "kanon-worktrees"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert "worktrees" not in config["aspects"]
+    assert "kanon-worktrees" not in config["aspects"]
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
-    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" not in agents
+    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" not in agents
 
 
 def test_aspect_remove_not_enabled(tmp_path: Path) -> None:
@@ -1281,7 +1281,7 @@ def test_aspect_remove_not_enabled(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "kanon-worktrees"])
     assert result.exit_code != 0
     assert "not enabled" in result.output.lower()
 
@@ -1291,10 +1291,10 @@ def test_aspect_remove_leaves_files(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "2"])
+    runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "2"])
     # Scripts exist before removal
     assert (target / "scripts" / "worktree-setup.sh").is_file()
-    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "kanon-worktrees"])
     assert result.exit_code == 0, result.output
     # Scripts still on disk (non-destructive)
     assert (target / "scripts" / "worktree-setup.sh").is_file()
@@ -1308,12 +1308,12 @@ def test_aspect_remove_clears_sentinel_on_success(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
 
     pending = target / ".kanon" / ".pending"
     assert not pending.exists(), "sentinel should be absent before remove"
 
-    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "kanon-worktrees"])
     assert result.exit_code == 0, result.output
     assert not pending.exists(), "sentinel must be cleared after successful remove"
 
@@ -1325,13 +1325,13 @@ def test_aspect_remove_persists_sentinel_on_mid_write_failure(tmp_path: Path) ->
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
 
     pending = target / ".kanon" / ".pending"
 
     # Patch _write_config to raise after the sentinel write but before clear.
     with patch("kanon.cli._write_config", side_effect=OSError("simulated disk full")):
-        runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+        runner.invoke(main, ["aspect", "remove", str(target), "kanon-worktrees"])
     assert pending.is_file(), "sentinel must persist after mid-write failure"
     assert pending.read_text(encoding="utf-8").strip() == "aspect-remove"
 
@@ -1343,8 +1343,8 @@ def test_init_with_aspects_flag(tmp_path: Path) -> None:
     result = runner.invoke(main, ["init", str(target), "--aspects", "sdd:2,worktrees:1"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert config["aspects"]["sdd"]["depth"] == 2
-    assert config["aspects"]["worktrees"]["depth"] == 1
+    assert config["aspects"]["kanon-sdd"]["depth"] == 2
+    assert config["aspects"]["kanon-worktrees"]["depth"] == 1
 
 
 def test_init_aspects_and_tier_mutual_exclusion(tmp_path: Path) -> None:
@@ -1363,8 +1363,8 @@ def test_init_default_aspects(tmp_path: Path) -> None:
     result = runner.invoke(main, ["init", str(target)])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert "sdd" in config["aspects"]
-    assert config["aspects"]["sdd"]["depth"] == 1
+    assert "kanon-sdd" in config["aspects"]
+    assert config["aspects"]["kanon-sdd"]["depth"] == 1
 
 
 # --- requires: enforcement tests ---
@@ -1375,7 +1375,7 @@ def test_aspect_add_requires_unmet(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "0"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
     assert result.exit_code != 0
     assert "sdd >= 1" in result.output
 
@@ -1385,9 +1385,9 @@ def test_aspect_remove_blocked_by_dependent(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--aspects", "sdd:1,worktrees:1"])
-    result = runner.invoke(main, ["aspect", "remove", str(target), "sdd"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "kanon-sdd"])
     assert result.exit_code != 0
-    assert "worktrees" in result.output
+    assert "kanon-worktrees" in result.output
     assert "requires" in result.output.lower()
 
 
@@ -1397,7 +1397,7 @@ def test_aspect_set_depth_requires_check(tmp_path: Path) -> None:
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "0"])
     result = runner.invoke(
-        main, ["aspect", "set-depth", str(target), "worktrees", "1"]
+        main, ["aspect", "set-depth", str(target), "kanon-worktrees", "1"]
     )
     assert result.exit_code != 0
     assert "sdd >= 1" in result.output
@@ -1408,7 +1408,7 @@ def test_aspect_add_requires_met(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
     assert result.exit_code == 0, result.output
 
 
@@ -1417,7 +1417,7 @@ def test_aspect_remove_no_dependents(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--aspects", "sdd:1,worktrees:1"])
-    result = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    result = runner.invoke(main, ["aspect", "remove", str(target), "kanon-worktrees"])
     assert result.exit_code == 0, result.output
 
 
@@ -1429,11 +1429,11 @@ def test_aspect_add_release(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "release"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-release"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert "release" in config["aspects"]
-    assert (target / ".kanon" / "protocols" / "release" / "release-checklist.md").is_file()
+    assert "kanon-release" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "kanon-release" / "release-checklist.md").is_file()
 
 
 def test_release_depth_2_has_ci_files(tmp_path: Path) -> None:
@@ -1441,7 +1441,7 @@ def test_release_depth_2_has_ci_files(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "release", "2"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-release", "2"])
     assert result.exit_code == 0, result.output
     assert (target / "ci" / "release-preflight.py").is_file()
     assert (target / ".github" / "workflows" / "release.yml").is_file()
@@ -1571,12 +1571,12 @@ def test_aspect_add_testing(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "testing"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-testing"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert "testing" in config["aspects"]
-    assert (target / ".kanon" / "protocols" / "testing" / "test-discipline.md").is_file()
-    assert (target / ".kanon" / "protocols" / "testing" / "error-diagnosis.md").is_file()
+    assert "kanon-testing" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "kanon-testing" / "test-discipline.md").is_file()
+    assert (target / ".kanon" / "protocols" / "kanon-testing" / "error-diagnosis.md").is_file()
 
 
 def test_testing_depth_3_has_ci_script(tmp_path: Path) -> None:
@@ -1584,7 +1584,7 @@ def test_testing_depth_3_has_ci_script(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "testing", "3"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-testing", "3"])
     assert result.exit_code == 0, result.output
     assert (target / "ci" / "check_test_quality.py").is_file()
 
@@ -1595,11 +1595,11 @@ def test_aspect_add_security(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "security"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-security"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert "security" in config["aspects"]
-    assert (target / ".kanon" / "protocols" / "security" / "secure-defaults.md").is_file()
+    assert "kanon-security" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "kanon-security" / "secure-defaults.md").is_file()
 
 
 def test_security_depth_2_has_ci_script(tmp_path: Path) -> None:
@@ -1607,7 +1607,7 @@ def test_security_depth_2_has_ci_script(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "security", "2"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-security", "2"])
     assert result.exit_code == 0, result.output
     assert (target / "ci" / "check_security_patterns.py").is_file()
 
@@ -1617,11 +1617,11 @@ def test_aspect_add_deps(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "add", str(target), "deps"])
+    result = runner.invoke(main, ["aspect", "add", str(target), "kanon-deps"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert "deps" in config["aspects"]
-    assert (target / ".kanon" / "protocols" / "deps" / "dependency-hygiene.md").is_file()
+    assert "kanon-deps" in config["aspects"]
+    assert (target / ".kanon" / "protocols" / "kanon-deps" / "dependency-hygiene.md").is_file()
 
 
 def test_deps_depth_2_has_ci_script(tmp_path: Path) -> None:
@@ -1629,7 +1629,7 @@ def test_deps_depth_2_has_ci_script(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "deps", "2"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-deps", "2"])
     assert result.exit_code == 0, result.output
     assert (target / "ci" / "check_deps.py").is_file()
 
@@ -1661,7 +1661,7 @@ def test_sentinel_absent_after_successful_set_depth(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "sdd", "2"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-sdd", "2"])
     assert result.exit_code == 0, result.output
     assert not (target / ".kanon" / ".pending").exists()
 
@@ -1733,3 +1733,107 @@ def test_pending_recovery_warning_falls_back_for_unknown_op(tmp_path: Path) -> N
     (target / ".kanon" / ".pending").write_text("future-op\n", encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert "Re-run 'kanon future-op'" in result.output
+
+
+# --- ADR-0028: bare-name sugar at every CLI input surface (T12) ---
+
+
+def test_cli_aspect_set_depth_accepts_bare_and_namespaced(tmp_path: Path) -> None:
+    """Bare `sdd` and namespaced `kanon-sdd` both work for `aspect set-depth`."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    # Bare name: should sugar to kanon-sdd.
+    r1 = runner.invoke(main, ["aspect", "set-depth", str(target), "sdd", "2"])
+    assert r1.exit_code == 0, r1.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert config["aspects"]["kanon-sdd"]["depth"] == 2
+
+    # Namespaced name: should pass through unchanged.
+    r2 = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-sdd", "3"])
+    assert r2.exit_code == 0, r2.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert config["aspects"]["kanon-sdd"]["depth"] == 3
+
+
+def test_cli_aspect_info_accepts_bare_name() -> None:
+    """`kanon aspect info sdd` resolves to `kanon-sdd` via bare-name sugar."""
+    runner = CliRunner()
+    result = runner.invoke(main, ["aspect", "info", "sdd"])
+    assert result.exit_code == 0, result.output
+    assert "Aspect: kanon-sdd" in result.output
+
+
+def test_cli_init_aspects_flag_accepts_bare_names(tmp_path: Path) -> None:
+    """`--aspects sdd:1,worktrees:2` sugars each token to the `kanon-` namespace."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--aspects", "sdd:1,worktrees:2"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert config["aspects"]["kanon-sdd"]["depth"] == 1
+    assert config["aspects"]["kanon-worktrees"]["depth"] == 2
+
+
+def test_cli_init_aspects_flag_accepts_namespaced_names(tmp_path: Path) -> None:
+    """`--aspects kanon-sdd:1,kanon-worktrees:2` is also accepted (canonical form)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(
+        main, ["init", str(target), "--aspects", "kanon-sdd:1,kanon-worktrees:2"]
+    )
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert config["aspects"]["kanon-sdd"]["depth"] == 1
+    assert config["aspects"]["kanon-worktrees"]["depth"] == 2
+
+
+def test_cli_aspect_add_remove_accept_bare_name(tmp_path: Path) -> None:
+    """`aspect add` and `aspect remove` accept bare names that sugar to `kanon-`."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    add = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
+    assert add.exit_code == 0, add.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "kanon-worktrees" in config["aspects"]
+
+    rem = runner.invoke(main, ["aspect", "remove", str(target), "worktrees"])
+    assert rem.exit_code == 0, rem.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "kanon-worktrees" not in config["aspects"]
+
+
+def test_cli_legacy_v2_config_auto_migrates_to_v3(tmp_path: Path) -> None:
+    """A v2 (bare-aspect-key) consumer config auto-migrates to v3 (`kanon-` prefix)
+    on first `kanon upgrade`.
+    """
+    target = tmp_path / "scratch"
+    runner = CliRunner()
+    # Hand-craft a v2 config: bare `sdd` key, no `kanon-` prefix.
+    (target / ".kanon").mkdir(parents=True)
+    (target / ".kanon" / "config.yaml").write_text(
+        "kit_version: 0.2.0a5\n"
+        "aspects:\n"
+        "  sdd:\n"
+        "    depth: 1\n"
+        "    enabled_at: '2026-04-25T00:00:00+00:00'\n"
+        "    config: {}\n",
+        encoding="utf-8",
+    )
+    # Minimal AGENTS.md so upgrade has something to merge into; user content
+    # outside markers must survive.
+    (target / "AGENTS.md").write_text(
+        "# Custom AGENTS.md\nUser-authored note.\n", encoding="utf-8"
+    )
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "kanon-sdd" in config["aspects"], (
+        f"v2 → v3 migration did not bump bare key: {list(config['aspects'])}"
+    )
+    assert "sdd" not in config["aspects"]
+    # User-authored content outside markers preserved.
+    assert "User-authored note." in (target / "AGENTS.md").read_text()

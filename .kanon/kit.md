@@ -1,10 +1,10 @@
-# kanon kit — worktree-always-isolate
+# kanon kit — project-aspects-phase1
 
 > **Kernel doc.** Scaffolded by `kanon init` and refreshed by `kanon upgrade` / `kanon aspect set-depth`. This file describes what the kanon kit gives this repo at its current depth, where to find the pieces, and which procedures are available to you (the operating LLM agent).
 
 ## This repo's identity
 
-- **Tier:** 3
+- **Tier:** ${sdd_depth}
 - **Kit bundle path in-repo:** `.kanon/`
 - **Config:** `.kanon/config.yaml` (kit version, aspects, depths, last set-depth timestamp)
 

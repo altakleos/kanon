@@ -49,6 +49,7 @@ from kanon._manifest import (
     _load_aspect_manifest,
     _load_top_manifest,
     _load_yaml,
+    _normalise_aspect_name,
     _now_iso,
     _parse_frontmatter,
 )
@@ -141,7 +142,12 @@ def _parse_config_pair(
 
 
 def _parse_aspects_flag(raw: str, top: dict[str, Any]) -> dict[str, int]:
-    """Parse ``--aspects sdd:1,worktrees:2`` into a validated dict."""
+    """Parse ``--aspects sdd:1,worktrees:2`` into a validated dict.
+
+    Bare aspect names sugar to the ``kanon`` namespace per ADR-0028
+    (e.g., ``sdd`` → ``kanon-sdd``). Project-aspects must be referenced by
+    their full ``project-<local>`` name.
+    """
     result: dict[str, int] = {}
     for token in raw.split(","):
         token = token.strip()
@@ -149,7 +155,8 @@ def _parse_aspects_flag(raw: str, top: dict[str, Any]) -> dict[str, int]:
             raise click.ClickException(
                 f"Invalid aspect token {token!r}: expected name:depth."
             )
-        name, depth_s = token.split(":", 1)
+        raw_name, depth_s = token.split(":", 1)
+        name = _normalise_aspect_name(raw_name)
         if name not in top["aspects"]:
             raise click.ClickException(
                 f"Unknown aspect {name!r}. See `kanon aspect list`."
@@ -193,7 +200,7 @@ def _classify_predicate(predicate: str) -> tuple[Any, ...]:
     """
     tokens = predicate.split()
     if len(tokens) == 3:
-        name, op, depth_s = tokens
+        raw_name, op, depth_s = tokens
         if op not in _OPS:
             raise click.ClickException(
                 f"Invalid requires predicate {predicate!r}: unknown operator {op!r}; "
@@ -205,6 +212,8 @@ def _classify_predicate(predicate: str) -> tuple[Any, ...]:
             raise click.ClickException(
                 f"Invalid requires predicate {predicate!r}: depth {depth_s!r} is not an integer."
             ) from None
+        # Bare names sugar to `kanon-` per ADR-0028; namespaced names pass through.
+        name = _normalise_aspect_name(raw_name)
         return ("depth", name, op, depth)
     if len(tokens) == 1:
         token = tokens[0]
@@ -376,13 +385,14 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
     if aspects_arg is not None:
         aspects_to_enable = _parse_aspects_flag(aspects_arg, top)
     elif tier_arg is not None:
-        # --tier is sugar for --aspects sdd:N (backward compat)
-        aspects_to_enable = {"sdd": tier_arg}
+        # --tier is sugar for --aspects sdd:N (backward compat). Per ADR-0028
+        # the canonical aspect name is `kanon-sdd`.
+        aspects_to_enable = {"kanon-sdd": tier_arg}
     else:
         aspects_to_enable = _default_aspects()
 
-    # Use the sdd depth as the tier context value if sdd is enabled, else "0".
-    tier_ctx = str(aspects_to_enable.get("sdd", 0))
+    # Use the kanon-sdd depth as the tier context value when enabled, else "0".
+    tier_ctx = str(aspects_to_enable.get("kanon-sdd", 0))
     context = {"project_name": target.name, "tier": tier_ctx}
 
     bundle = _build_bundle(aspects_to_enable, context)
@@ -457,7 +467,7 @@ def upgrade(target: Path) -> None:
     if was_legacy:
         click.echo("Migrated legacy tier config to aspect model.")
     if migrated_flat:
-        click.echo("Namespaced flat .kanon/protocols/*.md under sdd/.")
+        click.echo("Namespaced flat .kanon/protocols/*.md under kanon-sdd/.")
     if version_changed:
         click.echo(f"Upgraded kanon project at {target}: {old_version} → {__version__}")
 
@@ -497,10 +507,10 @@ def verify(target: Path) -> None:
     check_required_files(target, known_aspects, errors)
     check_agents_md_markers(target, aspects, known_aspects, errors)
     check_fidelity_lock(
-        target, aspects.get("sdd", 0), warnings,
+        target, aspects.get("kanon-sdd", 0), warnings,
         spec_sha_fn=_spec_sha, accepted_specs_fn=_accepted_or_draft_specs,
     )
-    check_verified_by(target, aspects.get("sdd", 0), warnings)
+    check_verified_by(target, aspects.get("kanon-sdd", 0), warnings)
 
     status = "fail" if errors else "ok"
     _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status=status)
@@ -548,7 +558,8 @@ def tier_set(target: Path, n: int) -> None:
         "Use 'kanon aspect set-depth <target> sdd <N>'.",
         err=True,
     )
-    _set_aspect_depth(target, "sdd", n, legacy_tier_verb=True)
+    # Per ADR-0028: bare `sdd` sugars to canonical `kanon-sdd`.
+    _set_aspect_depth(target, "kanon-sdd", n, legacy_tier_verb=True)
 
 
 @main.group()
@@ -573,6 +584,7 @@ def aspect_list() -> None:
 @click.argument("name")
 def aspect_info(name: str) -> None:
     """Print metadata for an aspect."""
+    name = _normalise_aspect_name(name)
     top = _load_top_manifest()
     if name not in top["aspects"]:
         raise click.ClickException(
@@ -626,6 +638,7 @@ def aspect_add(
 ) -> None:
     """Enable an aspect at its default depth (or --depth N)."""
     target = target.resolve()
+    aspect_name = _normalise_aspect_name(aspect_name)
     config = _read_config(target)
     top = _load_top_manifest()
     if aspect_name not in top["aspects"]:
@@ -667,6 +680,7 @@ def aspect_add(
 def aspect_remove(target: Path, aspect_name: str) -> None:
     """Remove an aspect (non-destructive: scaffolded files are left on disk)."""
     target = target.resolve()
+    aspect_name = _normalise_aspect_name(aspect_name)
     config = _read_config(target)
     _check_pending_recovery(target)
     aspects = _config_aspects(config)
@@ -737,7 +751,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
 @click.argument("n", type=int)
 def aspect_set_depth(target: Path, aspect_name: str, n: int) -> None:
     """Change TARGET's <aspect_name> depth to N (mutable, idempotent, non-destructive)."""
-    _set_aspect_depth(target, aspect_name, n)
+    _set_aspect_depth(target, _normalise_aspect_name(aspect_name), n)
 
 
 @aspect.command("set-config")
@@ -747,6 +761,7 @@ def aspect_set_depth(target: Path, aspect_name: str, n: int) -> None:
 def aspect_set_config(target: Path, aspect_name: str, pair: str) -> None:
     """Set one config value on an enabled aspect (KEY=VALUE; YAML-scalar value)."""
     target = target.resolve()
+    aspect_name = _normalise_aspect_name(aspect_name)
     config = _read_config(target)
     _check_pending_recovery(target)
     top = _load_top_manifest()

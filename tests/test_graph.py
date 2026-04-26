@@ -329,7 +329,10 @@ def test_real_repo_loads_without_error() -> None:
 def test_real_repo_has_known_aspects() -> None:
     g = build_graph(_REPO_ROOT)
     aspects = {n.slug for n in g.nodes if n.namespace == NAMESPACE_ASPECT}
-    assert {"sdd", "worktrees", "release", "testing", "security", "deps"}.issubset(aspects)
+    assert {
+        "kanon-sdd", "kanon-worktrees", "kanon-release",
+        "kanon-testing", "kanon-security", "kanon-deps",
+    }.issubset(aspects)
 
 
 def test_real_repo_has_known_principles() -> None:
