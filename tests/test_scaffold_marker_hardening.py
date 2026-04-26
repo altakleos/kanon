@@ -140,3 +140,99 @@ def test_repo_agents_md_round_trips() -> None:
         itself would mutate AGENTS.md — investigate before shipping.
         """
     )
+
+
+# --- ADR-0028 / Phase 2: AGENTS.md marker migration (T18) ---
+
+
+def test_rewrite_legacy_markers_handles_all_six_bare_aspects() -> None:
+    """v0.2 bare-prefixed markers (`<aspect>/<section>`) migrate to v3 namespaced
+    (`kanon-<aspect>/<section>`) for every kit-shipped aspect — not just sdd.
+    """
+    from kanon._scaffold import _rewrite_legacy_markers
+
+    bare = "\n".join(
+        f"<!-- kanon:begin:{a}/body -->\nbody for {a}\n<!-- kanon:end:{a}/body -->"
+        for a in ("sdd", "worktrees", "release", "testing", "security", "deps")
+    )
+    result = _rewrite_legacy_markers(bare)
+    for a in ("sdd", "worktrees", "release", "testing", "security", "deps"):
+        assert f"<!-- kanon:begin:kanon-{a}/body -->" in result, (
+            f"missing namespaced begin marker for {a}"
+        )
+        assert f"<!-- kanon:end:kanon-{a}/body -->" in result, (
+            f"missing namespaced end marker for {a}"
+        )
+        assert f"<!-- kanon:begin:{a}/body -->" not in result, (
+            f"bare begin marker for {a} not migrated"
+        )
+
+
+def test_rewrite_legacy_markers_idempotent_on_already_namespaced() -> None:
+    """A second call on an already-namespaced text is a no-op (project-aspects INV-5)."""
+    from kanon._scaffold import _rewrite_legacy_markers
+
+    namespaced = (
+        "<!-- kanon:begin:kanon-sdd/plan-before-build -->\n"
+        "body\n"
+        "<!-- kanon:end:kanon-sdd/plan-before-build -->\n"
+    )
+    once = _rewrite_legacy_markers(namespaced)
+    twice = _rewrite_legacy_markers(once)
+    assert once == namespaced
+    assert twice == once
+
+
+def test_rewrite_legacy_markers_preserves_user_prose_outside_markers() -> None:
+    """User-authored prose outside any kit marker survives the rewrite verbatim."""
+    from kanon._scaffold import _rewrite_legacy_markers
+
+    text = (
+        "# AGENTS.md\n"
+        "\n"
+        "## My team's house rules\n"
+        "Some user prose here that mentions sdd in passing.\n"
+        "Don't touch this paragraph during migration.\n"
+        "\n"
+        "<!-- kanon:begin:worktrees/branch-hygiene -->\n"
+        "kit body\n"
+        "<!-- kanon:end:worktrees/branch-hygiene -->\n"
+        "\n"
+        "More user prose after the marker.\n"
+    )
+    result = _rewrite_legacy_markers(text)
+    # Marker rewritten:
+    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in result
+    # User prose preserved verbatim:
+    assert "## My team's house rules" in result
+    assert "Some user prose here that mentions sdd in passing." in result
+    assert "Don't touch this paragraph during migration." in result
+    assert "More user prose after the marker." in result
+
+
+def test_rewrite_legacy_markers_preserves_balance() -> None:
+    """The number of begin and end markers in the migrated text equals the input.
+    Migration must not drop, duplicate, or leave half-rewritten pairs.
+    """
+    import re as _re
+
+    from kanon._scaffold import _rewrite_legacy_markers
+
+    text = (
+        "<!-- kanon:begin:sdd/plan-before-build -->\nA\n"
+        "<!-- kanon:end:sdd/plan-before-build -->\n"
+        "<!-- kanon:begin:worktrees/branch-hygiene -->\nB\n"
+        "<!-- kanon:end:worktrees/branch-hygiene -->\n"
+        "<!-- kanon:begin:protocols-index -->\nC\n"
+        "<!-- kanon:end:protocols-index -->\n"
+    )
+    result = _rewrite_legacy_markers(text)
+    in_begins = len(_re.findall(r"<!-- kanon:begin:[^ ]+ -->", text))
+    in_ends = len(_re.findall(r"<!-- kanon:end:[^ ]+ -->", text))
+    out_begins = len(_re.findall(r"<!-- kanon:begin:[^ ]+ -->", result))
+    out_ends = len(_re.findall(r"<!-- kanon:end:[^ ]+ -->", result))
+    assert in_begins == out_begins == 3
+    assert in_ends == out_ends == 3
+    # `protocols-index` stays unprefixed by design (cross-aspect catalog).
+    assert "<!-- kanon:begin:protocols-index -->" in result
+    assert "<!-- kanon:begin:kanon-protocols-index -->" not in result

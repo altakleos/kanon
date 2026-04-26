@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ### Fixed
 
+- **`_migrate_legacy_config` hard-fails on mixed-state v2/v3 aspect keys.** A consumer config that contains both a bare aspect key (`sdd`) and the namespaced equivalent (`kanon-sdd`) now raises a `ClickException` listing every collision and asking the user to deduplicate manually. Previously the bare key would silently overwrite the namespaced entry under last-wins ordering. Per [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md) and [`docs/plans/project-aspects.md`](docs/plans/project-aspects.md) (Phase 2 / T17 mixed-state defence).
 - **Recovery warning after an interrupted operation now suggests the correct user-facing command.** Previously, if a `.kanon/.pending` sentinel was found from an interrupted `aspect set-depth` / `aspect set-config` / `aspect remove` / `fidelity update`, the warning suggested invalid forms like `kanon set-depth` or `kanon aspect-remove`. The recovery message now consults a single source-of-truth mapping (`_PENDING_OP_TO_COMMAND` in `src/kanon/cli.py`) and produces the correct sub-group form (e.g., `kanon aspect remove`, with a space). Internal sentinel operation strings are now named constants (`_OP_INIT`, `_OP_UPGRADE`, `_OP_SET_DEPTH`, `_OP_SET_CONFIG`, `_OP_ASPECT_REMOVE`, `_OP_FIDELITY_UPDATE`) — no more free-form string literals at `write_sentinel(...)` callsites.
 
 ## [0.2.0a6] — 2026-04-25
