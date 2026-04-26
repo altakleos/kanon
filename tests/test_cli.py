@@ -1837,3 +1837,121 @@ def test_cli_legacy_v2_config_auto_migrates_to_v3(tmp_path: Path) -> None:
     assert "sdd" not in config["aspects"]
     # User-authored content outside markers preserved.
     assert "User-authored note." in (target / "AGENTS.md").read_text()
+
+
+# --- ADR-0028 / Phase 2: config migration round-trips (T17) ---
+
+
+def test_migrate_legacy_config_v1_to_v3_produces_namespaced_key() -> None:
+    """A v1 config (`tier: N`) migrates to v3 with the canonical `kanon-sdd` key."""
+    from kanon._scaffold import _migrate_legacy_config
+
+    v1 = {"kit_version": "0.1.0a1", "tier": 2, "tier_set_at": "2026-04-25T00:00:00+00:00"}
+    v3 = _migrate_legacy_config(v1)
+    assert "tier" not in v3
+    assert "aspects" in v3
+    assert list(v3["aspects"]) == ["kanon-sdd"]
+    assert v3["aspects"]["kanon-sdd"]["depth"] == 2
+    assert v3["aspects"]["kanon-sdd"]["enabled_at"] == "2026-04-25T00:00:00+00:00"
+
+
+def test_migrate_legacy_config_v3_is_idempotent_no_op() -> None:
+    """A config already in v3 (namespaced keys) returns unchanged — no rewrite."""
+    from kanon._scaffold import _migrate_legacy_config
+
+    v3 = {
+        "kit_version": "0.3.0",
+        "aspects": {
+            "kanon-sdd": {"depth": 1, "enabled_at": "x", "config": {}},
+            "kanon-worktrees": {"depth": 2, "enabled_at": "x", "config": {}},
+            "project-auth-policy": {"depth": 1, "enabled_at": "x", "config": {}},
+        },
+    }
+    out = _migrate_legacy_config(v3)
+    assert out == v3, "v3 → v3 must be a no-op (project-aspects INV-5 idempotency)"
+
+
+def test_migrate_legacy_config_v2_all_six_aspects_round_trip() -> None:
+    """A v2 config containing all six bare aspect keys migrates each to its
+    `kanon-` form. Insertion order and config blocks survive."""
+    from kanon._scaffold import _migrate_legacy_config
+
+    v2 = {
+        "kit_version": "0.2.0a6",
+        "aspects": {
+            bare: {
+                "depth": 1,
+                "enabled_at": f"2026-04-25T00:00:0{i}+00:00",
+                "config": {"k": i} if i % 2 else {},
+            }
+            for i, bare in enumerate(
+                ["sdd", "worktrees", "release", "testing", "security", "deps"]
+            )
+        },
+    }
+    v3 = _migrate_legacy_config(v2)
+    assert set(v3["aspects"].keys()) == {
+        "kanon-sdd", "kanon-worktrees", "kanon-release",
+        "kanon-testing", "kanon-security", "kanon-deps",
+    }
+    # Per-entry payloads carry through unchanged.
+    assert v3["aspects"]["kanon-sdd"]["depth"] == 1
+    assert v3["aspects"]["kanon-sdd"]["enabled_at"] == "2026-04-25T00:00:00+00:00"
+    assert v3["aspects"]["kanon-worktrees"]["config"] == {"k": 1}
+    assert v3["aspects"]["kanon-release"]["config"] == {}
+
+
+def test_migrate_legacy_config_mixed_state_hard_fails() -> None:
+    """A config with both `<local>` and `kanon-<local>` keys hard-fails with a
+    message that names every collision and asks for manual deduplication.
+    """
+    import click
+    import pytest
+
+    from kanon._scaffold import _migrate_legacy_config
+
+    mixed = {
+        "kit_version": "0.3.0",
+        "aspects": {
+            "sdd": {"depth": 1, "enabled_at": "a", "config": {}},
+            "kanon-sdd": {"depth": 2, "enabled_at": "b", "config": {}},
+            "worktrees": {"depth": 1, "enabled_at": "c", "config": {}},
+            "kanon-worktrees": {"depth": 2, "enabled_at": "d", "config": {}},
+        },
+    }
+    with pytest.raises(click.ClickException) as excinfo:
+        _migrate_legacy_config(mixed)
+    msg = excinfo.value.message
+    # Both collisions named, sorted, in the canonical "<bare>` and `kanon-<bare>"
+    # form so the user can grep for them in their config.
+    assert "`sdd` and `kanon-sdd`" in msg
+    assert "`worktrees` and `kanon-worktrees`" in msg
+    assert "Hand-edit" in msg
+
+
+def test_upgrade_v1_legacy_round_trip_preserves_user_content(tmp_path: Path) -> None:
+    """End-to-end: a v1-shaped config + AGENTS.md user prose survives upgrade
+    intact; resulting config is v3 with `kanon-sdd`.
+    """
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+    # Hand-rewrite to v1 shape.
+    (target / ".kanon" / "config.yaml").write_text(
+        yaml.safe_dump({"kit_version": "0.1.0a1", "tier": 2}, sort_keys=False),
+        encoding="utf-8",
+    )
+    # Add user-authored prose outside markers (must survive).
+    agents_path = target / "AGENTS.md"
+    agents_path.write_text(
+        agents_path.read_text(encoding="utf-8")
+        + "\n## My private notes\nDo not lose me.\n",
+        encoding="utf-8",
+    )
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "tier" not in config
+    assert config["aspects"]["kanon-sdd"]["depth"] == 2
+    assert "## My private notes" in agents_path.read_text(encoding="utf-8")
+    assert "Do not lose me." in agents_path.read_text(encoding="utf-8")

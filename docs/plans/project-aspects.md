@@ -2,7 +2,7 @@
 feature: project-aspects
 serves:
   - docs/specs/project-aspects.md
-status: planned
+status: in-progress
 date: 2026-04-26
 target-release: v0.3
 ---
@@ -20,30 +20,30 @@ Sequencing: ADR first; then the rename-and-sugar pass (mechanical, big patch, no
 
 ### Phase 0 — ADR
 
-- [ ] T1: Write ADR-0028 — full ADR (the model changes: aspect identity gains a namespace prefix). Captures (a) the namespace grammar `(kanon|project)-<local>`, (b) bare-name sugar resolves to `kanon-`, (c) discovery location `.kanon/aspects/<project-*>/`, (d) runtime ownership exclusivity, (e) in-process validator trust boundary, (f) v2→v3 migration discipline mirroring v1→v2 → `docs/decisions/0028-project-aspects.md`. (depends: spec approval — done via PR #23)
+- [x] T1: Write ADR-0028 — full ADR (the model changes: aspect identity gains a namespace prefix). Captures (a) the namespace grammar `(kanon|project)-<local>`, (b) bare-name sugar resolves to `kanon-`, (c) discovery location `.kanon/aspects/<project-*>/`, (d) runtime ownership exclusivity, (e) in-process validator trust boundary, (f) v2→v3 migration discipline mirroring v1→v2 → `docs/decisions/0028-project-aspects.md`. (depends: spec approval — done via PR #23)
 
 ### Phase 1 — Namespace grammar + kit rename + bare-name sugar
 
-- [ ] T2: Add namespace-grammar regex and helpers — `_ASPECT_NAME_RE = r"^(kanon|project)-[a-z][a-z0-9-]*$"`, `_normalise_aspect_name(raw) -> str` (bare → `kanon-` sugar), `_split_aspect_name(name) -> (namespace, local)` → `src/kanon/_manifest.py`. (depends: T1)
-- [ ] T3: Update `_load_top_manifest` to require namespaced aspect keys in `src/kanon/kit/manifest.yaml`; raise ClickException naming the offender on bare keys → `src/kanon/_manifest.py`. (depends: T2)
-- [ ] T4: Update `_classify_predicate` — depth predicates accept namespaced names (or bare with sugar); capability names stay namespace-free → `src/kanon/cli.py`. (depends: T3)
-- [ ] T5: Rename kit-side aspects in the manifest registry: `sdd → kanon-sdd`, `worktrees → kanon-worktrees`, `release → kanon-release`, `testing → kanon-testing`, `security → kanon-security`, `deps → kanon-deps` → `src/kanon/kit/manifest.yaml`. (depends: T3)
-- [ ] T6: Move kit-side aspect directories to namespaced names: `src/kanon/kit/aspects/sdd/ → kanon-sdd/`, etc. Update all per-aspect `byte-equality:` entries to reflect new paths → `src/kanon/kit/aspects/*/manifest.yaml`. (depends: T5)
-- [ ] T7: Update kit-side `requires:` predicates to namespaced form: `kanon-worktrees` requires `["kanon-sdd >= 1"]`; `kanon-testing` `suggests: ["kanon-sdd >= 1"]` → `src/kanon/kit/manifest.yaml`. (depends: T5)
-- [ ] T8: Update AGENTS.md marker rendering — `_namespaced_section`, `_assemble_agents_md`, `_merge_agents_md`, `_remove_section` all operate on namespaced names; markers become `<!-- kanon:begin:kanon-sdd/plan-before-build -->` etc. The `_MARKER_RE` regex already accepts hyphens; no regex change → `src/kanon/_scaffold.py`, `src/kanon/_manifest.py`. (depends: T5)
-- [ ] T9: Update `--aspects` flag parser (`_parse_aspects_flag`) and every Click argument that names an aspect (`aspect set-depth`, `aspect set-config`, `aspect add`, `aspect remove`, `aspect info`) to apply `_normalise_aspect_name` to user input — bare names sugar to `kanon-`, prefixed names pass through unchanged → `src/kanon/cli.py`. (depends: T4)
-- [ ] T10: Update CI `check_kit_consistency.py` — assert all kit-side aspect names match `^kanon-[a-z][a-z0-9-]*$`; fold the existing `_check_cross_aspect_exclusivity` into the new namespaced-paths shape → `ci/check_kit_consistency.py`. (depends: T6)
-- [ ] T11: Update kit's own consumer state in this repo — `.kanon/config.yaml` keys (`sdd → kanon-sdd`, etc.); `AGENTS.md` marker prefixes (re-render via `kanon upgrade .` after T2–T10 land); rename `.kanon/protocols/<bare>/ → kanon-<bare>/` directories → `.kanon/config.yaml`, `AGENTS.md`, `.kanon/protocols/`. (depends: T10)
-- [ ] T12: Tests: bare-name sugar resolves at every input surface (CLI flags, `--aspects`, `aspect set-*` arguments, `requires:` predicates); namespaced and bare forms produce identical state → `tests/test_cli.py`, `tests/test_aspect_provides.py`. (depends: T9)
-- [ ] T13: Tests: `check_kit_consistency.py` rejects a kit-side directory named `project-foo`; rejects a top-manifest entry without the `kanon-` prefix → `tests/ci/test_check_kit_consistency.py`. (depends: T10)
+- [x] T2: Add namespace-grammar regex and helpers — `_ASPECT_NAME_RE = r"^(kanon|project)-[a-z][a-z0-9-]*$"`, `_normalise_aspect_name(raw) -> str` (bare → `kanon-` sugar), `_split_aspect_name(name) -> (namespace, local)` → `src/kanon/_manifest.py`. (depends: T1)
+- [x] T3: Update `_load_top_manifest` to require namespaced aspect keys in `src/kanon/kit/manifest.yaml`; raise ClickException naming the offender on bare keys → `src/kanon/_manifest.py`. (depends: T2)
+- [x] T4: Update `_classify_predicate` — depth predicates accept namespaced names (or bare with sugar); capability names stay namespace-free → `src/kanon/cli.py`. (depends: T3)
+- [x] T5: Rename kit-side aspects in the manifest registry: `sdd → kanon-sdd`, `worktrees → kanon-worktrees`, `release → kanon-release`, `testing → kanon-testing`, `security → kanon-security`, `deps → kanon-deps` → `src/kanon/kit/manifest.yaml`. (depends: T3)
+- [x] T6: Move kit-side aspect directories to namespaced names: `src/kanon/kit/aspects/sdd/ → kanon-sdd/`, etc. Update all per-aspect `byte-equality:` entries to reflect new paths → `src/kanon/kit/aspects/*/manifest.yaml`. (depends: T5)
+- [x] T7: Update kit-side `requires:` predicates to namespaced form: `kanon-worktrees` requires `["kanon-sdd >= 1"]`; `kanon-testing` `suggests: ["kanon-sdd >= 1"]` → `src/kanon/kit/manifest.yaml`. (depends: T5)
+- [x] T8: Update AGENTS.md marker rendering — `_namespaced_section`, `_assemble_agents_md`, `_merge_agents_md`, `_remove_section` all operate on namespaced names; markers become `<!-- kanon:begin:kanon-sdd/plan-before-build -->` etc. The `_MARKER_RE` regex already accepts hyphens; no regex change → `src/kanon/_scaffold.py`, `src/kanon/_manifest.py`. (depends: T5)
+- [x] T9: Update `--aspects` flag parser (`_parse_aspects_flag`) and every Click argument that names an aspect (`aspect set-depth`, `aspect set-config`, `aspect add`, `aspect remove`, `aspect info`) to apply `_normalise_aspect_name` to user input — bare names sugar to `kanon-`, prefixed names pass through unchanged → `src/kanon/cli.py`. (depends: T4)
+- [x] T10: Update CI `check_kit_consistency.py` — assert all kit-side aspect names match `^kanon-[a-z][a-z0-9-]*$`; fold the existing `_check_cross_aspect_exclusivity` into the new namespaced-paths shape → `ci/check_kit_consistency.py`. (depends: T6)
+- [x] T11: Update kit's own consumer state in this repo — `.kanon/config.yaml` keys (`sdd → kanon-sdd`, etc.); `AGENTS.md` marker prefixes (re-render via `kanon upgrade .` after T2–T10 land); rename `.kanon/protocols/<bare>/ → kanon-<bare>/` directories → `.kanon/config.yaml`, `AGENTS.md`, `.kanon/protocols/`. (depends: T10)
+- [x] T12: Tests: bare-name sugar resolves at every input surface (CLI flags, `--aspects`, `aspect set-*` arguments, `requires:` predicates); namespaced and bare forms produce identical state → `tests/test_cli.py`, `tests/test_aspect_provides.py`. (depends: T9)
+- [x] T13: Tests: `check_kit_consistency.py` rejects a kit-side directory named `project-foo`; rejects a top-manifest entry without the `kanon-` prefix → `tests/ci/test_check_kit_consistency.py`. (depends: T10)
 
 ### Phase 2 — v2→v3 auto-migration
 
-- [ ] T14: Extend `_migrate_legacy_config` to detect bare aspect keys (v2 shape: `aspects: {sdd: {...}}`) and rewrite to namespaced (`aspects: {kanon-sdd: {...}}`); emit `Migrated v2 (bare) → v3 (namespaced) aspect names.` once on the migration cycle. v1 (`tier:`) → v3 path still goes via the existing v1→v2 transformer first → `src/kanon/_scaffold.py`. (depends: T9)
-- [ ] T15: Extend `_rewrite_legacy_markers` (currently rewrites flat → `sdd/`-prefixed markers) to also rewrite bare-aspect markers to `kanon-`-prefixed: `<!-- kanon:begin:sdd/plan-before-build -->` → `<!-- kanon:begin:kanon-sdd/plan-before-build -->`. Idempotent on already-namespaced markers → `src/kanon/_scaffold.py`. (depends: T8)
-- [ ] T16: Add a one-time `.kanon/protocols/<bare>/ → kanon-<bare>/` directory migration in `upgrade` (mirrors the v0.2 flat-protocols migration `_migrate_flat_protocols`) → `src/kanon/_scaffold.py`. (depends: T15)
-- [ ] T17: Tests: v1 → v3 round-trip preserves user content; v2 → v3 round-trip preserves user content; v3 → v3 is a no-op (idempotent); mixed-state config (some bare, some namespaced — should not occur but is defensively handled) hard-fails with a clear error → `tests/test_e2e_lifecycle.py`. (depends: T16)
-- [ ] T18: Tests: AGENTS.md marker migration preserves user prose outside markers; preserves balance; works across all six bare aspect names → `tests/test_scaffold_marker_hardening.py`. (depends: T15)
+- [x] T14: Extend `_migrate_legacy_config` to detect bare aspect keys (v2 shape: `aspects: {sdd: {...}}`) and rewrite to namespaced (`aspects: {kanon-sdd: {...}}`); emit `Migrated v2 (bare) → v3 (namespaced) aspect names.` once on the migration cycle. v1 (`tier:`) → v3 path still goes via the existing v1→v2 transformer first → `src/kanon/_scaffold.py`. (depends: T9)
+- [x] T15: Extend `_rewrite_legacy_markers` (currently rewrites flat → `sdd/`-prefixed markers) to also rewrite bare-aspect markers to `kanon-`-prefixed: `<!-- kanon:begin:sdd/plan-before-build -->` → `<!-- kanon:begin:kanon-sdd/plan-before-build -->`. Idempotent on already-namespaced markers → `src/kanon/_scaffold.py`. (depends: T8)
+- [x] T16: Add a one-time `.kanon/protocols/<bare>/ → kanon-<bare>/` directory migration in `upgrade` (mirrors the v0.2 flat-protocols migration `_migrate_flat_protocols`) → `src/kanon/_scaffold.py`. (depends: T15)
+- [x] T17: Tests: v1 → v3 round-trip preserves user content; v2 → v3 round-trip preserves user content; v3 → v3 is a no-op (idempotent); mixed-state config (some bare, some namespaced — should not occur but is defensively handled) hard-fails with a clear error → `tests/test_e2e_lifecycle.py`. (depends: T16)
+- [x] T18: Tests: AGENTS.md marker migration preserves user prose outside markers; preserves balance; works across all six bare aspect names → `tests/test_scaffold_marker_hardening.py`. (depends: T15)
 
 ### Phase 3 — Project-aspect loader + runtime exclusivity
 

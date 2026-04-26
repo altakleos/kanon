@@ -80,14 +80,30 @@ def _migrate_legacy_config(config: dict[str, Any]) -> dict[str, Any]:
     aspects = config["aspects"]
     if not isinstance(aspects, dict):
         return config
-    needs_bump = any(
-        isinstance(name, str)
+    bare_keys = [
+        name for name in aspects
+        if isinstance(name, str)
         and not _ASPECT_NAME_RE.match(name)
         and _BARE_ASPECT_NAME_RE.match(name)
-        for name in aspects
-    )
-    if not needs_bump:
+    ]
+    if not bare_keys:
         return config
+    # Mixed-state defence (project-aspects spec INV-5 / plan T17): a config
+    # with both `<local>` and `kanon-<local>` keys is ambiguous — silently
+    # auto-migrating the bare key would overwrite the namespaced entry. Hard-
+    # fail with a message that names every collision and asks the user to
+    # deduplicate manually before re-running upgrade.
+    collisions = sorted(
+        bare for bare in bare_keys if f"kanon-{bare}" in aspects
+    )
+    if collisions:
+        details = ", ".join(f"`{c}` and `kanon-{c}`" for c in collisions)
+        raise click.ClickException(
+            f"Cannot migrate .kanon/config.yaml: both bare and namespaced "
+            f"aspect keys present for the same local name ({details}). "
+            f"Hand-edit the config to keep only the `kanon-<local>` form, "
+            f"then re-run `kanon upgrade`."
+        )
     new_aspects: dict[str, Any] = {}
     for name, entry in aspects.items():
         if isinstance(name, str) and _BARE_ASPECT_NAME_RE.match(name) \
