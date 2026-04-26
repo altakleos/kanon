@@ -14,7 +14,7 @@ import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
-_SDD = _KIT / "aspects" / "sdd"
+_SDD = _KIT / "aspects" / "kanon-sdd"
 
 
 def _load_top_manifest() -> dict:
@@ -34,12 +34,12 @@ def test_kit_root_has_expected_top_level_entries() -> None:
 
 
 def test_kit_aspects_dir_has_sdd() -> None:
-    assert (_KIT / "aspects" / "sdd").is_dir()
+    assert (_KIT / "aspects" / "kanon-sdd").is_dir()
 
 
 def test_sdd_aspect_has_required_subdirs() -> None:
     for sub in ("agents-md", "sections", "protocols", "files", "manifest.yaml"):
-        assert (_SDD / sub).exists(), f"missing under aspects/sdd/: {sub}"
+        assert (_SDD / sub).exists(), f"missing under aspects/kanon-sdd/: {sub}"
 
 
 @pytest.mark.parametrize("depth", [0, 1, 2, 3])
@@ -115,8 +115,8 @@ def test_kit_md_renders_with_placeholders() -> None:
 def test_top_manifest_is_aspect_registry() -> None:
     top = _load_top_manifest()
     assert "aspects" in top and isinstance(top["aspects"], dict)
-    assert "sdd" in top["aspects"]
-    sdd = top["aspects"]["sdd"]
+    assert "kanon-sdd" in top["aspects"]
+    sdd = top["aspects"]["kanon-sdd"]
     for field in ("path", "stability", "depth-range", "default-depth"):
         assert field in sdd, f"sdd missing {field}"
     assert sdd["stability"] in {"experimental", "stable", "deprecated"}
@@ -139,19 +139,19 @@ def test_manifest_paths_resolve() -> None:
         for rel in entry.get("files", []) or []:
             p = _SDD / "files" / rel
             if not p.is_file():
-                errors.append(f"depth-{d}.files: {rel} missing under aspects/sdd/files/")
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/kanon-sdd/files/")
         for rel in entry.get("protocols", []) or []:
             p = _SDD / "protocols" / rel
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.protocols: {rel} missing under aspects/sdd/protocols/"
+                    f"depth-{d}.protocols: {rel} missing under aspects/kanon-sdd/protocols/"
                 )
     assert not errors, "\n".join(errors)
 
 
 # --- worktrees aspect ---
 
-_WORKTREES = _KIT / "aspects" / "worktrees"
+_WORKTREES = _KIT / "aspects" / "kanon-worktrees"
 
 
 def _load_worktrees_manifest() -> dict:
@@ -179,12 +179,12 @@ def test_worktrees_manifest_paths_resolve() -> None:
         for rel in entry.get("files", []) or []:
             p = _WORKTREES / "files" / rel
             if not p.is_file():
-                errors.append(f"depth-{d}.files: {rel} missing under aspects/worktrees/files/")
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/kanon-worktrees/files/")
         for rel in entry.get("protocols", []) or []:
             p = _WORKTREES / "protocols" / rel
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.protocols: {rel} missing under aspects/worktrees/protocols/"
+                    f"depth-{d}.protocols: {rel} missing under aspects/kanon-worktrees/protocols/"
                 )
         for name in entry.get("sections", []) or []:
             if name == "protocols-index":
@@ -192,7 +192,7 @@ def test_worktrees_manifest_paths_resolve() -> None:
             p = _WORKTREES / "sections" / f"{name}.md"
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.sections: {name} missing under aspects/worktrees/sections/"
+                    f"depth-{d}.sections: {name} missing under aspects/kanon-worktrees/sections/"
                 )
     assert not errors, "\n".join(errors)
 
@@ -211,7 +211,7 @@ def test_worktrees_depth_1_has_no_section_markers() -> None:
 
 # --- release aspect ---
 
-_RELEASE = _KIT / "aspects" / "release"
+_RELEASE = _KIT / "aspects" / "kanon-release"
 
 
 def _load_release_manifest() -> dict:
@@ -244,12 +244,12 @@ def test_release_manifest_paths_resolve() -> None:
         for rel in entry.get("files", []) or []:
             p = _RELEASE / "files" / rel
             if not p.is_file():
-                errors.append(f"depth-{d}.files: {rel} missing under aspects/release/files/")
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/kanon-release/files/")
         for rel in entry.get("protocols", []) or []:
             p = _RELEASE / "protocols" / rel
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.protocols: {rel} missing under aspects/release/protocols/"
+                    f"depth-{d}.protocols: {rel} missing under aspects/kanon-release/protocols/"
                 )
         for name in entry.get("sections", []) or []:
             if name == "protocols-index":
@@ -257,14 +257,14 @@ def test_release_manifest_paths_resolve() -> None:
             p = _RELEASE / "sections" / f"{name}.md"
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.sections: {name} missing under aspects/release/sections/"
+                    f"depth-{d}.sections: {name} missing under aspects/kanon-release/sections/"
                 )
     assert not errors, "\n".join(errors)
 
 
 # --- testing aspect ---
 
-_TESTING = _KIT / "aspects" / "testing"
+_TESTING = _KIT / "aspects" / "kanon-testing"
 
 
 def _load_testing_manifest() -> dict:
@@ -297,12 +297,12 @@ def test_testing_manifest_paths_resolve() -> None:
         for rel in entry.get("files", []) or []:
             p = _TESTING / "files" / rel
             if not p.is_file():
-                errors.append(f"depth-{d}.files: {rel} missing under aspects/testing/files/")
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/kanon-testing/files/")
         for rel in entry.get("protocols", []) or []:
             p = _TESTING / "protocols" / rel
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.protocols: {rel} missing under aspects/testing/protocols/"
+                    f"depth-{d}.protocols: {rel} missing under aspects/kanon-testing/protocols/"
                 )
         for name in entry.get("sections", []) or []:
             if name == "protocols-index":
@@ -310,14 +310,14 @@ def test_testing_manifest_paths_resolve() -> None:
             p = _TESTING / "sections" / f"{name}.md"
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.sections: {name} missing under aspects/testing/sections/"
+                    f"depth-{d}.sections: {name} missing under aspects/kanon-testing/sections/"
                 )
     assert not errors, "\n".join(errors)
 
 
 # --- security aspect ---
 
-_SECURITY = _KIT / "aspects" / "security"
+_SECURITY = _KIT / "aspects" / "kanon-security"
 
 
 def _load_security_manifest() -> dict:
@@ -350,12 +350,12 @@ def test_security_manifest_paths_resolve() -> None:
         for rel in entry.get("files", []) or []:
             p = _SECURITY / "files" / rel
             if not p.is_file():
-                errors.append(f"depth-{d}.files: {rel} missing under aspects/security/files/")
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/kanon-security/files/")
         for rel in entry.get("protocols", []) or []:
             p = _SECURITY / "protocols" / rel
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.protocols: {rel} missing under aspects/security/protocols/"
+                    f"depth-{d}.protocols: {rel} missing under aspects/kanon-security/protocols/"
                 )
         for name in entry.get("sections", []) or []:
             if name == "protocols-index":
@@ -363,14 +363,14 @@ def test_security_manifest_paths_resolve() -> None:
             p = _SECURITY / "sections" / f"{name}.md"
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.sections: {name} missing under aspects/security/sections/"
+                    f"depth-{d}.sections: {name} missing under aspects/kanon-security/sections/"
                 )
     assert not errors, "\n".join(errors)
 
 
 # --- deps aspect ---
 
-_DEPS = _KIT / "aspects" / "deps"
+_DEPS = _KIT / "aspects" / "kanon-deps"
 
 
 def _load_deps_manifest() -> dict:
@@ -403,12 +403,12 @@ def test_deps_manifest_paths_resolve() -> None:
         for rel in entry.get("files", []) or []:
             p = _DEPS / "files" / rel
             if not p.is_file():
-                errors.append(f"depth-{d}.files: {rel} missing under aspects/deps/files/")
+                errors.append(f"depth-{d}.files: {rel} missing under aspects/kanon-deps/files/")
         for rel in entry.get("protocols", []) or []:
             p = _DEPS / "protocols" / rel
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.protocols: {rel} missing under aspects/deps/protocols/"
+                    f"depth-{d}.protocols: {rel} missing under aspects/kanon-deps/protocols/"
                 )
         for name in entry.get("sections", []) or []:
             if name == "protocols-index":
@@ -416,6 +416,6 @@ def test_deps_manifest_paths_resolve() -> None:
             p = _DEPS / "sections" / f"{name}.md"
             if not p.is_file():
                 errors.append(
-                    f"depth-{d}.sections: {name} missing under aspects/deps/sections/"
+                    f"depth-{d}.sections: {name} missing under aspects/kanon-deps/sections/"
                 )
     assert not errors, "\n".join(errors)

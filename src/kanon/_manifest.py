@@ -138,6 +138,46 @@ def _kit_root() -> Path:
 _CAPABILITY_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
 
+# Aspect-name grammar (INV-project-aspects-namespace-grammar). Source-namespace
+# prefixes: `kanon-` (kit-shipped) and `project-` (consumer-defined). Bare names
+# at input surfaces sugar to `kanon-` (see `_normalise_aspect_name`). Other
+# namespaces (e.g., `acme-`) are reserved by the grammar but not defined.
+_ASPECT_NAME_RE = re.compile(r"^(kanon|project)-[a-z][a-z0-9-]*$")
+_BARE_ASPECT_NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+_KANON_NAMESPACE = "kanon"
+_PROJECT_NAMESPACE = "project"
+
+
+def _normalise_aspect_name(raw: str) -> str:
+    """Return the canonical aspect name for *raw*.
+
+    A prefixed name (matching ``_ASPECT_NAME_RE``) passes through unchanged.
+    A bare name (matching ``_BARE_ASPECT_NAME_RE``) sugars to ``kanon-<raw>``.
+    Other inputs raise :class:`click.ClickException`.
+
+    Per ADR-0028 the bare-name shorthand resolves only to the ``kanon`` namespace;
+    project-aspects must always be referenced by their full ``project-<local>`` name.
+    """
+    if _ASPECT_NAME_RE.match(raw):
+        return raw
+    if _BARE_ASPECT_NAME_RE.match(raw):
+        return f"kanon-{raw}"
+    raise click.ClickException(
+        f"Invalid aspect name {raw!r}: must match {_ASPECT_NAME_RE.pattern} "
+        f"or be a bare name (will sugar to `kanon-<raw>`)."
+    )
+
+
+def _split_aspect_name(name: str) -> tuple[str, str]:
+    """Return ``(namespace, local)`` for a canonical aspect name.
+
+    Assumes *name* is already in canonical form (i.e., post-``_normalise_aspect_name``).
+    The first dash separates namespace from local; subsequent dashes are part of local.
+    """
+    namespace, _, local = name.partition("-")
+    return namespace, local
+
+
 def _validate_provides_field(path: Path, name: str, provides: Any) -> None:
     """Validate the optional ``provides:`` block at top-manifest load time."""
     if not isinstance(provides, list):
@@ -167,6 +207,15 @@ def _load_top_manifest() -> dict[str, Any]:
     if not isinstance(aspects, dict) or not aspects:
         raise click.ClickException(f"{path}: missing or empty 'aspects' mapping.")
     for name, entry in aspects.items():
+        # Kit-side aspect names must use the `kanon-` namespace per ADR-0028.
+        # Project-side aspects (Phase 3) live under `.kanon/aspects/project-*/`
+        # and are validated by `_discover_project_aspects`, not here.
+        if not isinstance(name, str) or not name.startswith(f"{_KANON_NAMESPACE}-") \
+                or not _ASPECT_NAME_RE.match(name):
+            raise click.ClickException(
+                f"{path}: aspects.{name!r}: kit-side aspect names must match "
+                f"`^kanon-[a-z][a-z0-9-]*$` (ADR-0028 namespace ownership)."
+            )
         if not isinstance(entry, dict):
             raise click.ClickException(f"{path}: aspects.{name} must be a mapping.")
         for field in ("path", "stability", "depth-range", "default-depth"):

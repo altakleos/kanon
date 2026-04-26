@@ -81,11 +81,11 @@ def test_installed_worktrees_aspect(installed_venv: Path, tmp_path: Path) -> Non
     r = _run_kanon(installed_venv, "init", str(target), "--tier", "1")
     assert r.returncode == 0, r.stderr
 
-    r = _run_kanon(installed_venv, "aspect", "set-depth", str(target), "worktrees", "1")
+    r = _run_kanon(installed_venv, "aspect", "set-depth", str(target), "kanon-worktrees", "1")
     assert r.returncode == 0, r.stderr
-    assert (target / ".kanon" / "protocols" / "worktrees" / "worktree-lifecycle.md").is_file()
+    assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-lifecycle.md").is_file()
 
-    r = _run_kanon(installed_venv, "aspect", "set-depth", str(target), "worktrees", "2")
+    r = _run_kanon(installed_venv, "aspect", "set-depth", str(target), "kanon-worktrees", "2")
     assert r.returncode == 0, r.stderr
     assert (target / "scripts" / "worktree-setup.sh").is_file()
 

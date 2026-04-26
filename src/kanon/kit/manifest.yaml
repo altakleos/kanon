@@ -1,8 +1,12 @@
-# Kanon kit manifest — aspect registry (v0.2 shape).
+# Kanon kit manifest — aspect registry (v0.3 shape).
 #
 # Each top-level entry under `aspects:` declares one opt-in discipline the kit
 # packages. Per-aspect file/protocol/section membership lives in each aspect's
 # own sub-manifest at src/kanon/kit/aspects/<name>/manifest.yaml.
+#
+# Aspect names follow the source-namespace grammar (ADR-0028): kit-shipped
+# aspects are `kanon-<local>`. Consumer-defined project-aspects (Phase 3+) are
+# `project-<local>`. Bare names at CLI input surfaces sugar to `kanon-`.
 #
 # Fields:
 #   path          — directory under src/kanon/kit/ holding this aspect's bundle
@@ -13,16 +17,16 @@
 #                   aspect depends on; validated at `kanon aspect add` time
 #
 # Legacy `tier: N` in a consumer's .kanon/config.yaml auto-migrates to
-# `aspects: {sdd: {depth: N, ...}}` on first `kanon upgrade`.
+# `aspects: {kanon-sdd: {depth: N, ...}}` on first `kanon upgrade`.
 #
-# See docs/design/aspect-model.md and ADR-0012.
+# See docs/design/aspect-model.md, ADR-0012, and ADR-0028.
 
 defaults:
-  - sdd
+  - kanon-sdd
 
 aspects:
-  sdd:
-    path: aspects/sdd
+  kanon-sdd:
+    path: aspects/kanon-sdd
     stability: stable
     depth-range: [0, 3]
     default-depth: 1
@@ -31,18 +35,18 @@ aspects:
       - planning-discipline
       - spec-discipline
 
-  worktrees:
-    path: aspects/worktrees
+  kanon-worktrees:
+    path: aspects/kanon-worktrees
     stability: experimental
     depth-range: [0, 2]
     default-depth: 1
     requires:
-      - "sdd >= 1"
+      - "kanon-sdd >= 1"
     provides:
       - worktree-isolation
 
-  release:
-    path: aspects/release
+  kanon-release:
+    path: aspects/kanon-release
     stability: experimental
     depth-range: [0, 2]
     default-depth: 1
@@ -50,19 +54,19 @@ aspects:
     provides:
       - release-discipline
 
-  testing:
-    path: aspects/testing
+  kanon-testing:
+    path: aspects/kanon-testing
     stability: experimental
     depth-range: [0, 3]
     default-depth: 1
     requires: []
     suggests:
-      - "sdd >= 1"
+      - "kanon-sdd >= 1"
     provides:
       - test-discipline
 
-  security:
-    path: aspects/security
+  kanon-security:
+    path: aspects/kanon-security
     stability: experimental
     depth-range: [0, 2]
     default-depth: 1
@@ -70,8 +74,8 @@ aspects:
     provides:
       - security-discipline
 
-  deps:
-    path: aspects/deps
+  kanon-deps:
+    path: aspects/kanon-deps
     stability: experimental
     depth-range: [0, 2]
     default-depth: 1

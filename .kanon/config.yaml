@@ -1,27 +1,27 @@
-kit_version: 0.2.0a5
+kit_version: 0.2.0a6
 aspects:
-  deps:
+  kanon-deps:
     depth: 2
     enabled_at: '2026-04-25T03:07:38+00:00'
     config: {}
-  release:
+  kanon-release:
     depth: 2
     enabled_at: '2026-04-25T03:07:38+00:00'
     config: {}
-  sdd:
+  kanon-sdd:
     depth: 3
     enabled_at: '2026-04-25T03:07:38+00:00'
     config: {}
-  security:
+  kanon-security:
     depth: 2
     enabled_at: '2026-04-25T03:07:38+00:00'
     config: {}
-  testing:
+  kanon-testing:
     depth: 3
     enabled_at: '2026-04-25T08:14:11+00:00'
     config:
       coverage_floor: 80
-  worktrees:
+  kanon-worktrees:
     depth: 2
     enabled_at: '2026-04-25T03:07:38+00:00'
     config: {}

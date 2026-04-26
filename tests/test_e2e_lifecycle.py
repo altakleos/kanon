@@ -88,27 +88,27 @@ def test_aspect_lifecycle(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
 
     # Step 2: enable worktrees at depth 1
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "1"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "1"])
     assert result.exit_code == 0, result.output
 
     # Step 3: config records worktrees
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text(encoding="utf-8"))
-    assert config["aspects"]["worktrees"]["depth"] == 1
+    assert config["aspects"]["kanon-worktrees"]["depth"] == 1
 
     # Step 4: protocol file exists
-    assert (target / ".kanon" / "protocols" / "worktrees" / "worktree-lifecycle.md").is_file()
+    assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-lifecycle.md").is_file()
 
     # Step 5: AGENTS.md references worktrees with proper markers
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree" in agents.lower()
-    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in agents
-    assert "<!-- kanon:end:worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:end:kanon-worktrees/branch-hygiene -->" in agents
 
     # Step 5b: verify passes at depth 1
     _verify_ok(runner, target)
 
     # Step 6: promote to depth 2
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "2"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "2"])
     assert result.exit_code == 0, result.output
 
     # Steps 7-9: scripts exist
@@ -118,18 +118,18 @@ def test_aspect_lifecycle(tmp_path: Path) -> None:
 
     # Step 10: config updated
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text(encoding="utf-8"))
-    assert config["aspects"]["worktrees"]["depth"] == 2
+    assert config["aspects"]["kanon-worktrees"]["depth"] == 2
 
     # Step 10b: AGENTS.md still has worktrees markers at depth 2
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
-    assert "<!-- kanon:begin:worktrees/branch-hygiene -->" in agents
-    assert "<!-- kanon:end:worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in agents
+    assert "<!-- kanon:end:kanon-worktrees/branch-hygiene -->" in agents
 
     # Step 10c: verify passes at depth 2
     _verify_ok(runner, target)
 
     # Step 11: demote to depth 0
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "0"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "0"])
     assert result.exit_code == 0, result.output
 
     # Step 12: verify ok (worktrees at depth 0 has no required sections)
@@ -187,26 +187,26 @@ def test_multi_aspect_workflow(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
 
     # Step 2: add worktrees at depth 2
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "worktrees", "2"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "2"])
     assert result.exit_code == 0, result.output
 
     # Step 3: aspect list shows both registered aspects
     result = runner.invoke(main, ["aspect", "list"])
     assert result.exit_code == 0, result.output
-    assert "sdd" in result.output
-    assert "worktrees" in result.output
+    assert "kanon-sdd" in result.output
+    assert "kanon-worktrees" in result.output
 
     # Steps 4-5: aspect info for each
-    result = runner.invoke(main, ["aspect", "info", "sdd"])
+    result = runner.invoke(main, ["aspect", "info", "kanon-sdd"])
     assert result.exit_code == 0, result.output
 
-    result = runner.invoke(main, ["aspect", "info", "worktrees"])
+    result = runner.invoke(main, ["aspect", "info", "kanon-worktrees"])
     assert result.exit_code == 0, result.output
 
     # Step 6: config records both aspects
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text(encoding="utf-8"))
-    assert "sdd" in config["aspects"]
-    assert "worktrees" in config["aspects"]
+    assert "kanon-sdd" in config["aspects"]
+    assert "kanon-worktrees" in config["aspects"]
 
     # Step 7: promote sdd to depth 3
     result = runner.invoke(main, ["tier", "set", str(target), "3"])
@@ -214,8 +214,8 @@ def test_multi_aspect_workflow(tmp_path: Path) -> None:
 
     # Step 8: config reflects new sdd depth
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text(encoding="utf-8"))
-    assert config["aspects"]["sdd"]["depth"] == 3
-    assert config["aspects"]["worktrees"]["depth"] == 2
+    assert config["aspects"]["kanon-sdd"]["depth"] == 3
+    assert config["aspects"]["kanon-worktrees"]["depth"] == 2
 
     # Step 9: both aspect artifacts coexist
     assert (target / "docs" / "design").is_dir()  # sdd depth 3

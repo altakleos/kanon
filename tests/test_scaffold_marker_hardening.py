@@ -32,9 +32,9 @@ def test_quoted_marker_in_backtick_fence_is_ignored() -> None:
         "# Doc\n\n"
         "Markers look like:\n\n"
         "```markdown\n"
-        "<!-- kanon:begin:sdd/plan-before-build -->\n"
+        "<!-- kanon:begin:kanon-sdd/plan-before-build -->\n"
         "fake content\n"
-        "<!-- kanon:end:sdd/plan-before-build -->\n"
+        "<!-- kanon:end:kanon-sdd/plan-before-build -->\n"
         "```\n\n"
         "Real ones below:\n\n"
         + _real_pair("sdd/plan-before-build", "real body")
@@ -54,46 +54,46 @@ def test_quoted_marker_in_backtick_fence_is_ignored() -> None:
 
 def test_quoted_marker_in_tilde_fence_is_ignored() -> None:
     text = (
-        _real_pair("sdd/x", "real")
-        + "~~~\n<!-- kanon:begin:sdd/x -->\nspoof\n<!-- kanon:end:sdd/x -->\n~~~\n"
+        _real_pair("kanon-sdd/x", "real")
+        + "~~~\n<!-- kanon:begin:kanon-sdd/x -->\nspoof\n<!-- kanon:end:kanon-sdd/x -->\n~~~\n"
     )
-    out = _replace_section(text, "sdd/x", "REPLACED")
+    out = _replace_section(text, "kanon-sdd/x", "REPLACED")
     assert "REPLACED" in out
     assert "spoof" in out  # untouched inside fence
 
 
 def test_blockquote_prefixed_pseudo_marker_is_ignored() -> None:
     text = (
-        "> <!-- kanon:begin:sdd/x -->\n"
+        "> <!-- kanon:begin:kanon-sdd/x -->\n"
         "> fake\n"
-        "> <!-- kanon:end:sdd/x -->\n"
+        "> <!-- kanon:end:kanon-sdd/x -->\n"
     )
-    assert _find_section_pair(text, "sdd/x") is None
+    assert _find_section_pair(text, "kanon-sdd/x") is None
     # No-op merge: passing the same text in `new` would normally replace, but
     # since neither side has a real pair, _merge will treat as missing and
     # call _remove_section, which is a no-op when no pair exists.
-    out = _replace_section(text, "sdd/x", "REPLACED")
+    out = _replace_section(text, "kanon-sdd/x", "REPLACED")
     assert out == text  # nothing changed
 
 
 def test_inline_prefixed_pseudo_marker_is_ignored() -> None:
     """A marker preceded by other characters on the same line is not a marker."""
-    text = "Inline: <!-- kanon:begin:sdd/x --> and trailing <!-- kanon:end:sdd/x -->\n"
-    assert _find_section_pair(text, "sdd/x") is None
+    text = "Inline: <!-- kanon:begin:kanon-sdd/x --> and trailing <!-- kanon:end:kanon-sdd/x -->\n"
+    assert _find_section_pair(text, "kanon-sdd/x") is None
 
 
 def test_marker_with_surrounding_whitespace_is_recognised() -> None:
     """Tabs and spaces around the marker line are tolerated (still on its own line)."""
     text = (
         "intro\n"
-        "\t<!-- kanon:begin:sdd/x --> \t\n"
+        "\t<!-- kanon:begin:kanon-sdd/x --> \t\n"
         "old\n"
-        "  <!-- kanon:end:sdd/x -->\n"
+        "  <!-- kanon:end:kanon-sdd/x -->\n"
         "tail\n"
     )
-    pair = _find_section_pair(text, "sdd/x")
+    pair = _find_section_pair(text, "kanon-sdd/x")
     assert pair is not None
-    out = _replace_section(text, "sdd/x", "NEW")
+    out = _replace_section(text, "kanon-sdd/x", "NEW")
     assert "NEW" in out
     assert "old" not in out
 
@@ -101,10 +101,10 @@ def test_marker_with_surrounding_whitespace_is_recognised() -> None:
 def test_balance_counter_skips_fenced_markers() -> None:
     """The balance counter must count only real markers."""
     text = (
-        "```\n<!-- kanon:begin:sdd/a -->\n```\n"
-        "```\n<!-- kanon:end:sdd/a -->\n```\n"
-        "```\n<!-- kanon:begin:sdd/b -->\n```\n"
-        + _real_pair("sdd/x")
+        "```\n<!-- kanon:begin:kanon-sdd/a -->\n```\n"
+        "```\n<!-- kanon:end:kanon-sdd/a -->\n```\n"
+        "```\n<!-- kanon:begin:kanon-sdd/b -->\n```\n"
+        + _real_pair("kanon-sdd/x")
         + _real_pair("sdd/y")
     )
     begins = sum(1 for k, _, _, _ in _iter_markers(text) if k == "begin")
@@ -115,7 +115,7 @@ def test_balance_counter_skips_fenced_markers() -> None:
 
 def test_assembled_agents_md_is_merge_fixed_point() -> None:
     """assemble(...) must round-trip through merge(_, assemble(...)) byte-identically."""
-    aspects = {"sdd": 3, "worktrees": 2, "testing": 2}
+    aspects = {"kanon-sdd": 3, "kanon-worktrees": 2, "kanon-testing": 2}
     fresh = _assemble_agents_md(aspects, "test-project")
     merged = _merge_agents_md(fresh, fresh)
     assert merged == fresh, (
