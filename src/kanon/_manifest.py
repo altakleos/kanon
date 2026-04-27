@@ -239,22 +239,185 @@ def _load_top_manifest() -> dict[str, Any]:
 
 def _aspect_provides(aspect: str) -> list[str]:
     """Return the capabilities declared by *aspect* (empty list when none)."""
-    top = _load_top_manifest()
-    if aspect not in top["aspects"]:
+    entry = _aspect_entry(aspect)
+    if entry is None:
         raise click.ClickException(f"Unknown aspect: {aspect!r}.")
-    return list(top["aspects"][aspect].get("provides", []) or [])
+    return list(entry.get("provides", []) or [])
 
 
 def _capability_suppliers(top: dict[str, Any], capability: str) -> list[str]:
     """Return the aspect names whose ``provides:`` includes *capability*.
 
-    Pure compute against the loaded top manifest; sorted for determinism.
+    Iterates the supplied ``top`` registry. Callers that want kit + project
+    coverage should pass the unified registry from :func:`_load_aspect_registry`.
+    For pure-kit queries, callers may pass ``_load_top_manifest()`` directly.
     """
     return sorted(
         name
         for name, entry in top["aspects"].items()
         if capability in (entry.get("provides", []) or [])
     )
+
+
+# --- Project-aspect discovery + active overlay (ADR-0028) ---
+
+
+# Module-level overlay set by `_load_aspect_registry(target)` at CLI command
+# entry. Existing `_aspect_*` helpers consult this transparently — see
+# `_aspect_entry`. Tests reset via `_set_project_aspects_overlay(None)`.
+_PROJECT_ASPECTS_OVERLAY: dict[str, dict[str, Any]] | None = None
+
+
+def _set_project_aspects_overlay(
+    overlay: dict[str, dict[str, Any]] | None,
+) -> None:
+    """Set or clear the active project-aspect overlay.
+
+    Called by every CLI command at entry that operates against a target (via
+    :func:`_load_aspect_registry`). Invalidates the cached sub-manifest reads
+    so a different target's project-aspects don't return stale data.
+    """
+    global _PROJECT_ASPECTS_OVERLAY
+    _PROJECT_ASPECTS_OVERLAY = overlay
+    _load_aspect_manifest.cache_clear()
+
+
+def _aspect_entry(aspect: str) -> dict[str, Any] | None:
+    """Find the registry entry for *aspect*, consulting kit + active overlay.
+
+    Returns the entry dict or ``None`` if no source registers *aspect*.
+    Project entries carry ``_source`` (absolute path); kit entries carry
+    only ``path`` (relative to ``_kit_root()``).
+    """
+    top = _load_top_manifest()
+    if aspect in top["aspects"]:
+        kit_entry: dict[str, Any] = top["aspects"][aspect]
+        return kit_entry
+    if _PROJECT_ASPECTS_OVERLAY is not None and aspect in _PROJECT_ASPECTS_OVERLAY:
+        return _PROJECT_ASPECTS_OVERLAY[aspect]
+    return None
+
+
+def _all_known_aspects() -> dict[str, dict[str, Any]]:
+    """Union of kit + active project-overlay aspect entries.
+
+    Used by helpers that need to iterate over every registered aspect (e.g.,
+    cross-source capability lookups). Project entries are appended after kit
+    entries; the namespace grammar (ADR-0028) prevents key collisions.
+    """
+    top = _load_top_manifest()
+    if _PROJECT_ASPECTS_OVERLAY is None:
+        return dict(top["aspects"])
+    return {**top["aspects"], **_PROJECT_ASPECTS_OVERLAY}
+
+
+def _discover_project_aspects(target: Path) -> dict[str, dict[str, Any]]:
+    """Walk ``<target>/.kanon/aspects/`` and return registry entries for each
+    project-aspect found.
+
+    Each entry includes ``_source`` set to the aspect's absolute directory
+    path. Per ADR-0028 the consumer-side ``aspects/`` may only declare aspects
+    in the ``project-`` namespace; ``kanon-`` (or any other prefix) directories
+    under that path are rejected at load time with a single-line error naming
+    the offending path and the namespace-ownership rule.
+    """
+    aspects_dir = target / ".kanon" / "aspects"
+    if not aspects_dir.is_dir():
+        return {}
+    result: dict[str, dict[str, Any]] = {}
+    for sub in sorted(aspects_dir.iterdir()):
+        if not sub.is_dir():
+            continue
+        name = sub.name
+        if name.startswith("."):
+            continue
+        # Namespace ownership (ADR-0028): only `project-<local>` is allowed.
+        if not _ASPECT_NAME_RE.match(name) or not name.startswith(
+            f"{_PROJECT_NAMESPACE}-"
+        ):
+            raise click.ClickException(
+                f"Project-aspect directory '{sub.relative_to(target)}': aspect "
+                f"name {name!r} must match `project-[a-z][a-z0-9-]*` "
+                f"(ADR-0028 namespace ownership)."
+            )
+        manifest_path = sub / "manifest.yaml"
+        if not manifest_path.is_file():
+            raise click.ClickException(
+                f"Project-aspect {name!r}: missing manifest.yaml at "
+                f"'{manifest_path.relative_to(target)}'."
+            )
+        full = _load_yaml(manifest_path)
+        for field in ("stability", "depth-range", "default-depth"):
+            if field not in full:
+                raise click.ClickException(
+                    f"Project-aspect {name!r}: missing required field {field!r} "
+                    f"in '{manifest_path.relative_to(target)}'."
+                )
+        if full["stability"] not in {"experimental", "stable", "deprecated"}:
+            raise click.ClickException(
+                f"Project-aspect {name!r}: invalid stability "
+                f"{full['stability']!r} in '{manifest_path.relative_to(target)}'."
+            )
+        rng = full["depth-range"]
+        if not (isinstance(rng, list) and len(rng) == 2):
+            raise click.ClickException(
+                f"Project-aspect {name!r}.depth-range must be [min, max] in "
+                f"'{manifest_path.relative_to(target)}'."
+            )
+        if "provides" in full:
+            _validate_provides_field(manifest_path, name, full["provides"])
+        entry: dict[str, Any] = {
+            "stability": full["stability"],
+            "depth-range": full["depth-range"],
+            "default-depth": full["default-depth"],
+            "requires": full.get("requires", []) or [],
+            "_source": str(sub),
+            "path": str(sub),  # kit-shape compat for any path-only consumer
+        }
+        if "provides" in full:
+            entry["provides"] = full["provides"]
+        if "suggests" in full:
+            entry["suggests"] = full["suggests"]
+        result[name] = entry
+    return result
+
+
+def _load_aspect_registry(target: Path | None = None) -> dict[str, Any]:
+    """Return the unified aspect registry (kit + project) for *target*.
+
+    Mirrors the shape of :func:`_load_top_manifest` (``{aspects: {...}, ...}``)
+    while side-effecting the active project-aspects overlay so downstream
+    ``_aspect_*`` helpers see project-aspects without needing to thread
+    *target* explicitly. Calling with ``target=None`` clears the overlay and
+    returns the kit-only registry.
+
+    Each entry in the returned ``aspects`` mapping carries ``_source`` (the
+    absolute path to the aspect's directory) so collision detection and
+    sub-manifest resolution work source-agnostically.
+    """
+    top = _load_top_manifest()
+    kit_aspects: dict[str, dict[str, Any]] = {}
+    for name, entry in top["aspects"].items():
+        e = dict(entry)
+        e["_source"] = str(_kit_root() / e["path"])
+        kit_aspects[name] = e
+    if target is None:
+        _set_project_aspects_overlay(None)
+        unified_top = dict(top)
+        unified_top["aspects"] = kit_aspects
+        return unified_top
+    project = _discover_project_aspects(target)
+    collisions = sorted(set(kit_aspects) & set(project))
+    if collisions:
+        raise click.ClickException(
+            f"Aspect-name collision between kit and project sources: "
+            f"{collisions}. Project-aspects must use the `project-` namespace "
+            f"per ADR-0028."
+        )
+    _set_project_aspects_overlay(project)
+    unified_top = dict(top)
+    unified_top["aspects"] = {**kit_aspects, **project}
+    return unified_top
 
 
 # Recognised value types in an aspect's `config-schema:`. Anything else is
@@ -299,11 +462,16 @@ def _validate_config_schema(sub_path: Path, schema: Any) -> None:
 
 @cache
 def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
-    """Load src/kanon/kit/aspects/<aspect>/manifest.yaml."""
-    top = _load_top_manifest()
-    if aspect not in top["aspects"]:
+    """Load the aspect's per-aspect ``manifest.yaml``.
+
+    For kit-aspects the file lives at ``src/kanon/kit/aspects/<aspect>/manifest.yaml``.
+    For project-aspects the file lives at ``<target>/.kanon/aspects/<aspect>/manifest.yaml``
+    (resolved via the active overlay set by :func:`_load_aspect_registry`).
+    """
+    entry = _aspect_entry(aspect)
+    if entry is None:
         raise click.ClickException(f"Unknown aspect: {aspect!r}.")
-    sub_path = _kit_root() / top["aspects"][aspect]["path"] / "manifest.yaml"
+    sub_path = _aspect_path(aspect) / "manifest.yaml"
     if not sub_path.is_file():
         raise click.ClickException(f"aspect sub-manifest missing: {sub_path}")
     data: dict[str, Any] = _load_yaml(sub_path)
@@ -329,14 +497,27 @@ def _aspect_config_schema(aspect: str) -> dict[str, dict[str, Any]] | None:
 
 
 def _aspect_depth_range(aspect: str) -> tuple[int, int]:
-    top = _load_top_manifest()
-    rng = top["aspects"][aspect]["depth-range"]
+    entry = _aspect_entry(aspect)
+    if entry is None:
+        raise click.ClickException(f"Unknown aspect: {aspect!r}.")
+    rng = entry["depth-range"]
     return int(rng[0]), int(rng[1])
 
 
 def _aspect_path(aspect: str) -> Path:
-    top = _load_top_manifest()
-    return _kit_root() / str(top["aspects"][aspect]["path"])
+    """Return the on-disk directory holding *aspect*'s sub-manifest, files, etc.
+
+    Project-aspect entries (set by :func:`_discover_project_aspects`) carry an
+    absolute ``_source``; kit-aspect entries carry only ``path`` (relative to
+    ``_kit_root()``). The fallback path keeps kit-only behaviour intact when
+    no overlay is active.
+    """
+    entry = _aspect_entry(aspect)
+    if entry is None:
+        raise click.ClickException(f"Unknown aspect: {aspect!r}.")
+    if "_source" in entry:
+        return Path(entry["_source"])
+    return _kit_root() / str(entry["path"])
 
 
 def _aspect_items(aspect: str, depth: int, key: str) -> list[str]:

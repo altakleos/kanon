@@ -14,12 +14,12 @@ from typing import Any
 import yaml
 
 from kanon._manifest import (
+    _all_known_aspects,
     _aspect_depth_range,
     _aspect_sections,
     _expected_files,
     _find_section_pair,
     _iter_markers,
-    _load_top_manifest,
     _namespaced_section,
     _parse_frontmatter,
 )
@@ -30,14 +30,14 @@ def check_aspects_known(
     errors: list[str],
     warnings: list[str],
 ) -> dict[str, int]:
-    """Validate aspect names and depth ranges against the kit registry.
+    """Validate aspect names and depth ranges against the kit + project registry.
 
-    Returns the subset of *aspects* that the installed kit recognises
-    (safe for further checks).
+    Returns the subset of *aspects* registered (kit + active project overlay),
+    safe for further checks.
     """
-    top = _load_top_manifest()
+    known = _all_known_aspects()
     for name, depth in aspects.items():
-        if name not in top["aspects"]:
+        if name not in known:
             warnings.append(
                 f"config.aspects.{name}: aspect not in installed kit registry."
             )
@@ -47,7 +47,7 @@ def check_aspects_known(
             errors.append(
                 f"config.aspects.{name}.depth={depth}: outside range [{min_d},{max_d}]."
             )
-    return {n: d for n, d in aspects.items() if n in top["aspects"]}
+    return {n: d for n, d in aspects.items() if n in known}
 
 
 def check_required_files(
@@ -77,9 +77,9 @@ def check_agents_md_markers(
     if not agents_md_path.is_file():
         return
     agents_text = agents_md_path.read_text(encoding="utf-8")
-    top = _load_top_manifest()
+    known = _all_known_aspects()
     for aspect, depth in aspects.items():
-        if aspect not in top["aspects"]:
+        if aspect not in known:
             continue
         for section in _aspect_sections(aspect, depth):
             namespaced = _namespaced_section(aspect, section)

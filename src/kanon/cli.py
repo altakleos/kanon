@@ -47,7 +47,7 @@ from kanon._manifest import (
     _default_aspects,
     _expected_files,
     _load_aspect_manifest,
-    _load_top_manifest,
+    _load_aspect_registry,
     _load_yaml,
     _normalise_aspect_name,
     _now_iso,
@@ -380,7 +380,7 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
             f"Run `kanon upgrade` to refresh, or re-run with --force to reinitialise."
         )
 
-    top = _load_top_manifest()
+    top = _load_aspect_registry(target)
 
     if aspects_arg is not None:
         aspects_to_enable = _parse_aspects_flag(aspects_arg, top)
@@ -429,6 +429,10 @@ def upgrade(target: Path) -> None:
             f"Not a kanon project: {target} (missing .kanon/config.yaml)."
         )
     _check_pending_recovery(target)
+    # Side-effect: sets the active project-aspects overlay so downstream
+    # `_aspect_*` helpers see project-aspects discovered under
+    # <target>/.kanon/aspects/ (ADR-0028).
+    _load_aspect_registry(target)
     raw = _load_yaml(config_path)
     was_legacy = "aspects" not in raw and "tier" in raw
     config = _migrate_legacy_config(raw)
@@ -488,6 +492,19 @@ def verify(target: Path) -> None:
     errors: list[str] = []
     warnings: list[str] = []
     _check_pending_recovery(target)
+
+    # Side-effect: sets the active project-aspects overlay so the structural
+    # checks below see project-aspects discovered under .kanon/aspects/.
+    # A malformed project-aspect manifest (e.g., a kanon-namespace dir under
+    # .kanon/aspects/, or a missing required field) surfaces here as a
+    # verify-error rather than crashing the command.
+    try:
+        _load_aspect_registry(target)
+    except click.ClickException as exc:
+        _emit_verify_report(
+            target, {}, errors=[exc.message], warnings=[], status="fail"
+        )
+        sys.exit(2)
 
     try:
         config = _read_config(target)
@@ -568,9 +585,17 @@ def aspect() -> None:
 
 
 @aspect.command("list")
-def aspect_list() -> None:
-    """List aspects available in the installed kit."""
-    top = _load_top_manifest()
+@click.option(
+    "--target",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="When set, also list project-aspects discovered under "
+         "<target>/.kanon/aspects/. Without --target, only kit-shipped "
+         "aspects are listed.",
+)
+def aspect_list(target: Path | None) -> None:
+    """List aspects available in the installed kit (and project-aspects, when --target given)."""
+    top = _load_aspect_registry(target)
     for name in sorted(top["aspects"]):
         entry = top["aspects"][name]
         rng = entry["depth-range"]
@@ -582,10 +607,18 @@ def aspect_list() -> None:
 
 @aspect.command("info")
 @click.argument("name")
-def aspect_info(name: str) -> None:
+@click.option(
+    "--target",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="When the queried aspect is a project-aspect (`project-<local>`), "
+         "supply --target to point at the consumer repo whose "
+         ".kanon/aspects/ defines it.",
+)
+def aspect_info(name: str, target: Path | None) -> None:
     """Print metadata for an aspect."""
     name = _normalise_aspect_name(name)
-    top = _load_top_manifest()
+    top = _load_aspect_registry(target)
     if name not in top["aspects"]:
         raise click.ClickException(
             f"Unknown aspect: {name!r}. See `kanon aspect list`."
@@ -640,7 +673,7 @@ def aspect_add(
     target = target.resolve()
     aspect_name = _normalise_aspect_name(aspect_name)
     config = _read_config(target)
-    top = _load_top_manifest()
+    top = _load_aspect_registry(target)
     if aspect_name not in top["aspects"]:
         raise click.ClickException(
             f"Unknown aspect: {aspect_name!r}. See `kanon aspect list`."
@@ -690,7 +723,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
         )
 
     # Check if other enabled aspects depend on this one
-    top = _load_top_manifest()
+    top = _load_aspect_registry(target)
     remaining = {k: v for k, v in aspects.items() if k != aspect_name}
     err = _check_removal_dependents(aspect_name, remaining, top)
     if err:
@@ -764,7 +797,7 @@ def aspect_set_config(target: Path, aspect_name: str, pair: str) -> None:
     aspect_name = _normalise_aspect_name(aspect_name)
     config = _read_config(target)
     _check_pending_recovery(target)
-    top = _load_top_manifest()
+    top = _load_aspect_registry(target)
     if aspect_name not in top["aspects"]:
         raise click.ClickException(
             f"Unknown aspect: {aspect_name!r}. See `kanon aspect list`."
@@ -894,7 +927,7 @@ def _set_aspect_depth(
     target = target.resolve()
     config = _read_config(target)
     _check_pending_recovery(target)
-    top = _load_top_manifest()
+    top = _load_aspect_registry(target)
     _validate_aspect_and_depth(aspect_name, n, top)
 
     aspects = _config_aspects(config)

@@ -18,6 +18,7 @@ from kanon._manifest import (
     _BARE_ASPECT_NAME_RE,
     _UNPREFIXED_SECTIONS,
     _all_aspect_sections,
+    _all_known_aspects,
     _aspect_depth_range,
     _aspect_files,
     _aspect_path,
@@ -180,8 +181,17 @@ def _build_bundle(
 
     Excludes always-synthesized files (AGENTS.md, .kanon/config.yaml, .kanon/kit.md).
     Protocol files go to `.kanon/protocols/<aspect>/<name>.md` (namespaced).
+
+    Raises a ``ClickException`` when two enabled aspects (kit or project, any
+    combination) declare the same consumer-relative ``files/`` path. Per
+    ``docs/specs/project-aspects.md`` INV-6 / ADR-0028 ownership exclusivity:
+    project-aspects can introduce file-path collisions the kit's CI cannot see,
+    so the runtime guard is load-bearing here. Protocol paths are inherently
+    namespaced (``.kanon/protocols/<aspect>/...``), so collisions across
+    aspects are structurally impossible and not tracked.
     """
     bundle: dict[str, str] = {}
+    file_owners: dict[str, str] = {}  # rel-path → first aspect that scaffolded it
     for aspect, depth in aspects.items():
         aspect_root = _aspect_path(aspect)
         files_root = aspect_root / "files"
@@ -190,6 +200,16 @@ def _build_bundle(
             src = files_root / rel
             if not src.is_file():
                 raise click.ClickException(f"kit file missing: {src}")
+            prior_owner = file_owners.get(rel)
+            if prior_owner is not None and prior_owner != aspect:
+                raise click.ClickException(
+                    f"Cross-source scaffold collision: aspects "
+                    f"{prior_owner!r} and {aspect!r} both declare "
+                    f"`files/{rel}`. Per ADR-0028 INV-6 ownership exclusivity, "
+                    f"a consumer-relative path may be claimed by at most one "
+                    f"aspect across kit + project sources."
+                )
+            file_owners[rel] = aspect
             bundle[rel] = _render_placeholder(src.read_text(encoding="utf-8"), context)
         for rel in _aspect_protocols(aspect, depth):
             src = protocols_root / rel
@@ -324,9 +344,10 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
         active.add(f"{aspect}/body")
         for section in _aspect_sections(aspect, depth):
             active.add(_namespaced_section(aspect, section))
-    top = _load_top_manifest()
+    # Iterate kit + active project-overlay aspects so project-aspect sections
+    # also participate in the inactive-section sweep (ADR-0028).
     possible: set[str] = set()
-    for aspect_name in top["aspects"]:
+    for aspect_name in _all_known_aspects():
         possible.add(f"{aspect_name}/body")
         for section in _all_aspect_sections(aspect_name):
             possible.add(_namespaced_section(aspect_name, section))
@@ -437,9 +458,10 @@ def _merge_agents_md(existing: str, new: str) -> str:
 
     Also migrates v1 unprefixed markers to v2 namespaced form.
     """
-    top = _load_top_manifest()
+    # Iterate kit + active project-overlay aspects so project-aspect sections
+    # also participate in the merge (ADR-0028).
     possible: set[str] = set()
-    for aspect_name in top["aspects"]:
+    for aspect_name in _all_known_aspects():
         possible.add(f"{aspect_name}/body")
         for section in _all_aspect_sections(aspect_name):
             possible.add(_namespaced_section(aspect_name, section))
