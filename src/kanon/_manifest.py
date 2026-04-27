@@ -460,6 +460,40 @@ def _validate_config_schema(sub_path: Path, schema: Any) -> None:
             )
 
 
+# Module-path grammar for `validators:` entries (ADR-0028 / project-aspects
+# spec INV-7). A validator is an importable Python module whose dotted path
+# appears as a YAML scalar — e.g., `my_pkg.checks.greenlight`. Each segment
+# follows Python identifier rules; the joining `.` separators matter.
+_VALIDATOR_MODULE_PATH_RE = re.compile(
+    r"^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$"
+)
+
+
+def _validate_validators_field(sub_path: Path, validators: Any) -> None:
+    """Validate the optional ``validators:`` block at sub-manifest load time.
+
+    The field is a list of dotted module paths; each module is expected to
+    expose a callable ``check(target, errors, warnings) -> None`` (verified at
+    invocation time, not here — schema validation is path-grammar only).
+    """
+    if not isinstance(validators, list):
+        raise click.ClickException(
+            f"{sub_path}: 'validators' must be a list (got "
+            f"{type(validators).__name__})."
+        )
+    for entry in validators:
+        if not isinstance(entry, str):
+            raise click.ClickException(
+                f"{sub_path}: validators entry {entry!r} must be a string "
+                f"(dotted module path)."
+            )
+        if not _VALIDATOR_MODULE_PATH_RE.match(entry):
+            raise click.ClickException(
+                f"{sub_path}: validators entry {entry!r} is not a valid "
+                f"dotted module path (expected `pkg.mod[.sub]`)."
+            )
+
+
 @cache
 def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
     """Load the aspect's per-aspect ``manifest.yaml``.
@@ -484,7 +518,18 @@ def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
             raise click.ClickException(f"{sub_path}: {key} must be a mapping.")
     if "config-schema" in data:
         _validate_config_schema(sub_path, data["config-schema"])
+    if "validators" in data:
+        _validate_validators_field(sub_path, data["validators"])
     return data
+
+
+def _aspect_validators(aspect: str) -> list[str]:
+    """Return the dotted module paths declared under ``validators:`` (project-
+    aspects spec INV-7). Empty list when none.
+    """
+    sub = _load_aspect_manifest(aspect)
+    raw = sub.get("validators") or []
+    return [str(v) for v in raw if isinstance(v, str)]
 
 
 def _aspect_config_schema(aspect: str) -> dict[str, dict[str, Any]] | None:

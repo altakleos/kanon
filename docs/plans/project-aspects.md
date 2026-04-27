@@ -58,11 +58,11 @@ Sequencing: ADR first; then the rename-and-sugar pass (mechanical, big patch, no
 
 ### Phase 4 — Validators-as-extensions
 
-- [ ] T27: Add `validators:` field to the per-aspect sub-manifest schema (kit-side validator already covers schema; extend `_load_aspect_manifest` to validate the new field as a list of strings) → `src/kanon/_manifest.py`. (depends: T20)
-- [ ] T28: In `_verify.py`, after kit structural checks complete, walk each enabled project-aspect's `validators:`, `importlib.import_module(...)` each, call `check(target, errors, warnings)`. Findings flow into the same JSON report → `src/kanon/_verify.py`, `src/kanon/cli.py`. (depends: T27)
-- [ ] T29: Tests: a project-aspect with `validators: [project_aspects.checks.greenlight]` runs the named function during `kanon verify`; findings appear in the JSON report's `errors`/`warnings` → `tests/test_cli.py`. (depends: T28)
-- [ ] T30: Tests: a project-validator cannot suppress kit-emitted errors. Implementation enforces this by ordering — kit structural checks run *after* project-validators, so any clearing the project-validator attempts is overwritten. Test asserts that when a project-validator's `check()` body calls `errors.clear()`, the kit's subsequent error append still produces a non-empty `errors` list. Per spec INV-9 → `tests/test_cli.py`. (depends: T29)
-- [ ] T31: Tests: project-validator import failure (module not on path) emits a single error naming the missing module; verify continues with the remaining checks → `tests/test_cli.py`. (depends: T29)
+- [x] T27: Add `validators:` field to the per-aspect sub-manifest schema (kit-side validator already covers schema; extend `_load_aspect_manifest` to validate the new field as a list of strings) → `src/kanon/_manifest.py`. (depends: T20)
+- [x] T28: In `_verify.py`, after kit structural checks complete, walk each enabled project-aspect's `validators:`, `importlib.import_module(...)` each, call `check(target, errors, warnings)`. Findings flow into the same JSON report → `src/kanon/_verify.py`, `src/kanon/cli.py`. (depends: T27)
+- [x] T29: Tests: a project-aspect with `validators: [project_aspects.checks.greenlight]` runs the named function during `kanon verify`; findings appear in the JSON report's `errors`/`warnings` → `tests/test_cli.py`. (depends: T28)
+- [x] T30: Tests: a project-validator cannot suppress kit-emitted errors. Implementation enforces this by ordering — kit structural checks run *after* project-validators, so any clearing the project-validator attempts is overwritten. Test asserts that when a project-validator's `check()` body calls `errors.clear()`, the kit's subsequent error append still produces a non-empty `errors` list. Per spec INV-9 → `tests/test_cli.py`. (depends: T29)
+- [x] T31: Tests: project-validator import failure (module not on path) emits a single error naming the missing module; verify continues with the remaining checks → `tests/test_cli.py`. (depends: T29)
 
 ### Phase 5 — Documentation, spec promotion, release wiring
 

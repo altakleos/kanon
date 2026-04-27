@@ -7,6 +7,7 @@ final report.
 
 from __future__ import annotations
 
+import importlib
 import re
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,7 @@ from kanon._manifest import (
     _all_known_aspects,
     _aspect_depth_range,
     _aspect_sections,
+    _aspect_validators,
     _expected_files,
     _find_section_pair,
     _iter_markers,
@@ -176,3 +178,60 @@ def check_verified_by(
                 f"verified-by: {sp.name} missing invariant_coverage "
                 f"for {len(missing)} anchor(s)."
             )
+
+
+def run_project_validators(
+    target: Path,
+    aspects: dict[str, int],
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    """Invoke each enabled project-aspect's declared ``validators:`` in-process.
+
+    Per ADR-0028 / project-aspects spec INV-7 the trust boundary is in-process:
+    each ``validators:`` entry is a dotted Python module path that ``kanon
+    verify`` ``importlib.import_module``s, then calls its ``check(target,
+    errors, warnings) -> None`` entrypoint. Findings flow into the same
+    ``errors``/``warnings`` lists the kit's structural checks populate.
+
+    Per spec INV-9 (validator non-overriding), the kit's own structural
+    checks are authoritative. Callers MUST invoke this function BEFORE the
+    kit checks so any ``errors.clear()`` from a hostile project-validator is
+    overwritten by the kit's subsequent appends. Failures raised by a
+    validator (import error, missing entrypoint, exception during ``check``)
+    are recorded as errors and verify continues with the remaining checks.
+    """
+    for aspect_name in sorted(aspects):
+        if not aspect_name.startswith("project-"):
+            continue
+        try:
+            module_paths = _aspect_validators(aspect_name)
+        except Exception as exc:
+            errors.append(
+                f"project-aspect {aspect_name!r}: failed to load manifest "
+                f"for validator discovery: {exc}"
+            )
+            continue
+        for module_path in module_paths:
+            try:
+                module = importlib.import_module(module_path)
+            except ImportError as exc:
+                errors.append(
+                    f"project-validator {module_path!r} (aspect {aspect_name!r}): "
+                    f"import failed: {exc}"
+                )
+                continue
+            check = getattr(module, "check", None)
+            if not callable(check):
+                errors.append(
+                    f"project-validator {module_path!r} (aspect {aspect_name!r}): "
+                    f"module exposes no callable `check(target, errors, warnings)`."
+                )
+                continue
+            try:
+                check(target, errors, warnings)
+            except Exception as exc:
+                errors.append(
+                    f"project-validator {module_path!r} (aspect {aspect_name!r}): "
+                    f"raised {type(exc).__name__}: {exc}"
+                )
