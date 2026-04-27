@@ -60,5 +60,6 @@ depth-3:
     - docs/foundations/vision.md
     - docs/foundations/principles/README.md
     - docs/foundations/personas/README.md
-  protocols: []
+  protocols:
+    - adr-immutability.md
   sections: []

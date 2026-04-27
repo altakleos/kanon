@@ -81,6 +81,8 @@ ADRs are NOT the starting point for new work. They are produced DURING design an
 
 ADRs follow a consistent format: YAML frontmatter (`status`, `date`), then Context, Decision, Alternatives Considered, Consequences, and optionally Config Impact. ADRs are **immutable** once accepted. To reverse a decision, write a new ADR that supersedes it and set the old one's status to `superseded`.
 
+The immutability rule honours three exception classes for normal lifecycle: (1) **frontmatter-only changes** (status FSM transitions, date updates, `superseded-by:` annotations), (2) **appending a `## Historical Note` (or deeper) section** at the end of the file, and (3) **explicit opt-out via a commit-message trailer** of the form `Allow-ADR-edit: NNNN — <reason>` citing the four-digit ADR number with a non-empty reason. Multiple ADRs can be listed comma-separated; em-dash, en-dash, ASCII hyphen, or colon all work as the separator before the reason. The trailer is the post-hoc audit log for the rare case (typo, factual correction, INV-ID migration) where superseding is the wrong tool. Projects that want to enforce this discipline mechanically can run a CI gate over `git log` against `docs/decisions/*.md`; the kit ships such a gate as a kit-internal example and as a protocol prose listing several enforcement options at higher SDD depths.
+
 ADRs live in `docs/decisions/`. See `docs/decisions/README.md` for the full index.
 
 ### Status values

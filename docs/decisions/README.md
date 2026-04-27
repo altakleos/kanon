@@ -39,6 +39,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0029](0029-verification-fidelity-replay-carveout.md) | Verification-contract carve-out for fidelity-fixture replay | accepted (lite) |
 | [0030](0030-recovery-model.md) | Recovery model — auto-replay for graph-rename, idempotent re-run for the rest | accepted (lite) |
 | [0031](0031-fidelity-aspect.md) | `kanon-fidelity` aspect — Tier-1 behavioural-conformance verification | accepted |
+| [0032](0032-adr-immutability-gate.md) | ADR-immutability gate — mechanical enforcement with a calibrated escape hatch | accepted |
 
 ## ADR Template
 
