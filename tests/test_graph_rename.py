@@ -481,3 +481,18 @@ def test_compute_rewrites_non_principle_namespace_raises(tmp_path: Path) -> None
     _make_minimal_repo(tmp_path)
     with pytest.raises(NotImplementedError, match="not yet implemented"):
         compute_rewrites(tmp_path, "spec", "old", "new")
+
+
+# ---------------------------------------------------------------------------
+# INV-8: aspect rename staged for future implementation
+
+
+def test_inv8_aspect_namespace_raises_not_implemented(tmp_path: Path) -> None:
+    """Per INV-8, aspect rename is staged for future implementation.
+    ``compute_rewrites`` must raise ``NotImplementedError`` for the
+    ``aspect`` namespace until the rewrite engine lands."""
+    from kanon._rename import compute_rewrites
+
+    _make_minimal_repo(tmp_path)
+    with pytest.raises(NotImplementedError, match="not yet implemented"):
+        compute_rewrites(tmp_path, "aspect", "old-name", "new-name")

@@ -32,6 +32,8 @@ invariant_coverage:
     - tests/test_graph_rename.py::test_inv7_recovery_message_command_form
   INV-spec-graph-rename-collision-detection:
     - tests/test_graph_rename.py::test_inv10_collision_refuses
+  INV-spec-graph-rename-aspect-rename-special-case:
+    - tests/test_graph_rename.py::test_inv8_aspect_namespace_raises_not_implemented
 ---
 # Spec: `kanon graph rename` — atomic slug rename across the cross-link graph
 

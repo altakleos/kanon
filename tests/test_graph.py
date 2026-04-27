@@ -320,6 +320,174 @@ def test_orphan_exempt_default_false() -> None:
 # Real-repo smoke (regression guard for downstream commands)
 
 
+# ---------------------------------------------------------------------------
+# _split_frontmatter / _read_md edge cases
+
+
+def test_split_frontmatter_yaml_parses_to_list() -> None:
+    """YAML that parses to a non-dict (e.g. a list) → returns ({}, body)."""
+    from kanon._graph import _split_frontmatter
+
+    text = "---\n- item1\n- item2\n---\n# Body\n"
+    fm, body = _split_frontmatter(text)
+    assert fm == {}
+    assert body == "# Body\n"
+
+
+def test_read_md_nonexistent_path(tmp_path: Path) -> None:
+    """Non-existent path → returns ({}, '')."""
+    from kanon._graph import _read_md
+
+    fm, body = _read_md(tmp_path / "does-not-exist.md")
+    assert fm == {}
+    assert body == ""
+
+
+# ---------------------------------------------------------------------------
+# _iter_md: README.md and _template.md skipped
+
+
+def test_iter_md_skips_readme_and_template(tmp_path: Path) -> None:
+    from kanon._graph import _iter_md
+
+    d = tmp_path / "docs"
+    d.mkdir()
+    (d / "README.md").write_text("# Readme\n")
+    (d / "_template.md").write_text("# Template\n")
+    (d / "real.md").write_text("# Real\n")
+    results = list(_iter_md(d))
+    assert [p.name for p in results] == ["real.md"]
+
+
+# ---------------------------------------------------------------------------
+# _discover_principles / _discover_personas: non-string id → no node
+
+
+def test_discover_principles_non_string_id(tmp_path: Path) -> None:
+    """Principle file with non-string id → no node created."""
+    _make_minimal_repo(tmp_path)
+    _write(tmp_path / "docs/foundations/principles/bad.md",
+           "---\nid: 42\nkind: pedagogical\nstatus: accepted\n---\n")
+    g = build_graph(tmp_path)
+    principles = [n for n in g.nodes if n.namespace == NAMESPACE_PRINCIPLE]
+    assert principles == []
+
+
+def test_discover_personas_non_string_id(tmp_path: Path) -> None:
+    """Persona file with non-string id → no node created."""
+    _make_minimal_repo(tmp_path)
+    _write(tmp_path / "docs/foundations/personas/bad.md",
+           "---\nid: 123\n---\n")
+    g = build_graph(tmp_path)
+    personas = [n for n in g.nodes if n.namespace == NAMESPACE_PERSONA]
+    assert personas == []
+
+
+# ---------------------------------------------------------------------------
+# _discover_aspects_and_capabilities: malformed YAML / non-dict shapes
+
+
+def test_discover_aspects_malformed_yaml(tmp_path: Path) -> None:
+    """Malformed YAML in top manifest → returns empty."""
+    _make_minimal_repo(tmp_path)
+    kit_root = tmp_path / "src/kanon/kit"
+    _write(kit_root / "manifest.yaml", "{{not: valid: yaml:")
+    g = build_graph(tmp_path)
+    aspects = [n for n in g.nodes if n.namespace == NAMESPACE_ASPECT]
+    assert aspects == []
+
+
+def test_discover_aspects_data_not_dict(tmp_path: Path) -> None:
+    """aspects_data not a dict → empty."""
+    _make_minimal_repo(tmp_path)
+    kit_root = tmp_path / "src/kanon/kit"
+    _write(kit_root / "manifest.yaml", "aspects: not-a-dict\n")
+    g = build_graph(tmp_path)
+    aspects = [n for n in g.nodes if n.namespace == NAMESPACE_ASPECT]
+    assert aspects == []
+
+
+def test_discover_aspects_entry_not_dict(tmp_path: Path) -> None:
+    """Aspect entry that is not a dict → skipped."""
+    _make_minimal_repo(tmp_path)
+    kit_root = tmp_path / "src/kanon/kit"
+    _write(kit_root / "manifest.yaml", "aspects:\n  bad-aspect: not-a-dict\n")
+    g = build_graph(tmp_path)
+    aspects = [n for n in g.nodes if n.namespace == NAMESPACE_ASPECT]
+    assert aspects == []
+
+
+# ---------------------------------------------------------------------------
+# _plan_edges: plans_dir doesn't exist → returns []
+
+
+def test_plan_edges_missing_dir(tmp_path: Path) -> None:
+    """plans_dir doesn't exist → returns []."""
+    from kanon._graph import _plan_edges
+
+    edges = _plan_edges(tmp_path / "nonexistent")
+    assert edges == []
+
+
+# ---------------------------------------------------------------------------
+# _spec_inv_ref_edges: OSError reading spec → returns []; no-dash INV ref
+
+
+def test_spec_inv_ref_edges_oserror(tmp_path: Path) -> None:
+    """OSError reading spec → returns []."""
+    from kanon._graph import _spec_inv_ref_edges
+
+    node = Node(
+        slug="broken",
+        namespace=NAMESPACE_SPEC,
+        path=tmp_path / "nonexistent.md",
+        status="draft",
+    )
+    edges = _spec_inv_ref_edges(node, {"other"})
+    assert edges == []
+
+
+def test_spec_inv_ref_edges_no_dash_in_ref(tmp_path: Path) -> None:
+    """INV ref with no dash after prefix → no edge."""
+    from kanon._graph import _spec_inv_ref_edges
+
+    spec_file = tmp_path / "nodash.md"
+    spec_file.write_text("---\nstatus: draft\n---\nINVnodash text\n")
+    node = Node(
+        slug="nodash",
+        namespace=NAMESPACE_SPEC,
+        path=spec_file,
+        status="draft",
+    )
+    edges = _spec_inv_ref_edges(node, {"other"})
+    assert edges == []
+
+
+# ---------------------------------------------------------------------------
+# build_graph: edge with unresolved dst_namespace → filtered out
+
+
+def test_build_graph_unresolved_dst_namespace_filtered(tmp_path: Path) -> None:
+    """An edge whose dst_namespace remains None after resolution is
+    excluded from inbound indices."""
+    _make_minimal_repo(tmp_path)
+    # Spec serves a slug that doesn't exist as any node → unresolved.
+    _write(tmp_path / "docs/specs/lonely.md",
+           "---\nstatus: draft\nserves: [nonexistent-thing]\n---\n")
+    g = build_graph(tmp_path)
+    # The edge exists but with dst_namespace=None.
+    unresolved = [e for e in g.edges if e.dst_namespace is None]
+    assert len(unresolved) >= 1
+    # None of the unresolved edges appear in inbound indices.
+    for key in g.inbound_all:
+        for e in g.inbound_all[key]:
+            assert e.dst_namespace is not None
+
+
+# ---------------------------------------------------------------------------
+# Real-repo smoke (regression guard for downstream commands)
+
+
 def test_real_repo_loads_without_error() -> None:
     g = build_graph(_REPO_ROOT)
     assert len(g.nodes) > 0
