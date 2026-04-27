@@ -29,6 +29,7 @@ Capabilities committed to but not yet shipped. Each is tracked as a `status: def
 |---|---|
 | [`specs/spec-graph-diff.md`](../specs/spec-graph-diff.md) | `kanon graph diff` — invariant-level diff between two snapshots, keyed by `INV-*` anchors, ancestor-required ordering. Long pole; depends on the `_graph.py` primitive landing first. |
 | [`specs/expand-and-contract-lifecycle.md`](../specs/expand-and-contract-lifecycle.md) | Named lifecycle for breaking spec changes (expand → migrate → contract). Unblocked by `spec-graph-orphans.md`'s graph-load primitive (which provides the `consumers-of` data structure). |
+| — | Stale-draft detection — `kanon verify` warns when a `status: draft` artifact has no associated in-progress plan and all siblings are in terminal states. Needs opt-out heuristic design; deferred until demand from 2+ adopters. |
 
 ## How deferred specs graduate
 
