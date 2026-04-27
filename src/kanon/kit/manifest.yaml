@@ -82,3 +82,12 @@ aspects:
     requires: []
     provides:
       - dependency-hygiene
+
+  kanon-fidelity:
+    path: aspects/kanon-fidelity
+    stability: experimental
+    depth-range: [0, 1]
+    default-depth: 1
+    requires: []
+    provides:
+      - behavioural-verification

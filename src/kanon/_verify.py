@@ -17,6 +17,7 @@ import yaml
 from kanon._manifest import (
     _all_known_aspects,
     _aspect_depth_range,
+    _aspect_provides,
     _aspect_sections,
     _aspect_validators,
     _expected_files,
@@ -235,3 +236,74 @@ def run_project_validators(
                     f"project-validator {module_path!r} (aspect {aspect_name!r}): "
                     f"raised {type(exc).__name__}: {exc}"
                 )
+
+
+def check_fidelity_assertions(
+    target: Path,
+    aspects: dict[str, int],
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    """Run fidelity-fixture replay if any enabled aspect declares the
+    ``behavioural-verification`` capability.
+
+    Realises the verification-contract carve-out (INV-10, ratified by
+    ADR-0029). Per ``docs/specs/fidelity.md`` INV-6 (aspect-gated) and INV-7
+    (text-only bounds): when no enabled aspect declares the capability, this
+    function returns immediately with zero filesystem reads under
+    ``.kanon/fidelity/`` and emits no errors or warnings.
+
+    Failure taxonomy (spec INV-8):
+        - Missing required frontmatter, malformed lists, regex compilation
+          errors, dogfood files with zero turns matching the configured
+          actor, and any assertion failure → ``errors``.
+        - Missing paired ``.dogfood.md`` capture → ``warnings``.
+    """
+    from kanon._fidelity import (
+        BEHAVIOURAL_VERIFICATION_CAPABILITY,
+        discover_fixtures,
+        dogfood_path_for,
+        evaluate_fixture,
+        parse_fixture,
+    )
+
+    # INV-6 gate: any enabled aspect declaring the capability is sufficient.
+    capability_aspect: str | None = None
+    for name, depth in aspects.items():
+        if depth < 1:
+            continue
+        try:
+            provides = _aspect_provides(name)
+        except Exception:
+            continue
+        if BEHAVIOURAL_VERIFICATION_CAPABILITY in provides:
+            capability_aspect = name
+            break
+    if capability_aspect is None:
+        return
+
+    fixture_paths = discover_fixtures(target)
+    if not fixture_paths:
+        return  # Aspect enabled but no fixtures authored yet — silent.
+
+    for fixture_path in fixture_paths:
+        fixture, parse_errors = parse_fixture(fixture_path)
+        if parse_errors:
+            errors.extend(parse_errors)
+            continue
+        assert fixture is not None
+        dogfood = dogfood_path_for(fixture_path)
+        if not dogfood.is_file():
+            warnings.append(
+                f"fidelity: {fixture_path.name}: paired dogfood capture "
+                f"({dogfood.name}) is missing"
+            )
+            continue
+        try:
+            dogfood_text = dogfood.read_text(encoding="utf-8")
+        except OSError as exc:
+            errors.append(
+                f"fidelity: {dogfood.name}: cannot read capture: {exc}"
+            )
+            continue
+        errors.extend(evaluate_fixture(fixture, dogfood_text))

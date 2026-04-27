@@ -25,3 +25,7 @@ aspects:
     depth: 2
     enabled_at: '2026-04-25T03:07:38+00:00'
     config: {}
+  kanon-fidelity:
+    depth: 1
+    enabled_at: '2026-04-27T05:08:04+00:00'
+    config: {}

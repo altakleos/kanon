@@ -515,6 +515,7 @@ def verify(target: Path) -> None:
     from kanon._verify import (
         check_agents_md_markers,
         check_aspects_known,
+        check_fidelity_assertions,
         check_fidelity_lock,
         check_required_files,
         check_verified_by,
@@ -567,6 +568,11 @@ def verify(target: Path) -> None:
         spec_sha_fn=_spec_sha, accepted_specs_fn=_accepted_or_draft_specs,
     )
     check_verified_by(target, aspects.get("kanon-sdd", 0), warnings)
+    # Per docs/specs/verification-contract.md INV-10 (carve-out from INV-9,
+    # ratified by ADR-0029): fidelity-fixture replay runs only when an
+    # enabled aspect declares the `behavioural-verification` capability
+    # (per ADR-0026). When no such aspect is enabled, this is a no-op.
+    check_fidelity_assertions(target, aspects, errors, warnings)
 
     status = "fail" if errors else "ok"
     _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status=status)
