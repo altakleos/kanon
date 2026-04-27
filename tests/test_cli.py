@@ -2232,3 +2232,47 @@ def test_project_aspect_validator_import_failure_recorded(tmp_path: Path) -> Non
     # (The kit-managed AGENTS.md is intact, so no other structural errors expected;
     # simply asserting the JSON report shape proves the run completed.)
     assert '"status": "fail"' in result.output
+
+
+def test_upgrade_does_not_modify_project_aspect_files(tmp_path: Path) -> None:
+    """`kanon upgrade` re-renders kit-aspect content from the installed kit and
+    leaves project-aspect contents under .kanon/aspects/ untouched. The
+    `kit_version` pin in config governs only kit-aspect content; project-
+    aspects version with the consumer's own git history (project-aspects
+    spec INV-10 / source-routing)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    aspect_dir = _stage_project_aspect(
+        target, "project-stable", _PROJECT_ASPECT_MIN_MANIFEST
+    )
+    # Add a sentinel file inside the project-aspect directory; upgrade must
+    # not touch it.
+    sentinel = aspect_dir / "do-not-touch.txt"
+    sentinel.write_text("user-authored content\n", encoding="utf-8")
+
+    runner.invoke(main, ["aspect", "add", str(target), "project-stable"])
+
+    # Force kit_version mismatch so upgrade actively re-renders kit content.
+    config_path = target / ".kanon" / "config.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["kit_version"] = "0.0.1"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+
+    # Project-aspect's user-authored content survives upgrade verbatim.
+    assert sentinel.read_text(encoding="utf-8") == "user-authored content\n"
+    assert (
+        (aspect_dir / "manifest.yaml").read_text(encoding="utf-8")
+        == _PROJECT_ASPECT_MIN_MANIFEST
+    )
+
+    # Upgrade refreshed the kit_version pin (kit-side content path) but the
+    # project-aspect's config entry survives unchanged.
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    assert config["kit_version"] != "0.0.1"  # bumped by upgrade
+    assert "project-stable" in config["aspects"]
+    assert config["aspects"]["project-stable"]["depth"] == 1

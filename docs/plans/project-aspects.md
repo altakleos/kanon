@@ -2,7 +2,7 @@
 feature: project-aspects
 serves:
   - docs/specs/project-aspects.md
-status: in-progress
+status: done
 date: 2026-04-26
 target-release: v0.3
 ---
@@ -66,24 +66,24 @@ Sequencing: ADR first; then the rename-and-sugar pass (mechanical, big patch, no
 
 ### Phase 5 — Documentation, spec promotion, release wiring
 
-- [ ] T32: Promote `docs/specs/project-aspects.md` from `status: draft` to `status: accepted`; populate `invariant_coverage:` mapping each INV anchor to the test that exercises it. Remove `fixtures_deferred:` since fixtures now exist → `docs/specs/project-aspects.md`. (depends: T26, T30)
-- [ ] T33: Add CHANGELOG entry under `## [Unreleased]` — `feat: project-defined aspects` with one-paragraph summary referencing ADR-0028 and spec → `CHANGELOG.md`. (depends: T32)
-- [ ] T34: Update README aspect-model section to describe project-aspects + the namespace grammar → `README.md`. (depends: T32)
-- [ ] T35: Run `kanon fidelity update .` on this repo to track the promoted spec → `.kanon/fidelity.lock`. (depends: T32)
-- [ ] T36: Update `docs/plans/roadmap.md` only if a deferred capability moves status as a result; otherwise None → `docs/plans/roadmap.md`. (depends: T32)
+- [x] T32: Promote `docs/specs/project-aspects.md` from `status: draft` to `status: accepted`; populate `invariant_coverage:` mapping each INV anchor to the test that exercises it. Remove `fixtures_deferred:` since fixtures now exist → `docs/specs/project-aspects.md`. (depends: T26, T30)
+- [x] T33: Add CHANGELOG entry under `## [Unreleased]` — `feat: project-defined aspects` with one-paragraph summary referencing ADR-0028 and spec → `CHANGELOG.md`. (depends: T32)
+- [x] T34: Update README aspect-model section to describe project-aspects + the namespace grammar → `README.md`. (depends: T32)
+- [x] T35: Run `kanon fidelity update .` on this repo to track the promoted spec → `.kanon/fidelity.lock`. (depends: T32)
+- [x] T36: Update `docs/plans/roadmap.md` only if a deferred capability moves status as a result; otherwise None → `docs/plans/roadmap.md`. (depends: T32)
 
 ## Acceptance Criteria
 
-- [ ] AC1: Every invariant in `docs/specs/project-aspects.md` (INV-1..INV-10) is exercised by at least one test in `tests/` and recorded in the spec's `invariant_coverage:`.
-- [ ] AC2: Every existing CLI invocation that uses bare aspect names (`kanon aspect set-depth . sdd 2`, `kanon init . --aspects sdd:1,worktrees:2`, etc.) continues to work and resolves to the `kanon-` namespace.
-- [ ] AC3: A project-aspect declared at `.kanon/aspects/project-foo/manifest.yaml` is discovered and listed by `kanon aspect list`, with the same metadata surface kit-aspects show.
-- [ ] AC4: A v2 consumer config (`aspects: {sdd: {...}}`) auto-migrates to v3 (`aspects: {kanon-sdd: {...}}`) on first `kanon upgrade` after this lands; AGENTS.md markers migrate in the same operation; the migration is one-way, idempotent, and emits a single console line acknowledging it.
-- [ ] AC5: `kanon init`, `kanon upgrade`, `kanon aspect set-depth` raise `ClickException` naming both aspects and the path when a kit-aspect and a project-aspect declare the same consumer-relative scaffold path.
-- [ ] AC6: `.kanon/aspects/kanon-foo/manifest.yaml` is rejected at load with a single-line error naming the offending path and the namespace-ownership rule.
-- [ ] AC7: `kanon verify .` invokes every enabled project-aspect's declared `validators:` modules; their findings appear in the JSON report. A project-validator cannot suppress a kit-emitted error.
-- [ ] AC8: This repo's own `.kanon/config.yaml` and AGENTS.md markers use namespaced aspect names after Phase 1 lands; `kanon verify .` is `status: ok` with zero warnings.
-- [ ] AC9: `pytest -q`, `ruff check src/ tests/ ci/`, and `mypy src/kanon` pass on every PR. Coverage stays at or above the configured floor.
-- [ ] AC10: `kanon verify .` returns ok against post-merge `main` after each phase's PR.
+- [x] AC1: Every invariant in `docs/specs/project-aspects.md` (INV-1..INV-10) is exercised by at least one test in `tests/` and recorded in the spec's `invariant_coverage:`.
+- [x] AC2: Every existing CLI invocation that uses bare aspect names (`kanon aspect set-depth . sdd 2`, `kanon init . --aspects sdd:1,worktrees:2`, etc.) continues to work and resolves to the `kanon-` namespace.
+- [x] AC3: A project-aspect declared at `.kanon/aspects/project-foo/manifest.yaml` is discovered and listed by `kanon aspect list`, with the same metadata surface kit-aspects show.
+- [x] AC4: A v2 consumer config (`aspects: {sdd: {...}}`) auto-migrates to v3 (`aspects: {kanon-sdd: {...}}`) on first `kanon upgrade` after this lands; AGENTS.md markers migrate in the same operation; the migration is one-way, idempotent, and emits a single console line acknowledging it.
+- [x] AC5: `kanon init`, `kanon upgrade`, `kanon aspect set-depth` raise `ClickException` naming both aspects and the path when a kit-aspect and a project-aspect declare the same consumer-relative scaffold path.
+- [x] AC6: `.kanon/aspects/kanon-foo/manifest.yaml` is rejected at load with a single-line error naming the offending path and the namespace-ownership rule.
+- [x] AC7: `kanon verify .` invokes every enabled project-aspect's declared `validators:` modules; their findings appear in the JSON report. A project-validator cannot suppress a kit-emitted error.
+- [x] AC8: This repo's own `.kanon/config.yaml` and AGENTS.md markers use namespaced aspect names after Phase 1 lands; `kanon verify .` is `status: ok` with zero warnings.
+- [x] AC9: `pytest -q`, `ruff check src/ tests/ ci/`, and `mypy src/kanon` pass on every PR. Coverage stays at or above the configured floor.
+- [x] AC10: `kanon verify .` returns ok against post-merge `main` after each phase's PR.
 
 ## Out of Scope (deferred)
 
