@@ -130,7 +130,7 @@ Run tests:
 
 ## Status
 
-**Early alpha (v0.2.0a6).** The kit ships six aspects (`sdd` at depth 0–3; `worktrees`, `release`, `testing`, `security`, `deps` at depth 0–2 or 0–3), the aspect model with a `provides:` capability registry, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
+**Early alpha (v0.2.0a7).** The kit ships six aspects (`sdd` at depth 0–3; `worktrees`, `release`, `testing`, `security`, `deps` at depth 0–2 or 0–3), the aspect model with a `provides:` capability registry, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
 
 ## License
 

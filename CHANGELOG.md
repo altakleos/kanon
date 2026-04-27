@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a7] — 2026-04-27
+
 ### Added
 
 - **ADR-immutability gate (kit-internal CI + consumer-facing protocol prose).** The kit's own CI now hard-fails on any post-acceptance ADR-body modification that is not (a) a frontmatter-only change, (b) an appended `## Historical Note` section, or (c) explicitly opted out via an `Allow-ADR-edit: NNNN — <reason>` commit-message trailer. Em-dash, en-dash, ASCII hyphen, or colon are all accepted as the trailer's separator before the reason. Multiple ADRs may be cited comma-separated. Two operating modes: PR mode walks every commit in `BASE..HEAD`; push mode (default) checks only `HEAD`. The gate ships at `ci/check_adr_immutability.py` (kit-internal — **not** scaffolded to consumers as part of any aspect's `files:` per ADR-0032's "consumer discipline ladder" stance), wired into `.github/workflows/verify.yml` (the `actions/checkout@v5` step bumps to `fetch-depth: 0` so PR-mode against `origin/<base>` works). Consumers wanting the same discipline get a new protocol at `.kanon/protocols/kanon-sdd/adr-immutability.md` shipped at `kanon-sdd` depth 3 listing several enforcement options (CI gate via copying the script, pre-commit hook, manual review checklist). `docs/development-process.md` § ADRs gains a paragraph naming the trailer's exact shape so authors find it without reading the ADR. Per [`docs/decisions/0032-adr-immutability-gate.md`](docs/decisions/0032-adr-immutability-gate.md). Track 2 of [`docs/plans/fidelity-and-immutability.md`](docs/plans/fidelity-and-immutability.md).
