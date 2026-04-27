@@ -496,3 +496,202 @@ def test_breaking_dogfood_with_forbidden_command_fails_exemplar() -> None:
     assert any("forbidden phrase" in e for e in eval_errors), (
         f"expected forbidden_phrases failure, got: {eval_errors}"
     )
+
+
+# --- _verify.py coverage: check_fidelity_lock error paths ---
+
+
+def test_check_fidelity_lock_malformed_lock_returns_early(tmp_path: Path) -> None:
+    """A fidelity.lock that is not a dict with 'entries' returns early."""
+    from kanon._verify import check_fidelity_lock
+
+    (tmp_path / ".kanon").mkdir(parents=True)
+    (tmp_path / ".kanon" / "fidelity.lock").write_text("just a string\n")
+    warnings: list[str] = []
+    check_fidelity_lock(tmp_path, 2, warnings, lambda p: "sha", lambda d: [])
+    assert warnings == []
+
+
+def test_check_fidelity_lock_missing_fixture_warning(tmp_path: Path) -> None:
+    """A fixture referenced in fidelity.lock that no longer exists produces a warning."""
+    from kanon._verify import check_fidelity_lock
+
+    (tmp_path / ".kanon").mkdir(parents=True)
+    lock = {
+        "entries": {
+            "my-spec": {
+                "spec_sha": "abc",
+                "fixture_shas": {"tests/fixtures/gone.txt": "def"},
+            }
+        }
+    }
+    (tmp_path / ".kanon" / "fidelity.lock").write_text(
+        yaml.dump(lock), encoding="utf-8"
+    )
+    (tmp_path / "docs" / "specs").mkdir(parents=True)
+    (tmp_path / "docs" / "specs" / "my-spec.md").write_text("content")
+    warnings: list[str] = []
+    check_fidelity_lock(
+        tmp_path, 2, warnings,
+        spec_sha_fn=lambda p: "abc",
+        accepted_specs_fn=lambda d: [],
+    )
+    assert any("no longer exists" in w for w in warnings)
+
+
+def test_check_fidelity_lock_untracked_spec_warning(tmp_path: Path) -> None:
+    """A spec not tracked in fidelity.lock produces a warning."""
+    from kanon._verify import check_fidelity_lock
+
+    (tmp_path / ".kanon").mkdir(parents=True)
+    (tmp_path / ".kanon" / "fidelity.lock").write_text(
+        yaml.dump({"entries": {}}), encoding="utf-8"
+    )
+    specs_dir = tmp_path / "docs" / "specs"
+    specs_dir.mkdir(parents=True)
+    untracked = specs_dir / "untracked.md"
+    untracked.write_text("content")
+    warnings: list[str] = []
+    check_fidelity_lock(
+        tmp_path, 2, warnings,
+        spec_sha_fn=lambda p: "sha",
+        accepted_specs_fn=lambda d: [untracked],
+    )
+    assert any("not tracked in fidelity.lock" in w for w in warnings)
+
+
+# --- _verify.py coverage: check_verified_by error paths ---
+
+
+def test_check_verified_by_skips_non_accepted_specs(tmp_path: Path) -> None:
+    """Specs with status != 'accepted' are skipped."""
+    from kanon._verify import check_verified_by
+
+    specs_dir = tmp_path / "docs" / "specs"
+    specs_dir.mkdir(parents=True)
+    (specs_dir / "draft.md").write_text(
+        "---\nstatus: draft\n---\n<!-- INV-draft-foo-bar -->\n"
+    )
+    warnings: list[str] = []
+    check_verified_by(tmp_path, 2, warnings)
+    assert warnings == []
+
+
+def test_check_verified_by_missing_invariant_coverage(tmp_path: Path) -> None:
+    """An accepted spec with anchors but missing invariant_coverage produces a warning."""
+    from kanon._verify import check_verified_by
+
+    specs_dir = tmp_path / "docs" / "specs"
+    specs_dir.mkdir(parents=True)
+    (specs_dir / "feature.md").write_text(
+        "---\nstatus: accepted\n---\n<!-- INV-feature-foo-bar -->\n"
+    )
+    warnings: list[str] = []
+    check_verified_by(tmp_path, 2, warnings)
+    assert any("missing invariant_coverage" in w for w in warnings)
+
+
+# --- _verify.py coverage: run_project_validators error paths ---
+
+
+def test_run_project_validators_manifest_load_failure(tmp_path: Path) -> None:
+    """A project-aspect whose manifest fails to load records an error."""
+    from unittest.mock import patch
+
+    from kanon._verify import run_project_validators
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    with patch(
+        "kanon._verify._aspect_validators",
+        side_effect=Exception("manifest broken"),
+    ):
+        run_project_validators(
+            tmp_path, {"project-broken": 1}, errors, warnings,
+        )
+    assert any("failed to load manifest" in e for e in errors)
+
+
+def test_run_project_validators_non_callable_check(tmp_path: Path) -> None:
+    """A validator module without a callable `check` records an error."""
+    import types
+    from unittest.mock import patch
+
+    from kanon._verify import run_project_validators
+
+    fake_module = types.ModuleType("fake_validator")
+    fake_module.check = "not-callable"  # type: ignore[attr-defined]
+    errors: list[str] = []
+    warnings: list[str] = []
+    with patch("kanon._verify._aspect_validators", return_value=["fake_validator"]), \
+         patch("importlib.import_module", return_value=fake_module):
+        run_project_validators(
+            tmp_path, {"project-test": 1}, errors, warnings,
+        )
+    assert any("no callable `check" in e for e in errors)
+
+
+def test_run_project_validators_check_exception(tmp_path: Path) -> None:
+    """A validator whose check() raises records the exception as an error."""
+    import types
+    from unittest.mock import patch
+
+    from kanon._verify import run_project_validators
+
+    fake_module = types.ModuleType("fake_validator")
+
+    def bad_check(target, errors, warnings):
+        raise RuntimeError("boom")
+
+    fake_module.check = bad_check  # type: ignore[attr-defined]
+    errors: list[str] = []
+    warnings: list[str] = []
+    with patch("kanon._verify._aspect_validators", return_value=["fake_validator"]), \
+         patch("importlib.import_module", return_value=fake_module):
+        run_project_validators(
+            tmp_path, {"project-test": 1}, errors, warnings,
+        )
+    assert any("raised RuntimeError" in e for e in errors)
+
+
+def test_run_project_validators_import_failure(tmp_path: Path) -> None:
+    """A validator module that fails to import records an error."""
+    from unittest.mock import patch
+
+    from kanon._verify import run_project_validators
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    with patch("kanon._verify._aspect_validators", return_value=["no.such.module"]), \
+         patch("importlib.import_module", side_effect=ImportError("not found")):
+        run_project_validators(
+            tmp_path, {"project-test": 1}, errors, warnings,
+        )
+    assert any("import failed" in e for e in errors)
+
+
+# --- _verify.py coverage: check_fidelity_assertions edge cases ---
+
+
+def test_check_fidelity_assertions_no_fixtures_returns_early(tmp_path: Path) -> None:
+    """When the fidelity dir exists but has no fixtures, no errors or warnings."""
+    (tmp_path / ".kanon" / "fidelity").mkdir(parents=True)
+    errors: list[str] = []
+    warnings: list[str] = []
+    check_fidelity_assertions(tmp_path, {"kanon-fidelity": 1}, errors, warnings)
+    assert errors == []
+    assert warnings == []
+
+
+def test_check_fidelity_assertions_parse_error_propagated(tmp_path: Path) -> None:
+    """A fixture with parse errors propagates them as errors."""
+    fidelity = tmp_path / ".kanon" / "fidelity"
+    _write_fixture(
+        fidelity / "bad.md",
+        "---\nforbidden_phrases:\n  - foo\n---\nbody\n",
+    )
+    errors: list[str] = []
+    warnings: list[str] = []
+    check_fidelity_assertions(tmp_path, {"kanon-fidelity": 1}, errors, warnings)
+    assert len(errors) > 0
+    assert any("'protocol'" in e or "'actor'" in e for e in errors)

@@ -323,3 +323,170 @@ def test_testing_config_schema_round_trips() -> None:
     assert loaded["coverage_floor"]["type"] == "integer"
     assert loaded["coverage_floor"]["default"] == 80
     assert "description" in loaded["coverage_floor"]
+
+
+# --- _manifest.py coverage: _discover_project_aspects error paths ---
+
+
+def test_discover_project_aspects_skips_hidden_dirs(tmp_path: Path) -> None:
+    """Hidden directories (starting with '.') under .kanon/aspects/ are skipped."""
+    from kanon._manifest import _discover_project_aspects
+
+    aspects_dir = tmp_path / ".kanon" / "aspects"
+    (aspects_dir / ".hidden-dir").mkdir(parents=True)
+    (aspects_dir / ".hidden-dir" / "manifest.yaml").write_text(
+        "stability: experimental\ndepth-range: [0, 1]\ndefault-depth: 1\n"
+    )
+    result = _discover_project_aspects(tmp_path)
+    assert result == {}
+
+
+def test_discover_project_aspects_missing_manifest_error(tmp_path: Path) -> None:
+    """A project-aspect directory without manifest.yaml raises ClickException."""
+    import click
+
+    from kanon._manifest import _discover_project_aspects
+
+    (tmp_path / ".kanon" / "aspects" / "project-nofile").mkdir(parents=True)
+    with pytest.raises(click.ClickException, match="missing manifest.yaml"):
+        _discover_project_aspects(tmp_path)
+
+
+def test_discover_project_aspects_kanon_prefix_rejected(tmp_path: Path) -> None:
+    """A kanon-* directory under .kanon/aspects/ is rejected (namespace ownership)."""
+    import click
+
+    from kanon._manifest import _discover_project_aspects
+
+    d = tmp_path / ".kanon" / "aspects" / "kanon-bad"
+    d.mkdir(parents=True)
+    (d / "manifest.yaml").write_text("stability: experimental\n")
+    with pytest.raises(click.ClickException, match="namespace ownership"):
+        _discover_project_aspects(tmp_path)
+
+
+def test_discover_project_aspects_invalid_depth_range(tmp_path: Path) -> None:
+    """A project-aspect with a non-list depth-range raises ClickException."""
+    import click
+
+    from kanon._manifest import _discover_project_aspects
+
+    d = tmp_path / ".kanon" / "aspects" / "project-bad"
+    d.mkdir(parents=True)
+    (d / "manifest.yaml").write_text(
+        "stability: experimental\ndepth-range: 3\ndefault-depth: 1\n"
+    )
+    with pytest.raises(click.ClickException, match="depth-range must be"):
+        _discover_project_aspects(tmp_path)
+
+
+def test_discover_project_aspects_invalid_stability(tmp_path: Path) -> None:
+    """A project-aspect with an invalid stability value raises ClickException."""
+    import click
+
+    from kanon._manifest import _discover_project_aspects
+
+    d = tmp_path / ".kanon" / "aspects" / "project-bad"
+    d.mkdir(parents=True)
+    (d / "manifest.yaml").write_text(
+        "stability: alpha\ndepth-range: [0, 1]\ndefault-depth: 1\n"
+    )
+    with pytest.raises(click.ClickException, match="invalid stability"):
+        _discover_project_aspects(tmp_path)
+
+
+def test_discover_project_aspects_missing_required_field(tmp_path: Path) -> None:
+    """A project-aspect missing a required field raises ClickException."""
+    import click
+
+    from kanon._manifest import _discover_project_aspects
+
+    d = tmp_path / ".kanon" / "aspects" / "project-bad"
+    d.mkdir(parents=True)
+    (d / "manifest.yaml").write_text("stability: experimental\ndefault-depth: 1\n")
+    with pytest.raises(click.ClickException, match="missing required field"):
+        _discover_project_aspects(tmp_path)
+
+
+# --- _manifest.py coverage: _validate_config_schema error paths ---
+
+
+def test_validate_config_schema_non_dict_rejected(tmp_path: Path) -> None:
+    """A non-dict config-schema raises ClickException."""
+    import click
+
+    from kanon._manifest import _validate_config_schema
+
+    with pytest.raises(click.ClickException, match="must be a mapping"):
+        _validate_config_schema(tmp_path / "fake.yaml", ["not", "a", "dict"])
+
+
+def test_validate_config_schema_non_string_key_rejected(tmp_path: Path) -> None:
+    """A non-string key in config-schema raises ClickException."""
+    import click
+
+    from kanon._manifest import _validate_config_schema
+
+    with pytest.raises(click.ClickException, match="must be a non-empty string"):
+        _validate_config_schema(tmp_path / "fake.yaml", {42: {"type": "integer"}})
+
+
+def test_validate_config_schema_non_dict_descriptor_rejected(tmp_path: Path) -> None:
+    """A non-dict descriptor in config-schema raises ClickException."""
+    import click
+
+    from kanon._manifest import _validate_config_schema
+
+    with pytest.raises(click.ClickException, match="must be a mapping"):
+        _validate_config_schema(tmp_path / "fake.yaml", {"key1": "not-a-dict"})
+
+
+# --- _manifest.py coverage: _validate_validators_field error paths ---
+
+
+def test_validate_validators_non_list_rejected(tmp_path: Path) -> None:
+    """A non-list validators field raises ClickException."""
+    import click
+
+    from kanon._manifest import _validate_validators_field
+
+    with pytest.raises(click.ClickException, match="must be a list"):
+        _validate_validators_field(tmp_path / "fake.yaml", "not-a-list")
+
+
+def test_validate_validators_non_string_entry_rejected(tmp_path: Path) -> None:
+    """A non-string entry in validators raises ClickException."""
+    import click
+
+    from kanon._manifest import _validate_validators_field
+
+    with pytest.raises(click.ClickException, match="must be a string"):
+        _validate_validators_field(tmp_path / "fake.yaml", [42])
+
+
+def test_validate_validators_non_dotted_path_rejected(tmp_path: Path) -> None:
+    """A non-dotted-path entry in validators raises ClickException."""
+    import click
+
+    from kanon._manifest import _validate_validators_field
+
+    with pytest.raises(click.ClickException, match="not a valid dotted module path"):
+        _validate_validators_field(tmp_path / "fake.yaml", ["not valid!"])
+
+
+# --- _manifest.py coverage: _load_aspect_manifest error paths ---
+
+
+def test_load_aspect_manifest_unknown_aspect_rejected() -> None:
+    """An unknown aspect name raises ClickException."""
+    import click
+
+    from kanon._manifest import _load_aspect_manifest, _set_project_aspects_overlay
+
+    _load_aspect_manifest.cache_clear()
+    _set_project_aspects_overlay(None)
+    try:
+        with pytest.raises(click.ClickException, match="Unknown aspect"):
+            _load_aspect_manifest("kanon-nonexistent-aspect-xyz")
+    finally:
+        _load_aspect_manifest.cache_clear()

@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 from kanon._atomic import read_sentinel
@@ -388,3 +389,95 @@ def test_ops_manifest_records_full_content(tmp_path: Path) -> None:
     assert payload["type"] == "principle"
     assert all("content" in entry for entry in payload["files"])
     assert all("sha256" in entry for entry in payload["files"])
+
+
+# --- _rename.py coverage: _require_canonical_exists error paths ---
+
+
+def test_require_canonical_exists_file_not_found(tmp_path: Path) -> None:
+    """Missing principle file raises ClickException."""
+    import click
+
+    from kanon._rename import _require_canonical_exists
+
+    _make_minimal_repo(tmp_path)
+    with pytest.raises(click.ClickException, match="Cannot rename"):
+        _require_canonical_exists(tmp_path, "principle", "P-nonexistent")
+
+
+# --- _rename.py coverage: _replace_in_frontmatter edge cases ---
+
+
+def test_replace_in_frontmatter_no_frontmatter(tmp_path: Path) -> None:
+    """A file without frontmatter is returned unchanged."""
+    from kanon._rename import _replace_in_frontmatter, _slug_boundary_pattern
+
+    text = "# Just a heading\nNo frontmatter here.\n"
+    result = _replace_in_frontmatter(text, _slug_boundary_pattern("P-foo"), "P-bar")
+    assert result == text
+
+
+def test_replace_in_frontmatter_no_match(tmp_path: Path) -> None:
+    """Frontmatter that doesn't contain the slug is returned unchanged."""
+    from kanon._rename import _replace_in_frontmatter, _slug_boundary_pattern
+
+    text = "---\nid: P-other\nstatus: accepted\n---\nBody text.\n"
+    result = _replace_in_frontmatter(text, _slug_boundary_pattern("P-foo"), "P-bar")
+    assert result == text
+
+
+# --- _rename.py coverage: read_ops_manifest error paths ---
+
+
+def test_read_ops_manifest_file_not_found(tmp_path: Path) -> None:
+    """Missing ops-manifest returns None."""
+    from kanon._rename import read_ops_manifest
+
+    assert read_ops_manifest(tmp_path) is None
+
+
+def test_read_ops_manifest_json_decode_error(tmp_path: Path) -> None:
+    """Malformed JSON in ops-manifest raises ClickException."""
+    import click
+
+    from kanon._rename import read_ops_manifest
+
+    (tmp_path / ".kanon").mkdir(parents=True)
+    (tmp_path / ".kanon" / "graph-rename.ops").write_text("not json{{{")
+    with pytest.raises(click.ClickException, match="Cannot parse"):
+        read_ops_manifest(tmp_path)
+
+
+def test_read_ops_manifest_malformed_data(tmp_path: Path) -> None:
+    """A non-dict ops-manifest raises ClickException."""
+    import click
+
+    from kanon._rename import read_ops_manifest
+
+    (tmp_path / ".kanon").mkdir(parents=True)
+    (tmp_path / ".kanon" / "graph-rename.ops").write_text('"just a string"')
+    with pytest.raises(click.ClickException, match="malformed"):
+        read_ops_manifest(tmp_path)
+
+
+# --- _rename.py coverage: format_dry_run empty rewrites ---
+
+
+def test_format_dry_run_empty_rewrites(tmp_path: Path) -> None:
+    """An empty rewrites list produces the fallback message."""
+    from kanon._rename import format_dry_run
+
+    result = format_dry_run([], tmp_path)
+    assert result == "(no files would change)"
+
+
+# --- _rename.py coverage: compute_rewrites non-sdd namespace ---
+
+
+def test_compute_rewrites_non_principle_namespace_raises(tmp_path: Path) -> None:
+    """A non-principle namespace raises NotImplementedError."""
+    from kanon._rename import compute_rewrites
+
+    _make_minimal_repo(tmp_path)
+    with pytest.raises(NotImplementedError, match="not yet implemented"):
+        compute_rewrites(tmp_path, "spec", "old", "new")
