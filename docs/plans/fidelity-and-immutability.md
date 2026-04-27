@@ -2,7 +2,7 @@
 feature: fidelity-and-immutability
 serves: docs/specs/verification-contract.md
 design: "Follows ADR-0028 (project-aspects), ADR-0029 (verify carve-out — drafted in this plan's Track 0)"
-status: in-progress
+status: done
 date: 2026-04-27
 ---
 # Plan: v0.3 — fidelity track + ADR-immutability + (optional) principle override
