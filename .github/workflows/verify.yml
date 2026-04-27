@@ -59,3 +59,11 @@ jobs:
           else
             python ci/check_adr_immutability.py
           fi
+
+      - name: Check process gates (plan-before-build, spec-before-design)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            python ci/check_process_gates.py --base-ref "origin/${{ github.base_ref }}"
+          else
+            python ci/check_process_gates.py
+          fi

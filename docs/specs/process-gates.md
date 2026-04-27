@@ -1,7 +1,31 @@
 ---
 status: accepted
 date: 2026-04-27
-fixtures_deferred: spec is draft; fixtures will be added when status reaches accepted
+fixtures:
+  - tests/ci/test_check_process_gates.py
+invariant_coverage:
+  INV-process-gates-plan-co-presence:
+    - tests/ci/test_check_process_gates.py::test_src_change_with_plan_status_done
+    - tests/ci/test_check_process_gates.py::test_src_change_with_plan_status_in_progress
+    - tests/ci/test_check_process_gates.py::test_src_change_with_no_plan_fails
+  INV-process-gates-spec-co-presence:
+    - tests/ci/test_check_process_gates.py::test_new_cli_command_with_spec_accepted
+    - tests/ci/test_check_process_gates.py::test_new_cli_command_with_no_spec_fails
+  INV-process-gates-trivial-override:
+    - tests/ci/test_check_process_gates.py::test_src_change_with_trivial_trailer_exempts_plan
+    - tests/ci/test_check_process_gates.py::test_new_cli_command_with_trivial_but_no_spec_still_fails
+  INV-process-gates-reference-semantics:
+    - tests/ci/test_check_process_gates.py::test_plan_referenced_via_commit_message
+    - tests/ci/test_check_process_gates.py::test_spec_referenced_via_commit_message
+  INV-process-gates-git-aware:
+    - tests/ci/test_check_process_gates.py::test_pr_mode_with_base_ref
+    - tests/ci/test_check_process_gates.py::test_pr_mode_catches_violation
+  INV-process-gates-standalone:
+    - tests/ci/test_check_process_gates.py::test_no_kanon_imports
+  INV-process-gates-json-report:
+    - tests/ci/test_check_process_gates.py::test_json_report_structure
+  INV-process-gates-docs-only-exempt:
+    - tests/ci/test_check_process_gates.py::test_docs_only_change_is_ok
 ---
 
 # Spec: Process-Gate CI Enforcement
