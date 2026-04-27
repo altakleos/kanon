@@ -332,7 +332,7 @@ _PENDING_OP_TO_COMMAND: dict[str, str] = {
 def _check_pending_recovery(target: Path) -> None:
     """If a previous operation was interrupted, recover or warn.
 
-    Per ADR-0029 the recovery model is hybrid:
+    Per ADR-0030 the recovery model is hybrid:
 
     - `graph-rename` carries an ops-manifest at `.kanon/graph-rename.ops`
       that captures the per-file rewrite plan. On detecting that sentinel,

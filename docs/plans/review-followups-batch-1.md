@@ -20,7 +20,7 @@ Closes four "documented but not delivered" gaps surfaced by the comprehensive v1
 
 ### Phase 0 — ADR-lite
 
-- [x] T1: Write ADR-0029 — ADR-lite (~15 lines) capturing the actual recovery model. Hybrid: `graph-rename` auto-recovers via its ops-manifest (existing `recover_pending_rename` in `_rename.py:485`); all other sentinels emit a warning suggesting manual re-run, relying on idempotent commands. Amends ADR-0024 §Consequences without superseding it. → `docs/decisions/0029-recovery-model.md`
+- [x] T1: Write ADR-0030 — ADR-lite (~15 lines) capturing the actual recovery model. Hybrid: `graph-rename` auto-recovers via its ops-manifest (existing `recover_pending_rename` in `_rename.py:485`); all other sentinels emit a warning suggesting manual re-run, relying on idempotent commands. Amends ADR-0024 §Consequences without superseding it. → `docs/decisions/0030-recovery-model.md` (originally drafted as ADR-0029; renumbered when PR #33 landed a different ADR-0029)
 
 ### Phase 1 — Recovery integration
 
@@ -42,7 +42,7 @@ Closes four "documented but not delivered" gaps surfaced by the comprehensive v1
 
 ### Phase 5 — CHANGELOG + verify
 
-- [x] T8: Single CHANGELOG entry under `## [Unreleased]` summarising the four fixes and referencing ADR-0029. → `CHANGELOG.md`
+- [x] T8: Single CHANGELOG entry under `## [Unreleased]` summarising the four fixes and referencing ADR-0030. → `CHANGELOG.md`
 - [x] T9: `kanon fidelity update .` to track the spec SHA changes from T7. → `.kanon/fidelity.lock`
 
 ## Acceptance Criteria

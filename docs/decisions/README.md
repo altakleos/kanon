@@ -36,7 +36,8 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0026](0026-aspect-provides-and-generalised-requires.md) | `provides:` capability registry + generalised `requires:` | accepted (lite) |
 | [0027](0027-graph-rename-ops-manifest.md) | Ops-manifest extension to ADR-0024 for `kanon graph rename` | accepted (lite) |
 | [0028](0028-project-aspects.md) | Project-defined aspects via prefixed source-namespacing | accepted |
-| [0029](0029-recovery-model.md) | Recovery model — auto-replay for graph-rename, idempotent re-run for the rest | accepted (lite) |
+| [0029](0029-verification-fidelity-replay-carveout.md) | Verification-contract carve-out for fidelity-fixture replay | accepted (lite) |
+| [0030](0030-recovery-model.md) | Recovery model — auto-replay for graph-rename, idempotent re-run for the rest | accepted (lite) |
 
 ## ADR Template
 

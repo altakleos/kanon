@@ -3,7 +3,7 @@ status: accepted (lite)
 date: 2026-04-27
 weight: lite
 ---
-# ADR-0029: Recovery model — auto-replay for graph-rename, idempotent re-run for the rest
+# ADR-0030: Recovery model — auto-replay for graph-rename, idempotent re-run for the rest
 
 ## Decision
 
