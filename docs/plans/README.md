@@ -36,6 +36,7 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [add-omc-routing-fallbacks](add-omc-routing-fallbacks.md) | Add missing OMC agent routing fallbacks | done |
 | [process-gates-ci](process-gates-ci.md) | Process-gate CI enforcement for plan-before-build and spec-before-design | done |
 | [index-consistency-validator](index-consistency-validator.md) | Index consistency validator for duplicate README entries | done |
+| [test-import-validator](test-import-validator.md) | Test-import validator for orphaned CI test references | done |
 
 ## Roadmap
 
