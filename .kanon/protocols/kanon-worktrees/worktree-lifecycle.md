@@ -42,7 +42,15 @@ Develop normally inside `.worktrees/<slug>/`. Commit frequently to the `wt/<slug
 - Resolve conflicts immediately — do not let them accumulate across multiple rebases.
 - Before any significant new work session, rebase first.
 
-### 5. Teardown
+### 5. Parallel worktree coordination
+
+When multiple worktrees are active simultaneously:
+
+- **Partition file ownership.** Each worktree should modify a disjoint set of files. If two worktrees must touch the same file, coordinate explicitly — do not rely on merge to resolve conflicting edits.
+- **Append-only shared files.** CHANGELOG.md, index READMEs, and similar accumulation files may be appended to from multiple worktrees. Each worktree appends to a distinct section or line range. On merge conflict, keep all entries.
+- **Merge smallest first.** When integrating multiple worktrees, merge the smallest changeset first to minimise the conflict surface for subsequent merges.
+
+### 6. Teardown
 
 - Commit or stash all changes. **Never force-remove a worktree with uncommitted changes.**
 - Remove the worktree: `git worktree remove .worktrees/<slug>`.
