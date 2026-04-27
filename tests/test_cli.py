@@ -1955,3 +1955,158 @@ def test_upgrade_v1_legacy_round_trip_preserves_user_content(tmp_path: Path) -> 
     assert config["aspects"]["kanon-sdd"]["depth"] == 2
     assert "## My private notes" in agents_path.read_text(encoding="utf-8")
     assert "Do not lose me." in agents_path.read_text(encoding="utf-8")
+
+
+# --- ADR-0028 / Phase 3: project-aspects (T23, T24, T25, T26) ---
+
+
+_PROJECT_ASPECT_MIN_MANIFEST = (
+    "stability: experimental\n"
+    "depth-range: [0, 1]\n"
+    "default-depth: 1\n"
+    "requires: []\n"
+    "depth-0:\n"
+    "  files: []\n"
+    "  protocols: []\n"
+    "  sections: []\n"
+    "depth-1:\n"
+    "  files: []\n"
+    "  protocols: []\n"
+    "  sections: []\n"
+)
+
+
+def _stage_project_aspect(target: Path, name: str, manifest_text: str) -> Path:
+    """Drop a project-aspect manifest at <target>/.kanon/aspects/<name>/manifest.yaml."""
+    aspect_dir = target / ".kanon" / "aspects" / name
+    aspect_dir.mkdir(parents=True, exist_ok=True)
+    (aspect_dir / "manifest.yaml").write_text(manifest_text, encoding="utf-8")
+    return aspect_dir
+
+
+def test_project_aspect_lifecycle_list_info_add_remove(tmp_path: Path) -> None:
+    """A project-aspect under .kanon/aspects/project-foo/ participates in
+    `aspect list --target`, `aspect info --target`, `aspect add`, and
+    `aspect remove` (per ADR-0028 / project-aspects spec INV-1)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    _stage_project_aspect(target, "project-auth-policy", _PROJECT_ASPECT_MIN_MANIFEST)
+
+    listed = runner.invoke(main, ["aspect", "list", "--target", str(target)])
+    assert listed.exit_code == 0, listed.output
+    assert "project-auth-policy" in listed.output
+
+    info = runner.invoke(
+        main, ["aspect", "info", "project-auth-policy", "--target", str(target)]
+    )
+    assert info.exit_code == 0, info.output
+    assert "Aspect: project-auth-policy" in info.output
+    assert "Stability:     experimental" in info.output
+
+    add = runner.invoke(main, ["aspect", "add", str(target), "project-auth-policy"])
+    assert add.exit_code == 0, add.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "project-auth-policy" in config["aspects"]
+    assert config["aspects"]["project-auth-policy"]["depth"] == 1
+
+    rem = runner.invoke(main, ["aspect", "remove", str(target), "project-auth-policy"])
+    assert rem.exit_code == 0, rem.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert "project-auth-policy" not in config["aspects"]
+
+
+def test_project_aspect_kanon_namespace_in_consumer_dir_rejected(tmp_path: Path) -> None:
+    """A directory under .kanon/aspects/ may only declare `project-` aspects.
+    A `kanon-` namespaced directory there is rejected at load time with a
+    single-line error naming the offending path and the namespace-ownership rule
+    (ADR-0028 / project-aspects spec INV-4)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    _stage_project_aspect(target, "kanon-misnamed", _PROJECT_ASPECT_MIN_MANIFEST)
+
+    # Verify surfaces the namespace-ownership error rather than crashing.
+    result = runner.invoke(main, ["verify", str(target)])
+    assert result.exit_code != 0, result.output
+    assert "namespace ownership" in result.output
+    assert "kanon-misnamed" in result.output
+
+
+def test_project_aspect_cross_source_path_collision_raises(tmp_path: Path) -> None:
+    """A project-aspect that scaffolds the same `files/` path as a kit-aspect
+    raises a ClickException at scaffold time (`_build_bundle` runtime guard,
+    project-aspects spec INV-6 / ADR-0028)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "2"])
+
+    # Stage a project-aspect whose depth-1.files declares the same path
+    # that kanon-sdd already scaffolds at depth-2 (`docs/specs/_template.md`).
+    aspect_dir = _stage_project_aspect(
+        target,
+        "project-collide",
+        "stability: experimental\n"
+        "depth-range: [0, 1]\n"
+        "default-depth: 1\n"
+        "depth-0:\n"
+        "  files: []\n"
+        "  protocols: []\n"
+        "  sections: []\n"
+        "depth-1:\n"
+        "  files: [docs/specs/_template.md]\n"
+        "  protocols: []\n"
+        "  sections: []\n",
+    )
+    files_dir = aspect_dir / "files" / "docs" / "specs"
+    files_dir.mkdir(parents=True)
+    (files_dir / "_template.md").write_text(
+        "project's competing _template.md\n", encoding="utf-8"
+    )
+
+    add = runner.invoke(main, ["aspect", "add", str(target), "project-collide"])
+    assert add.exit_code != 0, add.output
+    # Error names both colliding aspects and the path.
+    assert "Cross-source scaffold collision" in add.output
+    assert "kanon-sdd" in add.output
+    assert "project-collide" in add.output
+    assert "docs/specs/_template.md" in add.output
+
+
+def test_project_aspect_capability_substitutes_kit_capability_requirement() -> None:
+    """A project-aspect's `provides:` capability satisfies a kit-aspect's
+    1-token capability `requires:` predicate (project-aspects spec INV-8 /
+    ADR-0028 source-neutral substitutability)."""
+    from kanon.cli import _check_requires
+
+    # Synthetic registry: kit-side `kanon-foo` requires `planning-discipline`
+    # in capability-presence form (1-token); `project-lean-sdd` provides it.
+    top = {
+        "aspects": {
+            "kanon-foo": {
+                "stability": "experimental",
+                "depth-range": [0, 1],
+                "default-depth": 1,
+                "requires": ["planning-discipline"],
+            },
+            "project-lean-sdd": {
+                "stability": "experimental",
+                "depth-range": [0, 1],
+                "default-depth": 1,
+                "requires": [],
+                "provides": ["planning-discipline"],
+            },
+        }
+    }
+    proposed_at_1 = {"kanon-foo": 1, "project-lean-sdd": 1}
+    err_at_1 = _check_requires("kanon-foo", proposed_at_1, top)
+    assert err_at_1 is None, (
+        f"project-aspect's capability did not satisfy kit-aspect's predicate: {err_at_1}"
+    )
+
+    # When the project-aspect supplier is at depth 0, the requirement is unmet.
+    proposed_at_0 = {"kanon-foo": 1, "project-lean-sdd": 0}
+    err_at_0 = _check_requires("kanon-foo", proposed_at_0, top)
+    assert err_at_0 is not None
+    assert "planning-discipline" in err_at_0
