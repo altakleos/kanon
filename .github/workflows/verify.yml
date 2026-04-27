@@ -67,3 +67,11 @@ jobs:
           else
             python ci/check_process_gates.py
           fi
+
+      - name: Check commit messages (soft — warnings only)
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            python ci/check_commit_messages.py --base-ref "origin/${{ github.base_ref }}"
+          else
+            python ci/check_commit_messages.py
+          fi
