@@ -44,6 +44,7 @@ depth-1:
     - protocols-index
   validators:
     - kanon._validators.plan_completion
+    - kanon._validators.index_consistency
 
 depth-2:
   files:
