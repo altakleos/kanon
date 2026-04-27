@@ -51,25 +51,21 @@ Tier-2 (workstation `kanon transcripts capture`) and Tier-3 (paid nightly e2e) a
 - [x] T2-4: Author protocol prose listing enforcement options (CI gate, pre-commit hook, manual review) at `kanon-sdd` depth 3 → `src/kanon/kit/aspects/kanon-sdd/protocols/adr-immutability.md` (depends: T2-1)
 - [x] T2-5: Update `docs/development-process.md` § ADRs to mention the trailer (depends: T2-1) — *kit + repo copies updated together; byte-equality preserved.*
 
-### Track 3 — Principle override mechanism (gated on maintainer Q2 framing)
+### Track 3 — Principle override mechanism (CLOSED — superseded by `principles-clarification` plan)
 
-If "authoritative" (Option b):
-- [ ] T3-1: Spec defining `kanon:`/`project:` principle-id namespace and `overrides:` frontmatter grammar → `docs/specs/principle-override.md`
-- [ ] T3-2: ADR-lite ratifying the spec → `docs/decisions/00XX-principle-override.md` (depends: T3-1)
-- [ ] T3-3: Extend `ci/check_foundations.py` to recognise `overrides:` and exempt overridden kit-principles from the orphan check → `ci/check_foundations.py` (depends: T3-2)
-- [ ] T3-4: Document the mechanism → `docs/foundations/principles/README.md` (depends: T3-3)
-- [ ] T3-5: Test — synthetic consumer principle overrides `kanon:P-prose-is-code`; orphan check passes → `tests/ci/test_check_foundations.py` (depends: T3-3)
+**Closed without shipping.** The maintainer corrected the framing both round-1 and round-2 panels operated under: kanon's own kit-author `P-*.md` files **do not propagate to consumers**. The kit-sdd aspect at depth 3 scaffolds only `docs/foundations/principles/README.md` (an empty starter index), never the kit's own principle files. There is therefore nothing for a consumer to override — the proposed override mechanism (Option b) and the alternative "exemplary" reframe were both addressing a problem consumers don't have.
 
-If "exemplary" (Critic's reframe):
-- [ ] T3-1: Update `docs/foundations/principles/README.md` to declare kit principles exemplary; consumer principles take precedence inside consumer repos by default → `docs/foundations/principles/README.md`
-- [ ] T3-2: One-paragraph addition to `docs/development-process.md` § Foundations (depends: T3-1)
+Replacement plan: [`docs/plans/principles-clarification.md`](principles-clarification.md) ships a one-paragraph clarification to the kit-shipped principles README (consumer-facing) plus a parallel one-line note to kanon's own repo copy (kit-author-facing). No spec, no ADR, no validator extension; no new aspect. AC4 is now satisfied by that plan landing rather than by anything in this track.
+
+- [~] T3-1: Spec for `kanon:`/`project:` principle-id namespace — *deferred indefinitely; not needed*. Original target: `docs/specs/principle-override.md`.
+- [~] T3-2..T3-5: ADR / validator extension / docs / tests — *all deferred indefinitely*; same reason.
 
 ## Acceptance Criteria
 
 - [ ] AC1: Track 0 — `docs/specs/verification-contract.md` carries INV-10 (fidelity carve-out), bounded to `kanon-fidelity` enabled at depth ≥1; ADR-0029 status `accepted (lite)`; ADR index updated.
 - [ ] AC2: Track 1 — kanon's own repo enables `kanon-fidelity:1`; `kanon verify .` returns `ok`; one fixture demonstrably catches the worktree-audit-sentence failure mode described in commit `b9524aa9` (deliberate-bad transcript fails the assertion).
 - [ ] AC3: Track 2 — kanon's own CI hard-fails on a synthetic post-acceptance ADR body mutation; passes when the same commit carries an `Allow-ADR-edit:` trailer; consumer-facing protocol describes the rule but does not ship a default-on script.
-- [ ] AC4: Track 3 — matches the framing chosen by the maintainer (authoritative-with-mechanism OR exemplary docs-only).
+- [~] AC4: Track 3 — superseded by [`docs/plans/principles-clarification.md`](principles-clarification.md). The maintainer's framing correction (kit principles do not propagate to consumers) made the originally-specced override mechanism unnecessary; the docs-clarification plan ships the only deliverable that actually pays rent.
 - [ ] AC5: `kanon verify .` passes with no warnings on the kanon repo itself.
 - [ ] AC6: `pytest`, `ruff check src/ tests/ ci/`, `mypy src/kanon` all pass.
 - [ ] AC7: `python ci/check_kit_consistency.py` returns `status: ok`.

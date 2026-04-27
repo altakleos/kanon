@@ -1,6 +1,6 @@
 ---
 feature: principles-clarification
-status: in-progress
+status: done
 date: 2026-04-27
 ---
 # Plan: Clarify the kit-shipped principles README that kit principles don't propagate
@@ -30,12 +30,12 @@ The actual gap is documentation: the scaffolded `docs/foundations/principles/REA
 
 ## Tasks
 
-- [ ] T1: Add a clarifying paragraph to the **kit-shipped** principles README (consumer-facing) explicitly stating that the directory belongs to the consumer and that kanon's own kit-author principles are not present → `src/kanon/kit/aspects/kanon-sdd/files/docs/foundations/principles/README.md`
-- [ ] T2: Add a parallel one-line note to kanon's own **repo** principles README pointing at the kit-shipped starter README and clarifying that consumers do not receive the kit's principle files. The two READMEs are NOT byte-locked (confirmed: `kanon-sdd/manifest.yaml`'s `byte-equality:` block does not list them); this is a parallel edit, not a mirror. → `docs/foundations/principles/README.md` (depends: T1)
-- [ ] T3: Refresh `.kanon/fidelity.lock` (the README SHA changes) → `.kanon/fidelity.lock` (depends: T1, T2)
-- [ ] T4: Append CHANGELOG entry under `[Unreleased]` § Changed → `CHANGELOG.md` (depends: T1)
-- [ ] T5: Mark Track 3 of `docs/plans/fidelity-and-immutability.md` as deferred-with-rationale, citing this plan as the closure → `docs/plans/fidelity-and-immutability.md`
-- [ ] T6: Set this plan's status to `done` once T1–T5 are committed and verify is clean → `docs/plans/principles-clarification.md`
+- [x] T1: Add a clarifying paragraph to the **kit-shipped** principles README (consumer-facing) explicitly stating that the directory belongs to the consumer and that kanon's own kit-author principles are not present → `src/kanon/kit/aspects/kanon-sdd/files/docs/foundations/principles/README.md`
+- [x] T2: Add a parallel one-line note to kanon's own **repo** principles README pointing at the kit-shipped starter README and clarifying that consumers do not receive the kit's principle files. The two READMEs are NOT byte-locked (confirmed: `kanon-sdd/manifest.yaml`'s `byte-equality:` block does not list them); this is a parallel edit, not a mirror. → `docs/foundations/principles/README.md` (depends: T1)
+- [x] T3: Refresh `.kanon/fidelity.lock` (the README SHA changes) → `.kanon/fidelity.lock` (depends: T1, T2)
+- [x] T4: Append CHANGELOG entry under `[Unreleased]` § Changed → `CHANGELOG.md` (depends: T1)
+- [x] T5: Mark Track 3 of `docs/plans/fidelity-and-immutability.md` as deferred-with-rationale, citing this plan as the closure → `docs/plans/fidelity-and-immutability.md`
+- [x] T6: Set this plan's status to `done` once T1–T5 are committed and verify is clean → `docs/plans/principles-clarification.md`
 
 ## Acceptance Criteria
 
