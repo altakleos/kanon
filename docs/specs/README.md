@@ -23,6 +23,7 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [testing](testing.md) | Test discipline for LLM-agent-driven repos | v0.2.0a5 |
 | [security](security.md) | Hardened defaults for LLM-agent-authored code | v0.2.0a5 |
 | [deps](deps.md) | Dependency hygiene for LLM-agent-driven repos | v0.2.0a5 |
+| [fidelity](fidelity.md) | Tier-1 behavioural-conformance verification (lexical replay over committed transcripts) | v0.3 |
 
 ## Deferred specs (scheduled for v0.2+)
 

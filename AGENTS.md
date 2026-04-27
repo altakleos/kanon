@@ -138,6 +138,12 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | --- | --- | --- |
 | [`dependency-hygiene`](.kanon/protocols/kanon-deps/dependency-hygiene.md) | 1 | Adding, removing, or updating project dependencies |
 
+### kanon-fidelity (depth 1)
+
+| Protocol | Depth-min | Invoke when |
+| --- | --- | --- |
+| [`fidelity-fixture-authoring`](.kanon/protocols/kanon-fidelity/fidelity-fixture-authoring.md) | 1 | Adding a new fidelity fixture, updating an existing fixture's assertions, or recapturing a `.dogfood.md` after a protocol's prose has changed |
+
 ### kanon-release (depth 2)
 
 | Protocol | Depth-min | Invoke when |
@@ -351,6 +357,26 @@ Every release follows a strict sequence: prepare, validate, tag, publish.
 
 **Never publish without passing preflight checks.** A release that skips validation is a rollback waiting to happen.
 <!-- kanon:end:kanon-release/publishing-discipline -->
+
+<!-- kanon:begin:kanon-fidelity/body -->
+The `kanon-fidelity` aspect is active. Behavioural-conformance fixtures live under `.kanon/fidelity/`; `kanon verify` runs lexical assertions against committed `.dogfood.md` captures. Follow the `fidelity-fixture-authoring` protocol when adding or updating fixtures. Per ADR-0029 / ADR-0031; consumes the INV-10 carve-out of `docs/specs/verification-contract.md`.
+<!-- kanon:end:kanon-fidelity/body -->
+
+<!-- kanon:begin:kanon-fidelity/fidelity-discipline -->
+## Fidelity Discipline
+
+The `kanon-fidelity` aspect verifies that an LLM agent's *actual behaviour* matches the prose your protocols promise. Lexical assertions over committed `.kanon/fidelity/<protocol>.dogfood.md` captures fail `kanon verify` when the agent's recorded turns drift from the fixture's `forbidden_phrases` / `required_one_of` / `required_all_of` rules.
+
+**Commit fixtures before tagging.** A release tag stamps the protocol prose at a SHA; the paired dogfood capture must reflect agent behaviour at that SHA. Tagging with stale captures ships a hidden contract violation.
+
+**Recapture when the protocol changes.** If you edit a protocol's prose, the previous dogfood capture no longer reflects what the agent should now do. Recapture as part of the same change; commit the new dogfood alongside the prose edit.
+
+**Never weaken an assertion to make a fixture pass.** A failing fidelity assertion means the agent did the wrong thing. Fix the agent's prompt, fix the protocol prose, or accept that the rule does not actually hold — and remove the assertion deliberately, with a note. Silently relaxing the regex is the same anti-pattern as weakening a unit-test assertion.
+
+**Failures are errors; missing dogfood is a warning.** If you have a fixture without its paired capture, you have in-flight work — `kanon verify` warns. If you have a capture that fails the assertions, you have a real defect — `kanon verify` errors and your CI breaks.
+
+The aspect ships only Tier 1 (lexical replay over committed text). Tier 2 (workstation capture) and Tier 3 (paid live-LLM nightly) are out of scope at this depth and require their own ADRs.
+<!-- kanon:end:kanon-fidelity/fidelity-discipline -->
 
 ## Contribution Conventions
 

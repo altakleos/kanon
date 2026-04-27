@@ -27,25 +27,25 @@ Tier-2 (workstation `kanon transcripts capture`) and Tier-3 (paid nightly e2e) a
 
 ### Track 0 — Verification-contract carve-out (gates Track 1)
 
-- [ ] T0-1: Amend `docs/specs/verification-contract.md` to add INV-10 (carve-out), bound to `kanon-fidelity` aspect at depth ≥1 → `docs/specs/verification-contract.md`
-- [ ] T0-2: Land ADR-0029 ratifying T0-1 → `docs/decisions/0029-verification-fidelity-replay-carveout.md` (depends: T0-1)
-- [ ] T0-3: Update ADR index → `docs/decisions/README.md` (depends: T0-2)
+- [x] T0-1: Amend `docs/specs/verification-contract.md` to add INV-10 (carve-out), bound to `kanon-fidelity` aspect at depth ≥1 → `docs/specs/verification-contract.md`
+- [x] T0-2: Land ADR-0029 ratifying T0-1 → `docs/decisions/0029-verification-fidelity-replay-carveout.md` (depends: T0-1)
+- [x] T0-3: Update ADR index → `docs/decisions/README.md` (depends: T0-2)
 
 ### Track 1 — `kanon-fidelity` aspect, Tier 1 only (depends: T0-1, T0-2)
 
-- [ ] T1-1: Spec defining the aspect's invariants (fixture schema, actor-turn extractor, assertion families) → `docs/specs/fidelity.md`
-- [ ] T1-2: ADR-lite for the aspect's depth dial (0, 1) and `provides: behavioural-verification` capability per ADR-0026 → `docs/decisions/0030-fidelity-aspect.md` (depends: T1-1)
-- [ ] T1-3: Aspect manifest with `depth-0: {}` and `depth-1: {files, protocols, sections}` → `src/kanon/kit/aspects/kanon-fidelity/manifest.yaml` (depends: T1-2)
-- [ ] T1-4: Engine — `_load_fidelity_dir`, `_extract_turns`, `_assert_against_dogfood` (~200 LOC) → `src/kanon/_fidelity.py` (depends: T1-3)
-- [ ] T1-5: `_verify.py` integration — `check_fidelity_assertions` called only when aspect is enabled, honours INV-10 bounds → `src/kanon/_verify.py` (depends: T1-4)
-- [ ] T1-6: Exemplar fixture pair — schema instance + captured exemplar → `.kanon/fidelity/worktree-lifecycle.md`, `.kanon/fidelity/worktree-lifecycle.dogfood.md` (depends: T1-5)
-- [ ] T1-7: Tests — ≥5 known-good transcripts pass, ≥3 deliberately-bad fail with specific messages → `tests/test_fidelity.py` (depends: T1-4)
-- [ ] T1-8: AGENTS.md section under `kanon-fidelity/body` marker for depth-1 → `src/kanon/kit/aspects/kanon-fidelity/agents-md/depth-1.md` (depends: T1-3)
-- [ ] T1-9: Promote spec to `status: accepted` once T1-7 passes → `docs/specs/fidelity.md` (depends: T1-7)
+- [x] T1-1: Spec defining the aspect's invariants (fixture schema, actor-turn extractor, assertion families) → `docs/specs/fidelity.md`
+- [x] T1-2: ADR-lite for the aspect's depth dial (0, 1) and `provides: behavioural-verification` capability per ADR-0026 → `docs/decisions/0031-fidelity-aspect.md` (depends: T1-1) — *landed as a full ADR rather than lite (matching the precedent of every other aspect-introduction ADR — ADR-0014/0017/0021/0022/0023). Slot bumped from 0030 → 0031 during rebase: PR-34 `fix: review-followups batch 1` shipped the recovery-model ADR as 0030 between Track 0 and Track 1.*
+- [x] T1-3: Aspect manifest with `depth-0: {}` and `depth-1: {files, protocols, sections}` → `src/kanon/kit/aspects/kanon-fidelity/manifest.yaml` (depends: T1-2)
+- [x] T1-4: Engine — `parse_fixture`, `extract_actor_text`, `evaluate_fixture`, `discover_fixtures` (~250 LOC) → `src/kanon/_fidelity.py` (depends: T1-3)
+- [x] T1-5: `_verify.py` integration — `check_fidelity_assertions` called only when an aspect declaring `behavioural-verification` is enabled, honours INV-10 bounds → `src/kanon/_verify.py` + `src/kanon/cli.py` (depends: T1-4)
+- [x] T1-6: Exemplar fixture pair — schema instance + captured exemplar → `.kanon/fidelity/worktree-lifecycle.md`, `.kanon/fidelity/worktree-lifecycle.dogfood.md` (depends: T1-5)
+- [x] T1-7: Tests — 35 tests covering every spec invariant, including 2 deliberate-bad-dogfood tests against the exemplar → `tests/test_fidelity.py` (depends: T1-4)
+- [x] T1-8: AGENTS.md section under `kanon-fidelity/body` marker for depth-1 → `src/kanon/kit/aspects/kanon-fidelity/agents-md/depth-1.md` (depends: T1-3)
+- [x] T1-9: Promote spec to `status: accepted` once T1-7 passes → `docs/specs/fidelity.md` (depends: T1-7)
 
 ### Track 2 — ADR-immutability gate (parallel to Track 1)
 
-- [ ] T2-1: Full ADR-0030 (or next available number) for the immutability rule, including `Allow-ADR-edit: NNNN — <reason>` trailer escape hatch from sensei. Cites Round-2 Verifier evidence (≥4 violations in kanon's own history) → `docs/decisions/00XX-adr-immutability-gate.md`
+- [ ] T2-1: Full ADR-0032 (next available after Track-1's ADR-0031) for the immutability rule, including `Allow-ADR-edit: NNNN — <reason>` trailer escape hatch from sensei. Cites Round-2 Verifier evidence (≥4 violations in kanon's own history) → `docs/decisions/0032-adr-immutability-gate.md`
 - [ ] T2-2: Port `ci/check_adr_immutability.py` from sensei. Strip sensei-specific path constants. Add tests for the trailer parser → `ci/check_adr_immutability.py`, `tests/ci/test_check_adr_immutability.py` (depends: T2-1)
 - [ ] T2-3: Wire into `.github/workflows/verify.yml`. **Kit-internal only** — do NOT list under any aspect's `depth-N.files` → `.github/workflows/verify.yml` (depends: T2-2)
 - [ ] T2-4: Author protocol prose listing enforcement options (CI gate, pre-commit hook, manual review) at `kanon-sdd` depth 3 → `src/kanon/kit/aspects/kanon-sdd/protocols/adr-immutability.md` (depends: T2-1)
