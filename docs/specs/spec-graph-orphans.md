@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted (lite)
 date: 2026-04-25
 target-release: v0.3
 realizes:
@@ -7,7 +7,9 @@ realizes:
   - P-verification-co-authored
 serves:
   - vision
-fixtures_deferred: "Plan + tests will land alongside the implementation; spec drafted ahead of build per AGENTS.md spec-before-design."
+fixtures:
+  - tests/test_graph_orphans.py
+  - tests/test_graph.py
 ---
 # Spec: `kanon graph orphans` — find unreferenced nodes in the cross-link graph
 

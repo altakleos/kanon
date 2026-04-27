@@ -20,8 +20,8 @@ Capabilities committed to but not yet shipped. Each is tracked as a `status: def
 
 | Spec | Capability | Status |
 |---|---|---|
-| [`specs/spec-graph-rename.md`](../specs/spec-graph-rename.md) | `kanon graph rename` — atomic slug rename with `--type` discriminator and ops-manifest extension to ADR-0024; frontmatter-only scope. | Draft |
-| [`specs/spec-graph-orphans.md`](../specs/spec-graph-orphans.md) | `kanon graph orphans` — read-only orphan report with `orphan-exempt:` opt-out; provides the `_graph.py` primitive for future `consumers-of`. | Draft |
+| [`specs/spec-graph-rename.md`](../specs/spec-graph-rename.md) | `kanon graph rename` — atomic slug rename with `--type` discriminator and ops-manifest extension to ADR-0024; frontmatter-only scope. | Shipped |
+| [`specs/spec-graph-orphans.md`](../specs/spec-graph-orphans.md) | `kanon graph orphans` — read-only orphan report with `orphan-exempt:` opt-out; provides the `_graph.py` primitive for future `consumers-of`. | Shipped |
 
 ## Deferred to v0.3+
 

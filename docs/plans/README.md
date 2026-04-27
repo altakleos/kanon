@@ -30,7 +30,7 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [aspect-provides](aspect-provides.md) | `provides:` capability registry + generalised `requires:` | done |
 | [project-aspects](project-aspects.md) | Project-defined aspects — namespace grammar, loader, migration, validator extension | done |
 | [fidelity-and-immutability](fidelity-and-immutability.md) | v0.3 fidelity track + ADR-immutability gate | done |
-| [spec-graph-mvp](spec-graph-mvp.md) | Spec-graph MVP — `kanon graph orphans` + `kanon graph rename` | planned |
+| [spec-graph-mvp](spec-graph-mvp.md) | Spec-graph MVP — `kanon graph orphans` + `kanon graph rename` | done |
 | [review-followups-batch-1](review-followups-batch-1.md) | Recovery model, coverage-floor prose, vocabulary, capability docs | done |
 | [principles-clarification](principles-clarification.md) | Clarify kit-shipped principles don't propagate to consumers | done |
 | [add-omc-routing-fallbacks](add-omc-routing-fallbacks.md) | Add missing OMC agent routing fallbacks | done |

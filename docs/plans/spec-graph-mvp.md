@@ -3,7 +3,7 @@ feature: spec-graph-mvp
 serves:
   - docs/specs/spec-graph-rename.md
   - docs/specs/spec-graph-orphans.md
-status: planned
+status: done
 date: 2026-04-25
 target-release: v0.3
 ---
