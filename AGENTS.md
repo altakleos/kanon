@@ -59,19 +59,19 @@ If the session's agent list includes `oh-my-claudecode:*` agents, prefer them fo
 
 - Strategic planning, vague requirements, requirements clarification → `oh-my-claudecode:planner` or `:deep-interview` (else `Plan`)
 - Architecture review, read-only design critique → `oh-my-claudecode:architect` (else `feature-dev:code-architect`)
-- Focused implementation of an approved plan → `oh-my-claudecode:executor`
+- Focused implementation of an approved plan → `oh-my-claudecode:executor` (else proceed directly)
 - Codebase exploration, finding files and patterns → `oh-my-claudecode:explore` (else `Explore`)
 - Code review with severity ratings → `oh-my-claudecode:code-reviewer` (else `feature-dev:code-reviewer`)
-- Independent second opinion on a plan or diff → `oh-my-claudecode:critic`
-- Root-cause debugging, regression isolation → `oh-my-claudecode:debugger` paired with `:tracer` for causal evidence
-- Test strategy, integration/e2e coverage, flaky-test hardening, TDD → `oh-my-claudecode:test-engineer`
-- Security scan (OWASP, secrets, unsafe patterns) → `oh-my-claudecode:security-reviewer`
-- Verifying "is this really done?" before declaring complete → `oh-my-claudecode:verifier`
-- External docs / API / framework reference lookup → `oh-my-claudecode:document-specialist`
-- Git commits, rebases, history surgery → `oh-my-claudecode:git-master`
-- Technical writing (README, API docs, comments) → `oh-my-claudecode:writer`
-- UI/UX work → `oh-my-claudecode:designer`
-- Code simplification on recently changed code → `oh-my-claudecode:code-simplifier`
+- Independent second opinion on a plan or diff → `oh-my-claudecode:critic` (else request a second review pass)
+- Root-cause debugging, regression isolation → `oh-my-claudecode:debugger` paired with `:tracer` for causal evidence (else debug directly with systematic diagnosis per `error-diagnosis` protocol)
+- Test strategy, integration/e2e coverage, flaky-test hardening, TDD → `oh-my-claudecode:test-engineer` (else follow `test-discipline` and `ac-first-tdd` protocols)
+- Security scan (OWASP, secrets, unsafe patterns) → `oh-my-claudecode:security-reviewer` (else follow `secure-defaults` protocol + run `ci/check_security_patterns.py`)
+- Verifying "is this really done?" before declaring complete → `oh-my-claudecode:verifier` (else follow `completion-checklist` protocol)
+- External docs / API / framework reference lookup → `oh-my-claudecode:document-specialist` (else search documentation directly)
+- Git commits, rebases, history surgery → `oh-my-claudecode:git-master` (else use git CLI directly)
+- Technical writing (README, API docs, comments) → `oh-my-claudecode:writer` (else write directly)
+- UI/UX work → `oh-my-claudecode:designer` (else proceed directly)
+- Code simplification on recently changed code → `oh-my-claudecode:code-simplifier` (else refactor directly)
 
 For end-to-end workflows (not single tasks), invoke an OMC mode skill explicitly: `/oh-my-claudecode:autopilot`, `:ultrawork`, `:ralph`, `:ultraqa`, `:team`, or `:plan` / `:ralplan` for gated planning. These run multi-agent pipelines and should not be used as a "default" — invoke them only when the workflow they describe matches the task.
 
