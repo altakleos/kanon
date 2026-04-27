@@ -35,6 +35,7 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [principles-clarification](principles-clarification.md) | Clarify kit-shipped principles don't propagate to consumers | done |
 | [add-omc-routing-fallbacks](add-omc-routing-fallbacks.md) | Add missing OMC agent routing fallbacks | done |
 | [process-gates-ci](process-gates-ci.md) | Process-gate CI enforcement for plan-before-build and spec-before-design | done |
+| [index-consistency-validator](index-consistency-validator.md) | Index consistency validator for duplicate README entries | done |
 
 ## Roadmap
 

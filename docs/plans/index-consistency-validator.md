@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 design: "Follows ADR-0028"
 date: 2026-04-27
 ---
