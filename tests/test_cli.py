@@ -135,7 +135,7 @@ def test_kit_md_scaffolded_at_all_tiers(tmp_path: Path, tier: int) -> None:
     assert "${sdd_depth}" not in text
     assert "${tier}" not in text
     assert "${project_name}" not in text
-    assert f"**Tier:** {tier}" in text
+    assert f"**SDD depth:** {tier}" in text
 
 
 @pytest.mark.parametrize("tier", [1, 2, 3])

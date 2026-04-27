@@ -233,7 +233,15 @@ def _classify_predicate(predicate: str) -> tuple[Any, ...]:
 def _check_requires(
     aspect_name: str, proposed_aspects: dict[str, int], top: dict[str, Any]
 ) -> str | None:
-    """Return error message if requires: predicates are unmet, else None."""
+    """Return error message if requires: predicates are unmet, else None.
+
+    Capability-presence predicates (1-token form, per ADR-0026) require a
+    supplier at depth ≥ 1. A supplier whose depth is 0 — the opt-out /
+    vibe-coding level for an aspect — does not satisfy the predicate;
+    depth-0 means the aspect contributes no scaffolding, so it cannot be
+    treated as actively providing the capability. See aspect-provides spec
+    INV-resolution (Depth-0 corner case).
+    """
     for predicate in top["aspects"][aspect_name].get("requires", []):
         classified = _classify_predicate(predicate)
         if classified[0] == "depth":
@@ -322,24 +330,48 @@ _PENDING_OP_TO_COMMAND: dict[str, str] = {
 
 
 def _check_pending_recovery(target: Path) -> None:
-    """If a previous operation was interrupted, warn the user.
+    """If a previous operation was interrupted, recover or warn.
 
-    Looks up the pretty user-facing command via `_PENDING_OP_TO_COMMAND`
-    so the warning suggests something the user can actually type
-    (e.g., `kanon aspect remove`, not `kanon aspect-remove`). Falls back
-    to `kanon {pending}` for unknown operation strings (defensive).
+    Per ADR-0029 the recovery model is hybrid:
+
+    - `graph-rename` carries an ops-manifest at `.kanon/graph-rename.ops`
+      that captures the per-file rewrite plan. On detecting that sentinel,
+      this function calls :func:`kanon._rename.recover_pending_rename` to
+      replay the manifest idempotently, clear the sentinel, and emit a
+      one-line "Recovered ..." message. No manual re-run required.
+    - Other sentinels (init / upgrade / set-depth / set-config /
+      aspect-remove / fidelity-update) point at idempotent commands; this
+      function emits a warning naming the correct command to re-run via
+      `_PENDING_OP_TO_COMMAND`. The user types the suggested command and
+      it completes the partial state.
     """
     from kanon._atomic import read_sentinel
 
     pending = read_sentinel(target / ".kanon")
-    if pending is not None:
-        rerun = _PENDING_OP_TO_COMMAND.get(pending, f"kanon {pending}")
-        click.echo(
-            f"Warning: previous '{pending}' operation was interrupted. "
-            f"Re-run '{rerun}' to complete it, or run "
-            f"'kanon upgrade' to re-render all files.",
-            err=True,
-        )
+    if pending is None:
+        return
+    if pending == _OP_GRAPH_RENAME:
+        # Auto-recover graph-rename: the ops-manifest replays idempotently.
+        from kanon._rename import recover_pending_rename
+        try:
+            recovered = recover_pending_rename(target)
+        except click.ClickException:
+            recovered = False
+        if recovered:
+            click.echo(
+                f"Recovered interrupted '{pending}' operation by replaying "
+                f"the ops-manifest.",
+                err=True,
+            )
+            return
+        # No manifest on disk (or recovery failed) → fall through to warn.
+    rerun = _PENDING_OP_TO_COMMAND.get(pending, f"kanon {pending}")
+    click.echo(
+        f"Warning: previous '{pending}' operation was interrupted. "
+        f"Re-run '{rerun}' to complete it, or run "
+        f"'kanon upgrade' to re-render all files.",
+        err=True,
+    )
 
 
 @click.group()

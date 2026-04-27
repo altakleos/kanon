@@ -85,6 +85,8 @@ This is the v1 of a capability registry. The audit risk-register flagged it as c
 <!-- INV-aspect-provides-resolution -->
 4. **Resolution rule.** A capability-presence entry in `requires:` is satisfied when at least one *enabled* aspect (depth ≥ 1) in the consumer's `.kanon/config.yaml` declares that capability in its `provides:`. The check fires at `kanon init`, `aspect add`, and `aspect set-depth` — the same gates that evaluate depth predicates today.
 
+   *Depth-0 corner case.* An aspect whose depth is `0` is **not** a satisfying supplier: depth-0 is the opt-out / vibe-coding level for an aspect, and a capability-presence predicate looks for a supplier that is actually contributing scaffolding. A consumer who needs to satisfy a capability requirement must promote the supplier to depth ≥ 1.
+
 <!-- INV-aspect-provides-removal-check -->
 5. **Removal check.** `kanon aspect remove <aspect>` refuses if removing the aspect would leave another *enabled* aspect with an unsatisfied capability-presence predicate. The error names the consumer aspect and the now-orphaned capability — symmetric with the existing depth-predicate removal check.
 

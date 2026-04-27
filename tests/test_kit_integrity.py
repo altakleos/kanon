@@ -105,7 +105,7 @@ def test_kit_md_renders_with_placeholders() -> None:
     )
     assert "${sdd_depth}" not in rendered
     assert "${project_name}" not in rendered
-    assert "**Tier:** 2" in rendered
+    assert "**SDD depth:** 2" in rendered
     assert "demo" in rendered
 
 
