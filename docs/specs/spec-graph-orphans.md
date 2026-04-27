@@ -10,6 +10,39 @@ serves:
 fixtures:
   - tests/test_graph_orphans.py
   - tests/test_graph.py
+invariant_coverage:
+  INV-spec-graph-orphans-cli-surface:
+    - tests/test_graph_orphans.py::test_inv1_cli_text_default_no_orphans
+    - tests/test_graph_orphans.py::test_inv1_cli_json_status_ok
+    - tests/test_graph_orphans.py::test_inv1_type_filter_restricts_namespace
+  INV-spec-graph-orphans-definition:
+    - tests/test_graph_orphans.py::test_inv2_unreferenced_principle_is_orphan
+    - tests/test_graph_orphans.py::test_inv2_principle_referenced_by_live_spec_is_not_orphan
+    - tests/test_graph_orphans.py::test_inv2_persona_with_outbound_stresses_is_not_orphan
+    - tests/test_graph_orphans.py::test_inv2_capability_orphan_when_no_requires_predicate
+    - tests/test_graph_orphans.py::test_inv2_capability_consumed_by_requires_is_not_orphan
+  INV-spec-graph-orphans-status-scope:
+    - tests/test_graph_orphans.py::test_inv3_deferred_spec_does_not_save_principle_from_orphan
+    - tests/test_graph.py::test_inbound_live_excludes_deferred_source
+    - tests/test_graph.py::test_inbound_live_includes_accepted_source
+    - tests/test_graph.py::test_superseded_spec_does_not_contribute_inbound
+  INV-spec-graph-orphans-self-orphan-rule:
+    - tests/test_graph_orphans.py::test_inv4_deferred_spec_self_orphan_rule
+    - tests/test_graph_orphans.py::test_inv4_superseded_spec_is_excluded_too
+  INV-spec-graph-orphans-exempt-frontmatter:
+    - tests/test_graph_orphans.py::test_inv5_orphan_exempt_node_listed_with_flag
+    - tests/test_graph.py::test_orphan_exempt_helpers
+  INV-spec-graph-orphans-no-thresholds:
+    - tests/test_graph_orphans.py::test_inv6_no_fail_on_orphan_flag_exists
+  INV-spec-graph-orphans-output-shape:
+    - tests/test_graph_orphans.py::test_inv7_text_output_one_line_per_orphan
+    - tests/test_graph_orphans.py::test_inv7_json_shape
+  INV-spec-graph-orphans-shared-graph-load:
+    - tests/test_graph.py::test_real_repo_loads_without_error
+    - tests/test_graph.py::test_real_repo_has_known_aspects
+    - tests/test_graph.py::test_real_repo_has_known_principles
+  INV-spec-graph-orphans-exit-code:
+    - tests/test_graph_orphans.py::test_inv9_exit_code_zero_with_orphans
 ---
 # Spec: `kanon graph orphans` — find unreferenced nodes in the cross-link graph
 

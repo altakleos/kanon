@@ -10,6 +10,28 @@ serves:
 fixtures:
   - tests/test_graph_rename.py
   - tests/test_graph.py
+invariant_coverage:
+  INV-spec-graph-rename-cli-surface:
+    - tests/test_graph_rename.py::test_inv1_type_required
+    - tests/test_graph_rename.py::test_inv1_invalid_type_lists_seven
+    - tests/test_graph_rename.py::test_inv1_valid_namespace_accepted
+  INV-spec-graph-rename-match-semantics:
+    - tests/test_graph_rename.py::test_inv2_token_boundary_does_not_match_substring
+    - tests/test_graph_rename.py::test_principle_rename_rewrites_link_target
+  INV-spec-graph-rename-atomicity:
+    - tests/test_graph_rename.py::test_inv3_ops_manifest_cleared_on_success
+    - tests/test_graph_rename.py::test_inv3_idempotent_rerun_after_success
+    - tests/test_graph_rename.py::test_inv3_recovery_completes_partial_rename
+    - tests/test_graph_rename.py::test_check_pending_recovery_auto_replays_graph_rename
+    - tests/test_graph_rename.py::test_ops_manifest_records_full_content
+  INV-spec-graph-rename-dry-run:
+    - tests/test_graph_rename.py::test_inv6_dry_run_writes_no_files
+    - tests/test_graph_rename.py::test_dry_run_via_function_returns_status
+    - tests/test_graph_rename.py::test_format_dry_run_empty_rewrites
+  INV-spec-graph-rename-recovery-message:
+    - tests/test_graph_rename.py::test_inv7_recovery_message_command_form
+  INV-spec-graph-rename-collision-detection:
+    - tests/test_graph_rename.py::test_inv10_collision_refuses
 ---
 # Spec: `kanon graph rename` — atomic slug rename across the cross-link graph
 
