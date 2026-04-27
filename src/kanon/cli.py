@@ -486,6 +486,7 @@ def verify(target: Path) -> None:
         check_fidelity_lock,
         check_required_files,
         check_verified_by,
+        run_project_validators,
     )
 
     target = target.resolve()
@@ -519,6 +520,12 @@ def verify(target: Path) -> None:
         errors.append("config.aspects is empty; nothing to verify.")
         _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status="fail")
         sys.exit(2)
+
+    # Per project-aspects spec INV-9 (validator non-overriding), project-
+    # aspect validators run BEFORE the kit's structural checks: any
+    # `errors.clear()` from a hostile validator is overwritten by the kit's
+    # subsequent appends, so kit-emitted errors cannot be suppressed.
+    run_project_validators(target, aspects, errors, warnings)
 
     known_aspects = check_aspects_known(aspects, errors, warnings)
     check_required_files(target, known_aspects, errors)

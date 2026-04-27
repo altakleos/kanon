@@ -2110,3 +2110,125 @@ def test_project_aspect_capability_substitutes_kit_capability_requirement() -> N
     err_at_0 = _check_requires("kanon-foo", proposed_at_0, top)
     assert err_at_0 is not None
     assert "planning-discipline" in err_at_0
+
+
+# --- ADR-0028 / Phase 4: project-aspect validators-as-extensions (T29, T30, T31) ---
+
+
+_PROJECT_ASPECT_WITH_VALIDATORS = (
+    "stability: experimental\n"
+    "depth-range: [0, 1]\n"
+    "default-depth: 1\n"
+    "validators: [{module}]\n"
+    "depth-0:\n"
+    "  files: []\n"
+    "  protocols: []\n"
+    "  sections: []\n"
+    "depth-1:\n"
+    "  files: []\n"
+    "  protocols: []\n"
+    "  sections: []\n"
+)
+
+
+def test_project_aspect_validator_emits_findings_in_verify_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A project-aspect's `validators:` module is imported in-process during
+    `kanon verify`; its appended errors and warnings appear in the JSON report
+    (project-aspects spec INV-7 / ADR-0028)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    # Stage the validator module on sys.path.
+    pkg_dir = tmp_path / "validator_pkg"
+    pkg_dir.mkdir()
+    (pkg_dir / "kanon_test_validator_emit.py").write_text(
+        "def check(target, errors, warnings):\n"
+        "    errors.append(f'project-validator emitted error for {target.name}')\n"
+        "    warnings.append('project-validator emitted warning')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.syspath_prepend(str(pkg_dir))
+
+    # Stage the project-aspect declaring the validator.
+    aspect_dir = target / ".kanon" / "aspects" / "project-checked"
+    aspect_dir.mkdir(parents=True)
+    (aspect_dir / "manifest.yaml").write_text(
+        _PROJECT_ASPECT_WITH_VALIDATORS.format(module="kanon_test_validator_emit"),
+        encoding="utf-8",
+    )
+    runner.invoke(main, ["aspect", "add", str(target), "project-checked"])
+
+    result = runner.invoke(main, ["verify", str(target)])
+    # Errors present → exit code != 0; the validator's findings are in the report.
+    assert result.exit_code != 0, result.output
+    assert "project-validator emitted error for scratch" in result.output
+    assert "project-validator emitted warning" in result.output
+
+
+def test_project_aspect_validator_cannot_suppress_kit_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A hostile project-validator that calls `errors.clear()` cannot suppress
+    the kit's structural errors. Kit checks run AFTER project-validators, so
+    any clearing is overwritten (project-aspects spec INV-9)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    # Hostile validator that wipes errors and warnings.
+    pkg_dir = tmp_path / "hostile_pkg"
+    pkg_dir.mkdir()
+    (pkg_dir / "kanon_test_validator_hostile.py").write_text(
+        "def check(target, errors, warnings):\n"
+        "    errors.clear()\n"
+        "    warnings.clear()\n",
+        encoding="utf-8",
+    )
+    monkeypatch.syspath_prepend(str(pkg_dir))
+
+    aspect_dir = target / ".kanon" / "aspects" / "project-hostile"
+    aspect_dir.mkdir(parents=True)
+    (aspect_dir / "manifest.yaml").write_text(
+        _PROJECT_ASPECT_WITH_VALIDATORS.format(module="kanon_test_validator_hostile"),
+        encoding="utf-8",
+    )
+    runner.invoke(main, ["aspect", "add", str(target), "project-hostile"])
+
+    # Force a kit-detected structural error: delete a required file.
+    (target / "AGENTS.md").unlink()
+
+    result = runner.invoke(main, ["verify", str(target)])
+    assert result.exit_code != 0, result.output
+    # Despite the hostile validator's clear(), the kit's missing-file error survives.
+    assert "missing required file: AGENTS.md" in result.output
+
+
+def test_project_aspect_validator_import_failure_recorded(tmp_path: Path) -> None:
+    """When a project-validator's module cannot be imported, verify records a
+    single error naming the module and continues with the remaining checks
+    (project-aspects spec INV-7 — verify completes despite a broken validator)."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    aspect_dir = target / ".kanon" / "aspects" / "project-broken"
+    aspect_dir.mkdir(parents=True)
+    (aspect_dir / "manifest.yaml").write_text(
+        _PROJECT_ASPECT_WITH_VALIDATORS.format(
+            module="kanon_test_validator_does_not_exist_xyz"
+        ),
+        encoding="utf-8",
+    )
+    runner.invoke(main, ["aspect", "add", str(target), "project-broken"])
+
+    result = runner.invoke(main, ["verify", str(target)])
+    assert result.exit_code != 0, result.output
+    assert "import failed" in result.output
+    assert "kanon_test_validator_does_not_exist_xyz" in result.output
+    # Kit's structural checks ran too — verify did not crash on the import error.
+    # (The kit-managed AGENTS.md is intact, so no other structural errors expected;
+    # simply asserting the JSON report shape proves the run completed.)
+    assert '"status": "fail"' in result.output
