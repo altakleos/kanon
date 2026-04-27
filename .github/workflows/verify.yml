@@ -16,6 +16,12 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v5
+        with:
+          # The ADR-immutability gate (below) walks commit history to
+          # compare ADR bodies before vs after each commit. Default
+          # fetch-depth: 1 is too shallow even for the push-mode HEAD~
+          # lookup; PR mode against `origin/<base>` needs full history.
+          fetch-depth: 0
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
@@ -42,3 +48,14 @@ jobs:
 
       - name: Check kit consistency
         run: python ci/check_kit_consistency.py
+
+      - name: Check ADR immutability (per ADR-0032)
+        # PR mode walks every commit in BASE..HEAD; push mode (default)
+        # checks only HEAD. Both modes need full history (fetch-depth: 0
+        # on the checkout step above).
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            python ci/check_adr_immutability.py --base-ref "origin/${{ github.base_ref }}"
+          else
+            python ci/check_adr_immutability.py
+          fi

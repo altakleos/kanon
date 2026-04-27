@@ -105,7 +105,14 @@ _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
     0: set(),
     1: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md"},
     2: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md", "spec-review.md"},
-    3: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md", "spec-review.md"},
+    3: {
+        "tier-up-advisor.md",
+        "verify-triage.md",
+        "completion-checklist.md",
+        "scope-check.md",
+        "spec-review.md",
+        "adr-immutability.md",
+    },
 }
 
 
