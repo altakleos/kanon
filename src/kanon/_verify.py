@@ -17,6 +17,7 @@ import yaml
 from kanon._manifest import (
     _all_known_aspects,
     _aspect_depth_range,
+    _aspect_depth_validators,
     _aspect_provides,
     _aspect_sections,
     _aspect_validators,
@@ -234,6 +235,52 @@ def run_project_validators(
             except Exception as exc:
                 errors.append(
                     f"project-validator {module_path!r} (aspect {aspect_name!r}): "
+                    f"raised {type(exc).__name__}: {exc}"
+                )
+
+
+def run_kit_validators(
+    target: Path,
+    aspects: dict[str, int],
+    errors: list[str],
+    warnings: list[str],
+) -> None:
+    """Run depth-gated validators declared in kit-aspect manifests.
+
+    Kit validators are trusted code shipped inside the ``kanon-kit`` package.
+    They run AFTER the kit's structural checks (no INV-9 ordering concern).
+    Each validator is a Python module with a ``check(target, errors, warnings)``
+    entrypoint, discovered from ``depth-N: validators:`` entries in the
+    aspect's sub-manifest using strict-superset union (depth-0..depth-N).
+    """
+    for aspect_name, depth in sorted(aspects.items()):
+        if aspect_name.startswith("project-"):
+            continue
+        try:
+            module_paths = _aspect_depth_validators(aspect_name, depth)
+        except Exception:
+            continue  # Unknown aspect or missing manifest — already caught by structural checks
+        for module_path in module_paths:
+            try:
+                module = importlib.import_module(module_path)
+            except ImportError as exc:
+                errors.append(
+                    f"kit-validator {module_path!r} (aspect {aspect_name!r}): "
+                    f"import failed: {exc}"
+                )
+                continue
+            check_fn = getattr(module, "check", None)
+            if not callable(check_fn):
+                errors.append(
+                    f"kit-validator {module_path!r} (aspect {aspect_name!r}): "
+                    f"module exposes no callable `check`."
+                )
+                continue
+            try:
+                check_fn(target, errors, warnings)
+            except Exception as exc:
+                errors.append(
+                    f"kit-validator {module_path!r} (aspect {aspect_name!r}): "
                     f"raised {type(exc).__name__}: {exc}"
                 )
 

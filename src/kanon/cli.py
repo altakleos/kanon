@@ -519,6 +519,7 @@ def verify(target: Path) -> None:
         check_fidelity_lock,
         check_required_files,
         check_verified_by,
+        run_kit_validators,
         run_project_validators,
     )
 
@@ -568,6 +569,9 @@ def verify(target: Path) -> None:
         spec_sha_fn=_spec_sha, accepted_specs_fn=_accepted_or_draft_specs,
     )
     check_verified_by(target, aspects.get("kanon-sdd", 0), warnings)
+    # Kit-aspect validators: trusted code, runs from the installed package.
+    # Depth-gated via depth-N: validators: entries in aspect sub-manifests.
+    run_kit_validators(target, aspects, errors, warnings)
     # Per docs/specs/verification-contract.md INV-10 (carve-out from INV-9,
     # ratified by ADR-0029): fidelity-fixture replay runs only when an
     # enabled aspect declares the `behavioural-verification` capability

@@ -42,6 +42,8 @@ depth-1:
   sections:
     - plan-before-build
     - protocols-index
+  validators:
+    - kanon._validators.plan_completion
 
 depth-2:
   files:
@@ -51,6 +53,9 @@ depth-2:
     - spec-review.md
   sections:
     - spec-before-design
+  validators:
+    - kanon._validators.link_check
+    - kanon._validators.adr_immutability
 
 depth-3:
   files:

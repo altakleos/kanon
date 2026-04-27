@@ -587,6 +587,11 @@ def _aspect_sections(aspect: str, depth: int) -> list[str]:
     return _aspect_items(aspect, depth, "sections")
 
 
+def _aspect_depth_validators(aspect: str, depth: int) -> list[str]:
+    """Return depth-gated validator module paths (union of depth-0..depth)."""
+    return _aspect_items(aspect, depth, "validators")
+
+
 def _all_aspect_sections(aspect: str) -> set[str]:
     """Every section name across all depths of aspect."""
     sub = _load_aspect_manifest(aspect)
