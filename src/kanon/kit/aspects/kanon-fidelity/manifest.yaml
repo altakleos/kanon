@@ -9,7 +9,7 @@
 # of `kanon verify` when the aspect is enabled at depth >= 1, per the carve-out in
 # verification-contract.md INV-10 (ratified by ADR-0029).
 #
-# See docs/specs/fidelity.md and ADR-0030.
+# See docs/specs/fidelity.md and ADR-0031.
 
 depth-0:
   files: []

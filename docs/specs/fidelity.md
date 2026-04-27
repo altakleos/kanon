@@ -129,4 +129,4 @@ The aspect realises the carve-out ratified by [ADR-0029](../decisions/0029-verif
 
 See:
 - [ADR-0029](../decisions/0029-verification-fidelity-replay-carveout.md) — verification-contract carve-out for fidelity-fixture replay (the spec gap this aspect closes).
-- [ADR-0030](../decisions/0030-fidelity-aspect.md) — `kanon-fidelity` aspect: depth-range, capability declaration, scaffolding choices, the three-assertion-family decision.
+- [ADR-0031](../decisions/0031-fidelity-aspect.md) — `kanon-fidelity` aspect: depth-range, capability declaration, scaffolding choices, the three-assertion-family decision.

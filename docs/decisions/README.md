@@ -38,7 +38,7 @@ See [`../development-process.md`](../development-process.md) § ADRs for the for
 | [0028](0028-project-aspects.md) | Project-defined aspects via prefixed source-namespacing | accepted |
 | [0029](0029-verification-fidelity-replay-carveout.md) | Verification-contract carve-out for fidelity-fixture replay | accepted (lite) |
 | [0030](0030-recovery-model.md) | Recovery model — auto-replay for graph-rename, idempotent re-run for the rest | accepted (lite) |
-| [0030](0030-fidelity-aspect.md) | `kanon-fidelity` aspect — Tier-1 behavioural-conformance verification | accepted |
+| [0031](0031-fidelity-aspect.md) | `kanon-fidelity` aspect — Tier-1 behavioural-conformance verification | accepted |
 
 ## ADR Template
 

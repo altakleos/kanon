@@ -36,8 +36,10 @@ def test_invariant_anchor_resolves() -> None:
     """Anchor test for INV-verification-contract-fidelity-replay-carveout.
 
     Asserts that the verification-contract spec carries the carve-out
-    anchor and that ADR-0029 / ADR-0030 both exist (the spec→ADR
-    backreference chain is intact).
+    anchor and that ADR-0029 / ADR-0031 both exist (the spec→ADR
+    backreference chain is intact). ADR-0031 was renumbered from 0030
+    during the Track-1 rebase: PR-34 took the 0030 slot for the
+    recovery-model ADR between Track 0 and Track 1.
     """
     spec = _REPO_ROOT / "docs" / "specs" / "verification-contract.md"
     text = spec.read_text(encoding="utf-8")
@@ -45,7 +47,7 @@ def test_invariant_anchor_resolves() -> None:
     assert (
         _REPO_ROOT / "docs" / "decisions" / "0029-verification-fidelity-replay-carveout.md"
     ).is_file()
-    assert (_REPO_ROOT / "docs" / "decisions" / "0030-fidelity-aspect.md").is_file()
+    assert (_REPO_ROOT / "docs" / "decisions" / "0031-fidelity-aspect.md").is_file()
 
 
 # --- INV-1: aspect identity (kit-registered, capability declared) ---

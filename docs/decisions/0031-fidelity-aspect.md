@@ -2,7 +2,7 @@
 status: accepted
 date: 2026-04-27
 ---
-# ADR-0030: `kanon-fidelity` aspect — Tier-1 behavioural-conformance verification
+# ADR-0031: `kanon-fidelity` aspect — Tier-1 behavioural-conformance verification
 
 ## Context
 
