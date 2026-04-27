@@ -29,6 +29,8 @@ depth-2:
   protocols:
     - ac-first-tdd.md
   sections: []
+  validators:
+    - kanon._validators.test_import_check
 
 depth-3:
   files:
