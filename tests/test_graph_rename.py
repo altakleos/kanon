@@ -207,6 +207,63 @@ def test_inv7_recovery_message_command_form() -> None:
 
 
 # ---------------------------------------------------------------------------
+# ADR-0029: graph-rename auto-recovery via CLI _check_pending_recovery
+
+
+def test_check_pending_recovery_auto_replays_graph_rename(tmp_path: Path) -> None:
+    """Per ADR-0029, when `_check_pending_recovery` finds the `graph-rename`
+    sentinel, it calls `recover_pending_rename` automatically — replaying
+    the ops-manifest, clearing the sentinel, and emitting a "Recovered ..."
+    message instead of the warn-and-rerun warning. Closes spec-graph-rename
+    INV-3 at the CLI integration layer."""
+    _make_minimal_repo(tmp_path)
+    _write(tmp_path / "docs/foundations/principles/P-foo.md",
+           "---\nid: P-foo\nkind: pedagogical\nstatus: accepted\n---\n")
+    _write(tmp_path / "docs/specs/feature.md",
+           "---\nstatus: accepted\nrealizes: [P-foo]\n---\n# Feature\n")
+
+    # Stage a partial rename: ops-manifest + sentinel on disk, rewrites unapplied.
+    from kanon._atomic import write_sentinel
+    from kanon._rename import OpsManifest, compute_rewrites, write_ops_manifest
+
+    rewrites = compute_rewrites(tmp_path, "principle", "P-foo", "P-bar")
+    write_ops_manifest(
+        tmp_path,
+        OpsManifest(old="P-foo", new="P-bar", type="principle", files=rewrites),
+    )
+    write_sentinel(tmp_path / ".kanon", _OP_GRAPH_RENAME)
+
+    # Call any CLI command whose entry runs `_check_pending_recovery`.
+    # `graph orphans` is the cheapest one that takes --target and exits 0.
+    runner = CliRunner()
+    # Stage a minimal kanon project skeleton at tmp_path so verify is invokable.
+    (tmp_path / ".kanon").mkdir(exist_ok=True)
+    config = (tmp_path / ".kanon" / "config.yaml")
+    if not config.is_file():
+        config.write_text(
+            "kit_version: 0.0.0\naspects: {kanon-sdd: {depth: 0, "
+            "enabled_at: '2026-04-27T00:00:00+00:00', config: {}}}\n",
+            encoding="utf-8",
+        )
+    (tmp_path / "AGENTS.md").write_text("# minimal\n", encoding="utf-8")
+    result = runner.invoke(main, ["verify", str(tmp_path)])
+
+    # Recovery message emitted; rewrite is fully applied.
+    assert "Recovered interrupted 'graph-rename' operation" in result.output, (
+        f"expected auto-recovery message in verify output, got: {result.output}"
+    )
+    # Warn-and-rerun message must NOT appear (it's the alternative branch).
+    assert "Re-run 'kanon graph rename'" not in result.output
+    # Rewrite was applied: new file exists, old file gone, spec frontmatter updated.
+    assert (tmp_path / "docs/foundations/principles/P-bar.md").is_file()
+    assert not (tmp_path / "docs/foundations/principles/P-foo.md").exists()
+    assert "P-bar" in (tmp_path / "docs/specs/feature.md").read_text()
+    # Sentinel + ops-manifest cleared.
+    assert read_sentinel(tmp_path / ".kanon") is None
+    assert not (tmp_path / ".kanon" / OPS_MANIFEST_FILENAME).exists()
+
+
+# ---------------------------------------------------------------------------
 # INV-10: collision detection
 
 

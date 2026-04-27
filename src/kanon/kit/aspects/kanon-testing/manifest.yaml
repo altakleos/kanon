@@ -43,4 +43,7 @@ config-schema:
   coverage_floor:
     type: integer
     default: 80
-    description: Minimum total test-coverage percentage the project must maintain.
+    description: Advisory minimum total test-coverage percentage. The kit
+      declares this value but does not auto-wire it into a test runner;
+      consumers feed it into their own CI (e.g., `pytest --cov-fail-under`)
+      to enforce the threshold.

@@ -1,10 +1,10 @@
-# kanon kit — project-aspects-phase1
+# kanon kit — review-followups
 
 > **Kernel doc.** Scaffolded by `kanon init` and refreshed by `kanon upgrade` / `kanon aspect set-depth`. This file describes what the kanon kit gives this repo at its current depth, where to find the pieces, and which procedures are available to you (the operating LLM agent).
 
 ## This repo's identity
 
-- **Tier:** ${sdd_depth}
+- **SDD depth:** 3
 - **Kit bundle path in-repo:** `.kanon/`
 - **Config:** `.kanon/config.yaml` (kit version, aspects, depths, last set-depth timestamp)
 
