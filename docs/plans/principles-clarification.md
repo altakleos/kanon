@@ -39,12 +39,12 @@ The actual gap is documentation: the scaffolded `docs/foundations/principles/REA
 
 ## Acceptance Criteria
 
-- [ ] AC1: The scaffolded `docs/foundations/principles/README.md` explicitly states (in prose, not just by inference) that kit-author principles are kit-internal stances and do not propagate to consumer projects.
-- [ ] AC2: Kit + repo copies of the principles README each carry the appropriate clarifying prose (kit-shipped: consumer-facing "this directory is yours"; repo: kit-author-facing "consumers don't receive these files"). They are NOT byte-identical and are not required to be — the kit-shipped one is a starter template; the repo copy is kanon's own catalog.
-- [ ] AC3: `kanon verify .` returns `status: ok` with zero warnings.
-- [ ] AC4: `python ci/check_kit_consistency.py` returns `status: ok`.
-- [ ] AC5: `pytest`, `ruff`, `mypy` clean.
-- [ ] AC6: Track 3 of `fidelity-and-immutability.md` reflects the new framing (deferred-and-explained, not silently abandoned).
+- [x] AC1: The scaffolded `docs/foundations/principles/README.md` explicitly states (in prose, not just by inference) that kit-author principles are kit-internal stances and do not propagate to consumer projects.
+- [x] AC2: Kit + repo copies of the principles README each carry the appropriate clarifying prose (kit-shipped: consumer-facing "this directory is yours"; repo: kit-author-facing "consumers don't receive these files"). They are NOT byte-identical and are not required to be — the kit-shipped one is a starter template; the repo copy is kanon's own catalog.
+- [x] AC3: `kanon verify .` returns `status: ok` with zero warnings.
+- [x] AC4: `python ci/check_kit_consistency.py` returns `status: ok`.
+- [x] AC5: `pytest`, `ruff`, `mypy` clean.
+- [x] AC6: Track 3 of `fidelity-and-immutability.md` reflects the new framing (deferred-and-explained, not silently abandoned).
 
 ## Documentation Impact
 

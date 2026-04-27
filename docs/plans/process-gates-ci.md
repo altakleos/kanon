@@ -32,14 +32,14 @@ Follow `ci/check_adr_immutability.py` as the structural template:
 
 ## Acceptance Criteria
 
-- [ ] Script detects missing plan when `src/` files change (INV-process-gates-plan-co-presence)
-- [ ] Script detects missing spec when new CLI command added (INV-process-gates-spec-co-presence)
-- [ ] `Trivial-change:` trailer exempts plan check (INV-process-gates-trivial-override)
-- [ ] Commit message `Plan:`/`Spec:` references resolve against repo (INV-process-gates-reference-semantics)
-- [ ] PR mode (`--base-ref`) and push mode both work (INV-process-gates-git-aware)
-- [ ] Zero kanon imports (INV-process-gates-standalone)
-- [ ] JSON report with status/errors/warnings (INV-process-gates-json-report)
-- [ ] Docs-only changes skip all checks (INV-process-gates-docs-only-exempt)
-- [ ] Tests cover all 8 invariants
-- [ ] `kanon verify` passes
-- [ ] Existing test suite stays green
+- [x] Script detects missing plan when `src/` files change (INV-process-gates-plan-co-presence)
+- [x] Script detects missing spec when new CLI command added (INV-process-gates-spec-co-presence)
+- [x] `Trivial-change:` trailer exempts plan check (INV-process-gates-trivial-override)
+- [x] Commit message `Plan:`/`Spec:` references resolve against repo (INV-process-gates-reference-semantics)
+- [x] PR mode (`--base-ref`) and push mode both work (INV-process-gates-git-aware)
+- [x] Zero kanon imports (INV-process-gates-standalone)
+- [x] JSON report with status/errors/warnings (INV-process-gates-json-report)
+- [x] Docs-only changes skip all checks (INV-process-gates-docs-only-exempt)
+- [x] Tests cover all 8 invariants
+- [x] `kanon verify` passes
+- [x] Existing test suite stays green

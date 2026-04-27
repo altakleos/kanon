@@ -62,14 +62,14 @@ Replacement plan: [`docs/plans/principles-clarification.md`](principles-clarific
 
 ## Acceptance Criteria
 
-- [ ] AC1: Track 0 — `docs/specs/verification-contract.md` carries INV-10 (fidelity carve-out), bounded to `kanon-fidelity` enabled at depth ≥1; ADR-0029 status `accepted (lite)`; ADR index updated.
-- [ ] AC2: Track 1 — kanon's own repo enables `kanon-fidelity:1`; `kanon verify .` returns `ok`; one fixture demonstrably catches the worktree-audit-sentence failure mode described in commit `b9524aa9` (deliberate-bad transcript fails the assertion).
-- [ ] AC3: Track 2 — kanon's own CI hard-fails on a synthetic post-acceptance ADR body mutation; passes when the same commit carries an `Allow-ADR-edit:` trailer; consumer-facing protocol describes the rule but does not ship a default-on script.
+- [x] AC1: Track 0 — `docs/specs/verification-contract.md` carries INV-10 (fidelity carve-out), bounded to `kanon-fidelity` enabled at depth ≥1; ADR-0029 status `accepted (lite)`; ADR index updated.
+- [x] AC2: Track 1 — kanon's own repo enables `kanon-fidelity:1`; `kanon verify .` returns `ok`; one fixture demonstrably catches the worktree-audit-sentence failure mode described in commit `b9524aa9` (deliberate-bad transcript fails the assertion).
+- [x] AC3: Track 2 — kanon's own CI hard-fails on a synthetic post-acceptance ADR body mutation; passes when the same commit carries an `Allow-ADR-edit:` trailer; consumer-facing protocol describes the rule but does not ship a default-on script.
 - [~] AC4: Track 3 — superseded by [`docs/plans/principles-clarification.md`](principles-clarification.md). The maintainer's framing correction (kit principles do not propagate to consumers) made the originally-specced override mechanism unnecessary; the docs-clarification plan ships the only deliverable that actually pays rent.
-- [ ] AC5: `kanon verify .` passes with no warnings on the kanon repo itself.
-- [ ] AC6: `pytest`, `ruff check src/ tests/ ci/`, `mypy src/kanon` all pass.
-- [ ] AC7: `python ci/check_kit_consistency.py` returns `status: ok`.
-- [ ] AC8: All new INVs (INV-10 in Track 0, plus Track 1's spec INVs) have `invariant_coverage` mappings (or explicit `fixtures_deferred:` justification).
+- [x] AC5: `kanon verify .` passes with no warnings on the kanon repo itself.
+- [x] AC6: `pytest`, `ruff check src/ tests/ ci/`, `mypy src/kanon` all pass.
+- [x] AC7: `python ci/check_kit_consistency.py` returns `status: ok`.
+- [x] AC8: All new INVs (INV-10 in Track 0, plus Track 1's spec INVs) have `invariant_coverage` mappings (or explicit `fixtures_deferred:` justification).
 
 ## Documentation Impact
 

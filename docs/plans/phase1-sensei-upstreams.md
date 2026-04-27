@@ -15,14 +15,14 @@ Bring three quick-win improvements from sensei into kanon's kit bundle:
 
 ## Acceptance Criteria
 
-- [ ] `worktree-setup.sh` aborts if the working directory has uncommitted staged or unstaged changes
-- [ ] `worktree-setup.sh` skips (exit 0) if the worktree already exists instead of erroring
-- [ ] `worktree-setup.sh` reuses an existing branch instead of failing on `-b` conflict
-- [ ] `worktree-setup.sh` accepts 1 or more slug arguments
-- [ ] `spec-before-design.md` includes the `design: "Follows ADR-NNNN"` frontmatter convention for design-doc skips
-- [ ] `worktree-lifecycle.md` includes a "Parallel worktree coordination" subsection covering disjoint write sets, shared accumulation files, and merge ordering
-- [ ] All existing tests pass (`pytest`)
-- [ ] `kanon verify .` passes
+- [x] `worktree-setup.sh` aborts if the working directory has uncommitted staged or unstaged changes
+- [x] `worktree-setup.sh` skips (exit 0) if the worktree already exists instead of erroring
+- [x] `worktree-setup.sh` reuses an existing branch instead of failing on `-b` conflict
+- [x] `worktree-setup.sh` accepts 1 or more slug arguments
+- [x] `spec-before-design.md` includes the `design: "Follows ADR-NNNN"` frontmatter convention for design-doc skips
+- [x] `worktree-lifecycle.md` includes a "Parallel worktree coordination" subsection covering disjoint write sets, shared accumulation files, and merge ordering
+- [x] All existing tests pass (`pytest`)
+- [x] `kanon verify .` passes
 
 ## Files Modified
 

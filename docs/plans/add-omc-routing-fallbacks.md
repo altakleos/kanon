@@ -36,9 +36,9 @@ Add `(else ...)` fallback directives to all 11 mappings that currently lack them
 
 ## Acceptance Criteria
 
-- [ ] All 15 routing entries have a parenthesized fallback or explicit directive
-- [ ] Fallbacks reference existing protocols where applicable (test-discipline, secure-defaults, completion-checklist)
-- [ ] The intro paragraph's promise ("fall back to the built-in equivalent shown in parentheses") is satisfied by every entry
+- [x] All 15 routing entries have a parenthesized fallback or explicit directive
+- [x] Fallbacks reference existing protocols where applicable (test-discipline, secure-defaults, completion-checklist)
+- [x] The intro paragraph's promise ("fall back to the built-in equivalent shown in parentheses") is satisfied by every entry
 
 ## Out of Scope
 
