@@ -53,6 +53,25 @@ Disciplines are packaged as *aspects* — opt-in bundles of prose rules, protoco
 | `security` | 0–2 | experimental | Secure-by-default protocols (depth 1) + CI pattern scanner for common anti-patterns (depth 2) |
 | `deps` | 0–2 | experimental | Dependency hygiene protocol (depth 1) + CI scanner for unpinned versions and duplicate-purpose packages (depth 2) |
 
+The canonical name of each kit-shipped aspect carries a `kanon-` source-namespace prefix (e.g., `kanon-sdd`, `kanon-worktrees`); bare names at every CLI input surface sugar to the `kanon-` namespace, so existing invocations like `kanon aspect set-depth . sdd 2` continue to work. See [ADR-0028](docs/decisions/0028-project-aspects.md) and [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md).
+
+### Project-defined aspects
+
+Consumers may declare their own aspects under `.kanon/aspects/project-<local>/manifest.yaml`. The CLI discovers them transparently — they participate in `aspect list --target`, `aspect info <name> --target`, `aspect add`, `aspect remove`, `aspect set-depth`, `aspect set-config`, and `verify` alongside kit-shipped aspects.
+
+A project-aspect's manifest mirrors the shape of a kit-side sub-manifest: registry fields (`stability`, `depth-range`, `default-depth`, optional `requires`/`provides`/`suggests`) and per-depth `depth-N: {files, protocols, sections}` entries in the same file. Optionally, a project-aspect may declare `validators: [<dotted.module.path>, ...]` — `kanon verify` imports each module in-process and invokes its `check(target, errors, warnings) -> None` entrypoint, with findings flowing into the same JSON report the kit's structural checks populate.
+
+The two source namespaces are **strictly source-bounded**:
+
+- `kanon-<local>` — kit-shipped, loaded from the installed pip kit.
+- `project-<local>` — consumer-defined, loaded from `.kanon/aspects/`.
+
+A `kanon-` directory under `.kanon/aspects/` is rejected at load with a single-line error; bare names sugar to `kanon-` only (project-aspects must always be referenced by their full `project-<local>` name). Cross-source path collisions (a project-aspect declaring the same `files/` path as a kit-aspect) raise a `ClickException` at scaffold time.
+
+Capability substitutability is source-neutral: a `project-<local>`'s `provides:` capability can satisfy a kit-aspect's 1-token `requires:` predicate.
+
+Per [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md) and [ADR-0028](docs/decisions/0028-project-aspects.md). Third-party aspect publishing via pip (the `acme-` namespace) remains deferred per ADR-0012; project-aspects ride along with the consumer's own git history.
+
 ### SDD depths
 
 | Depth | For | Artifacts |
