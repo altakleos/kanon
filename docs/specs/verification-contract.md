@@ -30,6 +30,8 @@ invariant_coverage:
     - tests/test_cli.py::test_init_verify_returns_ok
   INV-verification-contract-model-version-compat:
     - tests/test_cli.py::test_init_verify_returns_ok
+  INV-verification-contract-fidelity-replay-carveout:
+    - tests/test_fidelity.py::test_invariant_anchor_resolves
 ---
 # Spec: Verification contract — what `kanon verify` guarantees
 
@@ -56,7 +58,16 @@ Define the checks `kanon verify <target>` runs on a consumer repo, the error/war
 <!-- INV-verification-contract-output-format -->
 8. **Output format.** `verify` prints a JSON report to stdout (plus a short human-readable summary to stderr), with fields `{target, tier, status, errors: [...], warnings: [...]}`. Exit 0 on `status: ok`, non-zero otherwise.
 <!-- INV-verification-contract-does-not-execute-code -->
-9. **Does not execute code.** `verify` is read-only against the target repo. It never runs the consumer's tests, never imports consumer Python, never calls out to the consumer's LLM model. It is a static check.
+9. **Does not execute code by default.** In the default flow, `verify` is read-only against the target repo. It does not run the consumer's tests, does not import consumer Python, does not call out to the consumer's LLM model. It is a static check. The single carve-out from this invariant is INV-10 below; no other behavioural extension is authorised by this spec.
+<!-- INV-verification-contract-fidelity-replay-carveout -->
+10. **Fidelity-fixture replay (carve-out from INV-9).** When and only when the consumer has enabled an aspect that declares the `behavioural-verification` capability (per ADR-0026) — including the kit-shipped `kanon-fidelity` aspect at depth ≥ 1 — `verify` MAY load `.kanon/fidelity/<protocol>.dogfood.md` capture files from the consumer's tree and run lexical assertions over them: `forbidden_phrases`, `required_one_of`, `required_all_of` matched against named-actor turns. The carve-out is bounded by four constraints, each of which is a hard contract:
+
+    1. **Text-only replay.** No LLM calls, no subprocesses, no test-runner invocation, no Python imports of consumer code.
+    2. **Read-only against committed files.** Replay only reads files already present in the consumer's tree at the SHA `verify` is run against; it never writes captures, never spawns agents.
+    3. **Aspect-gated.** Bare `kanon verify` on a project that has not enabled an aspect declaring `behavioural-verification` is structural-only — exactly INV-9's default flow.
+    4. **No latency contract change.** Tier-1 replay is regex/substring over committed text and adds O(milliseconds) per fixture; the existing fast-CI ethos is preserved.
+
+    Tier-2 (workstation capture via `kanon transcripts capture`) and Tier-3 (paid nightly e2e against a live LLM) are **not** authorised by this carve-out and require their own ADRs if/when proposed.
 
 ## Rationale
 
@@ -72,4 +83,4 @@ The check set is the intersection of what Sensei's `sensei verify`, `check_found
 
 ## Decisions
 
-See ADR-0005 (model-version compatibility), ADR-0008 (tier-aware checks).
+See ADR-0005 (model-version compatibility), ADR-0008 (tier-aware checks), ADR-0029 (fidelity-fixture replay carve-out from INV-9).
