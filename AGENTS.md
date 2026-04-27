@@ -124,6 +124,8 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 - adding a check, validator, or test
 - adding a new output type that follows an existing pattern already governed by a spec
 
+When skipping a design doc (all conditions in `docs/development-process.md` § "When to Skip" are met), declare the skip in the plan's YAML frontmatter as `design: "Follows ADR-NNNN"` — citing the ADR that already covers the design space. This makes the skip auditable.
+
 **Before your first design-doc, ADR, plan, or source-modifying tool call, state in one sentence:** "Spec at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and write the spec.
 <!-- kanon:end:kanon-sdd/spec-before-design -->
 
