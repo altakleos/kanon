@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a9] — 2026-04-28
+
+### Added
+
+- **Task-type triage table** in AGENTS.md — agents now read only what's relevant for their task type (bug fix, refactor, test, docs, CI), reducing effective boot chain load by 40–60% for non-feature work.
+- **ADR category tags** — 33 ADRs in `docs/decisions/README.md` tagged by category (`cli`, `process`, `kit-internals`, `aspects`, `testing`, `release`) with a reading guide for targeted lookup.
+- **Plan/src commit-separation warning** — `check_process_gates.py` now warns when a single commit touches both `docs/plans/` and `src/` files, detecting retroactive plan creation. Warning only (does not block); exemptable per-commit via `Trivial-change:` trailer.
+
+### Changed
+
+- **Spec gate broadened** — `check_process_gates.py` now catches all Click decorator registration patterns (`@main.command()`, `@aspect.command('list')`, `@click.group()`, etc.), not just `@cli.command()`. The previous regex was effectively a no-op for this project's actual CLI registration style.
+- **Completion checklist streamlined** — N/A items can be dismissed in one line rather than justifying each sub-bullet individually.
+
+### Fixed
+
+- **7 CI scripts wired into `verify.yml`** — `check_test_quality`, `check_security_patterns`, `check_deps`, `check_status_consistency`, `check_verified_by`, and `check_invariant_ids` were never invoked by any GitHub Actions workflow despite AGENTS.md claiming they were active enforcement. Now wired with correct fail modes (3 hard-fail, 3 warn with `continue-on-error`).
+- **Coverage floor aligned** — `.kanon/config.yaml` declared `coverage_floor: 80` but `pyproject.toml` enforced 90% via `--cov-fail-under`. Config updated to match the enforced value.
+- **False documentation claims corrected** — removed incorrect "coverage floor" claim from `check_test_quality.py` description; replaced "no CI gate" with accurate description of the soft commit-message check.
+
 ## [0.2.0a8] — 2026-04-27
 
 ### Added
