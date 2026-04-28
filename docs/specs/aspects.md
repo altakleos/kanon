@@ -1,5 +1,6 @@
 ---
 status: accepted
+design: "docs/design/aspect-model.md"
 date: 2026-04-23
 realizes:
   - P-prose-is-code

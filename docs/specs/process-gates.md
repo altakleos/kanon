@@ -1,5 +1,6 @@
 ---
 status: accepted
+design: "Follows ADR-0032"
 date: 2026-04-27
 fixtures:
   - tests/ci/test_check_process_gates.py

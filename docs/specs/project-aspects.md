@@ -1,5 +1,6 @@
 ---
 status: accepted
+design: "Follows ADR-0028"
 date: 2026-04-26
 target-release: v0.3
 realizes:
