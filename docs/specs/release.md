@@ -44,7 +44,7 @@ The primary user is a solo developer with LLM agents who wants a repeatable, aud
    - **Depth 2** — prose guidance plus automation. Reference CI templates (GitHub Actions workflow) and a pre-release validation script are scaffolded alongside the protocol and AGENTS.md section.
 
 <!-- INV-release-protocol-shaped -->
-2. **Protocol-shaped.** The aspect ships one protocol at `.kanon/protocols/release/release-checklist.md` (depth ≥ 1) covering: version bump procedure, changelog validation, pre-release checks (tests pass, lint clean, verify ok), tag creation, wheel build + validation, and the publish gate (the final step where the built artifact is pushed to the package registry — typically triggered by a CI workflow on tag push, not by the agent directly). Frontmatter `invoke-when` names **a release is being prepared** as the trigger.
+2. **Protocol-shaped.** The aspect ships one protocol at `.kanon/protocols/kanon-release/release-checklist.md` (depth ≥ 1) covering: version bump procedure, changelog validation, pre-release checks (tests pass, lint clean, verify ok), tag creation, wheel build + validation, and the publish gate (the final step where the built artifact is pushed to the package registry — typically triggered by a CI workflow on tag push, not by the agent directly). Frontmatter `invoke-when` names **a release is being prepared** as the trigger.
 
 <!-- INV-release-agents-md-section -->
 3. **AGENTS.md section.** At depth ≥ 1, the aspect contributes one marker-delimited section `release/publishing-discipline` to AGENTS.md — a short prose summary of the release checklist so an operating agent sees the rules on the boot chain.

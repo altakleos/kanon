@@ -52,7 +52,7 @@ The aspect is language-agnostic at all depths. The protocols describe *when* and
    - **Depth 3** — automated enforcement. CI validator scaffolded for test anti-pattern detection.
 
 <!-- INV-testing-test-discipline-protocol -->
-2. **Test-discipline protocol.** The aspect ships a protocol at `.kanon/protocols/testing/test-discipline.md` (depth ≥ 1) covering:
+2. **Test-discipline protocol.** The aspect ships a protocol at `.kanon/protocols/kanon-testing/test-discipline.md` (depth ≥ 1) covering:
    - Tests accompany code changes — every new function/behavior gets a test in the same commit or adjacent commit.
    - Tests are not deleted without justification. When removing a test, document what now covers the behavior it protected, or acknowledge the coverage gap. Never delete a test solely because it's failing — fix the code or fix the test.
    - Assertions are not weakened to make tests pass. Changing an expected value requires explaining why the old value was wrong.
@@ -61,7 +61,7 @@ The aspect is language-agnostic at all depths. The protocols describe *when* and
    - Frontmatter `invoke-when`: writing or modifying code.
 
 <!-- INV-testing-ac-first-protocol -->
-3. **AC-first + TDD protocol.** The aspect ships a second protocol at `.kanon/protocols/testing/ac-first-tdd.md` (depth ≥ 2) covering:
+3. **AC-first + TDD protocol.** The aspect ships a second protocol at `.kanon/protocols/kanon-testing/ac-first-tdd.md` (depth ≥ 2) covering:
    - **AC-first testing:** Before implementing a plan's tasks, read its `## Acceptance Criteria` (or `## Success Criteria`) section. For each criterion that can be expressed as an executable test, write a failing test. Implement until all AC tests pass. If a criterion is untestable as written, rewrite it to be testable — vague AC is a plan defect, not a testing problem.
    - **TDD from spec invariants:** When implementing a task that touches a spec invariant (`INV-*`), write a failing test for that invariant first. Implement until it passes. Refactor while keeping it green. Update the spec's `invariant_coverage:` frontmatter to reference the test.
    - **The implementation loop:** The agent iterates on implementation, not on weakening tests. A failing test is a signal that the implementation is wrong, not that the test is wrong. This loop (test → implement → fail → fix → repeat) converges because the test encodes the intended behavior and the agent adjusts implementation to match.

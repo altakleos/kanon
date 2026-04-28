@@ -180,7 +180,7 @@ Equivalent to `kanon init <target> --aspect sdd --depth N` — preserves the v0.
 ### `kanon upgrade`
 
 1. Load config. If legacy v1 shape, run auto-migration first (§ above).
-2. Migrate flat `.kanon/protocols/*.md` under `.kanon/protocols/sdd/` if still flat.
+2. Migrate flat `.kanon/protocols/*.md` under `.kanon/protocols/kanon-sdd/` if still flat.
 3. For each enabled aspect, re-render its AGENTS.md sections from the installed kit.
 4. Rewrite `.kanon/kit.md`.
 5. Update `kit_version` in config.
@@ -227,7 +227,7 @@ New invariants:
 1. **Aspect path resolution.** Every `aspects.<name>.path` resolves to a directory containing a sub-manifest.
 2. **Per-aspect file resolution.** Every path listed in any sub-manifest resolves under `kit/aspects/<name>/files/` or `kit/aspects/<name>/protocols/`.
 3. **Cross-aspect ownership exclusivity.** No two aspects scaffold the same relative consumer-path (computed across all aspects' maximum depth).
-4. **Whitelist re-scoped per-aspect.** Byte-equality whitelist entries move under the new paths (`kit/aspects/sdd/files/docs/development-process.md` ↔ `docs/development-process.md`; `kit/aspects/sdd/protocols/*.md` ↔ `.kanon/protocols/sdd/*.md`). Total whitelist stays ≤ 50 entries (maintenance red line).
+4. **Whitelist re-scoped per-aspect.** Byte-equality whitelist entries move under the new paths (`kit/aspects/sdd/files/docs/development-process.md` ↔ `docs/development-process.md`; `kit/aspects/sdd/protocols/*.md` ↔ `.kanon/protocols/kanon-sdd/*.md`). Total whitelist stays ≤ 50 entries (maintenance red line).
 5. **Stability label validity.** Each registry entry's `stability` ∈ `{experimental, stable, deprecated}`.
 6. **Section namespace discipline.** Marker pairs in `kit/aspects/<aspect>/agents-md/depth-*.md` use the `<aspect>/<section>` prefix — except the unprefixed `protocols-index`.
 
