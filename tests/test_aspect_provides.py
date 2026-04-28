@@ -132,13 +132,12 @@ def test_check_requires_capability_unsatisfied_when_supplier_at_depth_zero() -> 
 
 
 def test_check_requires_depth_predicate_unchanged() -> None:
-    """Existing depth-predicate behaviour is byte-identical."""
+    """worktrees now suggests (not requires) sdd — no error when sdd is absent."""
     top = _load_top_manifest()
-    # worktrees requires "sdd >= 1" — satisfied with sdd at 1
+    # worktrees suggests "sdd >= 1" — satisfied with sdd at 1
     assert _check_requires("kanon-worktrees", {"kanon-sdd": 1, "kanon-worktrees": 1}, top) is None
-    err = _check_requires("kanon-worktrees", {"kanon-worktrees": 1}, top)
-    assert err is not None
-    assert "'kanon-sdd'" in err and "is at depth 0" in err
+    # No error when sdd is absent — it's a suggests, not requires
+    assert _check_requires("kanon-worktrees", {"kanon-worktrees": 1}, top) is None
 
 
 def test_check_requires_mixed_depth_and_capability() -> None:
@@ -160,12 +159,11 @@ def test_check_requires_mixed_depth_and_capability() -> None:
 # --- INV-aspect-provides-removal-check ---
 
 
-def test_removal_blocked_by_depth_dependent() -> None:
+def test_removal_not_blocked_by_suggests_dependent() -> None:
     top = _load_top_manifest()
-    # Removing sdd while worktrees still enabled (worktrees requires sdd >= 1)
+    # Removing sdd while worktrees still enabled — worktrees only suggests sdd, not requires
     err = _check_removal_dependents("kanon-sdd", {"kanon-worktrees": 1}, top)
-    assert err is not None
-    assert "kanon-worktrees" in err and "requires" in err
+    assert err is None
 
 
 def test_removal_blocked_when_only_supplier_being_removed() -> None:
@@ -341,7 +339,9 @@ def test_existing_kit_requires_predicates_classify_as_depth() -> None:
                 f"expected 'depth'. Migration of existing predicates to capability form is "
                 f"out of scope for this spec."
             )
-    assert seen_any, "Expected at least one existing `requires:` predicate in the kit."
+    # After scaffold-v2, no kit aspect has a hard `requires:` predicate.
+    # This test validates that if any exist, they classify as 'depth'.
+    # Currently none exist, so seen_any is False — that's correct.
 
 
 # --- ADR-0028: bare-name sugar (T12) ---
