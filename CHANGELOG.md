@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a8] — 2026-04-27
+
+### Added
+
+- **Kit-aspect validators — three built-in validators run from the installed kanon-kit package during `kanon verify`.** No static file copies in consumer repos; validators update with `pip install --upgrade`. Uses the same `check(target, errors, warnings)` signature as project-aspect validators. Three validators ship with `kanon-sdd`: `plan_completion` (done plans must have all tasks ticked, depth 1+), `link_check` (markdown relative links must resolve, depth 2+), `adr_immutability` (accepted ADR bodies are immutable, depth 2+). Kit-aspect manifests gain `validators:` entries at each depth level; `_manifest._aspect_depth_validators()` returns the depth-gated union; `_verify.run_kit_validators()` discovers and runs them after structural checks.
+- **Index-consistency validator** (`kanon-sdd` depth 1+) — detects duplicate link-target entries in scaffolded index README files under `docs/{decisions,plans,specs,design}/`. Skips code blocks and handles missing directories at lower SDD depths.
+- **Test-import-check validator** (`kanon-testing` depth 2+) — detects test files under `tests/ci/` referencing CI scripts that don't exist on disk. Catches orphaned test companions left behind after CI script deletion.
+- **Quantitative fidelity assertion families** (`word_share`, `pattern_density`) and bracket turn markers (`[ACTOR]` style). `word_share` compares actor word-count share against a band; `pattern_density` counts regex matches per turn with optional code-fence stripping. Per [ADR-0033](docs/decisions/0033-fidelity-quantitative-families.md) and fidelity spec amendments.
+- **Parallel worktree coordination** guidance added to `worktree-lifecycle` protocol — covers lock-file contention, shared-state awareness, and merge ordering.
+- **Design-doc skip frontmatter convention** — plans may declare `design: "Follows ADR-NNNN"` to make a design-doc skip auditable. Added to `spec-before-design` AGENTS.md section.
+
+### Changed
+
+- **`worktree-setup.sh` hardened** — aborts on dirty working directory (uncommitted staged or unstaged changes), skips idempotently if worktree already exists, reuses existing branch instead of failing on `-b` conflict, and accepts multiple slug arguments.
+
+### Fixed
+
+- **`kanon verify` now adds the target directory to `sys.path`** before importing project-aspect validator modules, fixing `ModuleNotFoundError` when validators live in the consumer's tree.
+- **`docs/development-process.md` no longer contains hardcoded `kanon-implementation.md` links** — the project-agnostic method doc now avoids kit-specific cross-references.
+
 ## [0.2.0a7] — 2026-04-27
 
 ### Added
@@ -198,8 +218,9 @@ First public alpha under the name `kanon`. The project was previously developed 
 - Spec-graph tooling (rename, orphan detection, spec-diff rendering) is deferred to v0.2. See `docs/specs/spec-graph-tooling.md`.
 - Multi-agent coordination primitives (reservations ledger, plan-SHA pins, decision handshake) deferred to v0.2. See `docs/specs/multi-agent-coordination.md`.
 
-[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a6...HEAD
-[0.2.0a6]: https://github.com/altakleos/kanon/compare/v0.2.0a5...v0.2.0a6
+[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a8...HEAD
+[0.2.0a8]: https://github.com/altakleos/kanon/compare/v0.2.0a7...v0.2.0a8
+[0.2.0a7]: https://github.com/altakleos/kanon/compare/v0.2.0a6...v0.2.0a7
 [0.2.0a5]: https://github.com/altakleos/kanon/compare/v0.2.0a4...v0.2.0a5
 [0.2.0a4]: https://github.com/altakleos/kanon/compare/v0.2.0a3...v0.2.0a4
 [0.2.0a3]: https://github.com/altakleos/kanon/compare/v0.2.0a2...v0.2.0a3

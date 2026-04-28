@@ -112,9 +112,9 @@ def _has_parent(sha: str, cwd: Path) -> bool:
 
 
 def _files_changed(sha: str, cwd: Path) -> list[str]:
-    return [l.strip() for l in _git(
+    return [line.strip() for line in _git(
         ["show", "--name-only", "--pretty=", sha], cwd
-    ).splitlines() if l.strip()]
+    ).splitlines() if line.strip()]
 
 
 def _existed_at(sha: str, path: str, cwd: Path) -> bool:
