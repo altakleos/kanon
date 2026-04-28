@@ -20,7 +20,7 @@ aspects:
     depth: 3
     enabled_at: '2026-04-25T08:14:11+00:00'
     config:
-      coverage_floor: 80
+      coverage_floor: 90
   kanon-worktrees:
     depth: 2
     enabled_at: '2026-04-25T03:07:38+00:00'
