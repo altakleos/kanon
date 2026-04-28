@@ -10,8 +10,8 @@
 # See docs/design/aspect-model.md and ADR-0012.
 
 byte-equality:
-  - kit: docs/development-process.md
-    repo: docs/development-process.md
+  - kit: docs/sdd-method.md
+    repo: docs/sdd-method.md
   - kit: docs/decisions/_template.md
     repo: docs/decisions/_template.md
   - kit: docs/plans/_template.md
@@ -30,7 +30,7 @@ depth-0:
 
 depth-1:
   files:
-    - docs/development-process.md
+    - docs/sdd-method.md
     - docs/decisions/README.md
     - docs/decisions/_template.md
     - docs/plans/README.md
@@ -40,8 +40,8 @@ depth-1:
     - verify-triage.md
     - completion-checklist.md
     - scope-check.md
+    - plan-before-build.md
   sections:
-    - plan-before-build
     - protocols-index
   validators:
     - kanon._validators.plan_completion
@@ -53,8 +53,8 @@ depth-2:
     - docs/specs/_template.md
   protocols:
     - spec-review.md
+    - spec-before-design.md
   sections:
-    - spec-before-design
   validators:
     - kanon._validators.link_check
     - kanon._validators.adr_immutability

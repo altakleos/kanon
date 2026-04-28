@@ -21,5 +21,5 @@ depth-1:
   files: []
   protocols:
     - fidelity-fixture-authoring.md
+    - fidelity-discipline.md
   sections:
-    - fidelity-discipline

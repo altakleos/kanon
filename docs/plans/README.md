@@ -2,7 +2,7 @@
 
 Task breakdowns for features. Written AFTER design and ADRs, BEFORE implementation. Plans are permanent records and stay after a feature ships as historical documentation of how it was built.
 
-See [`../development-process.md`](../development-process.md) § Plans and § How Plans Are Executed.
+See [`../sdd-method.md`](../sdd-method.md) § Plans and § How Plans Are Executed.
 
 ## Index
 
@@ -41,7 +41,7 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [close-fidelity-coverage-gaps](close-fidelity-coverage-gaps.md) | Close `_fidelity.py` coverage gaps (74 → 90%+) | done |
 | [close-validator-coverage-gaps](close-validator-coverage-gaps.md) | Close validator coverage gaps | done |
 | [merge-caution-guidance](merge-caution-guidance.md) | Add merge-caution guidance to worktree-lifecycle | done |
-| [name-extension-points](name-extension-points.md) | Name the extension-point convention in development-process.md | done |
+| [name-extension-points](name-extension-points.md) | Name the extension-point convention in sdd-method.md | done |
 | [phase1-sensei-upstreams](phase1-sensei-upstreams.md) | Upstream sensei worktree hardening + process prose | done |
 | [phase2-kit-validators](phase2-kit-validators.md) | Kit-aspect validators via `kanon verify` | draft |
 | [plan-src-separation](plan-src-separation.md) | Enforce plan/src commit separation | done |

@@ -66,8 +66,8 @@ The primary user is a kit contributor adding a third or fourth aspect. The secon
 6. **CI validation is manifest-driven.** `check_package_contents.py` reads the top-level manifest to determine required files and directories instead of hardcoding paths. `check_kit_consistency.py` reads a `byte-equality:` key in per-aspect sub-manifests instead of a hardcoded whitelist:
    ```yaml
    byte-equality:
-     - kit: docs/development-process.md
-       repo: docs/development-process.md
+     - kit: docs/sdd-method.md
+       repo: docs/sdd-method.md
      - kit: docs/decisions/_template.md
        repo: docs/decisions/_template.md
    ```

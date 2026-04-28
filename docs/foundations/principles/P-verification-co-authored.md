@@ -16,7 +16,7 @@ Under the "specs are source, code is compiled" frame (P-specs-are-source), the i
 
 ## Implications
 
-- The document authority hierarchy in `docs/development-process.md` has two tops: Specs and Verification. Both sit at the top of the chain; neither can be overridden by the other without explicit commit.
+- The document authority hierarchy in `docs/sdd-method.md` has two tops: Specs and Verification. Both sit at the top of the chain; neither can be overridden by the other without explicit commit.
 - When a spec change breaks a fixture, the path forward is either (a) update the spec to match observed desired behaviour and re-run verification, or (b) fix the implementation so verification passes the new spec. Both directions are valid; neither is the "default answer."
 - `kanon verify` does not rank spec-violations higher than fixture-violations. Both are equally release-blocking.
 - Verification artifacts carry provenance (`validated-against:` for model version, `verified_by:` from spec invariants — see ADR-0005 and deferred spec `invariant-ids.md`).

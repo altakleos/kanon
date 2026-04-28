@@ -80,24 +80,25 @@ def test_aspect_stability_experimental() -> None:
 
 
 def test_depth_1_scaffolds_protocol_and_section() -> None:
-    """Depth-1 sub-manifest declares one protocol + one section, no files."""
+    """Depth-1 sub-manifest declares protocols (including fidelity-discipline), no files."""
     from kanon._manifest import _load_aspect_manifest
 
     sub = _load_aspect_manifest("kanon-fidelity")
     assert sub["depth-0"] == {"files": [], "protocols": [], "sections": []}
     depth1 = sub["depth-1"]
     assert depth1["files"] == []
-    assert depth1["protocols"] == ["fidelity-fixture-authoring.md"]
-    assert "fidelity-discipline" in depth1["sections"]
+    assert "fidelity-fixture-authoring.md" in depth1["protocols"]
+    assert "fidelity-discipline.md" in depth1["protocols"]
     proto = (
         _REPO_ROOT
         / "src/kanon/kit/aspects/kanon-fidelity/protocols/fidelity-fixture-authoring.md"
     )
     assert proto.is_file()
-    section = (
-        _REPO_ROOT / "src/kanon/kit/aspects/kanon-fidelity/sections/fidelity-discipline.md"
+    proto2 = (
+        _REPO_ROOT
+        / "src/kanon/kit/aspects/kanon-fidelity/protocols/fidelity-discipline.md"
     )
-    assert section.is_file()
+    assert proto2.is_file()
     body = _REPO_ROOT / "src/kanon/kit/aspects/kanon-fidelity/agents-md/depth-1.md"
     assert body.is_file()
 

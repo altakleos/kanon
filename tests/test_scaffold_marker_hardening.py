@@ -32,9 +32,9 @@ def test_quoted_marker_in_backtick_fence_is_ignored() -> None:
         "# Doc\n\n"
         "Markers look like:\n\n"
         "```markdown\n"
-        "<!-- kanon:begin:kanon-sdd/plan-before-build -->\n"
+        "<!-- kanon:begin:kanon-sdd/body -->\n"
         "fake content\n"
-        "<!-- kanon:end:kanon-sdd/plan-before-build -->\n"
+        "<!-- kanon:end:kanon-sdd/body -->\n"
         "```\n\n"
         "Real ones below:\n\n"
         + _real_pair("sdd/plan-before-build", "real body")
@@ -173,9 +173,9 @@ def test_rewrite_legacy_markers_idempotent_on_already_namespaced() -> None:
     from kanon._scaffold import _rewrite_legacy_markers
 
     namespaced = (
-        "<!-- kanon:begin:kanon-sdd/plan-before-build -->\n"
+        "<!-- kanon:begin:kanon-sdd/body -->\n"
         "body\n"
-        "<!-- kanon:end:kanon-sdd/plan-before-build -->\n"
+        "<!-- kanon:end:kanon-sdd/body -->\n"
     )
     once = _rewrite_legacy_markers(namespaced)
     twice = _rewrite_legacy_markers(once)
@@ -194,15 +194,15 @@ def test_rewrite_legacy_markers_preserves_user_prose_outside_markers() -> None:
         "Some user prose here that mentions sdd in passing.\n"
         "Don't touch this paragraph during migration.\n"
         "\n"
-        "<!-- kanon:begin:worktrees/branch-hygiene -->\n"
+        "<!-- kanon:begin:protocols-index -->\n"
         "kit body\n"
-        "<!-- kanon:end:worktrees/branch-hygiene -->\n"
+        "<!-- kanon:end:protocols-index -->\n"
         "\n"
         "More user prose after the marker.\n"
     )
     result = _rewrite_legacy_markers(text)
-    # Marker rewritten:
-    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in result
+    # protocols-index is unprefixed — should remain unchanged:
+    assert "<!-- kanon:begin:protocols-index -->" in result
     # User prose preserved verbatim:
     assert "## My team's house rules" in result
     assert "Some user prose here that mentions sdd in passing." in result

@@ -168,14 +168,16 @@ def test_shims_are_pointers_not_duplicates(tmp_path: Path) -> None:
 
 _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
     0: set(),
-    1: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md"},
-    2: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md", "spec-review.md"},
+    1: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md", "plan-before-build.md"},
+    2: {"tier-up-advisor.md", "verify-triage.md", "completion-checklist.md", "scope-check.md", "plan-before-build.md", "spec-review.md", "spec-before-design.md"},
     3: {
         "tier-up-advisor.md",
         "verify-triage.md",
         "completion-checklist.md",
         "scope-check.md",
+        "plan-before-build.md",
         "spec-review.md",
+        "spec-before-design.md",
         "adr-immutability.md",
     },
 }
@@ -368,7 +370,7 @@ def test_verify_fails_on_missing_file(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    (target / "docs" / "development-process.md").unlink()
+    (target / "docs" / "sdd-method.md").unlink()
     result = runner.invoke(main, ["verify", str(target)])
     assert result.exit_code != 0
     assert "missing required file" in result.output.lower()
@@ -381,9 +383,9 @@ def test_verify_fails_on_missing_marker(tmp_path: Path) -> None:
     agents = target / "AGENTS.md"
     # Strip all marker sections.
     text = agents.read_text(encoding="utf-8")
-    # Remove plan-before-build markers entirely.
-    text = text.replace("<!-- kanon:begin:kanon-sdd/plan-before-build -->", "")
-    text = text.replace("<!-- kanon:end:kanon-sdd/plan-before-build -->", "")
+    # Remove protocols-index markers entirely.
+    text = text.replace("<!-- kanon:begin:protocols-index -->", "")
+    text = text.replace("<!-- kanon:end:protocols-index -->", "")
     agents.write_text(text, encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert result.exit_code != 0
@@ -475,8 +477,8 @@ def test_upgrade_heals_edited_markers(tmp_path: Path) -> None:
     original = agents_path.read_text(encoding="utf-8")
 
     # Corrupt the body of a kit-managed marker section.
-    begin = "<!-- kanon:begin:kanon-sdd/plan-before-build -->"
-    end = "<!-- kanon:end:kanon-sdd/plan-before-build -->"
+    begin = "<!-- kanon:begin:protocols-index -->"
+    end = "<!-- kanon:end:protocols-index -->"
     bi = original.find(begin)
     ei = original.find(end, bi + len(begin))
     assert bi >= 0 and ei > bi
@@ -1124,7 +1126,7 @@ def test_verify_marker_imbalance(tmp_path: Path) -> None:
     agents = target / "AGENTS.md"
     text = agents.read_text(encoding="utf-8")
     # Remove one end marker to create imbalance
-    text = text.replace("<!-- kanon:end:kanon-sdd/plan-before-build -->", "", 1)
+    text = text.replace("<!-- kanon:end:protocols-index -->", "", 1)
     agents.write_text(text, encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert result.exit_code != 0
@@ -1209,12 +1211,12 @@ def test_rewrite_legacy_markers() -> None:
     from kanon._scaffold import _rewrite_legacy_markers
 
     text = (
-        "<!-- kanon:begin:plan-before-build -->\nold\n"
-        "<!-- kanon:end:plan-before-build -->\n"
+        "<!-- kanon:begin:protocols-index -->\nold\n"
+        "<!-- kanon:end:protocols-index -->\n"
     )
     result = _rewrite_legacy_markers(text)
-    assert "<!-- kanon:begin:kanon-sdd/plan-before-build -->" in result
-    assert "<!-- kanon:end:kanon-sdd/plan-before-build -->" in result
+    # protocols-index is unprefixed — it should remain unchanged.
+    assert "<!-- kanon:begin:protocols-index -->" in result
 
 
 # --- cli.py: upgrade where AGENTS.md content actually changes ---
@@ -1229,8 +1231,8 @@ def test_upgrade_modifies_agents_md(tmp_path: Path) -> None:
     agents = target / "AGENTS.md"
     text = agents.read_text(encoding="utf-8")
     text = text.replace(
-        "<!-- kanon:begin:kanon-sdd/plan-before-build -->",
-        "<!-- kanon:begin:kanon-sdd/plan-before-build -->\nCORRUPTED CONTENT",
+        "<!-- kanon:begin:kanon-sdd/body -->",
+        "<!-- kanon:begin:kanon-sdd/body -->\nCORRUPTED CONTENT",
     )
     agents.write_text(text, encoding="utf-8")
     # Patch config to old version so upgrade runs
@@ -1260,8 +1262,7 @@ def test_init_with_worktrees_depth_1(tmp_path: Path) -> None:
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree-lifecycle" in agents
     assert "worktrees (depth 1)" in agents
-    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in agents
-    assert "<!-- kanon:end:kanon-worktrees/branch-hygiene -->" in agents
+    assert "branch-hygiene" in agents  # protocol in index, not marker section
     assert not (target / "scripts").exists()
 
 
@@ -1276,8 +1277,7 @@ def test_init_with_worktrees_depth_2(tmp_path: Path) -> None:
     assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-lifecycle.md").is_file()
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree-lifecycle" in agents
-    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in agents
-    assert "<!-- kanon:end:kanon-worktrees/branch-hygiene -->" in agents
+    assert "branch-hygiene" in agents  # protocol in index, not marker section
     for script in ("worktree-setup.sh", "worktree-teardown.sh", "worktree-status.sh"):
         assert (target / "scripts" / script).is_file(), f"missing scripts/{script}"
 

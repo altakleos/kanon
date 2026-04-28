@@ -1,6 +1,6 @@
 # Specs
 
-Product intent — WHAT the kit does from its consumers' perspective. See `../development-process.md` § Specs for the layer's role and `§ When to Write a Spec` for the triggers.
+Product intent — WHAT the kit does from its consumers' perspective. See `../sdd-method.md` § Specs for the layer's role and `§ When to Write a Spec` for the triggers.
 
 ## Core specs (shipping in v0.1 / v0.2)
 

@@ -16,7 +16,7 @@ LLM agents execute prose the way a CPU executes bytecode. If the instruction is 
 
 ## Implications
 
-- Every prose artifact in the kit (AGENTS.md, development-process.md, each spec, each ADR, each principle) is authored with the same care as a Python module.
+- Every prose artifact in the kit (AGENTS.md, sdd-method.md, each spec, each ADR, each principle) is authored with the same care as a Python module.
 - Changes to prose instructions are reviewed for unambiguity, not just grammar.
 - Sections that gate agent behaviour (plan-before-build, spec-before-design) carry audit-trail sentences (forced-token gates) that make compliance observable from the transcript.
 - Prose length matters — instructions buried past line ~600 in a document attract less attention from the reader and the model. Kit documents are kept short where they gate behaviour, long where they explain context.

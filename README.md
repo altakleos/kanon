@@ -106,7 +106,7 @@ New harness support: add an entry to `harnesses.yaml`; no Python change required
 - [Aspect model](docs/design/aspect-model.md) — how aspects and depths work
 - [Aspects spec](docs/specs/aspects.md) — the aspects contract
 - [ADR-0012](docs/decisions/0012-aspect-model.md) — decision record for the aspect model
-- [Development process](docs/development-process.md) — the SDD method
+- [Development process](docs/sdd-method.md) — the SDD method
 - [ADR index](docs/decisions/README.md) — the kit's own decisions
 - [Roadmap](docs/plans/roadmap.md) — capabilities deferred to later releases
 - [AGENTS.md](AGENTS.md) — contributor boot document

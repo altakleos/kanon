@@ -61,7 +61,7 @@ The layer exists because some operations are judgment-shaped, not algorithm-shap
 
 ## Rationale
 
-Byte-equality (INV-protocols-byte-equality) enforces that the protocol text the agent reads in a consumer repo matches what the kit authored. Without it, a consumer's protocol could silently drift from the documented behavior, and a fresh agent session would execute unknowable steps. This mirrors the same enforcement applied to `docs/development-process.md` and `_template.md` files (per `template-bundle.md` INV-template-bundle-tier3-canonical-with-repo, carried forward into `kit-bundle.md`).
+Byte-equality (INV-protocols-byte-equality) enforces that the protocol text the agent reads in a consumer repo matches what the kit authored. Without it, a consumer's protocol could silently drift from the documented behavior, and a fresh agent session would execute unknowable steps. This mirrors the same enforcement applied to `docs/sdd-method.md` and `_template.md` files (per `template-bundle.md` INV-template-bundle-tier3-canonical-with-repo, carried forward into `kit-bundle.md`).
 
 The `tier-min` frontmatter field (INV-protocols-frontmatter-schema) is not just documentation — `ci/check_kit_consistency.py` cross-checks it against `manifest.yaml`, catching drift where a protocol is moved between tiers in the manifest but the frontmatter is forgotten.
 

@@ -1,8 +1,8 @@
 # `kanon`'s Instantiation of the SDD Stack
 
-The development process in [`development-process.md`](development-process.md) describes Spec-Driven Development as a method: six generic layers (Foundations above Specs → Design → ADRs → Plans → Implementation → Verification). This document describes how `kanon` specifically instantiates the bottom two layers — **Implementation** and **Verification** — and carries the load-bearing principles that make `kanon`'s instantiation distinctive.
+The development process in [`sdd-method.md`](sdd-method.md) describes Spec-Driven Development as a method: six generic layers (Foundations above Specs → Design → ADRs → Plans → Implementation → Verification). This document describes how `kanon` specifically instantiates the bottom two layers — **Implementation** and **Verification** — and carries the load-bearing principles that make `kanon`'s instantiation distinctive.
 
-For the generic method, read [`development-process.md`](development-process.md). For `kanon`'s artifact choices, read this doc.
+For the generic method, read [`sdd-method.md`](sdd-method.md). For `kanon`'s artifact choices, read this doc.
 
 > **Status: current.** This file describes `kanon`'s instantiation as of v0.3 work-in-progress (post project-aspects, ADR-0028; recovery-model hybrid, ADR-0030).
 
@@ -56,9 +56,9 @@ Six principles live at [`docs/foundations/principles/`](foundations/principles/)
 |---|---|---|
 | [`P-prose-is-code`](foundations/principles/P-prose-is-code.md) | Prose consumed by an LLM as instructions is code: reviewed, versioned, tested for unambiguity. | Audit-trail sentences in AGENTS.md gate sections ("Plan at `<path>` has been approved", "Working in worktree …"). Marker-delimited sections kept small (instructions buried past ~600 lines attract less attention). Fixture-author convention for `validated-against:` per ADR-0005. |
 | [`P-specs-are-source`](foundations/principles/P-specs-are-source.md) | SDD artifacts (specs, ADRs, plans, foundations) are authoritative; code is downstream. | The fidelity lock (ADR-0019) tracks spec SHAs as the canonical artifact. `INV-*` anchors + `invariant_coverage:` (ADR-0018, ADR-0020) make every spec invariant addressable from a test. `ci/check_kit_consistency.py` enforces byte-equality between the repo's canonical SDD docs and the kit's templates. |
-| [`P-self-hosted-bootstrap`](foundations/principles/P-self-hosted-bootstrap.md) | The kit is developed using the kit. | This repo runs `kanon-sdd:3`, `kanon-worktrees:2`, `kanon-release:2`, `kanon-testing:3`, `kanon-security:2`, `kanon-deps:2`. Kit-side `aspects/kanon-sdd/files/docs/development-process.md` and the per-aspect protocol files are byte-equal to their repo-canonical counterparts. Bootstrap paradox (commits 1–3 pre-method) resolved by ADR-0002. |
+| [`P-self-hosted-bootstrap`](foundations/principles/P-self-hosted-bootstrap.md) | The kit is developed using the kit. | This repo runs `kanon-sdd:3`, `kanon-worktrees:2`, `kanon-release:2`, `kanon-testing:3`, `kanon-security:2`, `kanon-deps:2`. Kit-side `aspects/kanon-sdd/files/docs/sdd-method.md` and the per-aspect protocol files are byte-equal to their repo-canonical counterparts. Bootstrap paradox (commits 1–3 pre-method) resolved by ADR-0002. |
 | [`P-tiers-insulate`](foundations/principles/P-tiers-insulate.md) | Consumers move at the depth that fits their project; growing depth is non-destructive. | Per-aspect depth dials in the manifest registry; tier-up is additive, tier-down is non-destructive (existing files reported "beyond required" rather than deleted). ADR-0008 gives the contract; `_apply_tier_up` / `_apply_tier_down` in `cli.py` are the implementations. |
-| [`P-cross-link-dont-duplicate`](foundations/principles/P-cross-link-dont-duplicate.md) | If a fact has one source, link to it; do not maintain two copies. | The byte-equality whitelist in `ci/check_kit_consistency.py` catches when an editor forgets that `docs/development-process.md` (canonical) and `kit/aspects/kanon-sdd/files/docs/development-process.md` (template) are the same file. Aspect manifests and the cross-link graph (`_graph.py`) make spec ↔ principle ↔ persona references queryable. |
+| [`P-cross-link-dont-duplicate`](foundations/principles/P-cross-link-dont-duplicate.md) | If a fact has one source, link to it; do not maintain two copies. | The byte-equality whitelist in `ci/check_kit_consistency.py` catches when an editor forgets that `docs/sdd-method.md` (canonical) and `kit/aspects/kanon-sdd/files/docs/sdd-method.md` (template) are the same file. Aspect manifests and the cross-link graph (`_graph.py`) make spec ↔ principle ↔ persona references queryable. |
 | [`P-verification-co-authored`](foundations/principles/P-verification-co-authored.md) | Fixtures + tests are authoritative alongside specs, not derived from them. | `tests/` is treated as a co-authoritative source. The fidelity lock tracks fixture SHAs alongside spec SHAs. Project-aspect `validators:` (ADR-0028) extend the verification surface without compromising kit authority (kit checks run after, can't be suppressed). |
 
 A future principle, `P-agent-first` (drafted but not yet authored), captures the kit's stance that the default user is a solo developer running multiple LLM agents — not a traditional human team. The `solo-with-agents` persona stress-tests this; the `kanon-worktrees` aspect's "any file modification triggers a worktree, not concurrency detection" rule is the design move it shapes.
@@ -79,7 +79,7 @@ The decisions that make kanon's SDD shape *this kit* and not generic SDD:
 
 ## Where to read next
 
-- For the generic SDD method, [`development-process.md`](development-process.md).
+- For the generic SDD method, [`sdd-method.md`](sdd-method.md).
 - For "what the kit promises consumers", [`docs/specs/README.md`](specs/README.md) (and especially [`aspects.md`](specs/aspects.md), [`project-aspects.md`](specs/project-aspects.md), [`cli.md`](specs/cli.md)).
 - For "how kanon makes its decisions", [`docs/decisions/README.md`](decisions/README.md). ADR-0011, ADR-0012, ADR-0024, ADR-0026, ADR-0028, ADR-0030 are the load-bearing ones.
 - For "what's coming", [`docs/plans/roadmap.md`](plans/roadmap.md).

@@ -20,8 +20,8 @@ depth-1:
   files: []
   protocols:
     - worktree-lifecycle.md
+    - branch-hygiene.md
   sections:
-    - branch-hygiene
     - protocols-index
 
 depth-2:

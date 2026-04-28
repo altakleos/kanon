@@ -11,10 +11,10 @@ A portable, self-hosting kit packaging development disciplines — starting with
 ## Contributor Boot Chain
 
 0. Read [`docs/foundations/vision.md`](docs/foundations/vision.md) — what `kanon` is and is not.
-1. Read [`docs/development-process.md`](docs/development-process.md) — the SDD method (project-agnostic).
+1. Read [`docs/sdd-method.md`](docs/sdd-method.md) — the SDD method (project-agnostic).
 2. Read [`docs/kanon-implementation.md`](docs/kanon-implementation.md) — how this project instantiates Implementation and Verification.
 3. Read [`docs/decisions/README.md`](docs/decisions/README.md) — what has already been decided.
-4. **Before editing any source file** for a non-trivial change, produce a plan and wait for approval — see § "Required: Plan Before Build" below. The full artifact flow (spec → design → ADR → plan → implementation → verification) is in [`docs/development-process.md`](docs/development-process.md) § "How Work Flows Through the Layers".
+4. **Before editing any source file** for a non-trivial change, produce a plan and wait for approval — see § "Required: Plan Before Build" below. The full artifact flow (spec → design → ADR → plan → implementation → verification) is in [`docs/sdd-method.md`](docs/sdd-method.md) § "How Work Flows Through the Layers".
 5. **Before writing a design doc, ADR, plan, or implementation** for a new user-visible capability, produce a spec and wait for approval — see § "Required: Spec Before Design" below.
 
 For the roadmap of deferred capabilities, see [`docs/plans/roadmap.md`](docs/plans/roadmap.md).
@@ -28,7 +28,7 @@ kanon/
 ├── README.md                 (install + quickstart)
 ├── pyproject.toml            (pip package metadata)
 ├── docs/
-│   ├── development-process.md  (project-agnostic SDD reference)
+│   ├── sdd-method.md  (project-agnostic SDD reference)
 │   ├── kanon-implementation.md
 │   ├── foundations/            (vision, principles, personas)
 │   ├── specs/                  (product intent — includes status: deferred specs)
@@ -47,8 +47,8 @@ kanon/
 
 ## Key Constraints
 
-- `docs/development-process.md` is **project-agnostic**. Do not mention the kit's own CLI commands, aspect/depth model specifics, or any `kanon`-brand terms in it. Kit-specific material lives in `docs/kanon-implementation.md`.
-- **Process rules belong in `docs/development-process.md`**. README files in artifact directories (`specs/`, `design/`, `plans/`, `decisions/`, `foundations/`) carry indexes, templates, and pointers — not process definitions. When adding a new process concept, put it in the method doc and add a pointer from the relevant README.
+- `docs/sdd-method.md` is **project-agnostic**. Do not mention the kit's own CLI commands, aspect/depth model specifics, or any `kanon`-brand terms in it. Kit-specific material lives in `docs/kanon-implementation.md`.
+- **Process rules belong in `docs/sdd-method.md`**. README files in artifact directories (`specs/`, `design/`, `plans/`, `decisions/`, `foundations/`) carry indexes, templates, and pointers — not process definitions. When adding a new process concept, put it in the method doc and add a pointer from the relevant README.
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 - The kit bundle at `src/kanon/kit/` shares source of truth with this repo's own `docs/`, `AGENTS.md` section markers, and `.kanon/protocols/`. `ci/check_kit_consistency.py` enforces byte-equality against a narrow whitelist (see ADR-0011).
 - Aspect membership is data in `src/kanon/kit/manifest.yaml` (aspect registry) and per-aspect sub-manifests at `src/kanon/kit/aspects/<name>/manifest.yaml`. To scaffold a new file at depth-N for consumers, add it under `kit/aspects/<name>/files/` or `kit/aspects/<name>/protocols/` and list its path under the appropriate `depth-N` entry in the sub-manifest. Strict-superset semantics are preserved by manifest-union.
@@ -134,7 +134,7 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 - adding a check, validator, or test
 - adding a new output type that follows an existing pattern already governed by a spec
 
-When skipping a design doc (all conditions in `docs/development-process.md` § "When to Skip" are met), declare the skip in the plan's YAML frontmatter as `design: "Follows ADR-NNNN"` — citing the ADR that already covers the design space. This makes the skip auditable.
+When skipping a design doc (all conditions in `docs/sdd-method.md` § "When to Skip" are met), declare the skip in the plan's YAML frontmatter as `design: "Follows ADR-NNNN"` — citing the ADR that already covers the design space. This makes the skip auditable.
 
 **Before your first design-doc, ADR, plan, or source-modifying tool call, state in one sentence:** "Spec at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and write the spec.
 <!-- kanon:end:kanon-sdd/spec-before-design -->
@@ -155,12 +155,14 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
 | [`fidelity-fixture-authoring`](.kanon/protocols/kanon-fidelity/fidelity-fixture-authoring.md) | 1 | Adding a new fidelity fixture, updating an existing fixture's assertions, or recapturing a `.dogfood.md` after a protocol's prose has changed |
+| [`fidelity-discipline`](.kanon/protocols/kanon-fidelity/fidelity-discipline.md) | 1 | Committing fidelity captures, editing protocol prose, or working with fidelity fixtures |
 
 ### kanon-release (depth 2)
 
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
 | [`release-checklist`](.kanon/protocols/kanon-release/release-checklist.md) | 1 | A release is being prepared, or the user asks to cut a release |
+| [`publishing-discipline`](.kanon/protocols/kanon-release/publishing-discipline.md) | 1 | A release is being prepared, or executing release publish steps |
 
 ### kanon-sdd (depth 3)
 
@@ -170,7 +172,9 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | [`verify-triage`](.kanon/protocols/kanon-sdd/verify-triage.md) | 1 | A `kanon verify` run returns a non-ok status, or the user asks "what does this verify report mean?" |
 | [`completion-checklist`](.kanon/protocols/kanon-sdd/completion-checklist.md) | 1 | An agent is about to declare a plan or task complete, or the user asks "is this done?" |
 | [`scope-check`](.kanon/protocols/kanon-sdd/scope-check.md) | 1 | An agent discovers during implementation that the current task requires changes not described in the approved plan |
+| [`plan-before-build`](.kanon/protocols/kanon-sdd/plan-before-build.md) | 1 | A non-trivial source change is about to begin, or the agent is unsure whether a change is trivial |
 | [`spec-review`](.kanon/protocols/kanon-sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
+| [`spec-before-design`](.kanon/protocols/kanon-sdd/spec-before-design.md) | 2 | A change introduces a new user-visible capability, or the agent is unsure whether a spec is needed |
 | [`adr-immutability`](.kanon/protocols/kanon-sdd/adr-immutability.md) | 3 | An ADR is being modified after acceptance, or a contributor proposes a body edit on an `accepted` / `accepted (lite)` ADR |
 
 ### kanon-security (depth 2)
@@ -192,6 +196,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
 | [`worktree-lifecycle`](.kanon/protocols/kanon-worktrees/worktree-lifecycle.md) | 1 | A file-modifying operation is about to begin, or `git worktree list` shows active worktrees from other work streams |
+| [`branch-hygiene`](.kanon/protocols/kanon-worktrees/branch-hygiene.md) | 1 | A file-modifying operation is about to begin |
 <!-- kanon:end:protocols-index -->
 
 <!-- kanon:begin:kanon-worktrees/branch-hygiene -->
@@ -244,14 +249,14 @@ A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + desig
 ## Boot chain
 
 0. Read [`docs/foundations/vision.md`](docs/foundations/vision.md) — what the project is and is not.
-1. Read [`docs/development-process.md`](docs/development-process.md) — the SDD method.
+1. Read [`docs/sdd-method.md`](docs/sdd-method.md) — the SDD method.
 2. Read [`docs/decisions/README.md`](docs/decisions/README.md) — what has already been decided.
 3. **Before editing any source file** for a non-trivial change, produce a plan and wait for approval — see § "Required: Plan Before Build" below.
 4. **Before writing a design doc, ADR, plan, or implementation** for a new user-visible capability, produce a spec and wait for approval — see § "Required: Spec Before Design" below.
 
 ## Key Constraints
 
-- Process rules belong in `docs/development-process.md`. README files in artifact directories carry indexes and templates, not process definitions.
+- Process rules belong in `docs/sdd-method.md`. README files in artifact directories carry indexes and templates, not process definitions.
 - ADRs are immutable once accepted. To reverse one, write a superseding ADR.
 - Principles in `docs/foundations/principles/` are the project's cross-cutting stances. Specs and ADRs reference them via frontmatter.
 
@@ -259,7 +264,7 @@ A `kanon` project with `sdd` at depth 3. Full stack: foundations + specs + desig
 
 - [`docs/foundations/vision.md`](docs/foundations/vision.md) — product vision
 - [`docs/foundations/principles/`](docs/foundations/principles/) — cross-cutting stances
-- [`docs/development-process.md`](docs/development-process.md) — the SDD method
+- [`docs/sdd-method.md`](docs/sdd-method.md) — the SDD method
 - [`docs/decisions/README.md`](docs/decisions/README.md) — ADR index
 - [`docs/specs/README.md`](docs/specs/README.md) — spec index
 - [`docs/design/README.md`](docs/design/README.md) — design doc index
@@ -399,7 +404,7 @@ The aspect ships only Tier 1 (lexical replay over committed text). Tier 2 (works
 
 ## References
 
-- [`docs/development-process.md`](docs/development-process.md) — the SDD method
+- [`docs/sdd-method.md`](docs/sdd-method.md) — the SDD method
 - [`docs/kanon-implementation.md`](docs/kanon-implementation.md) — kanon's instantiation
 - [`docs/decisions/README.md`](docs/decisions/README.md) — ADR index
 - [`docs/foundations/vision.md`](docs/foundations/vision.md) — product vision

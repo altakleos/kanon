@@ -101,8 +101,7 @@ def test_aspect_lifecycle(tmp_path: Path) -> None:
     # Step 5: AGENTS.md references worktrees with proper markers
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree" in agents.lower()
-    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in agents
-    assert "<!-- kanon:end:kanon-worktrees/branch-hygiene -->" in agents
+    assert "branch-hygiene" in agents  # protocol in index
 
     # Step 5b: verify passes at depth 1
     _verify_ok(runner, target)
@@ -122,8 +121,7 @@ def test_aspect_lifecycle(tmp_path: Path) -> None:
 
     # Step 10b: AGENTS.md still has worktrees markers at depth 2
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
-    assert "<!-- kanon:begin:kanon-worktrees/branch-hygiene -->" in agents
-    assert "<!-- kanon:end:kanon-worktrees/branch-hygiene -->" in agents
+    assert "branch-hygiene" in agents  # protocol in index
 
     # Step 10c: verify passes at depth 2
     _verify_ok(runner, target)

@@ -17,7 +17,7 @@ Self-hosting is the cheapest test of fitness. If the kit's AGENTS.md and process
 ## Implications
 
 - The kit's AGENTS.md is simultaneously the kit's own contributor boot document and the tier-3 template's AGENTS.md (modulo project-specific placeholders). `ci/check_kit_consistency.py` enforces byte-equality on shared sections.
-- The kit's `docs/development-process.md` is the exact file scaffolded into tier-1 through tier-3 consumer projects. A change to this file in the kit's repo must pass the same validators consumers will run.
+- The kit's `docs/sdd-method.md` is the exact file scaffolded into tier-1 through tier-3 consumer projects. A change to this file in the kit's repo must pass the same validators consumers will run.
 - When the kit ships a new capability (e.g., a future spec-graph-tooling release), the kit itself must adopt it before the release is cut. "We built it but we don't use it" is a red flag.
 - The self-hosting paradox (the kit requires itself to develop itself, but commit 1 can't follow a method that doesn't yet exist) is resolved by ADR-0002's three-commit bootstrap.
 

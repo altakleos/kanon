@@ -21,7 +21,6 @@ depth-1:
   protocols:
     - secure-defaults.md
   sections:
-    - secure-defaults
     - protocols-index
 
 depth-2:

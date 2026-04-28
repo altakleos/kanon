@@ -38,7 +38,7 @@ def test_kit_aspects_dir_has_sdd() -> None:
 
 
 def test_sdd_aspect_has_required_subdirs() -> None:
-    for sub in ("agents-md", "sections", "protocols", "files", "manifest.yaml"):
+    for sub in ("agents-md", "protocols", "files", "manifest.yaml"):
         assert (_SDD / sub).exists(), f"missing under aspects/kanon-sdd/: {sub}"
 
 
@@ -51,8 +51,8 @@ def test_every_sdd_depth_has_agents_md_base(depth: int) -> None:
 
 
 def test_dev_process_byte_equal_to_canonical() -> None:
-    canon = _REPO_ROOT / "docs" / "development-process.md"
-    tmpl = _SDD / "files" / "docs" / "development-process.md"
+    canon = _REPO_ROOT / "docs" / "sdd-method.md"
+    tmpl = _SDD / "files" / "docs" / "sdd-method.md"
     assert canon.read_bytes() == tmpl.read_bytes()
 
 
@@ -73,9 +73,9 @@ def test_depth_0_agents_md_has_no_gate_markers() -> None:
     assert "<!-- kanon:end:" not in agents_md
 
 
-def test_sections_fragments_exist() -> None:
+def test_gate_protocols_exist() -> None:
     for name in ("plan-before-build.md", "spec-before-design.md"):
-        assert (_SDD / "sections" / name).is_file()
+        assert (_SDD / "protocols" / name).is_file()
 
 
 # --- harnesses.yaml and kit.md ---

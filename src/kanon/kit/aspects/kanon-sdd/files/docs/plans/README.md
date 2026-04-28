@@ -2,7 +2,7 @@
 
 Task breakdowns for features. Written AFTER design and ADRs, BEFORE implementation. Plans are permanent records and remain after features ship.
 
-See [`../development-process.md`](../development-process.md) § Plans.
+See [`../sdd-method.md`](../sdd-method.md) § Plans.
 
 ## Index
 
