@@ -44,6 +44,37 @@ jobs:
       - name: Check kit consistency
         run: python ci/check_kit_consistency.py
 
+      - name: Check ADR immutability
+        run: python ci/check_adr_immutability.py
+
+      - name: Check process gates
+        run: python ci/check_process_gates.py
+
+      - name: Check commit messages (soft)
+        run: python ci/check_commit_messages.py
+        continue-on-error: true
+
+      - name: Check test quality
+        run: python ci/check_test_quality.py
+
+      - name: Check spec invariant coverage
+        run: python ci/check_verified_by.py
+
+      - name: Check invariant IDs
+        run: python ci/check_invariant_ids.py
+
+      - name: Check security patterns (warnings)
+        run: python ci/check_security_patterns.py
+        continue-on-error: true
+
+      - name: Check dependency hygiene (warnings)
+        run: python ci/check_deps.py
+        continue-on-error: true
+
+      - name: Check status consistency (warnings)
+        run: python ci/check_status_consistency.py
+        continue-on-error: true
+
   build-and-check:
     name: build + check package contents
     needs: verify
