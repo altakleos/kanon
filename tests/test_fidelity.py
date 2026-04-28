@@ -1056,3 +1056,232 @@ def test_existing_fixture_backward_compat(tmp_path: Path) -> None:
     assert fixture.turn_format == "colon"
     assert fixture.word_share is None
     assert fixture.pattern_density == ()
+
+
+# --- Coverage gap tests: parse_fixture validation branches ---
+
+
+def test_parse_fixture_pattern_density_not_a_list(tmp_path: Path) -> None:
+    """pattern_density that is not a list produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-str.md",
+        "---\nprotocol: test\nactor: AGENT\npattern_density: oops\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("pattern_density must be a list" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_entry_not_a_dict(tmp_path: Path) -> None:
+    """A bare string entry in pattern_density produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-bare.md",
+        "---\nprotocol: test\nactor: AGENT\npattern_density:\n  - bare_string\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("must be a mapping" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_single_pattern_key(tmp_path: Path) -> None:
+    """A single 'pattern' key (not 'patterns') is accepted."""
+    fx = _write_fixture(
+        tmp_path / "pd-single.md",
+        "---\nprotocol: test\nactor: AGENT\npattern_density:\n  - pattern: foo\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert not errors
+    assert fixture is not None
+    assert fixture.pattern_density[0].patterns == ("foo",)
+
+
+def test_parse_fixture_pattern_density_patterns_not_a_list(tmp_path: Path) -> None:
+    """patterns: 42 (not a list, no 'pattern' key) produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-notlist.md",
+        "---\nprotocol: test\nactor: AGENT\npattern_density:\n  - patterns: 42\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("patterns must be a list" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_empty_patterns(tmp_path: Path) -> None:
+    """Entry with neither 'pattern' nor 'patterns' produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-empty.md",
+        "---\nprotocol: test\nactor: AGENT\npattern_density:\n  - min: 1\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("must declare pattern or patterns" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_min_not_a_number(tmp_path: Path) -> None:
+    """pattern_density entry with non-numeric min produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-minstr.md",
+        '---\nprotocol: test\nactor: AGENT\npattern_density:\n  - pattern: foo\n    min: "high"\n---\n# body\n',
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("min must be a number" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_max_not_a_number(tmp_path: Path) -> None:
+    """pattern_density entry with non-numeric max produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-maxstr.md",
+        '---\nprotocol: test\nactor: AGENT\npattern_density:\n  - pattern: foo\n    max: "low"\n---\n# body\n',
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("max must be a number" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_min_gt_max(tmp_path: Path) -> None:
+    """pattern_density entry with min > max produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-minmax.md",
+        "---\nprotocol: test\nactor: AGENT\npattern_density:\n  - pattern: foo\n    min: 10\n    max: 1\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("min" in e and ">" in e and "max" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_non_string_pattern(tmp_path: Path) -> None:
+    """A non-string entry in patterns list produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-nonstr.md",
+        "---\nprotocol: test\nactor: AGENT\npattern_density:\n  - patterns:\n      - 42\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("pattern must be a string" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_invalid_regex(tmp_path: Path) -> None:
+    """An invalid regex in pattern_density produces an error."""
+    fx = _write_fixture(
+        tmp_path / "pd-badre.md",
+        '---\nprotocol: test\nactor: AGENT\npattern_density:\n  - patterns:\n      - "["\n---\n# body\n',
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("invalid regex" in e for e in errors)
+
+
+def test_parse_fixture_pattern_density_valid_entry(tmp_path: Path) -> None:
+    """A fully valid pattern_density entry parses correctly."""
+    body = (
+        "---\nprotocol: test\nactor: AGENT\npattern_density:\n"
+        "  - patterns:\n      - foo\n      - bar\n"
+        "    min: 1\n    max: 5\n---\n# body\n"
+    )
+    fx = _write_fixture(tmp_path / "pd-valid.md", body)
+    fixture, errors = parse_fixture(fx)
+    assert not errors
+    assert fixture is not None
+    assert len(fixture.pattern_density) == 1
+    assert fixture.pattern_density[0].patterns == ("foo", "bar")
+    assert fixture.pattern_density[0].min == 1.0
+    assert fixture.pattern_density[0].max == 5.0
+
+
+def test_parse_fixture_word_share_not_a_dict(tmp_path: Path) -> None:
+    """word_share that is not a mapping produces an error."""
+    fx = _write_fixture(
+        tmp_path / "ws-str.md",
+        "---\nprotocol: test\nactor: AGENT\nword_share: oops\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("word_share must be a mapping" in e for e in errors)
+
+
+def test_parse_fixture_word_share_min_not_a_number(tmp_path: Path) -> None:
+    """word_share.min that is not a number produces an error."""
+    fx = _write_fixture(
+        tmp_path / "ws-minstr.md",
+        '---\nprotocol: test\nactor: AGENT\nword_share:\n  min: "high"\n---\n# body\n',
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("word_share.min must be a number" in e for e in errors)
+
+
+def test_parse_fixture_word_share_max_not_a_number(tmp_path: Path) -> None:
+    """word_share.max that is not a number produces an error."""
+    fx = _write_fixture(
+        tmp_path / "ws-maxstr.md",
+        '---\nprotocol: test\nactor: AGENT\nword_share:\n  max: "low"\n---\n# body\n',
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("word_share.max must be a number" in e for e in errors)
+
+
+def test_parse_fixture_forbidden_phrases_not_a_list(tmp_path: Path) -> None:
+    """forbidden_phrases that is not a list produces an error."""
+    fx = _write_fixture(
+        tmp_path / "fp-int.md",
+        "---\nprotocol: test\nactor: AGENT\nforbidden_phrases: 42\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("forbidden_phrases must be a list" in e for e in errors)
+
+
+def test_parse_fixture_unreadable_file(tmp_path: Path) -> None:
+    """An unreadable fixture file produces a 'cannot read fixture' error."""
+    import os
+    import sys
+
+    if sys.platform == "win32":
+        return  # chmod 000 is not effective on Windows
+    fx = _write_fixture(tmp_path / "unreadable.md", "---\nprotocol: test\nactor: AGENT\n---\n")
+    try:
+        os.chmod(str(fx), 0o000)
+        fixture, errors = parse_fixture(fx)
+        assert fixture is None
+        assert any("cannot read fixture" in e for e in errors)
+    finally:
+        os.chmod(str(fx), 0o644)
+
+
+def test_parse_fixture_no_frontmatter(tmp_path: Path) -> None:
+    """A file with no YAML frontmatter markers produces an error."""
+    fx = _write_fixture(tmp_path / "nofm.md", "# No frontmatter here\nJust text.\n")
+    fixture, errors = parse_fixture(fx)
+    assert fixture is None
+    assert any("missing or malformed YAML frontmatter" in e for e in errors)
+
+
+def test_evaluate_fixture_no_turn_markers(tmp_path: Path) -> None:
+    """Dogfood text with no turn markers does not crash; returns zero-turns error."""
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=None,
+        pattern_density=(),
+    )
+    errors = evaluate_fixture(fixture, "some random text with no markers")
+    assert any("zero turns" in e for e in errors)
+
+
+def test_parse_fixture_word_share_valid(tmp_path: Path) -> None:
+    """A valid word_share mapping parses into a WordShareBand on the fixture."""
+    fx = _write_fixture(
+        tmp_path / "ws-valid.md",
+        "---\nprotocol: test\nactor: AGENT\nword_share:\n  min: 0.2\n  max: 0.8\n---\n# body\n",
+    )
+    fixture, errors = parse_fixture(fx)
+    assert not errors
+    assert fixture is not None
+    assert fixture.word_share == WordShareBand(min=0.2, max=0.8)
