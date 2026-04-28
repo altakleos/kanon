@@ -22,7 +22,7 @@ invariant_coverage:
     - tests/test_kit_integrity.py::test_harnesses_yaml_is_valid
   INV-cross-harness-shims-adding-new-harness:
     - tests/test_cli.py::test_load_harnesses_missing_file
-  INV-cross-harness-shims-opt-out-deferred:
+  INV-cross-harness-shims-harness-selection:
     - tests/test_cli.py::test_init_writes_all_shims
 ---
 # Spec: Cross-harness shims — the registry and per-harness contracts
@@ -40,15 +40,11 @@ Define the shim set that makes a consumer repo's SDD rules discoverable to every
    - `CLAUDE.md` — `See @AGENTS.md\n` (Claude Code reads `@AGENTS.md` as an import directive).
    - Harnesses that don't support imports — a one-line sentence `Read and follow the instructions in AGENTS.md at the repo root.` with any frontmatter the harness requires.
 <!-- INV-cross-harness-shims-v01-harness-set -->
-3. **V0.1 harness set.** `kanon init` writes all of these by default:
-   - `CLAUDE.md` (Claude Code)
-   - `.kiro/steering/kanon.md` (Kiro)
-   - `.cursor/rules/kanon.mdc` (Cursor — `alwaysApply: true` frontmatter)
-   - `.github/copilot-instructions.md` (GitHub Copilot)
-   - `.windsurf/rules/kanon.md` (Windsurf — `trigger: always_on` frontmatter)
-   - `.clinerules/kanon.md` (Cline)
-   - `.roo/rules/kanon.md` (Roo Code)
-   - `.aiassistant/rules/kanon.md` (JetBrains AI)
+3. **Harness set.** The kit registry contains shims for all supported harnesses (see INV-5 for the schema). `kanon init` writes a subset determined by the `--harness` flag:
+   - `--harness <name>` (repeatable) — write only the named shims. Names match the `name:` field in `harnesses.yaml`.
+   - `--harness auto` (the default when no `--harness` flag is given) — detect which harness config directories already exist in the target (e.g., `.cursor/` → write the Cursor shim). If none detected, write only `CLAUDE.md`.
+   - `AGENTS.md` is always written regardless of `--harness` selection.
+   - `kanon upgrade` writes all shims unconditionally (backward-compatible; existing projects have already committed their shims).
 <!-- INV-cross-harness-shims-agents-md-canonical-root -->
 4. **`AGENTS.md` at repo root is the canonical root.** No shim duplicates content from it.
 <!-- INV-cross-harness-shims-harness-yaml-schema -->
@@ -64,8 +60,8 @@ Define the shim set that makes a consumer repo's SDD rules discoverable to every
    ```
 <!-- INV-cross-harness-shims-adding-new-harness -->
 6. **Adding a new harness.** A new entry in `harnesses.yaml` + a new kit release is sufficient. No Python change required.
-<!-- INV-cross-harness-shims-opt-out-deferred -->
-7. **Opt-out.** `init --skip-harness <name>` skipping is deferred to v0.2. In v0.1, all shims are written.
+<!-- INV-cross-harness-shims-harness-selection -->
+7. **Harness selection.** `--harness auto` inspects the target directory for existing harness config directories (the parent directory of each shim's `path:` in the registry). A match means the consumer uses that harness. When no directories match, `CLAUDE.md` is the sole default — it is the most widely adopted agent harness file.
 
 ## Rationale
 
@@ -73,7 +69,6 @@ Sensei has shipped this exact shim set for months with no reliability issues. Th
 
 ## Out of Scope
 
-- Auto-detecting which harness is currently in use at `init` time.
 - Per-harness content customisation (every harness gets the same `AGENTS.md` pointer).
 
 ## Decisions
