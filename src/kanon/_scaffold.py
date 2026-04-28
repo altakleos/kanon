@@ -23,7 +23,6 @@ from kanon._manifest import (
     _aspect_files,
     _aspect_path,
     _aspect_protocols,
-    _aspect_sections,
     _find_section_pair,
     _iter_markers,
     _kit_root,
@@ -300,13 +299,16 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
     lines = [
         "## Hard Gates",
         "",
-        "These gates apply to ALL task types. When a gate fires, read the linked protocol **in full** before proceeding.",
+        "These gates apply to ALL task types. When a gate fires, "
+        "read the linked protocol **in full** before proceeding.",
         "",
         "| Gate | Fires when | Protocol |",
         "|------|-----------|----------|",
         *rows,
         "",
-        "The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught.",
+        "The audit-trail sentence from the relevant protocol must appear "
+        "before your first source-modifying tool call. "
+        "Its absence in a transcript is how violations get caught.",
         "",
     ]
     return "\n".join(lines) + "\n"
