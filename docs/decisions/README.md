@@ -41,6 +41,7 @@ See [`../sdd-method.md`](../sdd-method.md) § ADRs for the format, status taxono
 | [0031](0031-fidelity-aspect.md) | `kanon-fidelity` aspect — Tier-1 behavioural-conformance verification | superseded | testing |
 | [0032](0032-adr-immutability-gate.md) | ADR-immutability gate — mechanical enforcement with a calibrated escape hatch | accepted | process |
 | [0033](0033-fidelity-quantitative-families.md) | Fidelity quantitative assertion families and turn-format extensibility | accepted | testing |
+| [0034](0034-routing-index-agents-md.md) | Routing-index AGENTS.md — refined enforcement proximity | accepted | process |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 

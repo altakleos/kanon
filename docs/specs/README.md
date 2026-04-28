@@ -28,6 +28,7 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../sd
 | [aspect-provides](aspect-provides.md) | Aspect capability namespace (`provides:`) | v0.2.0a6 |
 | [process-gates](process-gates.md) | Process-gate CI enforcement | v0.2.0a7 |
 | [project-aspects](project-aspects.md) | Project-defined aspects — consumer-specific discipline | v0.2.0a7 |
+| [scaffold-v2](scaffold-v2.md) | Thin kernel, routing-index AGENTS.md, three file categories | v0.2.0a12 |
 
 ## Deferred specs (scheduled for v0.2+)
 
