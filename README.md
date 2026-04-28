@@ -3,7 +3,7 @@
 **Portable, self-hosting development-discipline kit for LLM-agent-driven repos.**
 
 ```bash
-pipx install kanon-kit
+uv tool install kanon-kit
 kanon init ~/myproject --tier 1
 cd ~/myproject           # open with any LLM coding agent
 ```
@@ -22,7 +22,7 @@ The kit is **self-hosting** — this repo is itself a `kanon` project running `s
 
 ```bash
 # Install
-pipx install kanon-kit
+uv tool install kanon-kit          # or: pipx install kanon-kit
 
 # Scaffold a new project (SDD at depth 1)
 kanon init ~/myproject --tier 1
