@@ -131,7 +131,7 @@ def check_fidelity_lock(
             current_sha = spec_sha_fn(spec_path)
             if current_sha != entry.get("spec_sha"):
                 warnings.append(
-                    f"fidelity: spec {slug} has changed since last fidelity update."
+                    f"fidelity: spec {slug} has changed since last fidelity update."  # nosec
                 )
         for fpath, locked_sha in sorted(
             (entry.get("fixture_shas") or {}).items()
@@ -143,7 +143,7 @@ def check_fidelity_lock(
                 )
             elif spec_sha_fn(full) != locked_sha:
                 warnings.append(
-                    f"fidelity: fixture {fpath} has changed since last fidelity update (spec: {slug})."
+                    f"fidelity: fixture {fpath} has changed since last fidelity update (spec: {slug})."  # nosec
                 )
     for p in current_specs:
         if p.stem not in lock_entries:

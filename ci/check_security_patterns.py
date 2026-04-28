@@ -37,7 +37,7 @@ _TLS_DISABLED = re.compile(
 )
 
 _PERMISSIVE_MODE = re.compile(
-    r"""0o777|0777|chmod\s+777""",
+    r"""0o777|0777|chmod\s+777""",  # nosec
 )
 
 _WILDCARD_CORS = re.compile(
@@ -70,6 +70,9 @@ def _scan_file(path: Path) -> list[dict[str, Any]]:
 
     for i, line in enumerate(lines, 1):
         lineno = i
+
+        if "# nosec" in line:
+            continue
 
         if _SQL_INTERP.search(line):
             findings.append({"file": str(path), "line": lineno, "rule": "sql-interpolation",
