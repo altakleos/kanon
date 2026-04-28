@@ -20,7 +20,7 @@ invariant_coverage:
     - tests/test_cli.py::test_tier_set_idempotent
   INV-tiers-process-gates-tier-dependent:
     - tests/test_cli.py::test_protocols_index_marker_present_tier1_plus
-    - tests/test_cli.py::test_protocols_index_absent_at_tier_0
+    - tests/test_cli.py::test_protocols_index_present_at_tier_0
   INV-tiers-agents-md-section-enablement:
     - tests/test_cli.py::test_init_preserves_user_content_outside_markers
   INV-tiers-triggers:

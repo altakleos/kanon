@@ -320,68 +320,27 @@ def _render_kit_md(aspects: dict[str, int], project_name: str) -> str | None:
 def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
     """Build AGENTS.md for a project with the given aspect→depth mapping.
 
-    Loads the kit-level base template, injects each aspect's depth-specific body,
-    fills namespaced marker sections from each aspect's sections/ fragments,
-    renders the unified protocols-index, and removes inactive sections.
+    Loads the kit-level base template (a slim routing index), renders
+    placeholders, and fills the protocols-index marker with the unified
+    cross-aspect protocol catalog.
     """
     base = _kit_root() / "agents-md-base.md"
     if not base.is_file():
         raise click.ClickException(f"Missing AGENTS.md base: {base}")
     context: dict[str, str] = {"project_name": project_name}
     for aspect, depth in aspects.items():
-        # Strip the `kanon-` prefix for context keys so existing templates'
-        # `${sdd_depth}` / `${worktrees_depth}` placeholders keep working
-        # (ADR-0028 backward-compat for kit-aspect templates). For project-
-        # aspects, replace hyphens with underscores so `${project_foo_depth}`
-        # is a valid `string.Template` identifier.
         if aspect.startswith("kanon-"):
             _ctx_local = aspect[len("kanon-"):]
             context[f"{_ctx_local}_depth"] = str(depth)
         else:
             context[f"{aspect.replace('-', '_')}_depth"] = str(depth)
-    # Backward-compat alias: ${tier} → sdd depth.
     context.setdefault("tier", context.get("sdd_depth", "0"))
     text = _render_placeholder(base.read_text(encoding="utf-8"), context)
-    # Inject each aspect's depth-specific body before the Contribution Conventions anchor.
-    for aspect, depth in sorted(aspects.items()):
-        body_path = _aspect_path(aspect) / "agents-md" / f"depth-{depth}.md"
-        if body_path.is_file():
-            body = _render_placeholder(
-                body_path.read_text(encoding="utf-8"), context
-            )
-            text = _insert_section(text, f"{aspect}/body", body)
-    # Fill active marker sections for each aspect.
-    for aspect, depth in sorted(aspects.items()):
-        aspect_root = _aspect_path(aspect)
-        for section in _aspect_sections(aspect, depth):
-            namespaced = _namespaced_section(aspect, section)
-            if section == "protocols-index":
-                fragment_text = _render_protocols_index(aspects)
-            else:
-                fragment = aspect_root / "sections" / f"{section}.md"
-                if not fragment.is_file():
-                    continue
-                fragment_text = fragment.read_text(encoding="utf-8")
-            begin_marker = f"<!-- kanon:begin:{namespaced} -->"
-            if begin_marker in text:
-                text = _replace_section(text, namespaced, fragment_text)
-            else:
-                text = _insert_section(text, namespaced, fragment_text)
-    # Remove inactive marker sections the base template may carry.
-    active: set[str] = set()
-    for aspect, depth in aspects.items():
-        active.add(f"{aspect}/body")
-        for section in _aspect_sections(aspect, depth):
-            active.add(_namespaced_section(aspect, section))
-    # Iterate kit + active project-overlay aspects so project-aspect sections
-    # also participate in the inactive-section sweep (ADR-0028).
-    possible: set[str] = set()
-    for aspect_name in _all_known_aspects():
-        possible.add(f"{aspect_name}/body")
-        for section in _all_aspect_sections(aspect_name):
-            possible.add(_namespaced_section(aspect_name, section))
-    for section in possible - active:
-        text = _remove_section(text, section)
+
+    # Render the protocols-index into the single remaining marker.
+    index = _render_protocols_index(aspects)
+    text = _replace_section(text, "protocols-index", index)
+
     return text
 
 

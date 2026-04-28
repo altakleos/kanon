@@ -99,8 +99,6 @@ def test_depth_1_scaffolds_protocol_and_section() -> None:
         / "src/kanon/kit/aspects/kanon-fidelity/protocols/fidelity-discipline.md"
     )
     assert proto2.is_file()
-    body = _REPO_ROOT / "src/kanon/kit/aspects/kanon-fidelity/agents-md/depth-1.md"
-    assert body.is_file()
 
 
 # --- INV-3: fixture file format (parse_fixture) ---

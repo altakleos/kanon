@@ -1,2 +1,0 @@
-The `testing` aspect is active. Follow the test-discipline protocol when writing or modifying code.
-

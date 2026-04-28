@@ -1,1 +1,0 @@
-The `kanon-fidelity` aspect is active. Behavioural-conformance fixtures live under `.kanon/fidelity/`; `kanon verify` runs lexical assertions against committed `.dogfood.md` captures. Follow the `fidelity-fixture-authoring` protocol when adding or updating fixtures. Per ADR-0029 / ADR-0031; consumes the INV-10 carve-out of `docs/specs/verification-contract.md`.

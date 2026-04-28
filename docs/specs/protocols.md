@@ -21,7 +21,7 @@ invariant_coverage:
     - tests/test_protocols.py::test_protocol_depth_min_matches_sub_manifest
   INV-protocols-discoverability:
     - tests/test_cli.py::test_protocols_index_marker_present_tier1_plus
-    - tests/test_cli.py::test_protocols_index_absent_at_tier_0
+    - tests/test_cli.py::test_protocols_index_present_at_tier_0
   INV-protocols-byte-equality:
     - tests/test_protocols.py::test_protocol_byte_equals_repo_canonical
   INV-protocols-additive-across-tier-up:

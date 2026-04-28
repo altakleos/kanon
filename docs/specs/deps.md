@@ -14,19 +14,24 @@ fixtures:
   - tests/ci/test_check_deps.py
 invariant_coverage:
   INV-deps-depth-range:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_deps_manifest_has_expected_depths
   INV-deps-protocol:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_cli.py::test_aspect_add_deps
   INV-deps-agents-md-section:
-    - tests/test_kit_integrity.py::test_deps_agents_md_exists_per_depth
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
   INV-deps-ci-validator:
     - tests/test_cli.py::test_deps_depth_2_has_ci_script
     - tests/ci/test_check_deps.py::test_requirements_unpinned_detected
   INV-deps-no-dependency:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_deps_manifest_paths_resolve
   INV-deps-language-agnostic:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/ci/test_check_deps.py::test_package_json_caret_detected
   INV-deps-stability:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_kit_deps_aspect_dir_exists
 ---
 # Spec: Deps — dependency hygiene for LLM-agent-driven repos

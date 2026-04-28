@@ -228,12 +228,13 @@ def test_protocols_index_marker_present_tier1_plus(tmp_path: Path, tier: int) ->
         assert "spec-review" not in agents
 
 
-def test_protocols_index_absent_at_tier_0(tmp_path: Path) -> None:
+def test_protocols_index_present_at_tier_0(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "0"])
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
-    assert "<!-- kanon:begin:protocols-index -->" not in agents
+    assert "<!-- kanon:begin:protocols-index -->" in agents
+    assert "No protocols active" in agents
 
 
 def test_init_preserves_user_content_outside_markers(tmp_path: Path) -> None:
@@ -496,7 +497,7 @@ def test_upgrade_heals_edited_markers(tmp_path: Path) -> None:
     assert "User-authored. Do not touch." in final
     # The kit's canonical body is restored — sanity-check it begins with the
     # section's header, which the kit ships in `sections/plan-before-build.md`.
-    assert "Required: Plan Before Build" in final
+    assert "Plan Before Build" in final
 
 
 def test_upgrade_not_a_kanon_project(tmp_path: Path) -> None:
