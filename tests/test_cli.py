@@ -67,9 +67,13 @@ def test_init_rejects_existing_without_force(tmp_path: Path) -> None:
 
 
 def test_init_writes_all_shims(tmp_path: Path) -> None:
+    """With --harness for each known harness, all shims are written."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    harness_args = []
+    for name in ["claude-code", "kiro", "cursor", "copilot", "windsurf", "cline", "roo", "jetbrains-ai"]:
+        harness_args.extend(["--harness", name])
+    runner.invoke(main, ["init", str(target), "--tier", "1", *harness_args])
 
     expected_shims = [
         "CLAUDE.md",
@@ -85,10 +89,48 @@ def test_init_writes_all_shims(tmp_path: Path) -> None:
         assert (target / shim_path).is_file(), f"missing shim: {shim_path}"
 
 
-def test_shims_are_pointers_not_duplicates(tmp_path: Path) -> None:
+def test_init_default_writes_only_claude_md(tmp_path: Path) -> None:
+    """In a clean dir with no harness dotdirs, only CLAUDE.md is written."""
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    assert (target / "CLAUDE.md").is_file()
+    assert not (target / ".cursor/rules/kanon.mdc").exists()
+    assert not (target / ".kiro/steering/kanon.md").exists()
+
+
+def test_init_auto_detects_harness(tmp_path: Path) -> None:
+    """When a harness dotdir exists, its shim is written."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    target.mkdir()
+    (target / ".cursor").mkdir()
+
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    assert (target / "CLAUDE.md").is_file()
+    assert (target / ".cursor/rules/kanon.mdc").is_file()
+    assert not (target / ".kiro/steering/kanon.md").exists()
+
+
+def test_init_harness_explicit(tmp_path: Path) -> None:
+    """--harness flag selects specific shims."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1", "--harness", "kiro"])
+
+    assert (target / "AGENTS.md").is_file()
+    assert (target / ".kiro/steering/kanon.md").is_file()
+    assert not (target / ".cursor/rules/kanon.mdc").exists()
+    assert not (target / ".windsurf/rules/kanon.md").exists()
+
+
+def test_shims_are_pointers_not_duplicates(tmp_path: Path) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1",
+                         "--harness", "claude-code", "--harness", "cursor", "--harness", "windsurf"])
 
     # Shims should be short — well under 1000 chars — and must not contain
     # the plan-before-build rule text (which is AGENTS.md's job).

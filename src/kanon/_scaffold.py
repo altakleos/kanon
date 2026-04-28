@@ -156,9 +156,11 @@ def _load_harnesses() -> list[dict[str, Any]]:
     return result
 
 
-def _render_shims() -> dict[str, str]:
+def _render_shims(only: set[str] | None = None) -> dict[str, str]:
     result: dict[str, str] = {}
     for entry in _load_harnesses():
+        if only is not None and entry["name"] not in only:
+            continue
         path = entry["path"]
         body = entry.get("body", "Read and follow the instructions in `AGENTS.md`.\n")
         frontmatter = entry.get("frontmatter")
@@ -169,6 +171,21 @@ def _render_shims() -> dict[str, str]:
             rendered = body
         result[path] = rendered
     return result
+
+
+def _detect_harnesses(target: Path) -> set[str]:
+    """Return harness names whose config directories already exist in *target*."""
+    found: set[str] = set()
+    for entry in _load_harnesses():
+        shim_path = Path(entry["path"])
+        # For root-level files (CLAUDE.md), skip — they don't indicate harness usage.
+        if shim_path.parent == Path("."):
+            continue
+        # Check the top-level dotdir (first component of the shim path).
+        top_dir = shim_path.parts[0]
+        if (target / top_dir).is_dir():
+            found.add(entry["name"])
+    return found
 
 
 # --- Bundle construction ---
