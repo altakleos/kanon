@@ -1,5 +1,5 @@
 ---
-status: draft
+status: done
 design: "Follows ADR-0014 (existing document architecture)"
 touches:
   - docs/development-process.md

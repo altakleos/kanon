@@ -1,5 +1,5 @@
 ---
-status: draft
+status: done
 design: "Follows ADR-0014 (worktree isolation)"
 touches:
   - .kanon/protocols/kanon-worktrees/worktree-lifecycle.md
