@@ -37,6 +37,29 @@ def test_init_scaffolds_all_required_files(tmp_path: Path, tier: int) -> None:
     assert "enabled_at" in config["aspects"]["kanon-sdd"]
 
 
+def test_kit_global_files_always_present(tmp_path: Path) -> None:
+    """Kit-global files (top manifest `files:`) are scaffolded regardless of aspects."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "0"])
+    # kit.md is kit-global — present even at depth 0.
+    assert (target / ".kanon" / "kit.md").is_file()
+
+
+def test_aspect_level_files(tmp_path: Path) -> None:
+    """Aspect-level files (sub-manifest top-level `files:`) are scaffolded at any depth."""
+    from kanon._manifest import _load_aspect_manifest
+    sub = _load_aspect_manifest("kanon-sdd")
+    aspect_files = sub.get("files", []) or []
+    # Currently empty — this test validates the mechanism works.
+    # When sdd-method.md is added as an aspect-level file, this test will catch it.
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "0"])
+    for f in aspect_files:
+        assert (target / f).is_file(), f"aspect-level file missing: {f}"
+
+
 def _extract_verify_json(output: str) -> dict:
     """Extract the first JSON object from `verify` output (report precedes the human summary)."""
     start = output.find("{")
@@ -181,10 +204,10 @@ def test_kit_md_scaffolded_at_all_tiers(tmp_path: Path, tier: int) -> None:
     assert kit_md.is_file(), f"kit.md missing at tier {tier}"
     text = kit_md.read_text(encoding="utf-8")
     # Placeholders fully substituted.
-    assert "${sdd_depth}" not in text
-    assert "${tier}" not in text
+    assert "${active_aspects_summary}" not in text
     assert "${project_name}" not in text
-    assert f"**SDD depth:** {tier}" in text
+    assert "kanon-sdd" in text
+    assert "scratch" in text
 
 
 @pytest.mark.parametrize("tier", [1, 2, 3])

@@ -24,6 +24,9 @@
 defaults:
   - kanon-sdd
 
+files:
+  - .kanon/kit.md
+
 aspects:
   kanon-sdd:
     path: aspects/kanon-sdd

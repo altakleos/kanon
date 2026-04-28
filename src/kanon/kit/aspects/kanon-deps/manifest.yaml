@@ -10,6 +10,7 @@
 #
 # See docs/specs/deps.md and ADR-0023.
 
+files: []
 depth-0:
   files: []
   protocols: []

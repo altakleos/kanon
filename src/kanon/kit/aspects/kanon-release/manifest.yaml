@@ -9,6 +9,7 @@
 #
 # See docs/specs/release.md and ADR-0017.
 
+files: []
 depth-0:
   files: []
   protocols: []

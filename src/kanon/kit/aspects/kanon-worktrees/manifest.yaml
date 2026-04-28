@@ -10,6 +10,7 @@
 #
 # See docs/specs/worktrees.md and ADR-0014.
 
+files: []
 depth-0:
   files: []
   protocols: []

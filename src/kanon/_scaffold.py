@@ -196,8 +196,9 @@ def _build_bundle(
 ) -> dict[str, str]:
     """{relative_path: content} for every file scaffolded for these aspects.
 
-    Excludes always-synthesized files (AGENTS.md, .kanon/config.yaml, .kanon/kit.md).
-    Protocol files go to `.kanon/protocols/<aspect>/<name>.md` (namespaced).
+    Excludes always-synthesized files (AGENTS.md, .kanon/config.yaml).
+    Kit-global files (top-level manifest ``files:``) are included first,
+    then per-aspect files and protocols.
 
     Raises a ``ClickException`` when two enabled aspects (kit or project, any
     combination) declare the same consumer-relative ``files/`` path. Per
@@ -209,6 +210,17 @@ def _build_bundle(
     """
     bundle: dict[str, str] = {}
     file_owners: dict[str, str] = {}  # rel-path → first aspect that scaffolded it
+
+    # Kit-global files (top-level manifest `files:`).
+    top = _load_top_manifest()
+    kit_files_root = _kit_root() / "files"
+    for rel in top.get("files", []) or []:
+        src = kit_files_root / rel
+        if not src.is_file():
+            raise click.ClickException(f"kit-global file missing: {src}")
+        file_owners[rel] = "_kit_global"
+        bundle[rel] = _render_placeholder(src.read_text(encoding="utf-8"), context)
+
     for aspect, depth in aspects.items():
         aspect_root = _aspect_path(aspect)
         files_root = aspect_root / "files"
