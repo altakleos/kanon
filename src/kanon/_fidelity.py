@@ -279,13 +279,13 @@ def _count_words(text: str) -> int:
 
 
 def _extract_all_turns(dogfood_text: str, turn_re: re.Pattern[str]) -> list[str]:
-    """Extract ALL turns (all actors) from dogfood text."""
+    """Extract ALL turns (all actors) from dogfood text, content-only."""
     matches = list(turn_re.finditer(dogfood_text))
     if not matches:
         return []
     turns: list[str] = []
     for i, match in enumerate(matches):
-        start = match.start()
+        start = match.end()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(dogfood_text)
         turns.append(dogfood_text[start:end].rstrip("\n"))
     return turns
@@ -309,11 +309,10 @@ def extract_actor_text(dogfood_text: str, actor: str, turn_format: str = "colon"
     for i, match in enumerate(matches):
         if match.group(1) != actor:
             continue
-        start = match.start()
+        # Start after the marker so the turn text is content-only (the
+        # marker prefix is metadata, not part of the actor's speech).
+        start = match.end()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(dogfood_text)
-        # Strip a trailing newline so the joined text doesn't accumulate
-        # double-blank lines between turns; the assertion engine works on
-        # the joined string as a single search target.
         turn = dogfood_text[start:end].rstrip("\n")
         turns.append(turn)
     return "\n".join(turns), len(turns)
@@ -337,14 +336,14 @@ def evaluate_fixture(fixture: Fixture, dogfood_text: str) -> list[str]:
         return errors
 
     for pattern in fixture.forbidden_phrases:
-        if re.search(pattern, actor_text):
+        if re.search(pattern, actor_text, re.MULTILINE):
             errors.append(
                 f"fidelity: {fixture.path.name}: forbidden phrase matched: "
                 f"{pattern!r}"
             )
 
     if fixture.required_one_of and not any(
-        re.search(p, actor_text) for p in fixture.required_one_of
+        re.search(p, actor_text, re.MULTILINE) for p in fixture.required_one_of
     ):
         errors.append(
             f"fidelity: {fixture.path.name}: no regex in required_one_of "
@@ -352,7 +351,7 @@ def evaluate_fixture(fixture: Fixture, dogfood_text: str) -> list[str]:
         )
 
     for pattern in fixture.required_all_of:
-        if not re.search(pattern, actor_text):
+        if not re.search(pattern, actor_text, re.MULTILINE):
             errors.append(
                 f"fidelity: {fixture.path.name}: required_all_of regex did "
                 f"not match: {pattern!r}"
