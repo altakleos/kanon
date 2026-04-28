@@ -77,6 +77,21 @@ For end-to-end workflows (not single tasks), invoke an OMC mode skill explicitly
 
 This routing is conditional. Before invoking an `oh-my-claudecode:*` agent, confirm it appears in the current session's agent list; otherwise use the fallback.
 
+## Quick Start by Task Type
+
+The full boot chain is mandatory for new features. For other task types, read only what's relevant — the gates in AGENTS.md always apply regardless.
+
+| Task type | Must read | Can skip |
+|-----------|-----------|----------|
+| **New feature** (user-visible capability) | Full boot chain (steps 0–5) | — |
+| **Bug fix** (single file, clear cause) | AGENTS.md gates + `kanon-implementation.md` | vision, dev-process, foundations |
+| **Refactor** (no behavior change) | AGENTS.md gates + `kanon-implementation.md` | vision, specs, foundations |
+| **Test addition** | AGENTS.md gates + `test-discipline` protocol | vision, dev-process, foundations |
+| **Docs / prose only** | AGENTS.md § Contribution Conventions | everything else |
+| **CI / tooling** | AGENTS.md gates + `kanon-implementation.md` | vision, dev-process, foundations |
+
+The two hard gates (Plan Before Build, Spec Before Design) and worktree isolation apply to **all task types** — they are never skippable.
+
 <!-- kanon:begin:kanon-sdd/plan-before-build -->
 ## Required: Plan Before Build
 
