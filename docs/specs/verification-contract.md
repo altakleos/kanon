@@ -1,5 +1,6 @@
 ---
 status: accepted
+design: "Follows ADR-0004"
 date: 2026-04-22
 realizes:
   - P-verification-co-authored

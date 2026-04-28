@@ -1,5 +1,6 @@
 ---
 status: accepted
+design: "Follows ADR-0006"
 date: 2026-04-22
 realizes:
   - P-tiers-insulate

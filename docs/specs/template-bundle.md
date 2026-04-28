@@ -1,5 +1,6 @@
 ---
 status: accepted
+design: "docs/design/kit-bundle.md"
 date: 2026-04-22
 realizes:
   - P-self-hosted-bootstrap

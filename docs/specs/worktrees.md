@@ -1,5 +1,6 @@
 ---
 status: accepted
+design: "Follows ADR-0014"
 date: 2026-04-23
 realizes:
   - P-prose-is-code
