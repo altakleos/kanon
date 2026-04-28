@@ -576,7 +576,10 @@ def _aspect_items(aspect: str, depth: int, key: str) -> list[str]:
 
 
 def _aspect_files(aspect: str, depth: int) -> list[str]:
-    return _aspect_items(aspect, depth, "files")
+    sub = _load_aspect_manifest(aspect)
+    base = list(sub.get("files", []) or [])
+    base.extend(_aspect_items(aspect, depth, "files"))
+    return base
 
 
 def _aspect_protocols(aspect: str, depth: int) -> list[str]:
@@ -627,8 +630,9 @@ def _default_aspects() -> dict[str, int]:
 def _expected_files(aspects: dict[str, int]) -> list[str]:
     """Return the full path list a project with these aspects must have."""
     paths: list[str] = list(_ALWAYS_SYNTHESIZED)
-    if (_kit_root() / "kit.md").is_file():
-        paths.append(".kanon/kit.md")
+    # Kit-global files.
+    top = _load_top_manifest()
+    paths.extend(top.get("files", []) or [])
     for aspect, depth in aspects.items():
         paths.extend(_aspect_files(aspect, depth))
         paths.extend(

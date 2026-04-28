@@ -11,6 +11,7 @@
 #
 # See docs/specs/fidelity.md and ADR-0031.
 
+files: []
 depth-0:
   files: []
   protocols: []

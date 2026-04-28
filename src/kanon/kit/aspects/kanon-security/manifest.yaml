@@ -10,6 +10,7 @@
 #
 # See docs/specs/security.md and ADR-0022.
 
+files: []
 depth-0:
   files: []
   protocols: []

@@ -21,6 +21,7 @@ byte-equality:
   - kit: docs/design/_template.md
     repo: docs/design/_template.md
 
+files: []
 depth-0:
   files:
     - CLAUDE.md

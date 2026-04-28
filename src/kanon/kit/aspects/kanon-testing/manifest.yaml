@@ -10,6 +10,7 @@
 #
 # See docs/specs/testing.md and ADR-0021.
 
+files: []
 depth-0:
   files: []
   protocols: []

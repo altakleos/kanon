@@ -46,12 +46,15 @@ from kanon._manifest import (
     _capability_suppliers,
     _default_aspects,
     _expected_files,
+    _kit_root,
     _load_aspect_manifest,
     _load_aspect_registry,
+    _load_top_manifest,
     _load_yaml,
     _normalise_aspect_name,
     _now_iso,
     _parse_frontmatter,
+    _render_placeholder,
 )
 from kanon._scaffold import (
     _aspects_with_meta,
@@ -433,13 +436,17 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
 
     # Use the kanon-sdd depth as the tier context value when enabled, else "0".
     tier_ctx = str(aspects_to_enable.get("kanon-sdd", 0))
-    context = {"project_name": target.name, "tier": tier_ctx}
+    aspects_summary = "\n".join(
+        f"- **{a}** at depth {d}" for a, d in sorted(aspects_to_enable.items())
+    ) or "_No aspects enabled._"
+    context = {
+        "project_name": target.name,
+        "tier": tier_ctx,
+        "active_aspects_summary": aspects_summary,
+    }
 
     bundle = _build_bundle(aspects_to_enable, context)
     bundle["AGENTS.md"] = _assemble_agents_md(aspects_to_enable, target.name)
-    kit_md = _render_kit_md(aspects_to_enable, target.name)
-    if kit_md is not None:
-        bundle[".kanon/kit.md"] = kit_md
     # Determine which harness shims to write.
     if harness_arg:
         if "auto" in harness_arg:
@@ -518,9 +525,24 @@ def upgrade(target: Path) -> None:
     else:
         atomic_write_text(agents_path, new_agents_md)
 
-    kit_md = _render_kit_md(aspects, target.name)
-    if kit_md is not None:
-        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
+    # Kit-global files.
+    top = _load_top_manifest()
+    kit_files_root = _kit_root() / "files"
+    tier_ctx = str(aspects.get("kanon-sdd", 0))
+    aspects_summary = "\n".join(
+        f"- **{a}** at depth {d}" for a, d in sorted(aspects.items())
+    ) or "_No aspects enabled._"
+    gctx: dict[str, str] = {
+        "project_name": target.name,
+        "tier": tier_ctx,
+        "active_aspects_summary": aspects_summary,
+    }
+    for rel in top.get("files", []) or []:
+        src = kit_files_root / rel
+        if src.is_file():
+            dest = target / rel
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            atomic_write_text(dest, _render_placeholder(src.read_text(encoding="utf-8"), gctx))
 
     for rel_path, content in _render_shims().items():
         shim_path = target / rel_path
