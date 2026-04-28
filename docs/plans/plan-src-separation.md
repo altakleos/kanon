@@ -43,8 +43,8 @@ commit touches both `docs/plans/*.md` and `src/` — and has no
 
 ## Acceptance criteria
 
-- [ ] Same-commit plan+src produces a warning
-- [ ] Trivial-change trailer exempts the warning
-- [ ] Separate commits produce no warning
-- [ ] Existing tests still pass
-- [ ] Warning does not change exit code (exit 0 for warn)
+- [x] Same-commit plan+src produces a warning
+- [x] Trivial-change trailer exempts the warning
+- [x] Separate commits produce no warning
+- [x] Existing tests still pass
+- [x] Warning does not change exit code (exit 0 for warn)

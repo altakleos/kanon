@@ -46,8 +46,8 @@ changes" in one line rather than justifying each individually.
 
 ## Acceptance criteria
 
-- [ ] AGENTS.md has a task-type triage table after the boot chain
-- [ ] decisions/README.md entries have category tags
-- [ ] Completion checklist has streamlined N/A guidance
-- [ ] Kit bundle counterparts updated (check_kit_consistency passes)
-- [ ] No behavioral changes — all prose only
+- [x] AGENTS.md has a task-type triage table after the boot chain
+- [x] decisions/README.md entries have category tags
+- [x] Completion checklist has streamlined N/A guidance
+- [x] Kit bundle counterparts updated (check_kit_consistency passes)
+- [x] No behavioral changes — all prose only

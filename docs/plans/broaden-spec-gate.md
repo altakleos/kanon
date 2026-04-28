@@ -44,7 +44,7 @@ detection.
 
 ## Acceptance criteria
 
-- [ ] `_CLI_DECORATOR` matches `@main.command(`, `@aspect.command(`, `@click.group(`, etc.
-- [ ] Existing tests still pass (backward compatible — old patterns still match)
-- [ ] New tests cover the previously-missed patterns
-- [ ] Script docstring updated
+- [x] `_CLI_DECORATOR` matches `@main.command(`, `@aspect.command(`, `@click.group(`, etc.
+- [x] Existing tests still pass (backward compatible — old patterns still match)
+- [x] New tests cover the previously-missed patterns
+- [x] Script docstring updated
