@@ -68,3 +68,75 @@ def test_no_specs_dir_no_crash(tmp_path: Path) -> None:
     check(tmp_path, errors, warnings)
     assert not errors
     assert not warnings
+
+
+# --- Coverage gap tests: defensive branches ---
+
+
+def test_template_spec_skipped(tmp_path: Path) -> None:
+    """_template.md is skipped even with accepted status."""
+    (tmp_path / "docs" / "specs").mkdir(parents=True)
+    (tmp_path / "docs" / "specs" / "_template.md").write_text(
+        "---\nstatus: accepted\n---\n# Template\n", encoding="utf-8"
+    )
+    errors: list[str] = []
+    warnings: list[str] = []
+    check(tmp_path, errors, warnings)
+    assert not errors
+    assert not warnings
+
+
+def test_unreadable_spec_skipped(tmp_path: Path) -> None:
+    """Unreadable spec file is silently skipped."""
+    import os
+    import sys
+    if sys.platform == "win32":
+        return
+    (tmp_path / "docs" / "specs").mkdir(parents=True)
+    p = tmp_path / "docs" / "specs" / "bad.md"
+    p.write_text("---\nstatus: accepted\n---\n", encoding="utf-8")
+    try:
+        os.chmod(str(p), 0o000)
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(tmp_path, errors, warnings)
+        assert not errors
+        assert not warnings
+    finally:
+        os.chmod(str(p), 0o644)
+
+
+def test_spec_without_frontmatter_skipped(tmp_path: Path) -> None:
+    """Specs without valid frontmatter delimiters are skipped."""
+    (tmp_path / "docs" / "specs").mkdir(parents=True)
+    # No opening ---
+    (tmp_path / "docs" / "specs" / "nofm.md").write_text(
+        "# No frontmatter\n", encoding="utf-8"
+    )
+    # Opening --- but no closing ---
+    (tmp_path / "docs" / "specs" / "noclose.md").write_text(
+        "---\nstatus: accepted\n# No closing delimiter\n", encoding="utf-8"
+    )
+    errors: list[str] = []
+    warnings: list[str] = []
+    check(tmp_path, errors, warnings)
+    assert not errors
+    assert not warnings
+
+
+def test_spec_with_invalid_yaml_skipped(tmp_path: Path) -> None:
+    """Specs with invalid YAML or non-dict frontmatter are skipped."""
+    (tmp_path / "docs" / "specs").mkdir(parents=True)
+    # Invalid YAML
+    (tmp_path / "docs" / "specs" / "badyaml.md").write_text(
+        "---\n: [invalid yaml\n---\n", encoding="utf-8"
+    )
+    # Non-dict frontmatter (bare string)
+    (tmp_path / "docs" / "specs" / "barestr.md").write_text(
+        "---\njust a string\n---\n", encoding="utf-8"
+    )
+    errors: list[str] = []
+    warnings: list[str] = []
+    check(tmp_path, errors, warnings)
+    assert not errors
+    assert not warnings
