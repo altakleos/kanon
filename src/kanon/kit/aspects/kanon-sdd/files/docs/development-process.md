@@ -2,7 +2,7 @@
 
 How this project is developed. This document describes Spec-Driven Development (SDD) as a method — the artifact layers, how work flows through them, and when each layer is required. It is method-neutral: layers are defined functionally (what runs vs. what checks), not materially (Python vs. markdown).
 
-Each project defines its own instantiation of the bottom two layers (what Implementation and Verification mean concretely). Look for a project-specific implementation document alongside this file.
+Each project defines its own instantiation of the bottom two layers (what Implementation and Verification mean concretely) in a companion document named `<project>-implementation.md` alongside this file.
 
 ## Foundations
 
