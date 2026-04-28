@@ -8,8 +8,9 @@ Checks two co-presence invariants on every PR or push:
    must be present in the diff or referenced via a ``Plan:`` commit trailer.
    Exemptable via ``Trivial-change: <reason>`` commit trailer.
 
-2. **Spec co-presence.** If the diff adds a new ``@cli.command()``,
-   ``@cli.group()``, or ``@click.command()`` decorator under ``src/``,
+2. **Spec co-presence.** If the diff adds a new Click command or group
+   decorator (e.g. ``@main.command()``, ``@click.group()``, or any
+   ``@<name>.command()`` / ``@<name>.group()`` pattern) under ``src/``,
    a ``docs/specs/*.md`` file with ``status:`` set to ``accepted`` or
    ``provisional`` must be present or referenced via ``Spec:`` trailer.
    Never exemptable.
@@ -49,7 +50,7 @@ _SPEC_REF = re.compile(
     r"^Spec:\s*(docs/specs/\S+\.md)\s*$", re.MULTILINE
 )
 _CLI_DECORATOR = re.compile(
-    r"^\+.*@(?:cli\.command|cli\.group|click\.command)\("
+    r"^\+.*@\w+\.(?:command|group)\("
 )
 
 
@@ -186,7 +187,7 @@ def check_process_gates(
     diff = _diff_content(base_ref, repo_root)
     if _has_new_cli_command(diff) and not _find_valid_spec(changed, messages, repo_root):
             errors.append(
-                "Spec co-presence violation: new CLI command decorator "
+                "Spec co-presence violation: new CLI command/group decorator "
                 "added under src/ but no docs/specs/ file with status "
                 "accepted/provisional found. Add a spec file or reference "
                 "one via 'Spec: docs/specs/<slug>.md' commit trailer."
