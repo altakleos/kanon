@@ -670,6 +670,42 @@ def test_run_project_validators_import_failure(tmp_path: Path) -> None:
     assert any("import failed" in e for e in errors)
 
 
+def test_run_project_validators_adds_target_to_sys_path(tmp_path: Path) -> None:
+    """run_project_validators temporarily adds *target* to sys.path so that
+    project validators using relative module paths (e.g. ``ci.validators.foo``)
+    are importable without the caller setting PYTHONPATH."""
+    import sys
+    from unittest.mock import patch
+
+    from kanon._verify import run_project_validators
+
+    # Create a validator module inside the target directory.
+    pkg = tmp_path / "mypkg"
+    pkg.mkdir()
+    (pkg / "__init__.py").write_text("", encoding="utf-8")
+    (pkg / "val.py").write_text(
+        "def check(target, errors, warnings):\n"
+        "    errors.append('syspath-validator-ran')\n",
+        encoding="utf-8",
+    )
+
+    # Ensure the target is NOT already on sys.path.
+    target_str = str(tmp_path)
+    assert target_str not in sys.path
+
+    errors: list[str] = []
+    warnings: list[str] = []
+    with patch("kanon._verify._aspect_validators", return_value=["mypkg.val"]):
+        run_project_validators(
+            tmp_path, {"project-test": 1}, errors, warnings,
+        )
+
+    # The validator ran successfully — it was importable from target.
+    assert "syspath-validator-ran" in errors
+    # sys.path is cleaned up after the call.
+    assert target_str not in sys.path
+
+
 # --- _verify.py coverage: check_fidelity_assertions edge cases ---
 
 
