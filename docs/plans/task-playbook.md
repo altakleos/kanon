@@ -1,5 +1,5 @@
 ---
-status: draft
+status: done
 design: "No design needed — project-specific AGENTS.md prose edit"
 touches:
   - AGENTS.md
