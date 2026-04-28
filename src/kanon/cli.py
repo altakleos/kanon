@@ -462,12 +462,18 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
     _write_config(target, __version__, _aspects_with_meta(aspects_to_enable))
     clear_sentinel(target / ".kanon")
 
-    click.echo(f"Created kanon project at {target}.")
-    click.echo(f"Wrote {len(bundle) + 1} files plus .kanon/config.yaml.")
+    aspect_summary = ", ".join(f"{a}={d}" for a, d in sorted(aspects_to_enable.items()))
+    click.echo(f"\n✓ Created kanon project at {target} ({aspect_summary})")
     click.echo(
-        "Aspects: " + ", ".join(f"{a}={d}" for a, d in sorted(aspects_to_enable.items()))
+        "\n  Next steps:\n"
+        "  1. Open this folder with your LLM coding agent\n"
+        "  2. The agent will read AGENTS.md and follow the SDD process\n"
+        "\n  Grow when ready:\n"
+        "    kanon aspect set-depth . sdd 2     # add specs\n"
+        "    kanon aspect add . testing          # add test discipline\n"
+        "    kanon aspect add . security         # add secure-by-default protocols\n"
+        "    kanon verify .                      # check project health"
     )
-    click.echo("Open this folder with any LLM coding agent to begin.")
 
 
 @main.command()
