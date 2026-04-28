@@ -53,6 +53,7 @@ Disciplines are packaged as *aspects* — opt-in bundles of prose rules, protoco
 | `testing` | 0–3 | experimental | Test discipline + AC-first TDD: protocols (depth 1–2) + automated quality enforcement (depth 3) |
 | `security` | 0–2 | experimental | Secure-by-default protocols (depth 1) + CI pattern scanner for common anti-patterns (depth 2) |
 | `deps` | 0–2 | experimental | Dependency hygiene protocol (depth 1) + CI scanner for unpinned versions and duplicate-purpose packages (depth 2) |
+| `fidelity` | 0–1 | experimental | Behavioural-conformance verification: lexical assertions over committed agent transcripts (depth 1) |
 
 The canonical name of each kit-shipped aspect carries a `kanon-` source-namespace prefix (e.g., `kanon-sdd`, `kanon-worktrees`); bare names at every CLI input surface sugar to the `kanon-` namespace, so existing invocations like `kanon aspect set-depth . sdd 2` continue to work. See [ADR-0028](docs/decisions/0028-project-aspects.md) and [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md).
 
@@ -131,7 +132,7 @@ Run tests:
 
 ## Status
 
-**Early alpha (v0.2.0a8).** The kit ships six aspects (`sdd` at depth 0–3; `worktrees`, `release`, `testing`, `security`, `deps` at depth 0–2 or 0–3), the aspect model with a `provides:` capability registry, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
+**Early alpha (v0.2.0a10).** The kit ships seven aspects (`sdd` at depth 0–3; `worktrees`, `release`, `testing`, `security`, `deps` at depth 0–2 or 0–3; `fidelity` at depth 0–1), the aspect model with a `provides:` capability registry, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
 
 ## License
 
