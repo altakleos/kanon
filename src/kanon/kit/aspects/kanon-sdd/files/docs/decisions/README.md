@@ -2,7 +2,7 @@
 
 Each file in this directory records a single architectural decision with its context, the choice made, alternatives considered, and consequences.
 
-See [`../development-process.md`](../development-process.md) § ADRs for format and status taxonomy.
+See [`../sdd-method.md`](../sdd-method.md) § ADRs for format and status taxonomy.
 
 ## Index
 

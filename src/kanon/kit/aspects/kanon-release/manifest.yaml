@@ -19,8 +19,8 @@ depth-1:
   files: []
   protocols:
     - release-checklist.md
+    - publishing-discipline.md
   sections:
-    - publishing-discipline
     - protocols-index
 
 depth-2:

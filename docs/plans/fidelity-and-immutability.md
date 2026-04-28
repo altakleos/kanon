@@ -12,7 +12,7 @@ date: 2026-04-27
 Round-2 panel surfaced two findings that gate v0.3 work:
 
 1. **`docs/specs/verification-contract.md` INV-9 ("does not execute code") forecloses every behavioural-verification proposal** without a deliberate spec amendment. Without the carve-out, the EH-V1 / EH-V2 / EH-V5 track from Round-1 cannot ship — they would be in spec-conflict from day 1.
-2. **Post-acceptance ADR mutation is real-incidence in kanon's own history** (≥4 unannotated body modifications: `0cbcbdd`, `021d178`, `45cd42d` touching three ADRs). The discipline named in `docs/development-process.md:82` ("ADRs are immutable once accepted") has zero mechanical enforcement.
+2. **Post-acceptance ADR mutation is real-incidence in kanon's own history** (≥4 unannotated body modifications: `0cbcbdd`, `021d178`, `45cd42d` touching three ADRs). The discipline named in `docs/sdd-method.md:82` ("ADRs are immutable once accepted") has zero mechanical enforcement.
 
 Three tracks land. Track 1 is gated on Track 0 landing. Tracks 2 and 3 are independent.
 
@@ -49,7 +49,7 @@ Tier-2 (workstation `kanon transcripts capture`) and Tier-3 (paid nightly e2e) a
 - [x] T2-2: Port `ci/check_adr_immutability.py` from sensei. Strip sensei-specific path constants. Add tests for the trailer parser → `ci/check_adr_immutability.py`, `tests/ci/test_check_adr_immutability.py` (depends: T2-1) — *19 tests pass; gate surfaces all 4 documented historical violations when run against root..main; PR mode against `origin/main` is clean.*
 - [x] T2-3: Wire into `.github/workflows/verify.yml`. **Kit-internal only** — do NOT list under any aspect's `depth-N.files` → `.github/workflows/verify.yml` (depends: T2-2) — *checkout step bumped to `fetch-depth: 0` so PR mode against `origin/<base_ref>` works.*
 - [x] T2-4: Author protocol prose listing enforcement options (CI gate, pre-commit hook, manual review) at `kanon-sdd` depth 3 → `src/kanon/kit/aspects/kanon-sdd/protocols/adr-immutability.md` (depends: T2-1)
-- [x] T2-5: Update `docs/development-process.md` § ADRs to mention the trailer (depends: T2-1) — *kit + repo copies updated together; byte-equality preserved.*
+- [x] T2-5: Update `docs/sdd-method.md` § ADRs to mention the trailer (depends: T2-1) — *kit + repo copies updated together; byte-equality preserved.*
 
 ### Track 3 — Principle override mechanism (CLOSED — superseded by `principles-clarification` plan)
 

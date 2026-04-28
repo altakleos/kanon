@@ -6,4 +6,4 @@ Cross-cutting source material this project commits to. Three sub-namespaces:
 - [`principles/`](principles/) — cross-cutting stances, one per file.
 - [`personas/`](personas/) — design-stressing user scenarios.
 
-See [`../development-process.md`](../development-process.md) § Foundations.
+See [`../sdd-method.md`](../sdd-method.md) § Foundations.

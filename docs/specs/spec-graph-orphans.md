@@ -108,7 +108,7 @@ This spec was extracted from the broader `spec-graph-tooling.md` umbrella when t
 - **`consumers-of` query** — INV-10 says the data structure is ready, but exposing it as a CLI verb belongs to a separate spec (likely accompanying expand-and-contract-lifecycle promotion).
 - **Cycle detection in the graph** — orphans are a node-level property; cycles are an edge-level property. Cycle detection is a separate concern, possibly a future spec.
 - **Inbound edges from prose** — only structurally typed edges count. A principle mentioned in a paragraph but not under any `realizes:` field is treated as orphan. (The rationale: prose mentions are unstructured and prone to drift; the structured edge IS the contract.)
-- **Detecting unreferenced ADRs** — ADRs are immutable historical records by design (per `docs/development-process.md` § ADRs); they don't have inbound-edge semantics in the same way as principles. Out of scope.
+- **Detecting unreferenced ADRs** — ADRs are immutable historical records by design (per `docs/sdd-method.md` § ADRs); they don't have inbound-edge semantics in the same way as principles. Out of scope.
 - **Detecting unreferenced plans** — plans are permanent records of how features were built; "no inbound edge" doesn't apply.
 
 ## Decisions

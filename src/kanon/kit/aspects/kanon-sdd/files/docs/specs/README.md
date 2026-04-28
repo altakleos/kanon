@@ -1,6 +1,6 @@
 # Specs
 
-Product intent — WHAT the project does from the user's perspective. See [`../development-process.md`](../development-process.md) § Specs.
+Product intent — WHAT the project does from the user's perspective. See [`../sdd-method.md`](../sdd-method.md) § Specs.
 
 ## Index
 

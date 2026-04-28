@@ -63,7 +63,7 @@ The model's primary user is an LLM-driven repo — often a solo developer runnin
 1. **Aspect identity.** Each aspect has a unique kebab-case name, a stability label (`experimental | stable | deprecated`), a depth range (integer `min`–`max`), and optional `requires:` / `suggests:` declarations against other aspects. All four are declared in `src/kanon/kit/manifest.yaml` under `aspects.<name>`.
 
 <!-- INV-aspects-sdd-is-an-aspect -->
-2. **SDD is an aspect.** Every file currently scaffolded by the tier model (`docs/development-process.md`, `docs/{decisions,plans,specs,design,foundations}/`, the tier-specific `AGENTS.md` sections) lives under the `sdd` aspect at depth 0–3. Legacy `tier: N` in existing consumer `.kanon/config.yaml` auto-migrates to `aspects: {sdd: {depth: N}}` on first `kanon upgrade` after the aspect model ships.
+2. **SDD is an aspect.** Every file currently scaffolded by the tier model (`docs/sdd-method.md`, `docs/{decisions,plans,specs,design,foundations}/`, the tier-specific `AGENTS.md` sections) lives under the `sdd` aspect at depth 0–3. Legacy `tier: N` in existing consumer `.kanon/config.yaml` auto-migrates to `aspects: {sdd: {depth: N}}` on first `kanon upgrade` after the aspect model ships.
 
 <!-- INV-aspects-per-aspect-depth-dial -->
 3. **Per-aspect depth dial.** Depth range is declared per-aspect in its sub-manifest. `sdd` spans 0–3; other aspects declare whatever range their scaffolds naturally partition into (e.g., `worktrees` is 0–2). Ghost cells (depth levels with no content) are not allowed.

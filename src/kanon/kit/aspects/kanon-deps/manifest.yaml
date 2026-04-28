@@ -21,7 +21,6 @@ depth-1:
   protocols:
     - dependency-hygiene.md
   sections:
-    - dependency-hygiene
     - protocols-index
 
 depth-2:

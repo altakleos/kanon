@@ -14,7 +14,7 @@ The expected reading order for a fresh session is:
 
 1. **`AGENTS.md`** — the repo-canonical entry point. All harness shims (`CLAUDE.md`, `.cursor/rules/…`, `.github/copilot-instructions.md`, etc.) route here. Marker-delimited sections carry the in-force process gates.
 2. **This file (`.kanon/kit.md`)** — for kit context: depth identity, protocol catalog, pointers below.
-3. **`docs/development-process.md`** (depth ≥ 1) — the SDD method the gates are enforcing.
+3. **`docs/sdd-method.md`** (depth ≥ 1) — the SDD method the gates are enforcing.
 4. **`docs/decisions/README.md`** (depth ≥ 1) — what has already been decided.
 5. **`docs/foundations/vision.md`** (depth 3 only) — product intent.
 

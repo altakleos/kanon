@@ -61,7 +61,7 @@ depth-0:
   sections: []
 depth-1:
   files:
-    - docs/development-process.md
+    - docs/sdd-method.md
     - docs/decisions/README.md
     - docs/decisions/_template.md
     - docs/plans/README.md
@@ -227,7 +227,7 @@ New invariants:
 1. **Aspect path resolution.** Every `aspects.<name>.path` resolves to a directory containing a sub-manifest.
 2. **Per-aspect file resolution.** Every path listed in any sub-manifest resolves under `kit/aspects/<name>/files/` or `kit/aspects/<name>/protocols/`.
 3. **Cross-aspect ownership exclusivity.** No two aspects scaffold the same relative consumer-path (computed across all aspects' maximum depth).
-4. **Whitelist re-scoped per-aspect.** Byte-equality whitelist entries move under the new paths (`kit/aspects/sdd/files/docs/development-process.md` ↔ `docs/development-process.md`; `kit/aspects/sdd/protocols/*.md` ↔ `.kanon/protocols/kanon-sdd/*.md`). Total whitelist stays ≤ 50 entries (maintenance red line).
+4. **Whitelist re-scoped per-aspect.** Byte-equality whitelist entries move under the new paths (`kit/aspects/sdd/files/docs/sdd-method.md` ↔ `docs/sdd-method.md`; `kit/aspects/sdd/protocols/*.md` ↔ `.kanon/protocols/kanon-sdd/*.md`). Total whitelist stays ≤ 50 entries (maintenance red line).
 5. **Stability label validity.** Each registry entry's `stability` ∈ `{experimental, stable, deprecated}`.
 6. **Section namespace discipline.** Marker pairs in `kit/aspects/<aspect>/agents-md/depth-*.md` use the `<aspect>/<section>` prefix — except the unprefixed `protocols-index`.
 

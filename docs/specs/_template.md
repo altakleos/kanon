@@ -1,7 +1,7 @@
 ---
 status: draft
 date: YYYY-MM-DD
-# optional frontmatter fields — see development-process.md § Foundations
+# optional frontmatter fields — see sdd-method.md § Foundations
 # realizes: [P-<slug>, ...]
 # serves: [<foundation-slug>, ...]
 # stressed_by: [<persona-slug>, ...]

@@ -37,7 +37,7 @@ Define the four tiers — tier-0 through tier-3 — by what artifacts each inclu
 <!-- INV-tiers-tier-taxonomy -->
 1. **Tier taxonomy.** Four tiers, in strict inclusion order.
    - **Tier-0** — `AGENTS.md` + harness shims + `.kanon/config.yaml`. No `docs/` structure. No process gates active.
-   - **Tier-1** — Tier-0 plus `docs/development-process.md` + `docs/decisions/` (README + _template) + `docs/plans/` (README + _template). **Plan-before-build gate active** in AGENTS.md.
+   - **Tier-1** — Tier-0 plus `docs/sdd-method.md` + `docs/decisions/` (README + _template) + `docs/plans/` (README + _template). **Plan-before-build gate active** in AGENTS.md.
    - **Tier-2** — Tier-1 plus `docs/specs/` (README + _template). **Spec-before-design gate active** in AGENTS.md.
    - **Tier-3** — Tier-2 plus `docs/design/` (README + _template) + `docs/foundations/` (vision, principles/, personas/, README).
 <!-- INV-tiers-triggers -->

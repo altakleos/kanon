@@ -14,7 +14,7 @@ When two documents or files might share content, they are either byte-identical 
 
 Duplication looks cheap at authoring time and becomes expensive the first time an edit lands in one copy and not the other. Agents and humans alike hit the stale copy, follow it, and produce incoherent work. The cost is paid not at write time but at every subsequent read.
 
-This is why the kit's shims (per ADR-0003) are pointers, not content copies. Why the kit's tier-3 template uses the kit's own canonical docs (enforced by `check_kit_consistency.py`). Why `AGENTS.md` and `docs/development-process.md` share the byte-identical trivial/non-trivial bullet lists (verified with `diff`).
+This is why the kit's shims (per ADR-0003) are pointers, not content copies. Why the kit's tier-3 template uses the kit's own canonical docs (enforced by `check_kit_consistency.py`). Why `AGENTS.md` and `docs/sdd-method.md` share the byte-identical trivial/non-trivial bullet lists (verified with `diff`).
 
 ## Implications
 
@@ -24,9 +24,9 @@ This is why the kit's shims (per ADR-0003) are pointers, not content copies. Why
 
 ## Exceptions / Tensions
 
-- Some duplication is necessary for reliability with LLM agents whose context budgets don't always resolve links. The v0.1 kit accepts a small amount (trivial/non-trivial bullets in AGENTS.md ↔ development-process.md) and enforces it via CI.
+- Some duplication is necessary for reliability with LLM agents whose context budgets don't always resolve links. The v0.1 kit accepts a small amount (trivial/non-trivial bullets in AGENTS.md ↔ sdd-method.md) and enforces it via CI.
 - Historical records (ADRs, plans) are intentionally static and do not back-reference later decisions that supersede them — supersession flows forward only, which is not strictly duplication but a related pattern.
 
 ## Source
 
-Sensei's foundational convention (`cross-link-dont-duplicate`) ported unchanged. Observed pain during Sensei's own development: cross-reference drift between AGENTS.md and development-process.md was the motivating failure mode.
+Sensei's foundational convention (`cross-link-dont-duplicate`) ported unchanged. Observed pain during Sensei's own development: cross-reference drift between AGENTS.md and sdd-method.md was the motivating failure mode.

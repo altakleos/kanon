@@ -1,6 +1,6 @@
 # Design Docs
 
-Technical architecture — HOW features are built at a high level. See `../development-process.md` § Design Docs for when a design doc is warranted and when it may be skipped.
+Technical architecture — HOW features are built at a high level. See `../sdd-method.md` § Design Docs for when a design doc is warranted and when it may be skipped.
 
 ## Index
 

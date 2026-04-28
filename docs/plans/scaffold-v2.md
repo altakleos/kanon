@@ -9,7 +9,7 @@ touches:
   - src/kanon/_scaffold.py
   - src/kanon/cli.py
   - AGENTS.md
-  - docs/development-process.md
+  - docs/sdd-method.md
   - .kanon/protocols/
   - tests/
 ---
@@ -52,11 +52,11 @@ Move inlined AGENTS.md content to protocol files. Eliminate sections.
 - [ ] P2-T2: Delete all `sections/` directories from kit aspects.
   Remove `sections:` keys from all sub-manifests.
 - [ ] P2-T3: Delete all `agents-md/` body files from kit aspects.
-- [ ] P2-T4: Rename `docs/development-process.md` →
+- [ ] P2-T4: Rename `docs/sdd-method.md` →
   `docs/sdd-method.md`. Trim to ~50 lines (layer stack, routing,
   document authority, glossary). Remove duplicated gate prose.
   Move depth-specific content to artifact-directory READMEs.
-- [ ] P2-T5: Update all cross-references to development-process.md
+- [ ] P2-T5: Update all cross-references to sdd-method.md
   (~30 living documents; leave ADR references as historical).
 - [ ] P2-T6: Update byte-equality entries in sdd sub-manifest.
 - [ ] P2-T7: Mirror new protocol files to kit aspect protocol dirs.

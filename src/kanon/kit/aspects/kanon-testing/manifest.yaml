@@ -22,7 +22,6 @@ depth-1:
     - test-discipline.md
     - error-diagnosis.md
   sections:
-    - test-discipline
     - protocols-index
 
 depth-2:

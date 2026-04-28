@@ -2,7 +2,7 @@
 
 Each file in this directory records a single architectural decision with its context, the choice made, alternatives considered, and consequences.
 
-See [`../development-process.md`](../development-process.md) § ADRs for the format, status taxonomy (extended to include `deferred` per ADR-0007), and when-to-write rules.
+See [`../sdd-method.md`](../sdd-method.md) § ADRs for the format, status taxonomy (extended to include `deferred` per ADR-0007), and when-to-write rules.
 
 ## Index
 
@@ -61,4 +61,4 @@ date: YYYY-MM-DD
 ## References
 ```
 
-See `../development-process.md` § When to Write an ADR for the full/lite distinction and triggers.
+See `../sdd-method.md` § When to Write an ADR for the full/lite distinction and triggers.

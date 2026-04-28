@@ -2,15 +2,15 @@
 status: done
 design: "Follows ADR-0014 (existing document architecture)"
 touches:
-  - docs/development-process.md
-  - src/kanon/kit/aspects/kanon-sdd/files/docs/development-process.md
+  - docs/sdd-method.md
+  - src/kanon/kit/aspects/kanon-sdd/files/docs/sdd-method.md
 ---
 
-# Plan: Name the extension-point convention in development-process.md
+# Plan: Name the extension-point convention in sdd-method.md
 
 ## Motivation
 
-development-process.md has 5 references to "the project-specific
+sdd-method.md has 5 references to "the project-specific
 implementation document" or "the project's instantiation doc" without
 naming a file convention. An agent or contributor encountering the
 file for the first time must already know that a companion
@@ -43,8 +43,8 @@ establishes the naming convention. No change needed.
 
 | File | Change |
 |------|--------|
-| `docs/development-process.md` | Edit line 5 intro paragraph |
-| `src/kanon/kit/aspects/kanon-sdd/files/docs/development-process.md` | Byte-identical copy |
+| `docs/sdd-method.md` | Edit line 5 intro paragraph |
+| `src/kanon/kit/aspects/kanon-sdd/files/docs/sdd-method.md` | Byte-identical copy |
 
 ## Acceptance criteria
 

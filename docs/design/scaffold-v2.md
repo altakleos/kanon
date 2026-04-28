@@ -13,7 +13,7 @@ The current scaffold architecture has three problems:
    is inlined discipline prose that duplicates protocol files. Every
    token competes with the agent's actual task.
 2. **No file categories.** All files are aspect-depth-specific. Files
-   that should be aspect-wide (development-process.md) or kit-global
+   that should be aspect-wide (sdd-method.md) or kit-global
    (kit.md) are hacked into depth-0/1 declarations.
 3. **sdd is structurally privileged.** CLAUDE.md lives under sdd
    depth-0. kit.md hardcodes `${sdd_depth}`. worktrees requires sdd.
@@ -193,7 +193,7 @@ rendering function that filters gate rows by enabled aspects.
 | AGENTS.md aspect body sections (~55 lines total) | Eliminated — content folded into protocol preambles or dropped | — |
 | `sections/` directories (all aspects) | Deleted | — |
 | `agents-md/depth-N.md` body files (all aspects) | Deleted | — |
-| `docs/development-process.md` (458 lines) | `docs/sdd-method.md` (~50 lines, sdd aspect-level file) | aspect-level |
+| `docs/sdd-method.md` (458 lines) | `docs/sdd-method.md` (~50 lines, sdd aspect-level file) | aspect-level |
 | `.kanon/kit.md` (sdd-specific) | `.kanon/kit.md` (aspect-neutral, kit-global file) | kit-global |
 | `CLAUDE.md` (sdd depth-0 file) | Harness shim (already handled by harnesses.yaml) | harness shim |
 
@@ -226,7 +226,7 @@ rendering function that filters gate rows by enabled aspects.
 
 ### Byte-equality impact
 
-- `development-process.md` entry removed (file renamed).
+- `sdd-method.md` entry removed (file renamed).
 - `sdd-method.md` entry added.
 - Section-file entries removed (sections eliminated).
 - New protocol-file entries added (plan-before-build.md, etc.).

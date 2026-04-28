@@ -44,13 +44,13 @@ Define the exact file tree written by `kanon init --tier <N>` for each of N ∈ 
 <!-- INV-template-bundle-four-tiers -->
 1. **Four tiers ship in v0.1.** Tier membership is declared in `src/kanon/kit/manifest.yaml`; each tier is a union of the files/protocols listed for itself and all lower tiers.
    - **tier-0** — minimal: `AGENTS.md`, `CLAUDE.md`, `.kanon/config.yaml`, `.kanon/kit.md`. No `docs/` structure.
-   - **tier-1** — adds `docs/development-process.md` (byte-identical to the kit's own), `docs/decisions/{README,_template}.md`, `docs/plans/{README,_template}.md`, and protocols `.kanon/protocols/tier-up-advisor.md` and `.kanon/protocols/verify-triage.md`.
+   - **tier-1** — adds `docs/sdd-method.md` (byte-identical to the kit's own), `docs/decisions/{README,_template}.md`, `docs/plans/{README,_template}.md`, and protocols `.kanon/protocols/tier-up-advisor.md` and `.kanon/protocols/verify-triage.md`.
    - **tier-2** — adds `docs/specs/{README,_template}.md` and `.kanon/protocols/spec-review.md`.
    - **tier-3** — adds `docs/design/{README,_template}.md` and `docs/foundations/{README.md, vision.md, principles/README.md, personas/README.md}`.
 <!-- INV-template-bundle-strict-subset -->
 2. **Strict-subset invariant (tautological).** Every file scaffolded at tier-N is also scaffolded at tier-(N+1) because `_build_bundle(tier=N)` unions manifest entries for tiers 0..N. There is no independent authoring of tier-N content; `manifest.yaml` is the single source.
 <!-- INV-template-bundle-tier3-canonical-with-repo -->
-3. **Tier-3 canonical with repo.** Files in `src/kanon/kit/files/` and `src/kanon/kit/protocols/` that have a repo-root counterpart (e.g., `docs/development-process.md`, the `_template.md` files, the kit's own `.kanon/protocols/*.md`) are byte-identical to those counterparts. Enforced by `ci/check_kit_consistency.py` against a narrow whitelist.
+3. **Tier-3 canonical with repo.** Files in `src/kanon/kit/files/` and `src/kanon/kit/protocols/` that have a repo-root counterpart (e.g., `docs/sdd-method.md`, the `_template.md` files, the kit's own `.kanon/protocols/*.md`) are byte-identical to those counterparts. Enforced by `ci/check_kit_consistency.py` against a narrow whitelist.
 <!-- INV-template-bundle-shims-are-pointers -->
 4. **Shims are pointers.** `CLAUDE.md` is always a single-line `See @AGENTS.md\n` file. Harness-specific shims (Cursor, Windsurf, etc.) are generated at `init` time from `kit/harnesses.yaml` and are also single-file pointers (with any frontmatter each harness requires).
 <!-- INV-template-bundle-html-comment-markers -->
