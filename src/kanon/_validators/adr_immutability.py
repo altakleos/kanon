@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -70,7 +71,7 @@ def _check_one(
     )
 
 
-def _split_fm(text: str) -> tuple[dict, str]:
+def _split_fm(text: str) -> tuple[dict[str, Any], str]:
     if not text.startswith("---\n"):
         return {}, text
     end = text.find("\n---\n", 4)
