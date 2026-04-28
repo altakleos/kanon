@@ -49,6 +49,7 @@ When multiple worktrees are active simultaneously:
 - **Partition file ownership.** Each worktree should modify a disjoint set of files. If two worktrees must touch the same file, coordinate explicitly — do not rely on merge to resolve conflicting edits.
 - **Append-only shared files.** CHANGELOG.md, index READMEs, and similar accumulation files may be appended to from multiple worktrees. Each worktree appends to a distinct section or line range. On merge conflict, keep all entries.
 - **Merge smallest first.** When integrating multiple worktrees, merge the smallest changeset first to minimise the conflict surface for subsequent merges.
+- **Check for overlap before integrating.** Before merging your worktree branch into main, run `git worktree list`. If other worktrees exist, compare changed files (`git diff --name-only main...wt/<other>` for each). If files overlap, merge the smaller changeset first and rebase the remaining worktree(s) before continuing their work. If a rebase conflict cannot be resolved mechanically, stop and present it to the user.
 
 ### 6. Teardown
 
