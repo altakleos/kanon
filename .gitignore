@@ -24,3 +24,7 @@ htmlcov/
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
 CLAUDE.local.md
+
+# Kiro — machine-local settings. Project-shared steering rules
+# (.kiro/steering/) ARE checked in.
+.kiro/settings/
