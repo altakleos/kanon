@@ -15,6 +15,10 @@ Checks two co-presence invariants on every PR or push:
    ``provisional`` must be present or referenced via ``Spec:`` trailer.
    Never exemptable.
 
+Additionally warns (does not fail) if any single commit touches both
+``docs/plans/`` and ``src/`` files, which indicates the plan was created
+retroactively rather than before implementation.
+
 Operating modes:
 
 * ``--base-ref REF``  PR mode: diff ``REF..HEAD``.
@@ -157,6 +161,40 @@ def _find_valid_spec(
     return False
 
 
+def _check_plan_src_separation(
+    base_ref: str | None, repo: Path
+) -> list[str]:
+    """Warn if any single commit touches both docs/plans/ and src/ files."""
+    if base_ref is not None:
+        shas = _git(
+            ["log", "--format=%H", f"{base_ref}..HEAD"], repo
+        ).split()
+    else:
+        shas = [_git(["rev-parse", "HEAD"], repo).strip()]
+
+    warnings: list[str] = []
+    for sha in shas:
+        if not sha:
+            continue
+        msg = _git(["log", "-1", "--format=%B", sha], repo)
+        if _TRIVIAL_TRAILER.search(msg):
+            continue
+        files = _git(["show", "--name-only", "--pretty=", sha], repo)
+        lines = [l.strip() for l in files.splitlines() if l.strip()]
+        has_plan = any(
+            f.startswith("docs/plans/") and f.endswith(".md") for f in lines
+        )
+        has_src = any(f.startswith("src/") for f in lines)
+        if has_plan and has_src:
+            short = sha[:8]
+            warnings.append(
+                f"Plan/src same-commit: {short} modifies both docs/plans/ "
+                f"and src/ files. Commit plan and code separately so the "
+                f"plan predates the implementation."
+            )
+    return warnings
+
+
 def check_process_gates(
     repo_root: Path,
     base_ref: str | None = None,
@@ -192,6 +230,9 @@ def check_process_gates(
                 "accepted/provisional found. Add a spec file or reference "
                 "one via 'Spec: docs/specs/<slug>.md' commit trailer."
             )
+
+    # Plan/src separation check (warning only, per-commit trivial exemption)
+    warnings.extend(_check_plan_src_separation(base_ref, repo_root))
 
     status = "fail" if errors else ("warn" if warnings else "ok")
     return {"status": status, "errors": errors, "warnings": warnings}
