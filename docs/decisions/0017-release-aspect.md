@@ -14,7 +14,7 @@ Ship `release` as a standalone aspect with:
 
 1. **Depth range 0–2.** Depth 0 = opt-out. Depth 1 = prose guidance (protocol + AGENTS.md section). Depth 2 = prose + automation (CI template + preflight script).
 2. **No cross-aspect dependency.** `requires: []`. Release discipline is independently useful without SDD ceremony.
-3. **Scaffolding shape.** Protocol at `.kanon/protocols/release/release-checklist.md`. AGENTS.md section `release/publishing-discipline`. CI files at `ci/release-preflight.py` and `.github/workflows/release.yml` (depth-2 only, copy-in templates, no byte-equality enforcement).
+3. **Scaffolding shape.** Protocol at `.kanon/protocols/kanon-release/release-checklist.md`. AGENTS.md section `release/publishing-discipline`. CI files at `ci/release-preflight.py` and `.github/workflows/release.yml` (depth-2 only, copy-in templates, no byte-equality enforcement).
 4. **Stability: experimental.** Until self-hosted and validated.
 
 ## Alternatives Considered

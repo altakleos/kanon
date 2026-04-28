@@ -1,3 +1,6 @@
+---
+status: done
+---
 # Plan: Aspect Decoupling
 
 Spec at `docs/specs/aspect-decoupling.md` has been approved.

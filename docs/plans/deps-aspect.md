@@ -17,7 +17,7 @@ Ship the `deps` aspect (depth 0–2) as the sixth kanon aspect, following the sa
 - [ ] Top-level `manifest.yaml` registers the deps aspect (experimental, depth 0–2, default 1, requires: []).
 - [ ] `kanon aspect add <target> deps` scaffolds protocol and AGENTS.md section at default depth.
 - [ ] `kanon aspect set-depth <target> deps 2` scaffolds `ci/check_deps.py`.
-- [ ] Self-hosting: `.kanon/protocols/deps/` contains canonical protocol copies; deps enabled at depth 2 on this repo.
+- [ ] Self-hosting: `.kanon/protocols/kanon-deps/` contains canonical protocol copies; deps enabled at depth 2 on this repo.
 - [ ] Kit integrity tests pass for the new aspect.
 - [ ] CLI tests cover add and depth-2 scaffolding.
 - [ ] All existing tests still pass; coverage ≥ 90%.
@@ -29,7 +29,7 @@ Ship the `deps` aspect (depth 0–2) as the sixth kanon aspect, following the sa
 2. Update specs index with deps entry.
 3. Create aspect directory tree: manifest.yaml, agents-md/depth-{0..2}.md, sections/dependency-hygiene.md, protocols/dependency-hygiene.md, files/ci/check_deps.py.
 4. Register in top-level manifest.yaml.
-5. Copy protocols to `.kanon/protocols/deps/`.
+5. Copy protocols to `.kanon/protocols/kanon-deps/`.
 6. Enable deps at depth 2 on this repo.
 7. Append kit integrity and CLI tests.
 8. Verify: pytest, kit consistency, kanon verify, ruff.

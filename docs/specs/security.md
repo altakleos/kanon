@@ -48,7 +48,7 @@ The aspect is language-agnostic at all depths. The protocols describe *what* to 
    - **Depth 2** — prose guidance plus automation. CI validator scaffolded for common security anti-pattern detection.
 
 <!-- INV-security-protocol -->
-2. **Security-defaults protocol.** The aspect ships one protocol at `.kanon/protocols/security/secure-defaults.md` (depth ≥ 1) covering:
+2. **Security-defaults protocol.** The aspect ships one protocol at `.kanon/protocols/kanon-security/secure-defaults.md` (depth ≥ 1) covering:
    - **Secrets:** Never hardcode secrets, API keys, tokens, or passwords in source. Use environment variables or secret managers. Never commit `.env` files. Add sensitive file patterns to `.gitignore`.
    - **Injection:** Always use parameterized queries for SQL. Never use string interpolation for shell commands. Validate and sanitize all external input.
    - **Transport:** Never disable TLS verification (`verify=False`, `rejectUnauthorized: false`). Never use `http://` for production endpoints.

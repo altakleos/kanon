@@ -46,7 +46,7 @@ The aspect is language-agnostic at all depths. The protocols describe *principle
    - **Depth 2** — prose guidance plus automation. CI validator scaffolded for dependency hygiene checks.
 
 <!-- INV-deps-protocol -->
-2. **Dependency-hygiene protocol.** The aspect ships one protocol at `.kanon/protocols/deps/dependency-hygiene.md` (depth ≥ 1) covering:
+2. **Dependency-hygiene protocol.** The aspect ships one protocol at `.kanon/protocols/kanon-deps/dependency-hygiene.md` (depth ≥ 1) covering:
    - **Check before adding.** Before installing a new dependency, check if an existing dependency or the standard library already provides the functionality.
    - **Pin exact versions.** Use exact or pinned versions (`==`, not `>=` or `^`), not open ranges. Lock files are the source of truth for transitive dependencies.
    - **Justify additions.** Non-obvious dependencies get a comment or ADR explaining why they were chosen over alternatives.

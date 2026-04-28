@@ -1,3 +1,6 @@
+---
+status: done
+---
 # Plan: Close Test Coverage Gaps
 
 ## Goal

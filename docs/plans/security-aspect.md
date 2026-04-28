@@ -17,7 +17,7 @@ Ship the `security` aspect (depth 0–2) as the fifth kanon aspect, following th
 - [ ] Top-level `manifest.yaml` registers the security aspect (experimental, depth 0–2, default 1, requires: []).
 - [ ] `kanon aspect add <target> security` scaffolds protocol and AGENTS.md section at default depth.
 - [ ] `kanon aspect set-depth <target> security 2` scaffolds `ci/check_security_patterns.py`.
-- [ ] Self-hosting: `.kanon/protocols/security/` contains canonical protocol copies; security enabled at depth 2 on this repo.
+- [ ] Self-hosting: `.kanon/protocols/kanon-security/` contains canonical protocol copies; security enabled at depth 2 on this repo.
 - [ ] Kit integrity tests pass for the new aspect.
 - [ ] CLI tests cover add and depth-2 scaffolding.
 - [ ] All existing tests still pass; coverage ≥ 90%.
@@ -29,7 +29,7 @@ Ship the `security` aspect (depth 0–2) as the fifth kanon aspect, following th
 2. Update specs index with security entry.
 3. Create aspect directory tree: manifest.yaml, agents-md/depth-{0..2}.md, sections/secure-defaults.md, protocols/secure-defaults.md, files/ci/check_security_patterns.py.
 4. Register in top-level manifest.yaml.
-5. Copy protocols to `.kanon/protocols/security/`.
+5. Copy protocols to `.kanon/protocols/kanon-security/`.
 6. Enable security at depth 2 on this repo.
 7. Append kit integrity and CLI tests.
 8. Verify: pytest, kit consistency, kanon verify, ruff.

@@ -1,3 +1,6 @@
+---
+status: done
+---
 # Plan: Implement Worktrees Aspect
 
 Spec at `docs/specs/worktrees.md` has been approved.
@@ -8,10 +11,10 @@ Implement the `worktrees` aspect as defined in the accepted spec and ADR-0014. S
 
 ## Deliverables
 
-### 1. Kit bundle: `src/kanon/kit/aspects/worktrees/`
+### 1. Kit bundle: `src/kanon/kit/aspects/kanon-worktrees/`
 
 ```
-aspects/worktrees/
+aspects/kanon-worktrees/
 ├── manifest.yaml
 ├── agents-md/
 │   ├── depth-0.md
