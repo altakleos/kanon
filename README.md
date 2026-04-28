@@ -34,6 +34,7 @@ kanon aspect set-depth ~/myproject worktrees 1
 kanon aspect set-depth ~/myproject sdd 2
 
 # Keep the kit up to date
+uv tool upgrade kanon-kit          # or: pipx upgrade kanon-kit
 kanon upgrade ~/myproject
 
 # Verify the project's shape
