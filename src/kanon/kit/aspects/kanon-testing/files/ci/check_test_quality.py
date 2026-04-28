@@ -20,7 +20,7 @@ _TEST_PATTERNS = (
 
 # Directories to skip when collecting test files (vendored deps, build outputs,
 # version-control metadata). Mirrors `check_deps.py`.
-_SKIP_DIRS = {".git", "node_modules", ".venv", "__pycache__", "dist", "build"}
+_SKIP_DIRS = {".git", "node_modules", ".venv", "__pycache__", "dist", "build", "src"}
 
 # Patterns that indicate an empty or trivial test body.
 _TRIVIAL_BODY = re.compile(
