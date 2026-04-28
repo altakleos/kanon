@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a11] — 2026-04-28
+
+### Added
+
+- **Capability-neutral Task Playbook** in AGENTS.md — replaces the OMC-specific agent routing table with a phase-based playbook using generic capability profiles (planner, architect, debugger, etc.). Every harness matches what it has locally.
+- **Merge-caution guidance** in worktree-lifecycle protocol § 5 — when integrating a worktree while others exist on disk, check for file overlap before merging.
+- **`# nosec` inline suppression** in `check_security_patterns.py` — lines containing `# nosec` are skipped by the security scanner. Follows the Bandit convention.
+- **9 missing CI scripts** added to `release.yml` — release workflow now runs the same checks as the PR workflow.
+
+### Changed
+
+- **`kanon upgrade` now re-renders harness shims** — previously only `init` rendered shims. Upgrade now refreshes all shims from the installed kit's templates, matching CLI spec INV-3.
+- **Named extension-point convention** in `development-process.md` — the intro paragraph now names the `<project>-implementation.md` companion document convention explicitly.
+
+### Fixed
+
+- **CLI spec synced with actual surface** — added `set-config` to aspect group, added `graph` group (`orphans`, `rename`), and new INV-cli-graph-group invariant.
+- **Verification-contract spec synced with implementation** — INV-1/2 updated from tier to aspect terminology, INV-3/7 clarified as CI-only checks, INV-4 depth corrected to ≥ 2, INV-8 output field corrected from `tier` to `aspects`.
+- **12 plans and 7 specs** added to their respective README indexes.
+- **Broken protocol path** in `aspect-model.md` corrected (`sdd/` → `kanon-sdd/`).
+- **18 stale protocol/aspect paths** across 11 files corrected to use `kanon-` namespace prefix.
+- **7 plans** given missing `status: done` frontmatter.
+- **`check_test_quality.py`** no longer flags validator modules in `src/` as test files.
+- **README** updated: added fidelity aspect to table, corrected version to v0.2.0a10, corrected aspect count to seven.
+- **`kit-bundle.md` design doc** retired with tombstone pointing to `aspect-model.md`.
+- **Fidelity lock** regenerated to match current spec SHAs.
+
 ## [0.2.0a10] — 2026-04-28
 
 ### Fixed
