@@ -60,6 +60,44 @@ def test_aspect_level_files(tmp_path: Path) -> None:
         assert (target / f).is_file(), f"aspect-level file missing: {f}"
 
 
+def test_init_without_sdd(tmp_path: Path) -> None:
+    """kanon init with only worktrees+testing (no sdd) produces a valid project."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--aspects", "worktrees:1,testing:1"])
+    assert result.exit_code == 0, result.output
+    assert (target / "AGENTS.md").is_file()
+    assert (target / ".kanon" / "config.yaml").is_file()
+    assert (target / ".kanon" / "kit.md").is_file()
+    # No sdd files
+    assert not (target / "docs" / "sdd-method.md").exists()
+    assert not (target / "docs" / "decisions").exists()
+    assert not (target / "docs" / "plans").exists()
+    # Worktrees + testing protocols present
+    assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-lifecycle.md").is_file()
+    assert (target / ".kanon" / "protocols" / "kanon-testing" / "test-discipline.md").is_file()
+    # Verify passes
+    verify_result = runner.invoke(main, ["verify", str(target)])
+    assert verify_result.exit_code == 0, verify_result.output
+
+
+def test_init_bare(tmp_path: Path) -> None:
+    """kanon init with no aspects produces a minimal valid project."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--aspects", ""])
+    assert result.exit_code == 0, result.output
+    assert (target / "AGENTS.md").is_file()
+    assert (target / ".kanon" / "config.yaml").is_file()
+    assert (target / ".kanon" / "kit.md").is_file()
+    # No aspect files
+    assert not (target / "docs").exists()
+    assert not (target / ".kanon" / "protocols").exists()
+    # Verify passes (with warning)
+    verify_result = runner.invoke(main, ["verify", str(target)])
+    assert verify_result.exit_code == 0, verify_result.output
+
+
 def _extract_verify_json(output: str) -> dict:
     """Extract the first JSON object from `verify` output (report precedes the human summary)."""
     start = output.find("{")
@@ -1071,10 +1109,12 @@ def test_verify_empty_aspects(tmp_path: Path) -> None:
     (config_dir / "config.yaml").write_text(
         yaml.safe_dump({"kit_version": "0.1", "aspects": {}}), encoding="utf-8"
     )
+    (config_dir / "kit.md").write_text("# kit\n", encoding="utf-8")
+    (tmp_path / "AGENTS.md").write_text("# AGENTS.md\n", encoding="utf-8")
     result = runner.invoke(main, ["verify", str(tmp_path)])
-    assert result.exit_code != 0
+    assert result.exit_code == 0
     report = _extract_verify_json(result.output)
-    assert "empty" in report["errors"][0].lower()
+    assert any("no aspects" in w.lower() for w in report.get("warnings", []))
 
 
 def test_verify_unknown_aspect(tmp_path: Path) -> None:
@@ -1462,25 +1502,22 @@ def test_init_default_aspects(tmp_path: Path) -> None:
 # --- requires: enforcement tests ---
 
 
-def test_aspect_add_requires_unmet(tmp_path: Path) -> None:
-    """aspect add worktrees fails when sdd is at depth 0 (requires sdd >= 1)."""
+def test_aspect_add_worktrees_without_sdd(tmp_path: Path) -> None:
+    """aspect add worktrees succeeds even when sdd is at depth 0 (suggests, not requires)."""
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "0"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
-    assert result.exit_code != 0
-    assert "sdd >= 1" in result.output
+    assert result.exit_code == 0, result.output
 
 
-def test_aspect_remove_blocked_by_dependent(tmp_path: Path) -> None:
-    """aspect remove sdd fails when worktrees depends on it."""
+def test_aspect_remove_sdd_with_worktrees(tmp_path: Path) -> None:
+    """aspect remove sdd succeeds when worktrees only suggests it."""
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--aspects", "sdd:1,worktrees:1"])
     result = runner.invoke(main, ["aspect", "remove", str(target), "kanon-sdd"])
-    assert result.exit_code != 0
-    assert "kanon-worktrees" in result.output
-    assert "requires" in result.output.lower()
+    assert result.exit_code == 0, result.output
 
 
 def test_aspect_set_depth_requires_check(tmp_path: Path) -> None:
@@ -1491,8 +1528,7 @@ def test_aspect_set_depth_requires_check(tmp_path: Path) -> None:
     result = runner.invoke(
         main, ["aspect", "set-depth", str(target), "kanon-worktrees", "1"]
     )
-    assert result.exit_code != 0
-    assert "sdd >= 1" in result.output
+    assert result.exit_code == 0, result.output
 
 
 def test_aspect_add_requires_met(tmp_path: Path) -> None:

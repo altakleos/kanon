@@ -153,6 +153,8 @@ def _parse_aspects_flag(raw: str, top: dict[str, Any]) -> dict[str, int]:
     their full ``project-<local>`` name.
     """
     result: dict[str, int] = {}
+    if not raw.strip():
+        return result
     for token in raw.split(","):
         token = token.strip()
         if ":" not in token:
@@ -604,9 +606,7 @@ def verify(target: Path) -> None:
 
     aspects = _config_aspects(config)
     if not aspects:
-        errors.append("config.aspects is empty; nothing to verify.")
-        _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status="fail")
-        sys.exit(2)
+        warnings.append("No aspects enabled; only kit-global files verified.")
 
     # Per project-aspects spec INV-9 (validator non-overriding), project-
     # aspect validators run BEFORE the kit's structural checks: any

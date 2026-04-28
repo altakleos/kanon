@@ -27,8 +27,8 @@ invariant_coverage:
     - tests/test_cli.py::test_aspect_remove
   INV-aspect-decoupling-requires-enforced:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_aspect_add_requires_unmet
-    - tests/test_cli.py::test_aspect_remove_blocked_by_dependent
+    - tests/test_cli.py::test_aspect_add_worktrees_without_sdd
+    - tests/test_cli.py::test_aspect_remove_sdd_with_worktrees
   INV-aspect-decoupling-ci-manifest-driven:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/ci/test_check_kit_consistency.py::test_real_repo_passes

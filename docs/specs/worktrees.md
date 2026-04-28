@@ -30,7 +30,7 @@ invariant_coverage:
     - tests/test_cli.py::test_aspect_remove_leaves_files
   INV-worktrees-cross-aspect-dependency:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_aspect_add_requires_unmet
+    - tests/test_cli.py::test_aspect_add_worktrees_without_sdd
     - tests/test_cli.py::test_aspect_add_requires_met
   INV-worktrees-namespaced-agents-md-section:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips

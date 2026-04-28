@@ -31,7 +31,7 @@ invariant_coverage:
     - tests/test_aspect_provides.py::test_check_requires_capability_unsatisfied_when_supplier_at_depth_zero
     - tests/test_aspect_provides.py::test_check_requires_depth_predicate_unchanged
   INV-aspect-provides-removal-check:
-    - tests/test_aspect_provides.py::test_removal_blocked_by_depth_dependent
+    - tests/test_aspect_provides.py::test_removal_not_blocked_by_suggests_dependent
     - tests/test_aspect_provides.py::test_removal_blocked_when_only_supplier_being_removed
     - tests/test_aspect_provides.py::test_removal_allowed_when_alternative_supplier_remains
   INV-aspect-provides-info-surfaces:

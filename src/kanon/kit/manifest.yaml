@@ -43,7 +43,8 @@ aspects:
     stability: experimental
     depth-range: [0, 2]
     default-depth: 1
-    requires:
+    requires: []
+    suggests:
       - "kanon-sdd >= 1"
     provides:
       - worktree-isolation
