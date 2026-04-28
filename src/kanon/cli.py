@@ -496,6 +496,11 @@ def upgrade(target: Path) -> None:
     if kit_md is not None:
         atomic_write_text(target / ".kanon" / "kit.md", kit_md)
 
+    for rel_path, content in _render_shims().items():
+        shim_path = target / rel_path
+        shim_path.parent.mkdir(parents=True, exist_ok=True)
+        atomic_write_text(shim_path, content)
+
     if version_changed:
         _write_config(target, __version__, _aspects_with_meta(aspects))
     clear_sentinel(target / ".kanon")
