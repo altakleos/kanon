@@ -33,7 +33,7 @@ Files: `AGENTS.md`, `src/kanon/kit/agents-md-base.md`
 
 ## Acceptance criteria
 
-- [ ] config.yaml coverage_floor matches pyproject.toml (90)
-- [ ] check_test_quality.py description no longer mentions coverage floor
-- [ ] Commit message convention text accurately describes the soft CI check
-- [ ] Kit bundle files match their AGENTS.md counterparts (check_kit_consistency passes)
+- [x] config.yaml coverage_floor matches pyproject.toml (90)
+- [x] check_test_quality.py description no longer mentions coverage floor
+- [x] Commit message convention text accurately describes the soft CI check
+- [x] Kit bundle files match their AGENTS.md counterparts (check_kit_consistency passes)

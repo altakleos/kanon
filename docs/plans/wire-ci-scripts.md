@@ -48,11 +48,11 @@ before committing the workflow change.
 
 ## Acceptance criteria
 
-- [ ] All 6 scripts appear as named steps in `verify.yml`
-- [ ] Hard-fail scripts (`check_test_quality`, `check_verified_by`, `check_invariant_ids`) exit 0 on current codebase
-- [ ] Warn-only scripts (`check_security_patterns`, `check_deps`, `check_status_consistency`) run without error
-- [ ] No changes to `release.yml`
-- [ ] `release-preflight.py` remains unwired (intentional — documented in plan)
+- [x] All 6 scripts appear as named steps in `verify.yml`
+- [x] Hard-fail scripts (`check_test_quality`, `check_verified_by`, `check_invariant_ids`) exit 0 on current codebase
+- [x] Warn-only scripts (`check_security_patterns`, `check_deps`, `check_status_consistency`) run without error
+- [x] No changes to `release.yml`
+- [x] `release-preflight.py` remains unwired (intentional — documented in plan)
 
 ## Out of scope
 
