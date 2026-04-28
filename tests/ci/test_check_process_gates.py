@@ -263,6 +263,35 @@ def test_new_cli_command_with_trivial_but_no_spec_still_fails(
     assert not any("Plan co-presence" in e for e in report["errors"])
 
 
+@pytest.mark.parametrize(
+    "decorator",
+    [
+        "@main.command()",
+        "@aspect.command('list')",
+        "@click.group()",
+        "@fidelity.command('update')",
+        "@main.group()",
+    ],
+    ids=["main-command", "aspect-subcommand", "click-group", "fidelity-command", "main-group"],
+)
+def test_named_group_decorators_trigger_spec_gate(
+    tmp_path: Path, decorator: str
+) -> None:
+    """Click decorators on named groups (not just @cli.*) trigger the spec gate."""
+    _init_repo(tmp_path)
+    (tmp_path / "src" / "cli.py").write_text("# init\n", encoding="utf-8")
+    _commit(tmp_path, "chore: init")
+    (tmp_path / "src" / "cli.py").write_text(
+        f"# init\n{decorator}\ndef new_cmd(): pass\n", encoding="utf-8"
+    )
+    _write_plan(tmp_path, "my-plan", "done")
+    _commit(tmp_path, "feat: add command without spec")
+
+    report = _run(tmp_path)
+    assert report["status"] == "fail"
+    assert any("Spec co-presence violation" in e for e in report["errors"])
+
+
 # ---------------------------------------------------------------------------
 # INV-process-gates-reference-semantics
 # ---------------------------------------------------------------------------
