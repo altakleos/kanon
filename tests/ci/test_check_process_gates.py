@@ -146,7 +146,7 @@ def test_docs_only_change_is_ok(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def test_src_change_with_plan_status_done(tmp_path: Path) -> None:
-    """src/ change + plan with status: done → ok."""
+    """src/ change + plan with status: done → no error (may warn on same-commit)."""
     _init_repo(tmp_path)
     (tmp_path / "src" / "mod.py").write_text("# init\n", encoding="utf-8")
     _commit(tmp_path, "chore: init")
@@ -155,12 +155,12 @@ def test_src_change_with_plan_status_done(tmp_path: Path) -> None:
     _commit(tmp_path, "feat: implement with plan")
 
     report = _run(tmp_path)
-    assert report["status"] == "ok"
+    assert report["status"] in ("ok", "warn")
     assert report["errors"] == []
 
 
 def test_src_change_with_plan_status_in_progress(tmp_path: Path) -> None:
-    """src/ change + plan with status: in-progress → ok."""
+    """src/ change + plan with status: in-progress → no error (may warn on same-commit)."""
     _init_repo(tmp_path)
     (tmp_path / "src" / "mod.py").write_text("# init\n", encoding="utf-8")
     _commit(tmp_path, "chore: init")
@@ -169,7 +169,7 @@ def test_src_change_with_plan_status_in_progress(tmp_path: Path) -> None:
     _commit(tmp_path, "feat: implement with plan")
 
     report = _run(tmp_path)
-    assert report["status"] == "ok"
+    assert report["status"] in ("ok", "warn")
     assert report["errors"] == []
 
 
@@ -221,7 +221,7 @@ def test_new_cli_command_with_spec_accepted(tmp_path: Path) -> None:
     _commit(tmp_path, "feat: add new command")
 
     report = _run(tmp_path)
-    assert report["status"] == "ok"
+    assert report["status"] in ("ok", "warn")
     assert report["errors"] == []
 
 
@@ -293,6 +293,75 @@ def test_named_group_decorators_trigger_spec_gate(
 
 
 # ---------------------------------------------------------------------------
+# Plan/src separation (same-commit warning)
+# ---------------------------------------------------------------------------
+
+def test_plan_and_src_in_same_commit_warns(tmp_path: Path) -> None:
+    """Plan and src/ in the same commit → warning."""
+    _init_repo(tmp_path)
+    (tmp_path / "src" / "a.py").write_text("# init\n", encoding="utf-8")
+    _commit(tmp_path, "chore: init")
+    _write_plan(tmp_path, "my-plan", "done")
+    (tmp_path / "src" / "a.py").write_text("# changed\n", encoding="utf-8")
+    _commit(tmp_path, "feat: plan and code together")
+
+    report = _run(tmp_path)
+    assert report["status"] == "warn"
+    assert any("Plan/src same-commit" in w for w in report["warnings"])
+    assert report["errors"] == []
+
+
+def test_plan_and_src_in_same_commit_with_trivial_no_warn(tmp_path: Path) -> None:
+    """Trivial-change trailer exempts the separation warning."""
+    _init_repo(tmp_path)
+    (tmp_path / "src" / "a.py").write_text("# init\n", encoding="utf-8")
+    _commit(tmp_path, "chore: init")
+    _write_plan(tmp_path, "my-plan", "done")
+    (tmp_path / "src" / "a.py").write_text("# changed\n", encoding="utf-8")
+    _commit(tmp_path, "fix: trivial\n\nTrivial-change: typo fix")
+
+    report = _run(tmp_path)
+    assert not any("Plan/src same-commit" in w for w in report["warnings"])
+
+
+def test_plan_then_src_in_separate_commits_no_warn(tmp_path: Path) -> None:
+    """Plan in one commit, src in another → no warning."""
+    _init_repo(tmp_path)
+    (tmp_path / "src" / "a.py").write_text("# init\n", encoding="utf-8")
+    base = _commit(tmp_path, "chore: init")
+    _write_plan(tmp_path, "my-plan", "done")
+    _commit(tmp_path, "docs: add plan")
+    (tmp_path / "src" / "a.py").write_text("# changed\n", encoding="utf-8")
+    _commit(tmp_path, "feat: implement")
+
+    report = _run(tmp_path, base_ref=base)
+    assert not any("Plan/src same-commit" in w for w in report["warnings"])
+
+
+def test_pr_mode_mixed_commit_warns(tmp_path: Path) -> None:
+    """PR mode: one clean commit + one mixed commit → warning on the mixed one."""
+    _init_repo(tmp_path)
+    (tmp_path / "src" / "a.py").write_text("# init\n", encoding="utf-8")
+    base = _commit(tmp_path, "chore: init")
+    _write_plan(tmp_path, "my-plan", "done")
+    _commit(tmp_path, "docs: add plan")
+    # Modify plan content so git detects a change in the next commit
+    plan = tmp_path / "docs" / "plans" / "my-plan.md"
+    plan.write_text(
+        "---\nstatus: done\n---\n# Plan: my-plan\n\nUpdated.\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "src" / "a.py").write_text("# changed\n", encoding="utf-8")
+    _commit(tmp_path, "feat: plan and code in one commit")
+
+    report = _run(tmp_path, base_ref=base)
+    assert any("Plan/src same-commit" in w for w in report["warnings"])
+
+    report = _run(tmp_path, base_ref=base)
+    assert any("Plan/src same-commit" in w for w in report["warnings"])
+
+
+# ---------------------------------------------------------------------------
 # INV-process-gates-reference-semantics
 # ---------------------------------------------------------------------------
 
@@ -330,7 +399,7 @@ def test_spec_referenced_via_commit_message(tmp_path: Path) -> None:
     )
 
     report = _run(tmp_path)
-    assert report["status"] == "ok"
+    assert report["status"] in ("ok", "warn")
     assert report["errors"] == []
 
 
@@ -387,7 +456,7 @@ def test_pr_mode_with_base_ref(tmp_path: Path) -> None:
     _commit(tmp_path, "feat: with plan")
 
     report = _run(tmp_path, base_ref=base)
-    assert report["status"] == "ok"
+    assert report["status"] in ("ok", "warn")
 
 
 def test_pr_mode_catches_violation(tmp_path: Path) -> None:
