@@ -58,6 +58,7 @@ from kanon._scaffold import (
     _assemble_agents_md,
     _build_bundle,
     _config_aspects,
+    _detect_harnesses,
     _merge_agents_md,
     _migrate_flat_protocols,
     _migrate_legacy_config,
@@ -397,7 +398,14 @@ def main() -> None:
     help="Comma-separated aspect:depth pairs (e.g., sdd:1,worktrees:2).",
 )
 @click.option("--force", is_flag=True, help="Overwrite an existing .kanon/ directory.")
-def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: bool) -> None:
+@click.option(
+    "--harness",
+    "harness_arg",
+    multiple=True,
+    default=None,
+    help="Harness shims to write (repeatable). 'auto' detects from existing dirs. Default: auto.",
+)
+def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: bool, harness_arg: tuple[str, ...]) -> None:
     """Scaffold a new kanon project at TARGET."""
     if tier_arg is not None and aspects_arg is not None:
         raise click.ClickException("--tier and --aspects are mutually exclusive.")
@@ -432,7 +440,19 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
     kit_md = _render_kit_md(aspects_to_enable, target.name)
     if kit_md is not None:
         bundle[".kanon/kit.md"] = kit_md
-    bundle.update(_render_shims())
+    # Determine which harness shims to write.
+    if harness_arg:
+        if "auto" in harness_arg:
+            detected = _detect_harnesses(target)
+            shim_names = detected | {"claude-code"}
+        else:
+            shim_names = set(harness_arg)
+    else:
+        # Default: auto-detect, fallback to claude-code only.
+        detected = _detect_harnesses(target)
+        shim_names = detected | {"claude-code"}
+
+    bundle.update(_render_shims(only=shim_names))
 
     from kanon._atomic import clear_sentinel, write_sentinel
 
