@@ -2,7 +2,7 @@
 
 How this project is developed. This document describes Spec-Driven Development (SDD) as a method — the artifact layers, how work flows through them, and when each layer is required. It is method-neutral: layers are defined functionally (what runs vs. what checks), not materially (Python vs. markdown).
 
-For this project's specific instantiation of the bottom two layers (what Implementation and Verification mean here), see [kanon-implementation.md](kanon-implementation.md).
+Each project defines its own instantiation of the bottom two layers (what Implementation and Verification mean concretely). Look for a project-specific implementation document alongside this file.
 
 ## Foundations
 
@@ -126,7 +126,7 @@ What matters is that the artifact produces the behavior the spec requires. The s
 
 A project using prose-as-LLM-instructions as its primary implementation medium must still treat that prose as code — reviewed, versioned, and tested like any other code. Ambiguity in an instruction is a bug in the same sense that an undefined variable is a bug.
 
-For this project's instantiation of Implementation, see [kanon-implementation.md](kanon-implementation.md).
+For this project's instantiation of Implementation, see the project-specific implementation document.
 
 ### Verification
 
@@ -140,7 +140,7 @@ Verification is the layer that confirms Implementation met its spec. The artifac
 
 What matters is that every spec invariant has a mechanical or semi-mechanical check. Verification is not "tooling" — tooling helps do work (a formatter, a scaffolder, a migration script); verification confirms that the work is correct. Verifiers may run on a CPU, in an LLM, or both, but they must be invokable deterministically enough that the same input produces the same pass/fail result.
 
-For this project's instantiation of Verification, see [kanon-implementation.md](kanon-implementation.md).
+For this project's instantiation of Verification, see the project-specific implementation document.
 
 ---
 
@@ -453,8 +453,6 @@ Terms used throughout this document with specific meanings:
 
 ## References
 
-- [kanon-implementation.md](kanon-implementation.md) — this project's instantiation of Implementation and Verification
 - [docs/decisions/README.md](decisions/README.md) — ADR index
 - [docs/specs/README.md](specs/README.md) — spec index and template
-- [docs/design/README.md](design/README.md) — design doc index
 - [docs/plans/README.md](plans/README.md) — plan template
