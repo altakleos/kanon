@@ -12,6 +12,8 @@ Verify that work is actually done before declaring it complete. LLM agents tend 
 
 ## Steps
 
+For items that clearly don't apply to the current change (e.g., no dependencies were touched), state "N/A: no dependency changes" in one line rather than justifying each sub-bullet. The goal is evidence of consideration, not boilerplate.
+
 ### 1. Plan acceptance criteria
 
 - Re-read the plan's `## Acceptance Criteria` section.
