@@ -72,6 +72,14 @@ class TestPlanCompletion:
             - [x] done task
         """)})
 
+    def test_unclosed_frontmatter_ignored(self, tmp_path: Path) -> None:
+        """Plan with opening --- but no closing --- is not treated as done."""
+        assert not self._run(tmp_path, {"a.md": "---\nstatus: done\n# no closing\n"})
+
+    def test_frontmatter_without_status_ignored(self, tmp_path: Path) -> None:
+        """Plan with valid frontmatter but no status key is not treated as done."""
+        assert not self._run(tmp_path, {"a.md": "---\ntitle: foo\n---\n- [ ] task\n"})
+
 
 # ── link_check ───────────────────────────────────────────────────
 
