@@ -180,7 +180,7 @@ def _check_plan_src_separation(
         if _TRIVIAL_TRAILER.search(msg):
             continue
         files = _git(["show", "--name-only", "--pretty=", sha], repo)
-        lines = [l.strip() for l in files.splitlines() if l.strip()]
+        lines = [ln.strip() for ln in files.splitlines() if ln.strip()]
         has_plan = any(
             f.startswith("docs/plans/") and f.endswith(".md") for f in lines
         )
