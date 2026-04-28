@@ -6,12 +6,18 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.0a1] — 2026-04-28
+
 ### Added
 
 - **Scaffold v2: three file categories** — kit-global files (always scaffolded), aspect-level files (scaffolded when aspect enabled at any depth), and depth-level files (existing). Top-level manifest gains `files:` key; aspect sub-manifests gain top-level `files:` key.
-- **Scaffold v2: AGENTS.md routing index** — AGENTS.md shrinks from 411 to ~98 lines. Hard gates stay inline as a compressed table; all discipline content moves to protocol files loaded on-demand. Marker sections eliminated (except protocols-index).
+- **Scaffold v2: AGENTS.md routing index** — AGENTS.md shrinks from 411 to ~100 lines. Hard gates stay inline as a dynamic table; all discipline content moves to protocol files loaded on-demand. Marker sections eliminated (except protocols-index and hard-gates).
 - **Scaffold v2: sdd fully optional** — any aspect including sdd can be completely disabled. `kanon init --aspects worktrees:1,testing:1` produces a valid project with zero sdd files. `kanon init --aspects ""` produces a bare project.
 - **5 new protocol files** created from former AGENTS.md sections: `plan-before-build`, `spec-before-design`, `branch-hygiene`, `publishing-discipline`, `fidelity-discipline`.
+- **`--harness` flag for `kanon init`** — auto-detects harness from existing dotdirs, defaults to CLAUDE.md only. Explicit `--harness cursor --harness kiro` for manual selection.
+- **`--lite` flag for `kanon init`** — sugar for sdd at depth 0 (just AGENTS.md, no docs/).
+- **`--profile` flag for `kanon init`** — preset aspect bundles: `lean` (sdd:1), `standard` (sdd+testing+security+deps), `full` (all aspects).
+- **Actionable post-init message** with next-step commands and growth path.
 - **ADR-0034** — routing-index AGENTS.md, refined enforcement proximity (supersedes ADR-0010 § enforcement-proximity).
 
 ### Changed
@@ -21,6 +27,7 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 - **`.kanon/kit.md` is now aspect-neutral** — no sdd-specific references; rendered from kit-global files.
 - **`CLAUDE.md` removed from sdd depth-0** — it's a harness shim handled by `harnesses.yaml`.
 - **Zero-aspect `kanon verify`** now warns instead of erroring.
+- **Hard-gates table in AGENTS.md** is now dynamic — only shows gates whose aspects are enabled at sufficient depth.
 
 ### Removed
 

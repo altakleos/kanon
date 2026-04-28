@@ -418,7 +418,15 @@ def main() -> None:
     default=None,
     help="Preset aspect bundles. lean=sdd:1, standard=sdd:1+testing:1+security:1+deps:1, full=all at depth 1.",
 )
-def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: bool, harness_arg: tuple[str, ...], lite: bool, profile_arg: str | None) -> None:
+def init(
+    target: Path,
+    tier_arg: int | None,
+    aspects_arg: str | None,
+    force: bool,
+    harness_arg: tuple[str, ...],
+    lite: bool,
+    profile_arg: str | None,
+) -> None:
     """Scaffold a new kanon project at TARGET."""
     exclusive_count = sum([
         tier_arg is not None,

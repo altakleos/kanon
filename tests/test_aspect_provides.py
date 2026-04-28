@@ -329,10 +329,8 @@ def test_existing_kit_requires_predicates_classify_as_depth() -> None:
     introducing a 1-token entry that would silently change meaning under the
     generalised parser."""
     top = _load_top_manifest()
-    seen_any = False
     for name, entry in top["aspects"].items():
         for predicate in entry.get("requires", []) or []:
-            seen_any = True
             classified = _classify_predicate(predicate)
             assert classified[0] == "depth", (
                 f"aspect {name!r}: predicate {predicate!r} classifies as {classified[0]!r}; "
