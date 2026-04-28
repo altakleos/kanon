@@ -28,11 +28,31 @@ BEHAVIOURAL_VERIFICATION_CAPABILITY = "behavioural-verification"
 # Turn marker grammar (spec INV-4): an uppercase identifier followed by
 # colon and at least one space or tab, anchored at column zero.
 _TURN_MARKER_RE = re.compile(r"^([A-Z][A-Z0-9_]*):[ \t]+", re.MULTILINE)
+_BRACKET_TURN_MARKER_RE = re.compile(r"^\[([A-Z][A-Z0-9_]*)\][ \t]+", re.MULTILINE)
+
+_TURN_FORMATS: dict[str, re.Pattern[str]] = {
+    "colon": _TURN_MARKER_RE,
+    "bracket": _BRACKET_TURN_MARKER_RE,
+}
 
 # Recognised assertion-family keys (spec INV-5).
 _FORBIDDEN_KEY = "forbidden_phrases"
 _REQUIRED_ONE_OF_KEY = "required_one_of"
 _REQUIRED_ALL_OF_KEY = "required_all_of"
+
+
+@dataclass(frozen=True)
+class WordShareBand:
+    min: float | None
+    max: float | None
+
+
+@dataclass(frozen=True)
+class PatternDensityEntry:
+    patterns: tuple[str, ...]
+    strip_code_fences: bool
+    min: float | None
+    max: float | None
 
 
 @dataclass(frozen=True)
@@ -42,9 +62,12 @@ class Fixture:
     path: Path
     protocol: str
     actor: str
+    turn_format: str  # "colon" or "bracket"
     forbidden_phrases: tuple[str, ...]
     required_one_of: tuple[str, ...]
     required_all_of: tuple[str, ...]
+    word_share: WordShareBand | None
+    pattern_density: tuple[PatternDensityEntry, ...]
 
 
 def _string_list(value: object, label: str, path_name: str) -> tuple[tuple[str, ...], list[str]]:
@@ -136,6 +159,93 @@ def parse_fixture(path: Path) -> tuple[Fixture | None, list[str]]:
     if errors:
         return None, errors
 
+    # Turn format (default: colon)
+    turn_format_raw = fm.get("turn_format", "colon")
+    if turn_format_raw not in _TURN_FORMATS:
+        errors.append(
+            f"fidelity: {path.name}: turn_format must be 'colon' or 'bracket' "
+            f"(got {turn_format_raw!r})"
+        )
+        return None, errors
+
+    # word_share band
+    word_share_band: WordShareBand | None = None
+    ws_raw = fm.get("word_share")
+    if ws_raw is not None:
+        if not isinstance(ws_raw, dict):
+            errors.append(f"fidelity: {path.name}: word_share must be a mapping")
+        else:
+            ws_min = ws_raw.get("min")
+            ws_max = ws_raw.get("max")
+            if ws_min is not None and not isinstance(ws_min, (int, float)):
+                errors.append(f"fidelity: {path.name}: word_share.min must be a number")
+            elif ws_max is not None and not isinstance(ws_max, (int, float)):
+                errors.append(f"fidelity: {path.name}: word_share.max must be a number")
+            elif ws_min is not None and ws_max is not None and ws_min > ws_max:
+                errors.append(f"fidelity: {path.name}: word_share.min ({ws_min}) > max ({ws_max})")
+            else:
+                word_share_band = WordShareBand(
+                    min=float(ws_min) if ws_min is not None else None,
+                    max=float(ws_max) if ws_max is not None else None,
+                )
+
+    # pattern_density entries
+    pd_entries: list[PatternDensityEntry] = []
+    pd_raw = fm.get("pattern_density")
+    if pd_raw is not None:
+        if not isinstance(pd_raw, list):
+            errors.append(f"fidelity: {path.name}: pattern_density must be a list")
+        else:
+            for idx, entry in enumerate(pd_raw):
+                if not isinstance(entry, dict):
+                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}] must be a mapping")
+                    continue
+                p_single = entry.get("pattern")
+                p_list = entry.get("patterns", [])
+                if p_single and isinstance(p_single, str):
+                    p_list = [p_single] + (p_list if isinstance(p_list, list) else [])
+                elif not isinstance(p_list, list):
+                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}].patterns must be a list")
+                    continue
+                if not p_list:
+                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}] must declare pattern or patterns")
+                    continue
+                strip_cf = bool(entry.get("strip_code_fences", False))
+                pd_min = entry.get("min")
+                pd_max = entry.get("max")
+                if pd_min is not None and not isinstance(pd_min, (int, float)):
+                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}].min must be a number")
+                    continue
+                if pd_max is not None and not isinstance(pd_max, (int, float)):
+                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}].max must be a number")
+                    continue
+                if pd_min is not None and pd_max is not None and pd_min > pd_max:
+                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}].min ({pd_min}) > max ({pd_max})")
+                    continue
+                # Validate regexes
+                valid = True
+                for p in p_list:
+                    if not isinstance(p, str):
+                        errors.append(f"fidelity: {path.name}: pattern_density[{idx}] pattern must be a string")
+                        valid = False
+                        break
+                    try:
+                        re.compile(p)
+                    except re.error as exc:
+                        errors.append(f"fidelity: {path.name}: invalid regex in pattern_density[{idx}]: {p!r} ({exc})")
+                        valid = False
+                        break
+                if valid:
+                    pd_entries.append(PatternDensityEntry(
+                        patterns=tuple(p_list),
+                        strip_code_fences=strip_cf,
+                        min=float(pd_min) if pd_min is not None else None,
+                        max=float(pd_max) if pd_max is not None else None,
+                    ))
+
+    if errors:
+        return None, errors
+
     # Required-key validation above guarantees both are non-None when we
     # reach this branch; assert narrows the type for mypy.
     assert protocol is not None
@@ -145,15 +255,43 @@ def parse_fixture(path: Path) -> tuple[Fixture | None, list[str]]:
             path=path,
             protocol=protocol,
             actor=actor,
+            turn_format=turn_format_raw,
             forbidden_phrases=forbidden,
             required_one_of=one_of,
             required_all_of=all_of,
+            word_share=word_share_band,
+            pattern_density=tuple(pd_entries),
         ),
         [],
     )
 
 
-def extract_actor_text(dogfood_text: str, actor: str) -> tuple[str, int]:
+_CODE_FENCE_RE = re.compile(r"^```[^\n]*\n.*?^```", re.MULTILINE | re.DOTALL)
+_WORD_RE = re.compile(r"\w+", re.UNICODE)
+
+
+def _strip_code_fences(text: str) -> str:
+    return _CODE_FENCE_RE.sub("", text)
+
+
+def _count_words(text: str) -> int:
+    return len(_WORD_RE.findall(text))
+
+
+def _extract_all_turns(dogfood_text: str, turn_re: re.Pattern[str]) -> list[str]:
+    """Extract ALL turns (all actors) from dogfood text."""
+    matches = list(turn_re.finditer(dogfood_text))
+    if not matches:
+        return []
+    turns: list[str] = []
+    for i, match in enumerate(matches):
+        start = match.start()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(dogfood_text)
+        turns.append(dogfood_text[start:end].rstrip("\n"))
+    return turns
+
+
+def extract_actor_text(dogfood_text: str, actor: str, turn_format: str = "colon") -> tuple[str, int]:
     """Extract joined turns whose actor matches; return (joined_text, turn_count).
 
     Per spec INV-4: a turn marker is a line at column zero matching
@@ -163,7 +301,8 @@ def extract_actor_text(dogfood_text: str, actor: str) -> tuple[str, int]:
     identifier; matching turns are joined with ``\\n``. Lines outside any
     turn are ignored.
     """
-    matches = list(_TURN_MARKER_RE.finditer(dogfood_text))
+    turn_re = _TURN_FORMATS.get(turn_format, _TURN_MARKER_RE)
+    matches = list(turn_re.finditer(dogfood_text))
     if not matches:
         return "", 0
     turns: list[str] = []
@@ -189,7 +328,7 @@ def evaluate_fixture(fixture: Fixture, dogfood_text: str) -> list[str]:
     `required_all_of` produces one error per missing regex.
     """
     errors: list[str] = []
-    actor_text, turn_count = extract_actor_text(dogfood_text, fixture.actor)
+    actor_text, turn_count = extract_actor_text(dogfood_text, fixture.actor, fixture.turn_format)
     if turn_count == 0:
         errors.append(
             f"fidelity: {fixture.path.name}: dogfood has zero turns matching "
@@ -217,6 +356,41 @@ def evaluate_fixture(fixture: Fixture, dogfood_text: str) -> list[str]:
             errors.append(
                 f"fidelity: {fixture.path.name}: required_all_of regex did "
                 f"not match: {pattern!r}"
+            )
+
+    # Quantitative families (ADR-0033)
+    if fixture.word_share is not None:
+        turn_re = _TURN_FORMATS.get(fixture.turn_format, _TURN_MARKER_RE)
+        all_turns = _extract_all_turns(dogfood_text, turn_re)
+        total_words = sum(_count_words(t) for t in all_turns)
+        actor_words = _count_words(actor_text)
+        ratio = actor_words / total_words if total_words > 0 else 0.0
+        if fixture.word_share.min is not None and ratio < fixture.word_share.min:
+            errors.append(
+                f"fidelity: {fixture.path.name}: word_share {ratio:.3f} "
+                f"below min {fixture.word_share.min}"
+            )
+        if fixture.word_share.max is not None and ratio > fixture.word_share.max:
+            errors.append(
+                f"fidelity: {fixture.path.name}: word_share {ratio:.3f} "
+                f"above max {fixture.word_share.max}"
+            )
+
+    for i, pd in enumerate(fixture.pattern_density):
+        text_for_density = actor_text
+        if pd.strip_code_fences:
+            text_for_density = _strip_code_fences(text_for_density)
+        match_count = sum(len(re.findall(p, text_for_density)) for p in pd.patterns)
+        density = match_count / turn_count if turn_count > 0 else 0.0
+        if pd.min is not None and density < pd.min:
+            errors.append(
+                f"fidelity: {fixture.path.name}: pattern_density[{i}] "
+                f"{density:.3f} below min {pd.min}"
+            )
+        if pd.max is not None and density > pd.max:
+            errors.append(
+                f"fidelity: {fixture.path.name}: pattern_density[{i}] "
+                f"{density:.3f} above max {pd.max}"
             )
 
     return errors

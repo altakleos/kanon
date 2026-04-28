@@ -1,6 +1,7 @@
 ---
-status: accepted
+status: superseded
 date: 2026-04-27
+superseded-by: 0033
 ---
 # ADR-0031: `kanon-fidelity` aspect — Tier-1 behavioural-conformance verification
 

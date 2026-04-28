@@ -21,6 +21,8 @@ import yaml
 from kanon._fidelity import (
     BEHAVIOURAL_VERIFICATION_CAPABILITY,
     Fixture,
+    PatternDensityEntry,
+    WordShareBand,
     discover_fixtures,
     dogfood_path_for,
     evaluate_fixture,
@@ -239,14 +241,20 @@ def _fixture(
     actor: str = "AGENT",
     protocol: str = "p",
     path_name: str = "anon.md",
+    turn_format: str = "colon",
+    word_share: WordShareBand | None = None,
+    pattern_density: tuple[PatternDensityEntry, ...] = (),
 ) -> Fixture:
     return Fixture(
         path=Path(path_name),
         protocol=protocol,
         actor=actor,
+        turn_format=turn_format,
         forbidden_phrases=forbidden_phrases,
         required_one_of=required_one_of,
         required_all_of=required_all_of,
+        word_share=word_share,
+        pattern_density=pattern_density,
     )
 
 
@@ -731,3 +739,320 @@ def test_check_fidelity_assertions_parse_error_propagated(tmp_path: Path) -> Non
     check_fidelity_assertions(tmp_path, {"kanon-fidelity": 1}, errors, warnings)
     assert len(errors) > 0
     assert any("'protocol'" in e or "'actor'" in e for e in errors)
+
+
+# --- ADR-0033: quantitative families and turn-format extensibility ---
+
+
+def test_bracket_turn_marker_extraction(tmp_path: Path) -> None:
+    """Bracket turn markers [ACTOR] are extracted when turn_format=bracket."""
+    from kanon._fidelity import extract_actor_text
+
+    dogfood = (
+        "[USER] Hello there.\n"
+        "\n"
+        "[AGENT] Working in worktree.\n"
+        "\n"
+        "[USER] Thanks.\n"
+    )
+    text, count = extract_actor_text(dogfood, "AGENT", turn_format="bracket")
+    assert count == 1
+    assert "Working in worktree" in text
+
+
+def test_colon_default_when_turn_format_absent(tmp_path: Path) -> None:
+    """When turn_format is not specified, colon grammar is used (backward compat)."""
+    from kanon._fidelity import extract_actor_text
+
+    dogfood = "AGENT: Hello world.\n"
+    text, count = extract_actor_text(dogfood, "AGENT")
+    assert count == 1
+    assert "Hello world" in text
+
+
+def test_bracket_format_ignores_colon_markers(tmp_path: Path) -> None:
+    """Bracket format does not match colon-style markers."""
+    from kanon._fidelity import extract_actor_text
+
+    dogfood = "AGENT: Hello world.\n"
+    text, count = extract_actor_text(dogfood, "AGENT", turn_format="bracket")
+    assert count == 0
+    assert text == ""
+
+
+def test_word_share_within_band_passes(tmp_path: Path) -> None:
+    """word_share within [min, max] produces no errors."""
+    from kanon._fidelity import Fixture, WordShareBand, evaluate_fixture
+
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=WordShareBand(min=0.2, max=0.8),
+        pattern_density=(),
+    )
+    # AGENT has ~50% of words
+    dogfood = "USER: one two three\nAGENT: four five six\n"
+    errors = evaluate_fixture(fixture, dogfood)
+    assert not errors
+
+
+def test_word_share_below_min_fails(tmp_path: Path) -> None:
+    """word_share below min produces an error."""
+    from kanon._fidelity import Fixture, WordShareBand, evaluate_fixture
+
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=WordShareBand(min=0.8, max=None),
+        pattern_density=(),
+    )
+    # AGENT has ~50% of words, below min 0.8
+    dogfood = "USER: one two three\nAGENT: four five six\n"
+    errors = evaluate_fixture(fixture, dogfood)
+    assert any("word_share" in e and "below min" in e for e in errors)
+
+
+def test_word_share_above_max_fails(tmp_path: Path) -> None:
+    """word_share above max produces an error."""
+    from kanon._fidelity import Fixture, WordShareBand, evaluate_fixture
+
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=WordShareBand(min=None, max=0.2),
+        pattern_density=(),
+    )
+    # AGENT has ~50% of words, above max 0.2
+    dogfood = "USER: one two three\nAGENT: four five six\n"
+    errors = evaluate_fixture(fixture, dogfood)
+    assert any("word_share" in e and "above max" in e for e in errors)
+
+
+def test_pattern_density_within_band_passes(tmp_path: Path) -> None:
+    """pattern_density within band produces no errors."""
+    from kanon._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=None,
+        pattern_density=(PatternDensityEntry(
+            patterns=(r"\?",),
+            strip_code_fences=False,
+            min=0.5,
+            max=2.0,
+        ),),
+    )
+    # 1 turn, 1 question mark -> density 1.0, within [0.5, 2.0]
+    dogfood = "AGENT: What do you think?\n"
+    errors = evaluate_fixture(fixture, dogfood)
+    assert not errors
+
+
+def test_pattern_density_below_min_fails(tmp_path: Path) -> None:
+    """pattern_density below min produces an error."""
+    from kanon._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=None,
+        pattern_density=(PatternDensityEntry(
+            patterns=(r"\?",),
+            strip_code_fences=False,
+            min=2.0,
+            max=None,
+        ),),
+    )
+    # 1 turn, 1 question mark -> density 1.0, below min 2.0
+    dogfood = "AGENT: What do you think?\n"
+    errors = evaluate_fixture(fixture, dogfood)
+    assert any("pattern_density" in e and "below min" in e for e in errors)
+
+
+def test_pattern_density_above_max_fails(tmp_path: Path) -> None:
+    """pattern_density above max produces an error."""
+    from kanon._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=None,
+        pattern_density=(PatternDensityEntry(
+            patterns=(r"\?",),
+            strip_code_fences=False,
+            min=None,
+            max=0.5,
+        ),),
+    )
+    # 1 turn, 1 question mark -> density 1.0, above max 0.5
+    dogfood = "AGENT: What do you think?\n"
+    errors = evaluate_fixture(fixture, dogfood)
+    assert any("pattern_density" in e and "above max" in e for e in errors)
+
+
+def test_pattern_density_strip_code_fences(tmp_path: Path) -> None:
+    """strip_code_fences removes fenced blocks before counting."""
+    from kanon._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=None,
+        pattern_density=(PatternDensityEntry(
+            patterns=(r"\?",),
+            strip_code_fences=True,
+            min=None,
+            max=0.0,
+        ),),
+    )
+    # The ? is inside a code fence, should be stripped
+    dogfood = "AGENT: Here is code:\n```\nprint('hello?')\n```\nDone.\n"
+    errors = evaluate_fixture(fixture, dogfood)
+    assert not errors, f"Expected no errors but got: {errors}"
+
+
+def test_pattern_density_multiple_patterns(tmp_path: Path) -> None:
+    """Multiple patterns in one entry are unioned for counting."""
+    from kanon._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+
+    fixture = Fixture(
+        path=tmp_path / "test.md",
+        protocol="test",
+        actor="AGENT",
+        turn_format="colon",
+        forbidden_phrases=(),
+        required_one_of=(),
+        required_all_of=(),
+        word_share=None,
+        pattern_density=(PatternDensityEntry(
+            patterns=(r"(?i)let me explain", r"(?i)the answer is"),
+            strip_code_fences=False,
+            min=None,
+            max=0.0,
+        ),),
+    )
+    # 1 turn with "let me explain" -> density 1.0, above max 0.0
+    dogfood = "AGENT: Let me explain how this works.\n"
+    errors = evaluate_fixture(fixture, dogfood)
+    assert any("pattern_density" in e and "above max" in e for e in errors)
+
+
+def test_parse_fixture_with_turn_format_bracket(tmp_path: Path) -> None:
+    """parse_fixture accepts turn_format: bracket."""
+    from kanon._fidelity import parse_fixture
+
+    fixture_path = tmp_path / "test.md"
+    fixture_path.write_text(
+        "---\n"
+        "protocol: test\n"
+        "actor: AGENT\n"
+        "turn_format: bracket\n"
+        "forbidden_phrases:\n"
+        '  - "bad phrase"\n'
+        "---\n"
+        "# Test fixture\n",
+        encoding="utf-8",
+    )
+    fixture, errors = parse_fixture(fixture_path)
+    assert not errors, errors
+    assert fixture is not None
+    assert fixture.turn_format == "bracket"
+
+
+def test_parse_fixture_invalid_turn_format(tmp_path: Path) -> None:
+    """parse_fixture rejects unknown turn_format values."""
+    from kanon._fidelity import parse_fixture
+
+    fixture_path = tmp_path / "test.md"
+    fixture_path.write_text(
+        "---\n"
+        "protocol: test\n"
+        "actor: AGENT\n"
+        "turn_format: xml\n"
+        "---\n"
+        "# Test fixture\n",
+        encoding="utf-8",
+    )
+    fixture, errors = parse_fixture(fixture_path)
+    assert fixture is None
+    assert any("turn_format" in e for e in errors)
+
+
+def test_parse_fixture_word_share_invalid_band(tmp_path: Path) -> None:
+    """parse_fixture rejects word_share where min > max."""
+    from kanon._fidelity import parse_fixture
+
+    fixture_path = tmp_path / "test.md"
+    fixture_path.write_text(
+        "---\n"
+        "protocol: test\n"
+        "actor: AGENT\n"
+        "word_share:\n"
+        "  min: 0.9\n"
+        "  max: 0.1\n"
+        "---\n"
+        "# Test fixture\n",
+        encoding="utf-8",
+    )
+    fixture, errors = parse_fixture(fixture_path)
+    assert fixture is None
+    assert any("word_share" in e and "min" in e for e in errors)
+
+
+def test_existing_fixture_backward_compat(tmp_path: Path) -> None:
+    """Existing fixtures without new fields continue to work."""
+    from kanon._fidelity import parse_fixture
+
+    fixture_path = tmp_path / "test.md"
+    fixture_path.write_text(
+        "---\n"
+        "protocol: worktree-lifecycle\n"
+        "actor: AGENT\n"
+        'forbidden_phrases:\n'
+        '  - "git worktree remove --force"\n'
+        "---\n"
+        "# Test fixture\n",
+        encoding="utf-8",
+    )
+    fixture, errors = parse_fixture(fixture_path)
+    assert not errors, errors
+    assert fixture is not None
+    assert fixture.turn_format == "colon"
+    assert fixture.word_share is None
+    assert fixture.pattern_density == ()

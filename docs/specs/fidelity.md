@@ -36,6 +36,16 @@ invariant_coverage:
     - tests/test_fidelity.py::test_no_subprocess_or_capture_subcommand
   INV-fidelity-stability:
     - tests/test_fidelity.py::test_aspect_stability_experimental
+  INV-fidelity-quantitative-families:
+    - tests/test_fidelity.py::test_word_share_within_band_passes
+    - tests/test_fidelity.py::test_word_share_below_min_fails
+    - tests/test_fidelity.py::test_word_share_above_max_fails
+    - tests/test_fidelity.py::test_pattern_density_within_band_passes
+    - tests/test_fidelity.py::test_pattern_density_below_min_fails
+    - tests/test_fidelity.py::test_pattern_density_above_max_fails
+  INV-fidelity-turn-format-extensibility:
+    - tests/test_fidelity.py::test_bracket_turn_marker_extraction
+    - tests/test_fidelity.py::test_colon_default_when_turn_format_absent
 ---
 # Spec: Fidelity — behavioural-conformance verification for prose-as-code protocols
 
@@ -66,6 +76,9 @@ The aspect realises the carve-out ratified by [ADR-0029](../decisions/0029-verif
    - `forbidden_phrases` (list of strings, optional) — each entry is a Python regex; ANY match within the actor's joined turns fails the assertion.
    - `required_one_of` (list of strings, optional) — each entry is a Python regex; at least one regex must match somewhere within the actor's joined turns.
    - `required_all_of` (list of strings, optional) — each entry is a Python regex; every regex must match somewhere within the actor's joined turns.
+   - `turn_format` (string, optional, default `"colon"`) — selects the turn-marker grammar: `"colon"` for `^([A-Z][A-Z0-9_]*):[ \t]+` (existing), `"bracket"` for `^\[([A-Z][A-Z0-9_]*)\][ \t]+` (sensei-compatible). Per-fixture granularity; a project may have transcripts from different tools.
+   - `word_share` (object, optional) — `{min?: float, max?: float}`. Computes `count(\w+ tokens in actor turns) / count(\w+ tokens in all turns)`. Errors when the ratio falls outside the declared band.
+   - `pattern_density` (list of objects, optional) — each entry has `{pattern?: str, patterns?: list[str], strip_code_fences?: bool, min?: float, max?: float}`. For each entry: count non-overlapping regex matches (union of `pattern` and `patterns`) in the actor's joined turns, divide by actor turn count. Errors when the density falls outside the declared band.
    The body of the fixture file is freeform markdown explaining what the fixture asserts and why; it is not parsed.
    Every fixture file requires a paired capture at `.kanon/fidelity/<protocol>.dogfood.md`. A fixture without a paired dogfood produces a `warning` from `kanon verify`, not an error — the schema exists but the capture is pending. (See INV-8.)
 
@@ -77,12 +90,22 @@ The aspect realises the carve-out ratified by [ADR-0029](../decisions/0029-verif
    - Lines outside any turn — file headers, scene-setting prose, blank lines preceding the first turn — are ignored.
    - A dogfood file with zero turns matching `actor` produces an `error`, not a warning: a fixture asserting on no input is a defective contract.
 
+   When the fixture declares `turn_format: bracket`, the turn-marker regex is `^\[([A-Z][A-Z0-9_]*)\][ \t]+` instead. The two formats are mutually exclusive per fixture; a dogfood file is parsed with exactly one grammar. The default is `colon` when `turn_format` is absent, preserving backward compatibility.
+
 <!-- INV-fidelity-assertion-families -->
 5. **Assertion families and semantics.** The three families are evaluated independently against the actor text. Each family is optional in the fixture; absent families are skipped silently. When present:
    - **`forbidden_phrases`** — for each regex, run `re.search` against the actor text. ANY match produces one error per matching regex. This catches behaviour the agent must never exhibit.
    - **`required_one_of`** — for each regex, run `re.search` against the actor text. If NO regex matches, produce one error naming the pattern set. This catches "agent must demonstrate at least one of these acceptable behaviours."
    - **`required_all_of`** — for each regex, run `re.search` against the actor text. For each regex that produces no match, produce one error naming the missing regex. This catches "every one of these acceptable behaviours must be present."
+   - **`word_share`** — compute the ratio of `\w+` tokens in the actor's turns to `\w+` tokens in all turns (all actors combined). If the ratio is below `min` or above `max`, produce one error. This is a threshold comparison, not a regex match.
+   - **`pattern_density`** — for each entry in the list: if `strip_code_fences` is true, remove triple-backtick fenced blocks from the actor text before counting. Count non-overlapping `re.findall` matches for each pattern (union of `pattern` and `patterns` fields). Divide total match count by actor turn count. If the density is below `min` or above `max`, produce one error per entry. Regex compilation errors at fixture-load time are errors.
    Regex compilation errors at fixture-load time are themselves errors with `re.error` text included. All assertions are line-anchored only when the regex itself uses `^`/`$`; the engine does not implicitly anchor.
+
+<!-- INV-fidelity-quantitative-families -->
+11. **Quantitative assertion families (ADR-0033).** The `word_share` and `pattern_density` families are built-in quantitative assertion families that operate on the same actor text as the lexical families. They are threshold-based (band comparison over well-defined ratios), not open-ended scoring. Both are optional per-fixture, evaluated independently, and produce errors in the same taxonomy as INV-8. They respect the text-only bounds of INV-7 — no consumer code execution, no subprocess, no network. Adding further quantitative families requires an ADR.
+
+<!-- INV-fidelity-turn-format-extensibility -->
+12. **Turn-format extensibility (ADR-0033).** The `turn_format` fixture key selects between `colon` (default, existing grammar) and `bracket` (sensei-compatible grammar `^\[([A-Z][A-Z0-9_]*)\][ \t]+`). The two formats are mutually exclusive per fixture. The default is `colon` when absent, preserving backward compatibility. No consumer-supplied regex is accepted (ReDoS vector). If a third format is needed, it is added as a new enum value with its own pre-compiled regex.
 
 <!-- INV-fidelity-aspect-gated -->
 6. **Aspect-gated.** `kanon verify` runs fidelity assertions only when an aspect declaring the `behavioural-verification` capability (per ADR-0026) is enabled at depth ≥ 1. The kit-shipped `kanon-fidelity` aspect is the canonical such aspect; consumers MAY ship a `project-fidelity-*` aspect declaring the same capability and inherit the gate. When no such aspect is enabled, `kanon verify` performs zero filesystem reads under `.kanon/fidelity/` and emits no fidelity-related errors or warnings. This invariant is the contractual link to INV-10 of the verification-contract spec.
@@ -119,7 +142,7 @@ The aspect realises the carve-out ratified by [ADR-0029](../decisions/0029-verif
 
 - **`kanon transcripts capture` subcommand.** Tier-2 capture-from-live-agent is deferred to v0.4 with its own spec and ADR.
 - **Live-LLM nightly e2e against an actual Claude Code or other CLI.** Tier-3 is deferred indefinitely; document the recipe only.
-- **Score-based assertions** (e.g., "≥80% of agent turns must contain a question"). The three families are binary by design; statistical assertions invite tuning theatre.
+- **Score-based assertions beyond built-in families** (e.g., arbitrary numeric scoring functions). The `word_share` and `pattern_density` families are threshold-based (band comparison over well-defined ratios), not open-ended scoring. Adding further quantitative families requires an ADR.
 - **Per-fixture model-version pinning.** ADR-0005's `validated-against:` frontmatter MAY be added to fixtures in a future ADR, but the v0.3 spec does not require or recognise it. Today every fixture is implicitly model-agnostic at Tier-1 (lexical assertions don't depend on which model produced the dogfood).
 - **Cross-actor assertions** ("after AGENT says X, USER must say Y"). Multi-turn conversation analysis is out of scope; sequence-aware assertions await a separate spec.
 - **Auto-generation of fixtures from protocol prose.** Symmetric to the kit's overall stance against spec-to-code generation (`docs/foundations/vision.md` § Non-Goals).
@@ -130,3 +153,4 @@ The aspect realises the carve-out ratified by [ADR-0029](../decisions/0029-verif
 See:
 - [ADR-0029](../decisions/0029-verification-fidelity-replay-carveout.md) — verification-contract carve-out for fidelity-fixture replay (the spec gap this aspect closes).
 - [ADR-0031](../decisions/0031-fidelity-aspect.md) — `kanon-fidelity` aspect: depth-range, capability declaration, scaffolding choices, the three-assertion-family decision.
+- [ADR-0033](../decisions/0033-fidelity-quantitative-families.md) — quantitative assertion families and turn-format extensibility (supersedes ADR-0031's rejection of quantitative metrics).
