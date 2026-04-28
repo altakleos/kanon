@@ -1,3 +1,6 @@
+---
+status: done
+---
 # Plan: Implement Fidelity Lock (Phase 1)
 
 Spec at `docs/specs/fidelity-lock.md` has been approved.

@@ -1,3 +1,6 @@
+---
+status: done
+---
 # Plan: Implement Verified-By
 
 Spec at `docs/specs/verified-by.md` has been approved.

@@ -1,3 +1,6 @@
+---
+status: done
+---
 # Plan: Implement Invariant IDs
 
 Spec at `docs/specs/invariant-ids.md` has been approved.

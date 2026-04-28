@@ -1,3 +1,6 @@
+---
+status: done
+---
 # Plan: Implement Release Aspect
 
 Spec at `docs/specs/release.md` has been approved.
