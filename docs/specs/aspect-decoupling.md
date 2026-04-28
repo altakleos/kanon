@@ -14,21 +14,26 @@ fixtures:
   - tests/ci/test_check_kit_consistency.py
 invariant_coverage:
   INV-aspect-decoupling-no-literal-aspect-names:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/ci/test_check_kit_consistency.py::test_real_repo_passes
   INV-aspect-decoupling-init-accepts-aspects:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_cli.py::test_init_with_aspects_flag
     - tests/test_cli.py::test_init_aspects_and_tier_mutual_exclusion
   INV-aspect-decoupling-agents-md-base-neutral:
-    - tests/test_kit_integrity.py::test_depth_agents_md_has_no_section_markers
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
   INV-aspect-decoupling-aspect-add-remove:
     - tests/test_cli.py::test_aspect_add
     - tests/test_cli.py::test_aspect_remove
   INV-aspect-decoupling-requires-enforced:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_cli.py::test_aspect_add_requires_unmet
     - tests/test_cli.py::test_aspect_remove_blocked_by_dependent
   INV-aspect-decoupling-ci-manifest-driven:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/ci/test_check_kit_consistency.py::test_real_repo_passes
   INV-aspect-decoupling-tier-placeholder-replaced:
+    - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_kit_md_has_placeholders
 ---
 # Spec: Aspect Decoupling — remove sdd as a structurally privileged aspect
