@@ -1,5 +1,6 @@
 # AGENTS.md — kanon
 
+<!-- kanon:begin:hard-gates -->
 ## Hard Gates
 
 These gates apply to ALL task types. When a gate fires, read the linked protocol **in full** before proceeding.
@@ -11,6 +12,7 @@ These gates apply to ALL task types. When a gate fires, read the linked protocol
 | **Worktree Isolation** — all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`. Audit: "Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`." | About to modify any file | [`branch-hygiene`](.kanon/protocols/kanon-worktrees/branch-hygiene.md) |
 
 The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught.
+<!-- kanon:end:hard-gates -->
 
 ## Task Playbook
 

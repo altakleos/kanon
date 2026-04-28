@@ -250,6 +250,68 @@ def _build_bundle(
     return bundle
 
 
+_HARD_GATES = [
+    {
+        "aspect": "kanon-sdd",
+        "depth_min": 1,
+        "protocol": "plan-before-build.md",
+        "label": "Plan Before Build",
+        "summary": "non-trivial changes require an approved plan before source edits.",
+        "audit": 'Plan at `<path>` has been approved.',
+        "fires": "About to modify source for a non-trivial change",
+    },
+    {
+        "aspect": "kanon-sdd",
+        "depth_min": 2,
+        "protocol": "spec-before-design.md",
+        "label": "Spec Before Design",
+        "summary": "new user-visible capabilities require an approved spec before design/plan/implementation.",
+        "audit": 'Spec at `<path>` has been approved.',
+        "fires": "About to introduce a new user-visible capability",
+    },
+    {
+        "aspect": "kanon-worktrees",
+        "depth_min": 1,
+        "protocol": "branch-hygiene.md",
+        "label": "Worktree Isolation",
+        "summary": "all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`.",
+        "audit": 'Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`.',
+        "fires": "About to modify any file",
+    },
+]
+
+
+def _render_hard_gates(aspects: dict[str, int]) -> str:
+    """Render the hard-gates table, including only gates whose aspects are enabled at sufficient depth."""
+    rows: list[str] = []
+    for gate in _HARD_GATES:
+        aspect = gate["aspect"]
+        if aspect not in aspects or aspects[aspect] < gate["depth_min"]:
+            continue
+        slug = gate["protocol"].removesuffix(".md")
+        rows.append(
+            f'| **{gate["label"]}** — {gate["summary"]} '
+            f'Audit: "{gate["audit"]}" '
+            f'| {gate["fires"]} '
+            f'| [`{slug}`](.kanon/protocols/{aspect}/{gate["protocol"]}) |'
+        )
+    if not rows:
+        return "## Hard Gates\n\n_No hard gates active at current aspect configuration._\n"
+    lines = [
+        "## Hard Gates",
+        "",
+        "These gates apply to ALL task types. When a gate fires, read the linked protocol **in full** before proceeding.",
+        "",
+        "| Gate | Fires when | Protocol |",
+        "|------|-----------|----------|",
+        *rows,
+        "",
+        "The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught.",
+        "",
+    ]
+    return "\n".join(lines) + "\n"
+
+
 def _render_protocols_index(aspects: dict[str, int]) -> str:
     """Render the cross-aspect unified protocols-index block (grouped by aspect)."""
     lines = [
@@ -336,6 +398,10 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
             context[f"{aspect.replace('-', '_')}_depth"] = str(depth)
     context.setdefault("tier", context.get("sdd_depth", "0"))
     text = _render_placeholder(base.read_text(encoding="utf-8"), context)
+
+    # Render the hard-gates table (only gates whose aspects are enabled).
+    gates_text = _render_hard_gates(aspects)
+    text = _replace_section(text, "hard-gates", gates_text)
 
     # Render the protocols-index into the single remaining marker.
     index = _render_protocols_index(aspects)

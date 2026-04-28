@@ -1,16 +1,7 @@
 # AGENTS.md — ${project_name}
 
-## Hard Gates
-
-These gates apply to ALL task types. When a gate fires, read the linked protocol **in full** before proceeding.
-
-| Gate | Fires when | Protocol |
-|------|-----------|----------|
-| **Plan Before Build** — non-trivial changes require an approved plan before source edits. Audit: "Plan at `<path>` has been approved." | About to modify source for a non-trivial change | [`plan-before-build`](.kanon/protocols/kanon-sdd/plan-before-build.md) |
-| **Spec Before Design** — new user-visible capabilities require an approved spec before design/plan/implementation. Audit: "Spec at `<path>` has been approved." | About to introduce a new user-visible capability | [`spec-before-design`](.kanon/protocols/kanon-sdd/spec-before-design.md) |
-| **Worktree Isolation** — all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`. Audit: "Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`." | About to modify any file | [`branch-hygiene`](.kanon/protocols/kanon-worktrees/branch-hygiene.md) |
-
-The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught.
+<!-- kanon:begin:hard-gates -->
+<!-- kanon:end:hard-gates -->
 
 ## Task Playbook
 
