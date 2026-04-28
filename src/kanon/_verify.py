@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -203,40 +204,51 @@ def run_project_validators(
     validator (import error, missing entrypoint, exception during ``check``)
     are recorded as errors and verify continues with the remaining checks.
     """
-    for aspect_name in sorted(aspects):
-        if not aspect_name.startswith("project-"):
-            continue
-        try:
-            module_paths = _aspect_validators(aspect_name)
-        except Exception as exc:
-            errors.append(
-                f"project-aspect {aspect_name!r}: failed to load manifest "
-                f"for validator discovery: {exc}"
-            )
-            continue
-        for module_path in module_paths:
-            try:
-                module = importlib.import_module(module_path)
-            except ImportError as exc:
-                errors.append(
-                    f"project-validator {module_path!r} (aspect {aspect_name!r}): "
-                    f"import failed: {exc}"
-                )
-                continue
-            check = getattr(module, "check", None)
-            if not callable(check):
-                errors.append(
-                    f"project-validator {module_path!r} (aspect {aspect_name!r}): "
-                    f"module exposes no callable `check(target, errors, warnings)`."
-                )
+    # Project validators use relative module paths (e.g. ``ci.validators.foo``)
+    # resolved from the target directory.  Temporarily add *target* to
+    # ``sys.path`` so ``importlib.import_module`` can find them.
+    target_str = str(target)
+    inserted = target_str not in sys.path
+    if inserted:
+        sys.path.insert(0, target_str)
+    try:
+        for aspect_name in sorted(aspects):
+            if not aspect_name.startswith("project-"):
                 continue
             try:
-                check(target, errors, warnings)
+                module_paths = _aspect_validators(aspect_name)
             except Exception as exc:
                 errors.append(
-                    f"project-validator {module_path!r} (aspect {aspect_name!r}): "
-                    f"raised {type(exc).__name__}: {exc}"
+                    f"project-aspect {aspect_name!r}: failed to load manifest "
+                    f"for validator discovery: {exc}"
                 )
+                continue
+            for module_path in module_paths:
+                try:
+                    module = importlib.import_module(module_path)
+                except ImportError as exc:
+                    errors.append(
+                        f"project-validator {module_path!r} (aspect {aspect_name!r}): "
+                        f"import failed: {exc}"
+                    )
+                    continue
+                check = getattr(module, "check", None)
+                if not callable(check):
+                    errors.append(
+                        f"project-validator {module_path!r} (aspect {aspect_name!r}): "
+                        f"module exposes no callable `check(target, errors, warnings)`."
+                    )
+                    continue
+                try:
+                    check(target, errors, warnings)
+                except Exception as exc:
+                    errors.append(
+                        f"project-validator {module_path!r} (aspect {aspect_name!r}): "
+                        f"raised {type(exc).__name__}: {exc}"
+                    )
+    finally:
+        if inserted:
+            sys.path.remove(target_str)
 
 
 def run_kit_validators(
