@@ -490,6 +490,25 @@ def test_upgrade_preserves_user_content(tmp_path: Path) -> None:
     assert "MY CUSTOM SECTION" in (target / "AGENTS.md").read_text(encoding="utf-8")
 
 
+def test_upgrade_refreshes_shims(tmp_path: Path) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    # Corrupt a shim.
+    claude_md = target / "CLAUDE.md"
+    assert claude_md.exists()
+    claude_md.write_text("corrupted", encoding="utf-8")
+    # Patch config to old version so upgrade runs.
+    config_path = target / ".kanon" / "config.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["kit_version"] = "0.0.0"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+    assert claude_md.read_text(encoding="utf-8") != "corrupted"
+
+
 def test_upgrade_creates_agents_md_if_missing(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
