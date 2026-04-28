@@ -53,29 +53,24 @@ kanon/
 - The kit bundle at `src/kanon/kit/` shares source of truth with this repo's own `docs/`, `AGENTS.md` section markers, and `.kanon/protocols/`. `ci/check_kit_consistency.py` enforces byte-equality against a narrow whitelist (see ADR-0011).
 - Aspect membership is data in `src/kanon/kit/manifest.yaml` (aspect registry) and per-aspect sub-manifests at `src/kanon/kit/aspects/<name>/manifest.yaml`. To scaffold a new file at depth-N for consumers, add it under `kit/aspects/<name>/files/` or `kit/aspects/<name>/protocols/` and list its path under the appropriate `depth-N` entry in the sub-manifest. Strict-superset semantics are preserved by manifest-union.
 
-## Agent Routing (when oh-my-claudecode is available)
+## Task Playbook
 
-If the session's agent list includes `oh-my-claudecode:*` agents, prefer them for the task shapes below. If OMC is not installed, fall back to the built-in equivalent shown in parentheses. Do not pick a single "default agent" — match the agent to the phase of work (plan → build → verify).
+Match your current activity to the phase below. For each phase, prefer a specialist capability (agent, skill, or mode) matching the listed profile if one is available in your session; otherwise handle it directly using the referenced protocol.
 
-- Strategic planning, vague requirements, requirements clarification → `oh-my-claudecode:planner` or `:deep-interview` (else `Plan`)
-- Architecture review, read-only design critique → `oh-my-claudecode:architect` (else `feature-dev:code-architect`)
-- Focused implementation of an approved plan → `oh-my-claudecode:executor` (else proceed directly)
-- Codebase exploration, finding files and patterns → `oh-my-claudecode:explore` (else `Explore`)
-- Code review with severity ratings → `oh-my-claudecode:code-reviewer` (else `feature-dev:code-reviewer`)
-- Independent second opinion on a plan or diff → `oh-my-claudecode:critic` (else request a second review pass)
-- Root-cause debugging, regression isolation → `oh-my-claudecode:debugger` paired with `:tracer` for causal evidence (else debug directly with systematic diagnosis per `error-diagnosis` protocol)
-- Test strategy, integration/e2e coverage, flaky-test hardening, TDD → `oh-my-claudecode:test-engineer` (else follow `test-discipline` and `ac-first-tdd` protocols)
-- Security scan (OWASP, secrets, unsafe patterns) → `oh-my-claudecode:security-reviewer` (else follow `secure-defaults` protocol + run `ci/check_security_patterns.py`)
-- Verifying "is this really done?" before declaring complete → `oh-my-claudecode:verifier` (else follow `completion-checklist` protocol)
-- External docs / API / framework reference lookup → `oh-my-claudecode:document-specialist` (else search documentation directly)
-- Git commits, rebases, history surgery → `oh-my-claudecode:git-master` (else use git CLI directly)
-- Technical writing (README, API docs, comments) → `oh-my-claudecode:writer` (else write directly)
-- UI/UX work → `oh-my-claudecode:designer` (else proceed directly)
-- Code simplification on recently changed code → `oh-my-claudecode:code-simplifier` (else refactor directly)
-
-For end-to-end workflows (not single tasks), invoke an OMC mode skill explicitly: `/oh-my-claudecode:autopilot`, `:ultrawork`, `:ralph`, `:ultraqa`, `:team`, or `:plan` / `:ralplan` for gated planning. These run multi-agent pipelines and should not be used as a "default" — invoke them only when the workflow they describe matches the task.
-
-This routing is conditional. Before invoking an `oh-my-claudecode:*` agent, confirm it appears in the current session's agent list; otherwise use the fallback.
+| Phase | Capability profile | Protocol / guidance |
+|-------|-------------------|---------------------|
+| Planning | Planner, interviewer, deep-reasoning | § Plan Before Build |
+| Architecture | Architect, design critic | Review against ADRs + design docs |
+| Implementation | Executor, code generator | Follow approved plan, verify each AC |
+| Exploration | Explorer, codebase search | Pattern discovery, file navigation |
+| Code review | Reviewer, code critic | Severity ratings; check spec/plan drift |
+| Debugging | Debugger, tracer, root-cause analysis | `error-diagnosis` protocol |
+| Testing | Test engineer, TDD specialist | `test-discipline` + `ac-first-tdd` |
+| Security | Security reviewer, vulnerability scanner | `secure-defaults` + CI scanner |
+| Completion check | Verifier, checklist runner | `completion-checklist` protocol |
+| Documentation | Writer, doc specialist | Match project tone |
+| Git operations | Git specialist, rebase/commit tooling | Use git CLI |
+| Release | — | `release-checklist` protocol |
 
 ## Quick Start by Task Type
 
