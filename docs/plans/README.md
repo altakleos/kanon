@@ -37,6 +37,18 @@ See [`../development-process.md`](../development-process.md) § Plans and § How
 | [process-gates-ci](process-gates-ci.md) | Process-gate CI enforcement for plan-before-build and spec-before-design | done |
 | [index-consistency-validator](index-consistency-validator.md) | Index consistency validator for duplicate README entries | done |
 | [test-import-validator](test-import-validator.md) | Test-import validator for orphaned CI test references | done |
+| [broaden-spec-gate](broaden-spec-gate.md) | Broaden spec gate to catch all Click registration patterns | done |
+| [close-fidelity-coverage-gaps](close-fidelity-coverage-gaps.md) | Close `_fidelity.py` coverage gaps (74 → 90%+) | done |
+| [close-validator-coverage-gaps](close-validator-coverage-gaps.md) | Close validator coverage gaps | done |
+| [merge-caution-guidance](merge-caution-guidance.md) | Add merge-caution guidance to worktree-lifecycle | done |
+| [name-extension-points](name-extension-points.md) | Name the extension-point convention in development-process.md | done |
+| [phase1-sensei-upstreams](phase1-sensei-upstreams.md) | Upstream sensei worktree hardening + process prose | done |
+| [phase2-kit-validators](phase2-kit-validators.md) | Kit-aspect validators via `kanon verify` | draft |
+| [plan-src-separation](plan-src-separation.md) | Enforce plan/src commit separation | done |
+| [task-playbook](task-playbook.md) | Restructure agent routing as a capability-neutral Task Playbook | done |
+| [track-a-doc-fixes](track-a-doc-fixes.md) | Track A documentation/config fixes | done |
+| [track-c-dx](track-c-dx.md) | Reduce agent context overhead (Track C) | done |
+| [wire-ci-scripts](wire-ci-scripts.md) | Wire unwired CI scripts into GitHub Actions workflows | done |
 
 ## Roadmap
 
