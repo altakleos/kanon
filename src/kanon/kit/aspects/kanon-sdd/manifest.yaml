@@ -69,3 +69,5 @@ depth-3:
   protocols:
     - adr-immutability.md
   sections: []
+  validators:
+    - kanon._validators.spec_design_parity
