@@ -75,3 +75,24 @@ jobs:
           else
             python ci/check_commit_messages.py
           fi
+
+      - name: Check test quality
+        run: python ci/check_test_quality.py
+
+      - name: Check spec invariant coverage
+        run: python ci/check_verified_by.py
+
+      - name: Check invariant IDs
+        run: python ci/check_invariant_ids.py
+
+      - name: Check security patterns (warnings)
+        run: python ci/check_security_patterns.py
+        continue-on-error: true
+
+      - name: Check dependency hygiene (warnings)
+        run: python ci/check_deps.py
+        continue-on-error: true
+
+      - name: Check status consistency (warnings)
+        run: python ci/check_status_consistency.py
+        continue-on-error: true
