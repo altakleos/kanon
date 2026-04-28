@@ -349,7 +349,7 @@ def read_ops_manifest(repo_root: Path) -> OpsManifest | None:
         data = json.loads(target.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise click.ClickException(
-            f"Cannot parse {target}: {exc}. Delete the file manually if "
+            f"Cannot parse {target}: {exc}. Delete the file manually if "  # nosec
             f"you intended to abandon the in-flight rename."
         ) from None
     if not isinstance(data, dict):
