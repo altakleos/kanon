@@ -410,10 +410,24 @@ def main() -> None:
     default=None,
     help="Harness shims to write (repeatable). 'auto' detects from existing dirs. Default: auto.",
 )
-def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: bool, harness_arg: tuple[str, ...]) -> None:
+@click.option("--lite", is_flag=True, help="Minimal setup: sdd at depth 0 (just AGENTS.md, no docs/).")
+@click.option(
+    "--profile",
+    "profile_arg",
+    type=click.Choice(["lean", "standard", "full"], case_sensitive=False),
+    default=None,
+    help="Preset aspect bundles. lean=sdd:1, standard=sdd:1+testing:1+security:1+deps:1, full=all at depth 1.",
+)
+def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: bool, harness_arg: tuple[str, ...], lite: bool, profile_arg: str | None) -> None:
     """Scaffold a new kanon project at TARGET."""
-    if tier_arg is not None and aspects_arg is not None:
-        raise click.ClickException("--tier and --aspects are mutually exclusive.")
+    exclusive_count = sum([
+        tier_arg is not None,
+        aspects_arg is not None,
+        lite,
+        profile_arg is not None,
+    ])
+    if exclusive_count > 1:
+        raise click.ClickException("--tier, --aspects, --lite, and --profile are mutually exclusive.")
 
     target = target.resolve()
     target.mkdir(parents=True, exist_ok=True)
@@ -427,12 +441,24 @@ def init(target: Path, tier_arg: int | None, aspects_arg: str | None, force: boo
 
     top = _load_aspect_registry(target)
 
+    _PROFILES: dict[str, dict[str, int]] = {
+        "lean": {"kanon-sdd": 1},
+        "standard": {"kanon-sdd": 1, "kanon-testing": 1, "kanon-security": 1, "kanon-deps": 1},
+        "full": {
+            name: int(entry["default-depth"])
+            for name, entry in top["aspects"].items()
+            if name.startswith("kanon-")
+        },
+    }
+
     if aspects_arg is not None:
         aspects_to_enable = _parse_aspects_flag(aspects_arg, top)
     elif tier_arg is not None:
-        # --tier is sugar for --aspects sdd:N (backward compat). Per ADR-0028
-        # the canonical aspect name is `kanon-sdd`.
         aspects_to_enable = {"kanon-sdd": tier_arg}
+    elif lite:
+        aspects_to_enable = {"kanon-sdd": 0}
+    elif profile_arg is not None:
+        aspects_to_enable = _PROFILES[profile_arg]
     else:
         aspects_to_enable = _default_aspects()
 

@@ -98,6 +98,49 @@ def test_init_bare(tmp_path: Path) -> None:
     assert verify_result.exit_code == 0, verify_result.output
 
 
+def test_init_lite(tmp_path: Path) -> None:
+    """--lite is sugar for sdd at depth 0."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--lite"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert config["aspects"]["kanon-sdd"]["depth"] == 0
+    assert not (target / "docs" / "sdd-method.md").exists()
+
+
+def test_init_profile_standard(tmp_path: Path) -> None:
+    """--profile standard enables sdd+testing+security+deps at depth 1."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--profile", "standard"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert config["aspects"]["kanon-sdd"]["depth"] == 1
+    assert config["aspects"]["kanon-testing"]["depth"] == 1
+    assert config["aspects"]["kanon-security"]["depth"] == 1
+    assert config["aspects"]["kanon-deps"]["depth"] == 1
+
+
+def test_init_profile_full(tmp_path: Path) -> None:
+    """--profile full enables all kit aspects at default depth."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--profile", "full"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert len(config["aspects"]) >= 7
+
+
+def test_init_mutual_exclusion(tmp_path: Path) -> None:
+    """--lite and --profile are mutually exclusive with --tier and --aspects."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--lite", "--tier", "1"])
+    assert result.exit_code != 0
+    assert "mutually exclusive" in result.output
+
+
 def _extract_verify_json(output: str) -> dict:
     """Extract the first JSON object from `verify` output (report precedes the human summary)."""
     start = output.find("{")
