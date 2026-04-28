@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.2.0a10] — 2026-04-28
+
+### Fixed
+
+- **`kanon verify` now fully green at depth 3** — resolved all pre-existing errors and warnings.
+- **Plan acceptance criteria** checked off in 5 completed plans that were triggering `plan-completion` validator errors.
+- **Spec-design parity** — added `design:` frontmatter to all 22 accepted specs, referencing the governing ADR or companion design doc.
+- **Fidelity lock** regenerated after spec frontmatter updates.
+- **Lint fix** — renamed ambiguous variable `l` → `ln` in `check_process_gates.py`.
+
 ## [0.2.0a9] — 2026-04-28
 
 ### Added
