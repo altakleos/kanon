@@ -24,6 +24,10 @@ Product intent — WHAT the kit does from its consumers' perspective. See `../de
 | [security](security.md) | Hardened defaults for LLM-agent-authored code | v0.2.0a5 |
 | [deps](deps.md) | Dependency hygiene for LLM-agent-driven repos | v0.2.0a5 |
 | [fidelity](fidelity.md) | Tier-1 behavioural-conformance verification (lexical replay over committed transcripts) | v0.3 |
+| [aspect-config](aspect-config.md) | Aspect configuration values (`kanon aspect set-config`) | v0.2.0a6 |
+| [aspect-provides](aspect-provides.md) | Aspect capability namespace (`provides:`) | v0.2.0a6 |
+| [process-gates](process-gates.md) | Process-gate CI enforcement | v0.2.0a7 |
+| [project-aspects](project-aspects.md) | Project-defined aspects — consumer-specific discipline | v0.2.0a7 |
 
 ## Deferred specs (scheduled for v0.2+)
 
@@ -35,6 +39,9 @@ See [`../plans/roadmap.md`](../plans/roadmap.md). Each is a real spec file with 
 | [ambiguity-budget](ambiguity-budget.md) | Two-agents-one-spec falsifier | v0.2 |
 | [multi-agent-coordination](multi-agent-coordination.md) | Reservations ledger + plan SHA + handshake | v0.2 |
 | [expand-and-contract-lifecycle](expand-and-contract-lifecycle.md) | Pattern for breaking spec changes | v0.3 |
+| [spec-graph-diff](spec-graph-diff.md) | Invariant-level diff between two snapshots | v0.3+ |
+| [spec-graph-orphans](spec-graph-orphans.md) | Find unreferenced nodes in the cross-link graph | v0.3 |
+| [spec-graph-rename](spec-graph-rename.md) | Atomic slug rename across the cross-link graph | v0.3 |
 
 ## Template
 
