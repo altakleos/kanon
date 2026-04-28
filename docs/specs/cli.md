@@ -20,6 +20,9 @@ invariant_coverage:
     - tests/test_cli.py::test_aspect_add
     - tests/test_cli.py::test_aspect_remove
     - tests/test_cli.py::test_fidelity_update_creates_lock
+    - tests/test_aspect_config.py::test_set_config_idempotent_apart_from_timestamp
+    - tests/test_graph_orphans.py::test_inv1_cli_text_default_no_orphans
+    - tests/test_graph_rename.py::test_inv1_type_required
   INV-cli-init:
     - tests/test_cli.py::test_init_scaffolds_all_required_files
     - tests/test_cli.py::test_init_force_overwrites
@@ -39,8 +42,12 @@ invariant_coverage:
     - tests/test_cli.py::test_aspect_remove
     - tests/test_cli.py::test_aspect_set_depth
     - tests/test_cli.py::test_aspect_list
+    - tests/test_aspect_config.py::test_set_config_idempotent_apart_from_timestamp
   INV-cli-fidelity-group:
     - tests/test_cli.py::test_fidelity_update_creates_lock
+  INV-cli-graph-group:
+    - tests/test_graph_orphans.py::test_inv1_cli_text_default_no_orphans
+    - tests/test_graph_rename.py::test_inv1_type_required
   INV-cli-version-flag:
     - tests/test_cli.py::test_version_flag
   INV-cli-exit-codes:
@@ -69,7 +76,7 @@ Provide a single `kanon` command with subcommands that cover the full consumer l
 ## Invariants
 
 <!-- INV-cli-subcommands -->
-1. **Subcommands.** The CLI exposes these top-level entries: `init`, `upgrade`, `verify`, `tier` (back-compat group), `aspect` (group), `fidelity` (group), and `--version`. The `tier` group contains `set`. The `aspect` group contains `list`, `info`, `add`, `remove`, `set-depth`. The `fidelity` group contains `update`.
+1. **Subcommands.** The CLI exposes these top-level entries: `init`, `upgrade`, `verify`, `tier` (back-compat group), `aspect` (group), `fidelity` (group), `graph` (group), and `--version`. The `tier` group contains `set`. The `aspect` group contains `list`, `info`, `add`, `remove`, `set-depth`, `set-config`. The `fidelity` group contains `update`. The `graph` group contains `orphans`, `rename`.
 <!-- INV-cli-init -->
 2. **`init <target> [--tier N] [--aspects SPEC] [--force]`** — scaffolds a new project at `<target>`. Default tier is 1 (equivalent to `sdd:1`). `--aspects` accepts comma-separated `aspect:depth` pairs (e.g., `sdd:2,worktrees:1`); mutually exclusive with `--tier`. `--force` overwrites an existing `.kanon/` directory; without it, an existing `.kanon/` causes an error.
 <!-- INV-cli-upgrade -->
@@ -79,19 +86,21 @@ Provide a single `kanon` command with subcommands that cover the full consumer l
 <!-- INV-cli-tier-set -->
 5. **`tier set <target> <N>`** — back-compatibility sugar for `aspect set-depth <target> sdd <N>`. See `tier-migration.md` spec. Exit 0 on success, non-zero on malformed target or invalid tier.
 <!-- INV-cli-aspect-group -->
-6. **`aspect` group.** `list` shows all available aspects with stability and depth ranges. `info <name>` shows detail for one aspect. `add <target> <name>` enables an aspect at its default depth, validating dependencies. `remove <target> <name>` disables an aspect, checking for dependents. `set-depth <target> <name> <N>` changes an aspect's depth within its declared range. See `aspects.md` spec for invariants governing aspect lifecycle.
+6. **`aspect` group.** `list` shows all available aspects with stability and depth ranges. `info <name>` shows detail for one aspect. `add <target> <name>` enables an aspect at its default depth, validating dependencies. `remove <target> <name>` disables an aspect, checking for dependents. `set-depth <target> <name> <N>` changes an aspect's depth within its declared range. `set-config <target> <name> <key>=<value>` sets one config value on an enabled aspect. See `aspects.md` and `aspect-config.md` specs for invariants governing aspect lifecycle and configuration.
 <!-- INV-cli-fidelity-group -->
 7. **`fidelity` group.** `update <target>` recomputes the fidelity lock (`.kanon/fidelity.lock`) from current spec and fixture SHAs. See `fidelity-lock.md` spec.
+<!-- INV-cli-graph-group -->
+8. **`graph` group.** `orphans [--type <namespace>] [--format json|text] [--target DIR]` reports unreferenced nodes in the cross-link graph. `rename --type <namespace> <old> <new> [--dry-run] [--target DIR]` atomically renames a slug across every artifact that references it. See `spec-graph-orphans.md` and `spec-graph-rename.md` for behavioral invariants.
 <!-- INV-cli-version-flag -->
-8. **`--version`** — prints `kanon.__version__` and exits 0.
+9. **`--version`** — prints `kanon.__version__` and exits 0.
 <!-- INV-cli-exit-codes -->
-9. **Exit codes.** 0 on success. 1 on generic error / malformed input. 2 on contract violation the CLI caught (e.g., upgrading a target where `.kanon/config.yaml` is missing). 3+ reserved for future use.
+10. **Exit codes.** 0 on success. 1 on generic error / malformed input. 2 on contract violation the CLI caught (e.g., upgrading a target where `.kanon/config.yaml` is missing). 3+ reserved for future use.
 <!-- INV-cli-atomicity -->
-10. **Atomicity.** Every file write is individually atomic via write-to-tmp + fsync + `os.replace()` + fsync parent directory. Multi-file commands are crash-consistent, not instantaneous: a `.kanon/.pending` sentinel is written before the first mutation and cleared after the last; if present on the next invocation, the user is notified to re-run the same command, and idempotency guarantees the re-run completes the operation. All mutating commands are idempotent. `config.yaml` is always written last as the commit marker. See ADR-0024.
+11. **Atomicity.** Every file write is individually atomic via write-to-tmp + fsync + `os.replace()` + fsync parent directory. Multi-file commands are crash-consistent, not instantaneous: a `.kanon/.pending` sentinel is written before the first mutation and cleared after the last; if present on the next invocation, the user is notified to re-run the same command, and idempotency guarantees the re-run completes the operation. All mutating commands are idempotent. `config.yaml` is always written last as the commit marker. See ADR-0024.
 <!-- INV-cli-consumer-friendly-errors -->
-11. **Consumer-friendly errors.** Missing `.kanon/config.yaml`, unknown aspects, depth-range violations, and dependency conflicts emit single-line human-readable messages with the offending path or value.
+12. **Consumer-friendly errors.** Missing `.kanon/config.yaml`, unknown aspects, depth-range violations, and dependency conflicts emit single-line human-readable messages with the offending path or value.
 <!-- INV-cli-posix-only -->
-12. **POSIX-only.** The `kanon` CLI assumes a POSIX filesystem (Linux, macOS) for its atomic-write primitives (write-to-tmp + `fsync` of parent directory + `rename`). Windows is not supported. The `pyproject.toml` `classifiers` and the README quickstart record this constraint.
+13. **POSIX-only.** The `kanon` CLI assumes a POSIX filesystem (Linux, macOS) for its atomic-write primitives (write-to-tmp + `fsync` of parent directory + `rename`). Windows is not supported. The `pyproject.toml` `classifiers` and the README quickstart record this constraint.
 
 ## Rationale
 
