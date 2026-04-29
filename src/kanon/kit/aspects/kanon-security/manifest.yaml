@@ -28,3 +28,7 @@ depth-2:
     - ci/check_security_patterns.py
   protocols: []
   sections: []
+  preflight:
+    push:
+      - run: "python ci/check_security_patterns.py"
+        label: security-scan
