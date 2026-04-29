@@ -930,20 +930,11 @@ def aspect() -> None:
 )
 def aspect_list(target: Path | None) -> None:
     """List aspects available in the installed kit (and project-aspects, when --target given)."""
-    _DESCRIPTIONS: dict[str, str] = {
-        "kanon-sdd": "Spec-Driven Development: plans, specs, design docs",
-        "kanon-testing": "Test discipline, AC-first TDD, error diagnosis",
-        "kanon-security": "Secure-by-default protocols and CI scanner",
-        "kanon-deps": "Dependency hygiene and CI scanner",
-        "kanon-release": "Release checklist, preflight, and CLI gate",
-        "kanon-worktrees": "Worktree isolation for parallel work",
-        "kanon-fidelity": "Behavioural conformance via lexical assertions",
-    }
     top = _load_aspect_registry(target)
     for name in sorted(top["aspects"]):
         entry = top["aspects"][name]
         rng = entry["depth-range"]
-        desc = _DESCRIPTIONS.get(name, "")
+        desc = entry.get("description", "")
         desc_suffix = f"  {desc}" if desc else ""
         click.echo(
             f"{name}\t{entry['stability']}\tdepth {rng[0]}-{rng[1]} "
