@@ -32,3 +32,10 @@ aspects:
     depth: 1
     enabled_at: '2026-04-28T22:48:17+00:00'
     config: {}
+preflight-stages:
+  push:
+    - run: ".venv/bin/python ci/check_security_patterns.py"
+      label: security-scan
+  release:
+    - run: ".venv/bin/python -c \"import kanon; assert kanon.__version__ == 'v0.3.0a5'.lstrip('v')\""
+      label: release-preflight

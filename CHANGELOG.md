@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.0a5] — 2026-04-29
+
+### Added
+
+- **`kanon release` command** — gates tag creation on preflight checks (release depth 3). Runs `kanon preflight --stage release`, creates annotated tag only if all checks pass. No version bump, no push — just the mechanical gate.
+
+### Fixed
+
+- **Ruff line-length error** in tier help string (caused v0.3.0a4 CI failure).
+
 ## [0.3.0a4] — 2026-04-29
 
 ### Added

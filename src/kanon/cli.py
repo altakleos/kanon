@@ -799,12 +799,9 @@ def release_cmd(target: Path, tag: str, dry_run: bool) -> None:
 
     # Run preflight --stage release.
     from click.testing import CliRunner as _Runner
-    pf = _Runner(mix_stderr=False).invoke(
+    pf = _Runner().invoke(
         main, ["preflight", str(target), "--stage", "release", "--tag", tag],
     )
-    # Print preflight stderr (human-readable check results).
-    if pf.stderr_bytes:
-        click.echo(pf.stderr_bytes.decode(), err=True, nl=False)
 
     if pf.exit_code != 0:
         click.echo("✗ Preflight failed — tag NOT created.", err=True)
