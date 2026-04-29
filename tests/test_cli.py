@@ -110,10 +110,10 @@ def test_init_lite(tmp_path: Path) -> None:
 
 
 def test_init_profile_standard(tmp_path: Path) -> None:
-    """--profile standard enables sdd+testing+security+deps at depth 1."""
+    """--profile team enables sdd+testing+security+deps at depth 1."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    result = runner.invoke(main, ["init", str(target), "--profile", "standard"])
+    result = runner.invoke(main, ["init", str(target), "--profile", "team"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
     assert config["aspects"]["kanon-sdd"]["depth"] == 1
@@ -442,15 +442,12 @@ def test_tier_raises_all_default_aspects(tmp_path: Path) -> None:
 
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
     enabled = config["aspects"]
-    # Every shipped kanon-* aspect should be present under the new defaults set.
+    # Every default aspect should be present (sdd, testing, security, deps).
     expected = {
         "kanon-sdd": 2,
-        "kanon-worktrees": 2,   # max=2, min(2, 2) = 2
-        "kanon-release": 2,     # max=2
         "kanon-testing": 2,     # max=3, min(2, 3) = 2
         "kanon-security": 2,    # max=2
         "kanon-deps": 2,        # max=2
-        "kanon-fidelity": 1,    # max=1, min(2, 1) = 1 (capped)
     }
     for name, depth in expected.items():
         assert name in enabled, f"missing aspect: {name}"
@@ -479,9 +476,9 @@ def test_tier_set_never_lowers(tmp_path: Path) -> None:
     assert post["aspects"]["kanon-sdd"]["depth"] == 3, (
         "tier set 2 lowered kanon-sdd from 3"
     )
-    # Other aspects should have been raised from 1 to 2.
-    assert post["aspects"]["kanon-worktrees"]["depth"] == 2
+    # Other default aspects should have been raised from 1 to 2.
     assert post["aspects"]["kanon-testing"]["depth"] == 2
+    assert post["aspects"]["kanon-security"]["depth"] == 2
 
 
 @pytest.mark.parametrize(

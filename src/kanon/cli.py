@@ -414,9 +414,9 @@ def main() -> None:
 @click.option(
     "--profile",
     "profile_arg",
-    type=click.Choice(["lean", "standard", "full"], case_sensitive=False),
+    type=click.Choice(["solo", "team", "full"], case_sensitive=False),
     default=None,
-    help="Preset aspect bundles. lean=sdd:1, standard=sdd:1+testing:1+security:1+deps:1, full=all at depth 1.",
+    help="Preset aspect bundles. solo=sdd:1, team=sdd+testing+security+deps, full=all aspects.",
 )
 def init(
     target: Path,
@@ -450,8 +450,8 @@ def init(
     top = _load_aspect_registry(target)
 
     _PROFILES: dict[str, dict[str, int]] = {
-        "lean": {"kanon-sdd": 1},
-        "standard": {"kanon-sdd": 1, "kanon-testing": 1, "kanon-security": 1, "kanon-deps": 1},
+        "solo": {"kanon-sdd": 1},
+        "team": {"kanon-sdd": 1, "kanon-testing": 1, "kanon-security": 1, "kanon-deps": 1},
         "full": {
             name: int(entry["default-depth"])
             for name, entry in top["aspects"].items()
@@ -528,6 +528,27 @@ def init(
 
     aspect_summary = ", ".join(f"{a}={d}" for a, d in sorted(aspects_to_enable.items()))
     click.echo(f"\n✓ Created kanon project at {target} ({aspect_summary})")
+
+    # Preflight health check — show which hooks are armed.
+    testing_cfg = aspects_meta.get("kanon-testing", {}).get("config", {})
+    _pf_checks = [
+        ("lint", testing_cfg.get("lint_cmd", "")),
+        ("tests", testing_cfg.get("test_cmd", "")),
+        ("typecheck", testing_cfg.get("typecheck_cmd", "")),
+        ("format", testing_cfg.get("format_cmd", "")),
+    ]
+    armed = [(n, c) for n, c in _pf_checks if c]
+    unarmed = [n for n, c in _pf_checks if not c]
+    if armed:
+        click.echo("\n  Preflight readiness:")
+        for name, cmd in armed:
+            click.echo(f"    ✓ {name:10s} → {cmd}")
+        for name in unarmed:
+            click.echo(
+                f"    ✗ {name:10s} → not configured  "
+                f"(kanon aspect set-config . testing {name}_cmd=\"...\")"
+            )
+
     # Build dynamic "Grow when ready" hints based on what's NOT enabled.
     grow_hints: list[str] = []
     if "kanon-sdd" in aspects_to_enable and aspects_to_enable["kanon-sdd"] < 2:
@@ -909,13 +930,24 @@ def aspect() -> None:
 )
 def aspect_list(target: Path | None) -> None:
     """List aspects available in the installed kit (and project-aspects, when --target given)."""
+    _DESCRIPTIONS: dict[str, str] = {
+        "kanon-sdd": "Spec-Driven Development: plans, specs, design docs",
+        "kanon-testing": "Test discipline, AC-first TDD, error diagnosis",
+        "kanon-security": "Secure-by-default protocols and CI scanner",
+        "kanon-deps": "Dependency hygiene and CI scanner",
+        "kanon-release": "Release checklist, preflight, and CLI gate",
+        "kanon-worktrees": "Worktree isolation for parallel work",
+        "kanon-fidelity": "Behavioural conformance via lexical assertions",
+    }
     top = _load_aspect_registry(target)
     for name in sorted(top["aspects"]):
         entry = top["aspects"][name]
         rng = entry["depth-range"]
+        desc = _DESCRIPTIONS.get(name, "")
+        desc_suffix = f"  {desc}" if desc else ""
         click.echo(
             f"{name}\t{entry['stability']}\tdepth {rng[0]}-{rng[1]} "
-            f"(default {entry['default-depth']})"
+            f"(default {entry['default-depth']}){desc_suffix}"
         )
 
 
