@@ -23,6 +23,12 @@
 
 defaults:
   - kanon-sdd
+  - kanon-worktrees
+  - kanon-release
+  - kanon-testing
+  - kanon-security
+  - kanon-deps
+  - kanon-fidelity
 
 files:
   - .kanon/kit.md

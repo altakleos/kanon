@@ -394,7 +394,7 @@ def main() -> None:
     type=click.IntRange(0, 3),
     default=None,
     show_default=False,
-    help="Shorthand for `sdd` aspect depth. Defaults to sdd's default-depth.",
+    help="Uniform depth N applied to every aspect in the manifest defaults: set, capped at each aspect's max depth (ADR-0035).",
 )
 @click.option(
     "--aspects",
@@ -462,7 +462,12 @@ def init(
     if aspects_arg is not None:
         aspects_to_enable = _parse_aspects_flag(aspects_arg, top)
     elif tier_arg is not None:
-        aspects_to_enable = {"kanon-sdd": tier_arg}
+        # ADR-0035: uniform raise across every aspect in manifest defaults:,
+        # capped at each aspect's max depth.
+        aspects_to_enable = {
+            name: min(tier_arg, int(top["aspects"][name]["depth-range"][1]))
+            for name in top.get("defaults", [])
+        }
     elif lite:
         aspects_to_enable = {"kanon-sdd": 0}
     elif profile_arg is not None:
@@ -758,21 +763,36 @@ def _emit_verify_report(
 
 @main.group()
 def tier() -> None:
-    """Back-compat: sugar for `aspect set-depth <target> sdd <N>`."""
+    """Tier verbs (uniform aspect-depth raise per ADR-0035)."""
 
 
 @tier.command("set")
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 @click.argument("n", type=click.IntRange(0, 3))
 def tier_set(target: Path, n: int) -> None:
-    """Migrate TARGET's sdd aspect depth to N (sugar for aspect set-depth)."""
-    click.echo(
-        "Warning: 'kanon tier set' is deprecated. "
-        "Use 'kanon aspect set-depth <target> sdd <N>'.",
-        err=True,
-    )
-    # Per ADR-0028: bare `sdd` sugars to canonical `kanon-sdd`.
-    _set_aspect_depth(target, "kanon-sdd", n, legacy_tier_verb=True)
+    """Raise every aspect in manifest defaults: to depth N (capped per aspect).
+
+    Per ADR-0035: a uniform raise. Aspects already at or above the per-aspect
+    target depth (min(N, max)) are not lowered. Aspects not in defaults: are
+    not touched.
+    """
+    target_resolved = target.resolve()
+    config = _read_config(target_resolved)
+    aspects = _config_aspects(config)
+    top = _load_aspect_registry(target_resolved)
+    defaults: list[str] = list(top.get("defaults", []))
+
+    raised: list[str] = []
+    for name in defaults:
+        max_depth = int(top["aspects"][name]["depth-range"][1])
+        target_depth = min(n, max_depth)
+        current = aspects.get(name, -1)
+        if current < target_depth:
+            _set_aspect_depth(target, name, target_depth, legacy_tier_verb=True)
+            raised.append(name)
+
+    if not raised:
+        click.echo(f"All aspects in defaults: already at or above tier {n}. Noop.")
 
 
 @main.group()

@@ -1,7 +1,7 @@
 ---
 feature: tier-uniform-raise
 serves: docs/specs/tiers.md
-status: planned
+status: in-progress
 date: 2026-04-29
 ---
 # Plan: Tier as uniform aspect-depth raise
@@ -12,13 +12,13 @@ ADR-0035 (accepted 2026-04-29, supersedes ADR-0006 and ADR-0008) redefines `--ti
 
 One open design question that the ADR deferred to this plan: today `defaults:` in `src/kanon/kit/manifest.yaml` contains only `kanon-sdd`. If we leave it untouched, ADR-0035's rule produces the same observable behavior `--tier N` already produces (only sdd is raised). The whole point of the ADR was to make `--tier N` participate across aspects, so this plan must also decide which aspects are listed in `defaults:`.
 
-**Recommended answer (T1 below):** widen `defaults:` to include every aspect the kit ships (`kanon-sdd`, `kanon-worktrees`, `kanon-release`, `kanon-testing`, `kanon-security`, `kanon-deps`, `kanon-fidelity`). Rationale: the ADR explicitly rejected stability-based filtering ("Tier follows manifest policy; the CLI does not encode stability"). For pre-1.0 alpha, listing every shipped aspect is the most honest reading of "uniform raise". A future ADR can split `defaults:` into a `tier-aspects:` set if the no-flag-init behavior diverges from tier behavior.
+**Decision (T1 below):** widen `defaults:` to include every aspect the kit ships (`kanon-sdd`, `kanon-worktrees`, `kanon-release`, `kanon-testing`, `kanon-security`, `kanon-deps`, `kanon-fidelity`). Rationale: the ADR explicitly rejected stability-based filtering ("Tier follows manifest policy; the CLI does not encode stability"). For pre-1.0 alpha, listing every shipped aspect is the most honest reading of "uniform raise". A future ADR can split `defaults:` into a `tier-aspects:` set if the no-flag-init behavior diverges from tier behavior.
 
 The `--profile` flag (`lean` / `standard` / `full`) and the `--lite` flag are not touched by this plan. ADR-0035 explicitly leaves their relationship with `--tier` for a downstream decision.
 
 ## Tasks
 
-- [ ] T1: Widen `defaults:` in `src/kanon/kit/manifest.yaml` to enumerate every shipped `kanon-` aspect → `src/kanon/kit/manifest.yaml`. **Decision gate**: confirm with maintainer before merging — this changes both `--tier N` and no-flag `kanon init` behavior. If maintainer prefers tier-only scaling without changing no-flag init, split `defaults:` into a separate `tier-aspects:` field and adjust T2 to read the new field.
+- [ ] T1: Widen `defaults:` in `src/kanon/kit/manifest.yaml` to enumerate every shipped `kanon-` aspect → `src/kanon/kit/manifest.yaml`.
 - [ ] T2: Replace the `--tier N → {kanon-sdd: N}` dispatch in `init` with an iteration over `defaults:` applying `min(N, depth-range[1])` per aspect → `src/kanon/cli.py` (around line 464–465). (depends: T1)
 - [ ] T3: Apply the same rule in `kanon tier set <target> N`: for each aspect in `defaults:`, raise `current_depth → max(current_depth, min(N, max))`. Never lower. Aspects already above N are preserved. → `src/kanon/cli.py` (around line 760–775, the `tier_set` subcommand). (depends: T1)
 - [ ] T4: Decide and implement: keep deriving `tier_ctx` from `kanon-sdd` depth for template rendering (back-compat for scaffolded `${tier}` placeholders) or replace with the requested tier integer. Recommend: keep current derivation; add a `# TODO(0036): remove after ${tier} placeholder migration` comment. → `src/kanon/cli.py` (line 473–480). (depends: T2)
