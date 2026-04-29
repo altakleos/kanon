@@ -1,6 +1,6 @@
 # Principles
 
-Cross-cutting stances this project commits to. One principle per file. See `../../sdd-method.md` § Foundations for the `kind:` taxonomy (`pedagogical` / `technical` / `product`).
+Cross-cutting stances this project commits to. One principle per file. See [`../README.md`](../README.md) § Sub-namespaces for the `kind:` taxonomy (`pedagogical` / `technical` / `product`).
 
 > **Kit-author scope.** This catalog lists kanon's *own* internal principles. They are **not** scaffolded into downstream consumers by `kanon init`. The kit-shipped consumer-facing starter template lives at [`src/kanon/kit/aspects/kanon-sdd/files/docs/foundations/principles/README.md`](../../../src/kanon/kit/aspects/kanon-sdd/files/docs/foundations/principles/README.md) and ships an empty index. Consumers own their own `docs/foundations/principles/` directory entirely; they never receive the kit's `P-*.md` files.
 
