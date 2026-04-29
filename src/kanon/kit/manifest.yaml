@@ -36,6 +36,7 @@ aspects:
     stability: stable
     depth-range: [0, 3]
     default-depth: 1
+    description: "Spec-Driven Development: plans, specs, design docs"
     requires: []
     provides:
       - planning-discipline
@@ -46,6 +47,7 @@ aspects:
     stability: experimental
     depth-range: [0, 2]
     default-depth: 1
+    description: "Worktree isolation for parallel work"
     requires: []
     suggests:
       - "kanon-sdd >= 1"
@@ -57,6 +59,7 @@ aspects:
     stability: experimental
     depth-range: [0, 3]
     default-depth: 1
+    description: "Release checklist, preflight, and CLI gate"
     requires: []
     provides:
       - release-discipline
@@ -66,6 +69,7 @@ aspects:
     stability: experimental
     depth-range: [0, 3]
     default-depth: 1
+    description: "Test discipline, AC-first TDD, error diagnosis"
     requires: []
     suggests:
       - "kanon-sdd >= 1"
@@ -77,6 +81,7 @@ aspects:
     stability: experimental
     depth-range: [0, 2]
     default-depth: 1
+    description: "Secure-by-default protocols and CI scanner"
     requires: []
     provides:
       - security-discipline
@@ -86,6 +91,7 @@ aspects:
     stability: experimental
     depth-range: [0, 2]
     default-depth: 1
+    description: "Dependency hygiene and CI scanner"
     requires: []
     provides:
       - dependency-hygiene
@@ -95,6 +101,7 @@ aspects:
     stability: experimental
     depth-range: [0, 1]
     default-depth: 1
+    description: "Behavioural conformance via lexical assertions"
     requires: []
     provides:
       - behavioural-verification
