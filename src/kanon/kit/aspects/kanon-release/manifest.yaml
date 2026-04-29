@@ -29,3 +29,7 @@ depth-2:
     - .github/workflows/release.yml
   protocols: []
   sections: []
+  preflight:
+    release:
+      - run: "python ci/release-preflight.py --tag $TAG"
+        label: release-preflight

@@ -671,6 +671,62 @@ def verify(target: Path) -> None:
         sys.exit(1)
 
 
+@main.command()
+@click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.option(
+    "--stage",
+    type=click.Choice(["commit", "push", "release"], case_sensitive=False),
+    default="commit",
+    show_default=True,
+    help="Validation stage: commit (fast), push (thorough), release (exhaustive).",
+)
+@click.option("--tag", default=None, help="Release tag (required for --stage release).")
+@click.option("--fail-fast", is_flag=True, help="Stop on first failing check.")
+def preflight(target: Path, stage: str, tag: str | None, fail_fast: bool) -> None:
+    """Run staged local validation: verify + configured checks."""
+    from kanon._preflight import _resolve_preflight_checks, _run_preflight
+
+    if stage == "release" and not tag:
+        raise click.ClickException("--tag is required for --stage release.")
+
+    target = target.resolve()
+    config = _read_config(target)
+    aspects = _config_aspects(config)
+
+    # Step 1: Run kanon verify via CliRunner (same process).
+    import time as _time
+    from click.testing import CliRunner as _Runner
+    t0 = _time.monotonic()
+    _vr = _Runner().invoke(main, ["verify", str(target)])
+    verify_duration = round(_time.monotonic() - t0, 1)
+    verify_passed = _vr.exit_code == 0
+    verify_mark = "✓" if verify_passed else "✗"
+    print(f"{verify_mark} verify (structural)  {verify_duration}s", file=sys.stderr)
+
+    if not verify_passed:
+        print(json.dumps({
+            "stage": stage,
+            "checks": [{"label": "verify", "command": "kanon verify .", "passed": False, "duration_s": verify_duration}],
+            "passed": False,
+        }, indent=2))
+        sys.exit(1)
+
+    # Step 2: Resolve and run stage checks.
+    checks = _resolve_preflight_checks(aspects, config, stage)
+    all_passed, results = _run_preflight(target, checks, tag, fail_fast)
+
+    # Prepend verify result.
+    results.insert(0, {"label": "verify", "command": "kanon verify .", "passed": True, "duration_s": verify_duration})
+
+    total = len(results)
+    passed_count = sum(1 for r in results if r["passed"])
+    summary_mark = "──" if all_passed else "✗✗"
+    print(f"{summary_mark} {stage}: {passed_count} of {total} checks passed {summary_mark}", file=sys.stderr)
+
+    print(json.dumps({"stage": stage, "checks": results, "passed": all_passed}, indent=2))
+    sys.exit(0 if all_passed else 1)
+
+
 def _emit_verify_report(
     target: Path,
     aspects: dict[str, int],

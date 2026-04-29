@@ -19,7 +19,11 @@ aspects:
   kanon-testing:
     depth: 3
     enabled_at: '2026-04-28T22:48:17+00:00'
-    config: {}
+    config:
+      test_cmd: ".venv/bin/python -m pytest --no-cov -q"
+      lint_cmd: ".venv/bin/ruff check src/ tests/ ci/"
+      typecheck_cmd: ".venv/bin/mypy src/kanon"
+      format_cmd: ""
   kanon-worktrees:
     depth: 2
     enabled_at: '2026-04-28T22:48:17+00:00'
