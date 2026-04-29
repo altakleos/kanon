@@ -249,7 +249,7 @@ def _build_bundle(
     return bundle
 
 
-_HARD_GATES = [
+_HARD_GATES: list[dict[str, Any]] = [
     {
         "aspect": "kanon-sdd",
         "depth_min": 1,
@@ -285,9 +285,9 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
     rows: list[str] = []
     for gate in _HARD_GATES:
         aspect = gate["aspect"]
-        if aspect not in aspects or aspects[aspect] < int(gate["depth_min"]):
+        if aspect not in aspects or aspects[aspect] < gate["depth_min"]:
             continue
-        slug = str(gate["protocol"]).removesuffix(".md")
+        slug = gate["protocol"].removesuffix(".md")
         rows.append(
             f'| **{gate["label"]}** — {gate["summary"]} '
             f'Audit: "{gate["audit"]}" '
