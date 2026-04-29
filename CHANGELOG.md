@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.0a4] — 2026-04-29
+
+### Added
+
+- **`kanon tier set` now raises all aspects uniformly** — `kanon tier set . 2` raises every enabled aspect to at least depth 2 (ADR-0035).
+
+### Fixed
+
+- **Fidelity lock** regenerated after tier-uniform-raise spec/test changes.
+
 ### Changed
 
 - **`--tier N` now applies a uniform aspect-depth raise** (ADR-0035). The flag iterates every aspect listed in the kit manifest's `defaults:` set and enables each at `min(N, aspect.max_depth)`. Previously, `--tier N` was sugar for `--aspects sdd:N` only.
