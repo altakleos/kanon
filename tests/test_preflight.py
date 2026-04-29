@@ -6,7 +6,6 @@ from pathlib import Path
 import yaml
 from click.testing import CliRunner
 
-from kanon.__init__ import __version__
 from kanon._preflight import _resolve_preflight_checks
 from kanon.cli import main
 

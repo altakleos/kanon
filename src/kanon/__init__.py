@@ -1,3 +1,3 @@
 """kanon — portable, self-hosting Spec-Driven Development kit."""
 
-__version__ = "0.3.0a1"
+__version__ = "0.3.0a2"

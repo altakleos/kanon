@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.0a2] — 2026-04-28
+
+### Added
+
+- **`kanon preflight` command** — staged local validation that catches CI failures before pushing. Three stages (commit ⊂ push ⊂ release), each a strict superset. Runs `kanon verify` first, then consumer-configured checks (lint, tests, typecheck, security scan). Aspects contribute default checks via `preflight:` manifest entries.
+- **Testing aspect config keys** — `test_cmd`, `lint_cmd`, `typecheck_cmd`, `format_cmd` for language-agnostic tool configuration.
+- **Aspect-contributed preflight defaults** — testing, security, and release aspects declare what checks they contribute to which stages.
+- **Dynamic hard-gates table** in AGENTS.md — only shows gates whose aspects are enabled at sufficient depth.
+
 ## [0.3.0a1] — 2026-04-28
 
 ### Added

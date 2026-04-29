@@ -695,6 +695,7 @@ def preflight(target: Path, stage: str, tag: str | None, fail_fast: bool) -> Non
 
     # Step 1: Run kanon verify via CliRunner (same process).
     import time as _time
+
     from click.testing import CliRunner as _Runner
     t0 = _time.monotonic()
     _vr = _Runner().invoke(main, ["verify", str(target)])
@@ -706,7 +707,10 @@ def preflight(target: Path, stage: str, tag: str | None, fail_fast: bool) -> Non
     if not verify_passed:
         print(json.dumps({
             "stage": stage,
-            "checks": [{"label": "verify", "command": "kanon verify .", "passed": False, "duration_s": verify_duration}],
+            "checks": [
+                {"label": "verify", "command": "kanon verify .",
+                 "passed": False, "duration_s": verify_duration},
+            ],
             "passed": False,
         }, indent=2))
         sys.exit(1)
