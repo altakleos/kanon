@@ -29,6 +29,8 @@ invariant_coverage:
 ---
 # Spec: Tier migration — `kanon tier set`
 
+> **Status update (2026-04-29, ADR-0035):** `kanon tier set <target> N` is now a uniform raise across every aspect in manifest `defaults:`. It is **raise-only** — aspects already at or above their per-aspect target depth (`min(N, max)`) are not lowered. Invariant 4 ("tier-down is non-destructive") is satisfied vacuously: tier-down does not happen at all under the new semantics, so its non-destructiveness is preserved by construction. The other invariants (mutable tier, idempotent, tier-up additive, marker-delimited rewrites, atomic) remain in force and apply per-aspect rather than to a single sdd ladder. A follow-up plan will rewrite this spec end-to-end; until then, see ADR-0035 for the authoritative new semantics.
+
 ## Intent
 
 Define the behaviour of `kanon tier set <target> <N>`: what it changes, what it guarantees, what it never does.

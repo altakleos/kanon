@@ -26,7 +26,9 @@ invariant_coverage:
   INV-tiers-triggers:
     - tests/test_cli.py::test_init_scaffolds_all_required_files
 ---
-# Spec: Tiers — content and triggers
+# Spec: Tiers
+
+> **Status update (2026-04-29, ADR-0035):** the canonical meaning of `--tier N` is now a uniform raise across every aspect in manifest `defaults:`, capped at each aspect's `max_depth`. The four-tier-as-strict-superset ladder described below remains accurate for the **`kanon-sdd` aspect specifically** — sdd's depth dial still goes 0→1→2→3 with the same artifact additions per step. What changed is that `--tier N` is no longer sugar for `sdd:N` only; it now applies to every defaults aspect uniformly. A follow-up plan will rewrite this spec end-to-end; until then, see ADR-0035 for the authoritative new semantics. — content and triggers
 
 ## Intent
 
