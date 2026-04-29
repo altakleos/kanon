@@ -1,7 +1,7 @@
 ---
 status: draft
 date: YYYY-MM-DD
-# optional frontmatter fields — see sdd-method.md § Foundations
+# optional frontmatter fields — see ../foundations/README.md § Linkage to the layer stack
 # realizes: [P-<slug>, ...]
 # serves: [<foundation-slug>, ...]
 # stressed_by: [<persona-slug>, ...]

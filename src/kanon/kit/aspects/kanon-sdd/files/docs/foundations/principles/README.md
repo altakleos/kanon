@@ -2,7 +2,7 @@
 
 Cross-cutting stances this project commits to. One principle per file.
 
-See [`../../sdd-method.md`](../../sdd-method.md) § Foundations for the `kind:` taxonomy (`pedagogical` / `technical` / `product`).
+See [`../README.md`](../README.md) § Sub-namespaces for the `kind:` taxonomy (`pedagogical` / `technical` / `product`).
 
 ## About this directory
 
