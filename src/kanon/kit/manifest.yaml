@@ -26,6 +26,7 @@ defaults:
   - kanon-testing
   - kanon-security
   - kanon-deps
+  - kanon-worktrees
 
 files:
   - .kanon/kit.md

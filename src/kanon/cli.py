@@ -416,7 +416,7 @@ def main() -> None:
     "profile_arg",
     type=click.Choice(["solo", "team", "full"], case_sensitive=False),
     default=None,
-    help="Preset aspect bundles. solo=sdd:1, team=sdd+testing+security+deps, full=all aspects.",
+    help="Preset aspect bundles. solo=sdd:1, team=sdd+testing+security+deps+worktrees, full=all aspects.",
 )
 def init(
     target: Path,
@@ -451,7 +451,7 @@ def init(
 
     _PROFILES: dict[str, dict[str, int]] = {
         "solo": {"kanon-sdd": 1},
-        "team": {"kanon-sdd": 1, "kanon-testing": 1, "kanon-security": 1, "kanon-deps": 1},
+        "team": {"kanon-sdd": 1, "kanon-testing": 1, "kanon-security": 1, "kanon-deps": 1, "kanon-worktrees": 1},
         "full": {
             name: int(entry["default-depth"])
             for name, entry in top["aspects"].items()
