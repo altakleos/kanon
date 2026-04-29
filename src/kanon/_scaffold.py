@@ -320,6 +320,15 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
         "before your first source-modifying tool call. "
         "Its absence in a transcript is how violations get caught.",
         "",
+        "**Before every source-modifying tool call, answer these questions:**",
+        "",
+        "1. Is this change trivial? (Trivial = typo, single assertion fix, "
+        "local rename, provably unreachable deletion. Everything else is "
+        "non-trivial.)",
+        "2. If non-trivial: does a plan exist at `docs/plans/<slug>.md` "
+        "and has the user approved it? If not — **stop and write the plan.**",
+        "3. State the audit sentence from the relevant gate before proceeding.",
+        "",
     ]
     return "\n".join(lines) + "\n"
 
