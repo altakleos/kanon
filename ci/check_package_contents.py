@@ -127,20 +127,13 @@ def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list
             depth_entry = sub.get(f"depth-{d}", {})
             if not isinstance(depth_entry, dict):
                 continue
-            # agents-md depth file
-            required_files.append(f"{aspect_base}/agents-md/depth-{d}.md")
             for rel in depth_entry.get("files", []) or []:
                 required_files.append(f"{aspect_base}/files/{rel}")
             for rel in depth_entry.get("protocols", []) or []:
                 required_files.append(f"{aspect_base}/protocols/{rel}")
-            for sec in depth_entry.get("sections", []) or []:
-                if sec == "protocols-index":
-                    continue  # cross-aspect, not a file
-                required_files.append(f"{aspect_base}/sections/{sec}.md")
         # Add subdirs that should be non-empty
-        for subdir in ("agents-md", "files", "sections", "protocols"):
+        for subdir in ("files", "protocols"):
             sub_dir_path = f"{aspect_base}/{subdir}/"
-            # Only require dirs that have entries in the manifest
             names = z.namelist()
             if any(n.startswith(sub_dir_path) for n in names):
                 required_dirs.append(sub_dir_path)
