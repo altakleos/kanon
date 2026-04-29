@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.0a6] — 2026-04-29
+
+### Added
+
+- **Project-type auto-detection at init** — detects pyproject.toml, package.json, Cargo.toml, go.mod and pre-fills test/lint/typecheck/format commands. Preflight works on first commit with zero config.
+- **Post-init preflight health check** — shows which preflight hooks are armed vs unconfigured with copy-pasteable fix commands.
+- **Aspect descriptions in `kanon aspect list`** — one-liner per aspect from manifest `description:` field.
+- **Self-check questions in AGENTS.md hard-gates** — forces trivial/non-trivial classification before every source-modifying tool call.
+- **`kanon release` command** — gates tag creation on preflight checks (release depth 3).
+
+### Changed
+
+- **Default aspects** reduced from all 7 to 5 (sdd+testing+security+deps+worktrees). Release and fidelity are opt-in.
+- **Profile names** renamed: lean→solo, standard→team.
+- **Post-init hints** are now dynamic — only suggest aspects that aren't already enabled.
+- **Aspect descriptions** moved from hardcoded Python map to manifest `description:` field.
+
+### Fixed
+
+- **Ruff line-length error** in tier help string (caused v0.3.0a4 CI failure).
+- **Deps preflight hook** added at depth 2 (parity with security).
+
 ## [0.3.0a5] — 2026-04-29
 
 ### Added

@@ -36,6 +36,8 @@ preflight-stages:
   push:
     - run: ".venv/bin/python ci/check_security_patterns.py"
       label: security-scan
+    - run: ".venv/bin/python ci/check_deps.py"
+      label: deps-scan
   release:
-    - run: ".venv/bin/python -c \"import kanon; assert kanon.__version__ == 'v0.3.0a5'.lstrip('v')\""
+    - run: ".venv/bin/python -c \"import kanon; v='$TAG'.lstrip('v'); assert kanon.__version__ == v, f'{kanon.__version__} != {v}'\""
       label: release-preflight

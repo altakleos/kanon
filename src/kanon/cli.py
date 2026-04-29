@@ -512,14 +512,14 @@ def init(
     aspects_meta = _aspects_with_meta(aspects_to_enable)
     if "kanon-testing" in aspects_meta:
         from kanon._detect import detect_tool_config
-        detected = detect_tool_config(target)
-        if detected:
-            existing_config = aspects_meta["kanon-testing"].get("config", {})
-            for key, val in detected.items():
+        detected_tools = detect_tool_config(target)
+        if detected_tools:
+            existing_config: dict[str, Any] = aspects_meta["kanon-testing"].get("config", {})
+            for key, val in detected_tools.items():
                 existing_config.setdefault(key, val)
             aspects_meta["kanon-testing"]["config"] = existing_config
             click.echo(
-                f"  Detected project tools: {', '.join(detected.keys())}",
+                f"  Detected project tools: {', '.join(detected_tools.keys())}",
                 err=True,
             )
 
