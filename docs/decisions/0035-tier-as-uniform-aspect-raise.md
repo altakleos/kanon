@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-04-29
 ---
 # ADR-0035: Tier as uniform aspect-depth raise

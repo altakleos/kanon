@@ -1,6 +1,7 @@
 ---
-status: accepted
-date: 2026-04-22
+status: superseded
+superseded-by: 0035
+date: 2026-04-29
 ---
 # ADR-0006: Tier model semantics — consumer insulation, producer-facing migration runbooks
 
