@@ -52,7 +52,7 @@ Tier ceases to be a property the project stores. `.kanon/config.yaml` records as
 
 - Backward-incompatible behavior change for `--tier 1`: previously produced `sdd:1` only; now produces every default aspect at depth 1. The strict-superset property holds (existing users get more, never less, never a removal), but `tests/test_cli.py` expectations that assert exactly which directories appear at tier-1 break and need to widen.
 - ADR-0006 (tier model semantics) and ADR-0008 (tier migration) become at least partially superseded; their immutable bodies stand as period documents but their `status:` transitions to `superseded` with `superseded-by: 0035`.
-- `docs/specs/tiers.md` and `docs/specs/tier-migration.md` need substantive rewrites to describe the uniform-raise semantics. Their `status: accepted` invariant set (INV-tiers-*, INV-tier-migration-*) must be re-derived; some invariants survive verbatim, others are dropped, others gain a successor.
+- `docs/specs/tiers.md` and `docs/specs/tier-migration.md` need substantive rewrites to describe the uniform-raise semantics. Their `status: accepted` invariant sets (the tier-taxonomy / strict-inclusion / mutable-tier invariants in `tiers.md` and the tier-migration mutable / idempotent / additive / non-destructive invariants in `tier-migration.md`) must be re-derived; some invariants survive verbatim, others are dropped, others gain a successor.
 - Behavior change is shipped in alpha, surfaced in the v0.3.0 release notes; consumer scripts running `--tier 1` against the new CLI will scaffold more files than before. Pre-1.0 frees us from a deprecation window but raises the bar on the release-note clarity.
 
 **Neutral:**

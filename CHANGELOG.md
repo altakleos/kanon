@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Changed
+
+- **`--tier N` now applies a uniform aspect-depth raise** (ADR-0035). The flag iterates every aspect listed in the kit manifest's `defaults:` set and enables each at `min(N, aspect.max_depth)`. Previously, `--tier N` was sugar for `--aspects sdd:N` only.
+- **`defaults:` widened to enumerate every shipped aspect.** `kanon init --tier 1` now scaffolds `sdd`, `worktrees`, `release`, `testing`, `security`, `deps`, and `fidelity` at depth 1 in the new project — not sdd alone. Strict superset of prior behaviour: existing `--tier 1` projects get more, never less. No-flag `kanon init` now also scaffolds the same default set.
+- **`kanon tier set <target> N` is raise-only.** Aspects already at or above their per-aspect target depth (`min(N, max)`) are not lowered. The previous tier-down semantics (which printed "non-destructive") no longer apply: lowering targets are no-ops.
+- **ADR-0006 (tier model semantics) and ADR-0008 (tier migration) marked superseded** by ADR-0035. Their bodies remain (immutable per protocol); their `status:` transitioned to `superseded` with `superseded-by: 0035`.
+
 ## [0.3.0a3] — 2026-04-29
 
 ### Changed

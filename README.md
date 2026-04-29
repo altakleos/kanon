@@ -24,11 +24,11 @@ The kit is **self-hosting** — this repo is itself a `kanon` project running `s
 # Install
 uv tool install kanon-kit          # or: pipx install kanon-kit
 
-# Scaffold a new project (SDD at depth 1)
+# Scaffold a new project (every default aspect at depth 1, ADR-0035)
 kanon init ~/myproject --tier 1
 
-# Add worktree isolation
-kanon aspect set-depth ~/myproject worktrees 1
+# Add shell helpers for worktree isolation (worktrees 1 → 2)
+kanon aspect set-depth ~/myproject worktrees 2
 
 # Grow SDD depth as the project matures
 kanon aspect set-depth ~/myproject sdd 2

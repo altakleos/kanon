@@ -17,7 +17,7 @@ invariant_coverage:
   INV-tier-migration-tier-up-additive:
     - tests/test_cli.py::test_tier_up_additive_only
   INV-tier-migration-tier-down-non-destructive:
-    - tests/test_cli.py::test_tier_down_is_non_destructive
+    - tests/test_cli.py::test_tier_set_below_current_is_noop
   INV-tier-migration-agents-md-marker-delimited:
     - tests/test_cli.py::test_init_preserves_user_content_outside_markers
   INV-tier-migration-atomic:
@@ -28,6 +28,8 @@ invariant_coverage:
     - tests/test_cli.py::test_aspect_set_depth_invalid
 ---
 # Spec: Tier migration — `kanon tier set`
+
+> **Status update (2026-04-29, ADR-0035):** `kanon tier set <target> N` is now a uniform raise across every aspect in manifest `defaults:`. It is **raise-only** — aspects already at or above their per-aspect target depth (`min(N, max)`) are not lowered. Invariant 4 ("tier-down is non-destructive") is satisfied vacuously: tier-down does not happen at all under the new semantics, so its non-destructiveness is preserved by construction. The other invariants (mutable tier, idempotent, tier-up additive, marker-delimited rewrites, atomic) remain in force and apply per-aspect rather than to a single sdd ladder. A follow-up plan will rewrite this spec end-to-end; until then, see ADR-0035 for the authoritative new semantics.
 
 ## Intent
 
