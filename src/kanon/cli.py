@@ -507,7 +507,23 @@ def init(
     (target / ".kanon").mkdir(parents=True, exist_ok=True)
     write_sentinel(target / ".kanon", _OP_INIT)
     _write_tree_atomically(target, bundle, force=force)
-    _write_config(target, __version__, _aspects_with_meta(aspects_to_enable))
+
+    # Auto-detect project type and pre-fill testing config.
+    aspects_meta = _aspects_with_meta(aspects_to_enable)
+    if "kanon-testing" in aspects_meta:
+        from kanon._detect import detect_tool_config
+        detected = detect_tool_config(target)
+        if detected:
+            existing_config = aspects_meta["kanon-testing"].get("config", {})
+            for key, val in detected.items():
+                existing_config.setdefault(key, val)
+            aspects_meta["kanon-testing"]["config"] = existing_config
+            click.echo(
+                f"  Detected project tools: {', '.join(detected.keys())}",
+                err=True,
+            )
+
+    _write_config(target, __version__, aspects_meta)
     clear_sentinel(target / ".kanon")
 
     aspect_summary = ", ".join(f"{a}={d}" for a, d in sorted(aspects_to_enable.items()))
