@@ -400,26 +400,88 @@ def test_tier_up_additive_only(tmp_path: Path) -> None:
             assert p.read_text(encoding="utf-8") == content, f"tier-up modified: {rel}"
 
 
-def test_tier_down_is_non_destructive(tmp_path: Path) -> None:
-    """Tier-down from 3 to 0 leaves all artifact directories in place."""
+def test_tier_set_below_current_is_noop(tmp_path: Path) -> None:
+    """Per ADR-0035: tier set raises only. Lowering targets are no-ops.
+
+    A `tier set 0` invocation against a tier-3 project leaves every aspect's
+    depth unchanged and every scaffolded file on disk.
+    """
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "3"])
 
-    # Capture full tier-3 file list.
+    # Capture full tier-3 file list and aspect depths.
     tier3_files = {
         p.relative_to(target) for p in target.rglob("*") if p.is_file()
     }
+    pre_config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    pre_depths = {a: pre_config["aspects"][a]["depth"] for a in pre_config["aspects"]}
 
     result = runner.invoke(main, ["tier", "set", str(target), "0"])
     assert result.exit_code == 0
-    assert "non-destructive" in result.output.lower()
+    assert "noop" in result.output.lower() or "already at or above" in result.output.lower()
 
-    # All tier-3 files still exist (except AGENTS.md and config.yaml which are rewritten).
+    # Depths unchanged (raise-only semantics).
+    post_config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    post_depths = {a: post_config["aspects"][a]["depth"] for a in post_config["aspects"]}
+    assert pre_depths == post_depths, f"tier set 0 changed depths: {pre_depths} → {post_depths}"
+
+    # All tier-3 files still exist.
     for rel in tier3_files:
-        if rel == Path("AGENTS.md") or rel == Path(".kanon/config.yaml"):
-            continue
-        assert (target / rel).exists(), f"tier-down removed: {rel}"
+        assert (target / rel).exists(), f"tier set 0 removed: {rel}"
+
+
+def test_tier_raises_all_default_aspects(tmp_path: Path) -> None:
+    """Per ADR-0035: --tier N enables every aspect in manifest defaults: at
+    min(N, max_depth). Verifies the uniform-raise rule for tier 2.
+    """
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--tier", "2"])
+    assert result.exit_code == 0, result.output
+
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    enabled = config["aspects"]
+    # Every shipped kanon-* aspect should be present under the new defaults set.
+    expected = {
+        "kanon-sdd": 2,
+        "kanon-worktrees": 2,   # max=2, min(2, 2) = 2
+        "kanon-release": 2,     # max=2
+        "kanon-testing": 2,     # max=3, min(2, 3) = 2
+        "kanon-security": 2,    # max=2
+        "kanon-deps": 2,        # max=2
+        "kanon-fidelity": 1,    # max=1, min(2, 1) = 1 (capped)
+    }
+    for name, depth in expected.items():
+        assert name in enabled, f"missing aspect: {name}"
+        assert enabled[name]["depth"] == depth, (
+            f"{name}: expected {depth}, got {enabled[name]['depth']}"
+        )
+
+
+def test_tier_set_never_lowers(tmp_path: Path) -> None:
+    """Per ADR-0035: tier set raises only. An aspect manually configured above
+    the requested tier is preserved at its higher depth.
+    """
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    # Manually raise sdd to depth 3.
+    runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-sdd", "3"])
+    pre = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert pre["aspects"]["kanon-sdd"]["depth"] == 3
+
+    # tier set 2 should NOT lower sdd from 3.
+    result = runner.invoke(main, ["tier", "set", str(target), "2"])
+    assert result.exit_code == 0, result.output
+
+    post = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert post["aspects"]["kanon-sdd"]["depth"] == 3, (
+        "tier set 2 lowered kanon-sdd from 3"
+    )
+    # Other aspects should have been raised from 1 to 2.
+    assert post["aspects"]["kanon-worktrees"]["depth"] == 2
+    assert post["aspects"]["kanon-testing"]["depth"] == 2
 
 
 @pytest.mark.parametrize(
@@ -1271,15 +1333,16 @@ def test_init_default_tier(tmp_path: Path) -> None:
 # --- cli.py: tier set with legacy verb messaging ---
 
 
-def test_tier_set_down_legacy_verb(tmp_path: Path) -> None:
-    """Line 399 + tier-down branch: tier set uses 'Tier' verb."""
+def test_tier_set_uses_legacy_verb_on_raise(tmp_path: Path) -> None:
+    """Per ADR-0035: when tier set raises an aspect, output uses 'Tier' verb
+    (legacy_tier_verb=True), distinct from `aspect set-depth`'s per-aspect verb.
+    """
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "3"])
-    result = runner.invoke(main, ["tier", "set", str(target), "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
+    result = runner.invoke(main, ["tier", "set", str(target), "2"])
     assert result.exit_code == 0, result.output
     assert "tier" in result.output.lower()
-    assert "non-destructive" in result.output.lower()
 
 
 # --- _scaffold.py: _write_tree_atomically skip existing ---
@@ -1377,7 +1440,7 @@ def test_worktrees_depth_0_scaffolds_nothing(tmp_path: Path) -> None:
     """Depth 0: no protocol, no scripts, no markers in AGENTS.md."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-worktrees", "0"])
     assert result.exit_code == 0, result.output
 
@@ -1394,7 +1457,7 @@ def test_aspect_add(tmp_path: Path) -> None:
     """aspect add enables an aspect at its default depth."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
@@ -1417,7 +1480,7 @@ def test_aspect_add_with_depth(tmp_path: Path) -> None:
     """aspect add --depth N enables at the specified depth."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees", "--depth", "2"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
@@ -1428,7 +1491,7 @@ def test_aspect_add_depth_out_of_range(tmp_path: Path) -> None:
     """aspect add --depth with invalid depth fails."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees", "--depth", "9"])
     assert result.exit_code != 0
     assert "outside range" in result.output.lower()
@@ -1462,7 +1525,7 @@ def test_aspect_remove_not_enabled(tmp_path: Path) -> None:
     """aspect remove on a non-enabled aspect fails."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "remove", str(target), "kanon-worktrees"])
     assert result.exit_code != 0
     assert "not enabled" in result.output.lower()
@@ -1585,7 +1648,7 @@ def test_aspect_add_requires_met(tmp_path: Path) -> None:
     """aspect add worktrees succeeds when sdd >= 1."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-worktrees"])
     assert result.exit_code == 0, result.output
 
@@ -1606,7 +1669,7 @@ def test_aspect_add_release(tmp_path: Path) -> None:
     """aspect add release enables the aspect; protocol is scaffolded."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-release"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
@@ -1748,7 +1811,7 @@ def test_aspect_add_testing(tmp_path: Path) -> None:
     """aspect add testing enables the aspect; protocol is scaffolded."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-testing"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
@@ -1772,7 +1835,7 @@ def test_aspect_add_security(tmp_path: Path) -> None:
     """aspect add security enables the aspect; protocol is scaffolded."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-security"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
@@ -1794,7 +1857,7 @@ def test_aspect_add_deps(tmp_path: Path) -> None:
     """aspect add deps enables the aspect; protocol is scaffolded."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
     result = runner.invoke(main, ["aspect", "add", str(target), "kanon-deps"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
@@ -1971,7 +2034,7 @@ def test_cli_aspect_add_remove_accept_bare_name(tmp_path: Path) -> None:
     """`aspect add` and `aspect remove` accept bare names that sugar to `kanon-`."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1"])
 
     add = runner.invoke(main, ["aspect", "add", str(target), "worktrees"])
     assert add.exit_code == 0, add.output

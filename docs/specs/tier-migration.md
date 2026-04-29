@@ -17,7 +17,7 @@ invariant_coverage:
   INV-tier-migration-tier-up-additive:
     - tests/test_cli.py::test_tier_up_additive_only
   INV-tier-migration-tier-down-non-destructive:
-    - tests/test_cli.py::test_tier_down_is_non_destructive
+    - tests/test_cli.py::test_tier_set_below_current_is_noop
   INV-tier-migration-agents-md-marker-delimited:
     - tests/test_cli.py::test_init_preserves_user_content_outside_markers
   INV-tier-migration-atomic:
