@@ -11,7 +11,7 @@ These gates apply to ALL task types. When a gate fires, read the linked protocol
 | **Spec Before Design** — new user-visible capabilities require an approved spec before design/plan/implementation. Audit: "Spec at `<path>` has been approved." | About to introduce a new user-visible capability | [`spec-before-design`](.kanon/protocols/kanon-sdd/spec-before-design.md) |
 | **Worktree Isolation** — all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`. Audit: "Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`." | About to modify any file | [`branch-hygiene`](.kanon/protocols/kanon-worktrees/branch-hygiene.md) |
 
-The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught.
+The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught. This is the intended enforcement mechanism — prose is source code ([P-prose-is-code](docs/foundations/principles/P-prose-is-code.md)), not a stopgap for a missing CI gate.
 
 **Before every source-modifying tool call, answer these questions:**
 

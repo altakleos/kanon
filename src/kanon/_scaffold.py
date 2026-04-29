@@ -318,7 +318,10 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
         "",
         "The audit-trail sentence from the relevant protocol must appear "
         "before your first source-modifying tool call. "
-        "Its absence in a transcript is how violations get caught.",
+        "Its absence in a transcript is how violations get caught. "
+        "This is the intended enforcement mechanism — prose is source code "
+        "([P-prose-is-code](docs/foundations/principles/P-prose-is-code.md)), "
+        "not a stopgap for a missing CI gate.",
         "",
         "**Before every source-modifying tool call, answer these questions:**",
         "",
