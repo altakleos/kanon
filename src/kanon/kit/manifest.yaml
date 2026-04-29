@@ -58,7 +58,7 @@ aspects:
   kanon-release:
     path: aspects/kanon-release
     stability: experimental
-    depth-range: [0, 2]
+    depth-range: [0, 3]
     default-depth: 1
     requires: []
     provides:
