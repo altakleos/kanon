@@ -7,7 +7,7 @@ content-construction layer that CLI commands orchestrate.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 import click
 import yaml
@@ -249,7 +249,17 @@ def _build_bundle(
     return bundle
 
 
-_HARD_GATES: list[dict[str, Any]] = [
+class _HardGate(TypedDict):
+    aspect: str
+    depth_min: int
+    protocol: str
+    label: str
+    summary: str
+    audit: str
+    fires: str
+
+
+_HARD_GATES: list[_HardGate] = [
     {
         "aspect": "kanon-sdd",
         "depth_min": 1,
