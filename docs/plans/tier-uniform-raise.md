@@ -34,14 +34,14 @@ The `--profile` flag (`lean` / `standard` / `full`) and the `--lite` flag are no
 
 ## Acceptance Criteria
 
-- [ ] AC1: `kanon init <tmp> --tier 2` produces a `.kanon/config.yaml` whose `aspects:` map contains every aspect in manifest `defaults:`, each at depth `min(2, max_depth)`.
-- [ ] AC2: `kanon tier set <target> 2` on a project with `kanon-sdd: 3, kanon-testing: 0` results in `kanon-sdd: 3` (preserved), `kanon-testing: 2` (raised), and every other defaults aspect at min(2, max).
-- [ ] AC3: `kanon init <tmp>` (no flags) no longer differs from `kanon init <tmp> --tier 1` if T1 widens `defaults:` — verify the equivalence is intentional, not accidental.
-- [ ] AC4: ADR-0006 and ADR-0008 remain `status: superseded` with `superseded-by: 0035` and unchanged bodies.
-- [ ] AC5: `docs/specs/tiers.md` and `docs/specs/tier-migration.md` `status: accepted` invariant tables (re-derived) all map to passing tests in `tests/test_cli.py`.
-- [ ] AC6: `kanon verify .` returns `status: ok`.
-- [ ] AC7: `pytest` passes with no new failures.
-- [ ] AC8: CHANGELOG `## [Unreleased]` describes the behavior change in language a consumer running `--tier 1` today would understand.
+- [x] AC1: `kanon init <tmp> --tier 2` produces a `.kanon/config.yaml` whose `aspects:` map contains every aspect in manifest `defaults:`, each at depth `min(2, max_depth)`.
+- [x] AC2: `kanon tier set <target> 2` on a project with `kanon-sdd: 3, kanon-testing: 0` results in `kanon-sdd: 3` (preserved), `kanon-testing: 2` (raised), and every other defaults aspect at min(2, max).
+- [x] AC3: `kanon init <tmp>` (no flags) no longer differs from `kanon init <tmp> --tier 1` if T1 widens `defaults:` — verify the equivalence is intentional, not accidental.
+- [x] AC4: ADR-0006 and ADR-0008 remain `status: superseded` with `superseded-by: 0035` and unchanged bodies.
+- [x] AC5: `docs/specs/tiers.md` and `docs/specs/tier-migration.md` `status: accepted` invariant tables (re-derived) all map to passing tests in `tests/test_cli.py`.
+- [x] AC6: `kanon verify .` returns `status: ok`.
+- [x] AC7: `pytest` passes with no new failures.
+- [x] AC8: CHANGELOG `## [Unreleased]` describes the behavior change in language a consumer running `--tier 1` today would understand.
 
 ## Documentation Impact
 
