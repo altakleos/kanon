@@ -394,7 +394,7 @@ def main() -> None:
     type=click.IntRange(0, 3),
     default=None,
     show_default=False,
-    help="Uniform depth N applied to every aspect in the manifest defaults: set, capped at each aspect's max depth (ADR-0035).",
+    help="Uniform depth N for every default aspect, capped at each aspect's max (ADR-0035).",
 )
 @click.option(
     "--aspects",
@@ -759,6 +759,71 @@ def _emit_verify_report(
                 click.echo(f"    - {w}", err=True)
     else:
         click.echo(f"FAIL — {len(errors)} error(s) at {target}.", err=True)
+
+
+@main.command("release")
+@click.argument(
+    "target",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+)
+@click.option("--tag", required=True, help="Release tag, e.g. v1.2.0")
+@click.option("--dry-run", is_flag=True, help="Run preflight but don't create tag.")
+def release_cmd(target: Path, tag: str, dry_run: bool) -> None:
+    """Gate a release tag on preflight checks (release depth >= 3)."""
+    import re as _re
+    import subprocess as _sp
+
+    target = target.resolve()
+    config = _read_config(target)
+    aspects = _config_aspects(config)
+
+    # Check release aspect depth >= 3.
+    release_depth = aspects.get("kanon-release", 0)
+    if release_depth < 3:
+        raise click.ClickException(
+            f"release aspect depth >= 3 required (current: {release_depth}). "
+            f"Run: kanon aspect set-depth {target} release 3"
+        )
+
+    # Validate tag format.
+    if not _re.match(r"^v?\d+\.\d+\.\d+", tag):
+        raise click.ClickException(f"Invalid tag format: {tag!r}")
+
+    # Check clean working tree.
+    st = _sp.run(
+        ["git", "status", "--porcelain"],
+        cwd=str(target), capture_output=True, text=True,
+    )
+    if st.stdout.strip():
+        raise click.ClickException("Working tree is dirty. Commit first.")
+
+    # Run preflight --stage release.
+    from click.testing import CliRunner as _Runner
+    pf = _Runner(mix_stderr=False).invoke(
+        main, ["preflight", str(target), "--stage", "release", "--tag", tag],
+    )
+    # Print preflight stderr (human-readable check results).
+    if pf.stderr_bytes:
+        click.echo(pf.stderr_bytes.decode(), err=True, nl=False)
+
+    if pf.exit_code != 0:
+        click.echo("✗ Preflight failed — tag NOT created.", err=True)
+        sys.exit(1)
+
+    if dry_run:
+        click.echo(
+            f"✓ Preflight passed (dry-run) — tag {tag} would be created.",
+            err=True,
+        )
+        sys.exit(0)
+
+    # Create annotated tag.
+    _sp.run(
+        ["git", "tag", "-a", tag, "-m", f"Release {tag}"],
+        cwd=str(target), check=True,
+    )
+    click.echo(f"✓ Tagged {tag}", err=True)
+    click.echo(f"  Push with: git push origin {tag}", err=True)
 
 
 @main.group()
