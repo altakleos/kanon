@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.0a3] — 2026-04-29
+
+### Changed
+
+- **sdd-method.md trimmed from 458 to 87 lines** — content redistributed to artifact-directory READMEs (decisions, design, foundations, specs, plans). The method doc retains only the layer stack, routing paths, document authority, and glossary.
+
 ## [0.3.0a2] — 2026-04-28
 
 ### Added
