@@ -512,15 +512,35 @@ def init(
 
     aspect_summary = ", ".join(f"{a}={d}" for a, d in sorted(aspects_to_enable.items()))
     click.echo(f"\n✓ Created kanon project at {target} ({aspect_summary})")
-    click.echo(
-        "\n  Next steps:\n"
-        "  1. Open this folder with your LLM coding agent\n"
-        "  2. The agent will read AGENTS.md and follow the SDD process\n"
-        "\n  Grow when ready:\n"
-        "    kanon aspect set-depth . sdd 2     # add specs\n"
-        "    kanon aspect add . testing          # add test discipline\n"
-        "    kanon aspect add . security         # add secure-by-default protocols\n"
+    # Build dynamic "Grow when ready" hints based on what's NOT enabled.
+    grow_hints: list[str] = []
+    if "kanon-sdd" in aspects_to_enable and aspects_to_enable["kanon-sdd"] < 2:
+        grow_hints.append(
+            "    kanon aspect set-depth . sdd 2     # add specs"
+        )
+    if "kanon-testing" not in aspects_to_enable:
+        grow_hints.append(
+            "    kanon aspect add . testing          # add test discipline"
+        )
+    if "kanon-security" not in aspects_to_enable:
+        grow_hints.append(
+            "    kanon aspect add . security         # add secure-by-default protocols"
+        )
+    if "kanon-worktrees" not in aspects_to_enable:
+        grow_hints.append(
+            "    kanon aspect add . worktrees        # add worktree isolation"
+        )
+    grow_hints.append(
         "    kanon verify .                      # check project health"
+    )
+    grow_section = "\n".join(grow_hints)
+
+    click.echo(
+        f"\n  Next steps:\n"
+        f"  1. Open this folder with your LLM coding agent\n"
+        f"  2. The agent will read AGENTS.md and follow the process\n"
+        f"\n  Grow when ready:\n"
+        f"{grow_section}"
     )
 
 

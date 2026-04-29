@@ -28,3 +28,7 @@ depth-2:
     - ci/check_deps.py
   protocols: []
   sections: []
+  preflight:
+    push:
+      - run: "python ci/check_deps.py"
+        label: deps-scan
