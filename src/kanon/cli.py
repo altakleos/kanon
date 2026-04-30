@@ -267,15 +267,41 @@ def init(
     }
 
     bundle = _build_bundle(aspects_to_enable, context)
-    bundle["AGENTS.md"] = _assemble_agents_md(aspects_to_enable, target.name)
+    # Per INV-cli-init-agents-md-merge / ADR-0038: three-branch merge into
+    # an existing AGENTS.md. (1) absent → write full kit-rendered file;
+    # (2) existing with kanon markers → refresh marker bodies via the same
+    # primitive `kanon upgrade` uses; (3) existing without markers → prepend
+    # kit content above the existing prose, separated by `## Project context`
+    # so hard-gates retain enforcement proximity (ADR-0010 / ADR-0034).
+    new_agents = _assemble_agents_md(aspects_to_enable, target.name)
+    agents_path = target / "AGENTS.md"
+    if agents_path.is_file():
+        existing = agents_path.read_text(encoding="utf-8")
+        if "<!-- kanon:begin:" in existing:
+            bundle["AGENTS.md"] = _merge_agents_md(existing, new_agents)
+        else:
+            bundle["AGENTS.md"] = (
+                new_agents.rstrip()
+                + "\n\n## Project context\n\n"
+                + existing.lstrip()
+            )
+    else:
+        bundle["AGENTS.md"] = new_agents
     shim_names = _resolve_init_harnesses(harness_arg, target)
     bundle.update(_render_shims(only=shim_names))
 
-    from kanon._atomic import clear_sentinel, write_sentinel
+    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
+
+    # AGENTS.md is written out-of-band: `_write_tree_atomically` skips
+    # files that exist when `force=False`, but per ADR-0038 init must
+    # always update AGENTS.md (refresh markers or prepend kit content),
+    # never silently leave it untouched.
+    agents_md_content = bundle.pop("AGENTS.md")
 
     (target / ".kanon").mkdir(parents=True, exist_ok=True)
     write_sentinel(target / ".kanon", _OP_INIT)
     _write_tree_atomically(target, bundle, force=force)
+    atomic_write_text(target / "AGENTS.md", agents_md_content)
 
     # Auto-detect project type and pre-fill testing config.
     aspects_meta = _aspects_with_meta(aspects_to_enable)

@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Changed
+
+- **`kanon init` no longer silently skips an existing `AGENTS.md`** (per [ADR-0038](docs/decisions/0038-init-merge-into-existing-agents-md.md)). Three branches by precedence: (1) absent → write the full kit-rendered file; (2) existing with at least one `<!-- kanon:begin:... -->` marker → refresh marker bodies and preserve outside content byte-for-byte (same primitive `kanon upgrade` uses); (3) existing without markers → prepend the full kit-rendered AGENTS.md above the existing prose, separated by a `## Project context` H2 (existing prose preserved verbatim under the H2). Closes a UX defect surfaced after v0.3.0a8 shipped — `kanon init . --profile max` against a project with a pre-existing 23-line AGENTS.md left the canonical agent boot doc untouched, with zero references to any of the depth-3 protocols the kit just scaffolded. `--force` is not required for any branch; init never destroys user-authored prose. Spec amendment in `docs/specs/cli.md` (new INV-cli-init-agents-md-merge).
+
 ## [0.3.0a8] — 2026-04-30
 
 ### Changed
