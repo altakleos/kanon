@@ -9,9 +9,9 @@ from __future__ import annotations
 import importlib.util
 import os
 import subprocess
+from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
-from typing import Callable
 
 import pytest
 

@@ -80,7 +80,9 @@ def test_no_duplicates_single_lib(mod, tmp_path: Path) -> None:
     assert mod._check_duplicates(tmp_path) == []
 
 
-def test_main_exits_zero(mod, tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
+def test_main_exits_zero(
+    mod, tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch,
+) -> None:
     req = tmp_path / "requirements.txt"
     req.write_text("click==8.1.7\n")
     monkeypatch.setattr("sys.argv", ["check_deps", "--root", str(tmp_path)])

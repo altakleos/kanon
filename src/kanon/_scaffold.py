@@ -131,11 +131,11 @@ def _config_aspects(config: dict[str, Any]) -> dict[str, int]:
             )
         try:
             result[name] = int(entry["depth"])
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as exc:
             raise click.ClickException(
                 f"Malformed .kanon/config.yaml: aspect {name!r} has "
                 f"non-integer depth {entry['depth']!r}."
-            )
+            ) from exc
     return result
 
 

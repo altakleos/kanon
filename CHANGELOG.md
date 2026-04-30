@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.1a1] — 2026-04-30
+
+### Fixed
+
+- **`kanon-release` depth-range corrected from `[0, 3]` to `[0, 2]`** — the manifest declared depth 3 but it was empty (zero files, protocols, or sections over depth 2). `--profile max` now correctly sets `kanon-release:2`. README, spec (INV-release-depth-range), and CHANGELOG already documented the range as 0–2; the manifest was a stale artifact. ADR-0037 updated with `Allow-ADR-edit` trailer.
+- **`_preflight.py` now surfaces exception details** — when a preflight command raises (e.g., `FileNotFoundError` for a missing binary), the exception message is printed to stderr instead of being silently swallowed.
+- **`_scaffold.py` catches non-numeric depth values** — a non-integer `depth:` in `.kanon/config.yaml` (e.g., `"high"`) now raises a clean `ClickException` instead of an ugly `ValueError` traceback.
+
+### Changed
+
+- **`_cli_helpers.py` test coverage raised from 82% to 98%** — 23 new tests covering all error branches. Two remaining uncovered lines are dead code.
+- **CI test boilerplate deduplicated** — new `tests/ci/conftest.py` provides shared `load_ci_script` fixture and `_git` helper, eliminating ~210 lines of duplicated importlib/git boilerplate across 14 CI test files.
+
 ## [0.3.0a9] — 2026-04-30
 
 ### Changed
