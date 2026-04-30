@@ -133,6 +133,14 @@ def _config_aspects(config: dict[str, Any]) -> dict[str, int]:
     return result
 
 
+def _ensure_within(path: Path, base: Path) -> Path:
+    """Resolve *path* and verify it stays inside *base*."""
+    resolved = path.resolve()
+    if not resolved.is_relative_to(base.resolve()):
+        raise click.ClickException(f"Path escapes target directory: {path}")
+    return resolved
+
+
 def _write_config(
     target: Path,
     kit_version: str,
@@ -143,7 +151,7 @@ def _write_config(
     """Write a v2 .kanon/config.yaml atomically."""
     from kanon._atomic import atomic_write_text
 
-    config_dir = target / ".kanon"
+    config_dir = _ensure_within(target / ".kanon", target)
     config_dir.mkdir(parents=True, exist_ok=True)
     payload: dict[str, Any] = {"kit_version": kit_version, "aspects": aspects_with_meta}
     if extra:
@@ -587,13 +595,9 @@ def _write_tree_atomically(
 ) -> None:
     from kanon._atomic import atomic_write_text
 
-    resolved_target = target.resolve()
     for rel, content in sorted(files.items()):
         dst = target / rel
-        if not dst.resolve().is_relative_to(resolved_target):
-            raise click.ClickException(
-                f"Scaffold path escapes target directory: {rel!r}"
-            )
+        _ensure_within(dst, target)
         if dst.exists() and not force:
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
@@ -615,6 +619,7 @@ def _migrate_flat_protocols(target: Path, aspects: dict[str, int]) -> bool:
     if "kanon-sdd" not in aspects:
         return False
     sdd_dir = protocols_dir / "kanon-sdd"
+    _ensure_within(sdd_dir, target)
     sdd_dir.mkdir(parents=True, exist_ok=True)
     for p in flat:
         dest = sdd_dir / p.name

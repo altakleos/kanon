@@ -1475,7 +1475,7 @@ def test_write_tree_atomically_rejects_path_traversal(tmp_path: Path) -> None:
     """Scaffold paths escaping the target directory are rejected."""
     from kanon._scaffold import _write_tree_atomically
 
-    with pytest.raises(click.ClickException, match="Scaffold path escapes"):
+    with pytest.raises(click.ClickException, match="Path escapes target directory"):
         _write_tree_atomically(tmp_path, {"../../escape.txt": "malicious"}, force=True)
 
 

@@ -14,8 +14,8 @@ Address all 7 low/informational issues identified during the codebase analysis.
 ### 1. Fix broken doc link in `docs/design/aspect-model.md`
 
 **File:** `docs/design/aspect-model.md:213`
-**Problem:** Link `[tier-up-advisor](.kanon/protocols/kanon-sdd/tier-up-advisor.md)` resolves relative to `docs/design/`, pointing to a nonexistent path.
-**Fix:** Change to `[tier-up-advisor](../../.kanon/protocols/kanon-sdd/tier-up-advisor.md)`.
+**Problem:** Link resolves relative to `docs/design/`, pointing to a nonexistent path.
+**Fix:** Changed relative path to `../../.kanon/protocols/kanon-sdd/tier-up-advisor.md`.
 
 ### 2. Promote preflight spec/design from draft to accepted
 
