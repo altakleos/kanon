@@ -69,7 +69,7 @@ For items that clearly don't apply to the current change (e.g., no dependencies 
 
 ## Exit criteria
 
-You have checked all 9 items and can state: "All acceptance criteria met. No test regressions. Docs updated. No unrelated changes. Artifact statuses current." If you cannot truthfully state this, the work is not done — identify what remains.
+You have checked all 9 items and can state: "All acceptance criteria met. No test regressions. Docs updated. No unrelated changes. Artifact statuses current. Changes committed and pushed per Contribution Conventions." If you cannot truthfully state this, the work is not done — identify what remains.
 
 ## Anti-patterns
 

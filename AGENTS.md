@@ -104,3 +104,10 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 - **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`). Soft CI check warns on non-conforming messages but does not block merges.
 - **Changelog** — append every user-visible change to `## [Unreleased]` in `CHANGELOG.md` in the same commit that introduces it. Don't batch at release time. Refactors, internal tests, and docs-only edits don't need a changelog entry.
 - **Version references** — always write pre-release versions in full (`v0.1.0a9` or `0.1.0a9`), never the bare suffix (`a9`). A bare suffix is a PEP 440 pre-release marker that attaches to any `X.Y.Z`.
+- **Delivering work** — a task is not done until changes are committed and pushed. After completing work:
+  1. Run the `completion-checklist` protocol first, if active.
+  2. Stage changed files explicitly (`git add <files>`), not `git add .`.
+  3. Commit with a conventional-commit message. Reference the plan slug if one exists.
+  4. Push to the remote branch. For worktree branches, push `wt/<slug>`.
+  5. Open a PR/MR/CR with a summary of changes, what was tested, and a link to the plan.
+  6. State what was committed and where the PR is. Never leave uncommitted changes.

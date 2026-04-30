@@ -53,7 +53,8 @@ When multiple worktrees are active simultaneously:
 
 ### 6. Teardown
 
-- Commit or stash all changes. **Never force-remove a worktree with uncommitted changes.**
+- Commit all changes. **Never force-remove a worktree with uncommitted changes.**
+- Push the worktree branch and open a PR/MR/CR before tearing down. A worktree should not be removed until its changes are on a remote branch with a review request (or merged to main).
 - Remove the worktree: `git worktree remove .worktrees/<slug>`.
 - Delete the branch only if it has been merged: `git branch -d wt/<slug>`.
 - If the branch has not been merged and work is abandoned, escalate to the human before deleting.
