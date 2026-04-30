@@ -169,9 +169,15 @@ def _emit_init_hints(
 @click.option(
     "--profile",
     "profile_arg",
-    type=click.Choice(["solo", "team", "full"], case_sensitive=False),
+    type=click.Choice(["solo", "team", "all", "max"], case_sensitive=False),
     default=None,
-    help="Preset aspect bundles. solo=sdd:1, team=sdd+testing+security+deps+worktrees, full=all aspects.",
+    help=(
+        "Preset aspect bundles (per ADR-0037). "
+        "solo=sdd:1; "
+        "team=sdd+testing+security+deps+worktrees at depth 1; "
+        "all=every kit aspect at its default-depth; "
+        "max=every kit aspect at the upper end of its depth-range."
+    ),
 )
 @click.option(
     "--quiet", "-q",
@@ -221,8 +227,13 @@ def init(
     _PROFILES: dict[str, dict[str, int]] = {
         "solo": {"kanon-sdd": 1},
         "team": {"kanon-sdd": 1, "kanon-testing": 1, "kanon-security": 1, "kanon-deps": 1, "kanon-worktrees": 1},
-        "full": {
+        "all": {
             name: int(entry["default-depth"])
+            for name, entry in top["aspects"].items()
+            if name.startswith("kanon-")
+        },
+        "max": {
+            name: int(entry["depth-range"][1])
             for name, entry in top["aspects"].items()
             if name.startswith("kanon-")
         },

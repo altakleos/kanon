@@ -182,28 +182,68 @@ def test_init_lite(tmp_path: Path) -> None:
 
 
 
-def test_init_profile_standard(tmp_path: Path) -> None:
-    """--profile team enables sdd+testing+security+deps at depth 1."""
+def test_profile_solo_enables_only_sdd(tmp_path: Path) -> None:
+    """INV-cli-init-profile: --profile solo enables exactly kanon-sdd at depth 1."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--profile", "solo"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    assert set(config["aspects"]) == {"kanon-sdd"}
+    assert config["aspects"]["kanon-sdd"]["depth"] == 1
+
+
+def test_profile_team_enables_five_aspects(tmp_path: Path) -> None:
+    """INV-cli-init-profile: --profile team enables sdd+testing+security+deps+worktrees at depth 1."""
     runner = CliRunner()
     target = tmp_path / "scratch"
     result = runner.invoke(main, ["init", str(target), "--profile", "team"])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert config["aspects"]["kanon-sdd"]["depth"] == 1
-    assert config["aspects"]["kanon-testing"]["depth"] == 1
-    assert config["aspects"]["kanon-security"]["depth"] == 1
-    assert config["aspects"]["kanon-deps"]["depth"] == 1
+    expected = {"kanon-sdd", "kanon-testing", "kanon-security", "kanon-deps", "kanon-worktrees"}
+    assert set(config["aspects"]) == expected
+    for name in expected:
+        assert config["aspects"][name]["depth"] == 1
 
 
+def test_profile_all_uses_default_depths(tmp_path: Path) -> None:
+    """INV-cli-init-profile: --profile all enables every kit aspect at its manifest default-depth."""
+    from kanon._manifest import _load_top_manifest
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--profile", "all"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    top = _load_top_manifest()
+    kit_aspects = {n for n in top["aspects"] if n.startswith("kanon-")}
+    assert set(config["aspects"]) == kit_aspects
+    for name in kit_aspects:
+        assert config["aspects"][name]["depth"] == int(top["aspects"][name]["default-depth"])
 
-def test_init_profile_full(tmp_path: Path) -> None:
-    """--profile full enables all kit aspects at default depth."""
+
+def test_profile_max_uses_max_depths(tmp_path: Path) -> None:
+    """INV-cli-init-profile: --profile max enables every kit aspect at the upper end of its depth-range."""
+    from kanon._manifest import _load_top_manifest
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--profile", "max"])
+    assert result.exit_code == 0, result.output
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
+    top = _load_top_manifest()
+    kit_aspects = {n for n in top["aspects"] if n.startswith("kanon-")}
+    assert set(config["aspects"]) == kit_aspects
+    for name in kit_aspects:
+        assert config["aspects"][name]["depth"] == int(top["aspects"][name]["depth-range"][1])
+
+
+def test_profile_full_is_rejected(tmp_path: Path) -> None:
+    """INV-cli-init-profile: legacy --profile full is rejected with click's choice error."""
     runner = CliRunner()
     target = tmp_path / "scratch"
     result = runner.invoke(main, ["init", str(target), "--profile", "full"])
-    assert result.exit_code == 0, result.output
-    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert len(config["aspects"]) >= 7
+    assert result.exit_code != 0
+    assert "full" in result.output.lower() or "invalid" in result.output.lower()
+    assert not (target / ".kanon").exists()
 
 
 
