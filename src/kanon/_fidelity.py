@@ -91,6 +91,95 @@ def _string_list(value: object, label: str, path_name: str) -> tuple[tuple[str, 
     return tuple(items), errors
 
 
+def _validate_regex_patterns(
+    label: str, patterns: list[str] | tuple[str, ...], filename: str,
+) -> list[str]:
+    """Return errors for patterns that fail to compile as regex."""
+    errors: list[str] = []
+    for pattern in patterns:
+        try:
+            re.compile(pattern)
+        except re.error as exc:
+            errors.append(
+                f"fidelity: {filename}: invalid regex in {label}: "
+                f"{pattern!r} ({exc})"
+            )
+    return errors
+
+
+def _parse_min_max_band(
+    raw: object, key_prefix: str, filename: str,
+) -> tuple[float | None, float | None, list[str]]:
+    """Parse a {min, max} numeric band. Return (min, max, errors)."""
+    errors: list[str] = []
+    if not isinstance(raw, dict):
+        return None, None, [f"fidelity: {filename}: {key_prefix} must be a mapping"]
+    v_min = raw.get("min")
+    v_max = raw.get("max")
+    if v_min is not None and not isinstance(v_min, (int, float)):
+        errors.append(f"fidelity: {filename}: {key_prefix}.min must be a number")
+    elif v_max is not None and not isinstance(v_max, (int, float)):
+        errors.append(f"fidelity: {filename}: {key_prefix}.max must be a number")
+    elif v_min is not None and v_max is not None and v_min > v_max:
+        errors.append(f"fidelity: {filename}: {key_prefix}.min ({v_min}) > max ({v_max})")
+    if errors:
+        return None, None, errors
+    return (
+        float(v_min) if v_min is not None else None,
+        float(v_max) if v_max is not None else None,
+        [],
+    )
+
+
+def _parse_pattern_density_entries(
+    raw: object, filename: str,
+) -> tuple[list[PatternDensityEntry], list[str]]:
+    """Parse the pattern_density list. Return (entries, errors)."""
+    if not isinstance(raw, list):
+        return [], [f"fidelity: {filename}: pattern_density must be a list"]
+    entries: list[PatternDensityEntry] = []
+    errors: list[str] = []
+    for idx, entry in enumerate(raw):
+        if not isinstance(entry, dict):
+            errors.append(f"fidelity: {filename}: pattern_density[{idx}] must be a mapping")
+            continue
+        p_single = entry.get("pattern")
+        p_list = entry.get("patterns", [])
+        if p_single and isinstance(p_single, str):
+            p_list = [p_single] + (p_list if isinstance(p_list, list) else [])
+        elif not isinstance(p_list, list):
+            errors.append(f"fidelity: {filename}: pattern_density[{idx}].patterns must be a list")
+            continue
+        if not p_list:
+            errors.append(f"fidelity: {filename}: pattern_density[{idx}] must declare pattern or patterns")
+            continue
+        strip_cf = bool(entry.get("strip_code_fences", False))
+        pd_min, pd_max, band_errors = _parse_min_max_band(
+            {"min": entry.get("min"), "max": entry.get("max")},
+            f"pattern_density[{idx}]", filename,
+        )
+        if band_errors:
+            errors.extend(band_errors)
+            continue
+        regex_errors = _validate_regex_patterns(
+            f"pattern_density[{idx}]", [p for p in p_list if isinstance(p, str)], filename,
+        )
+        if regex_errors:
+            errors.extend(regex_errors)
+            continue
+        # Validate all patterns are strings
+        if any(not isinstance(p, str) for p in p_list):
+            errors.append(f"fidelity: {filename}: pattern_density[{idx}] pattern must be a string")
+            continue
+        entries.append(PatternDensityEntry(
+            patterns=tuple(p_list),
+            strip_code_fences=strip_cf,
+            min=pd_min,
+            max=pd_max,
+        ))
+    return entries, errors
+
+
 def parse_fixture(path: Path) -> tuple[Fixture | None, list[str]]:
     """Parse a fidelity fixture file. Return (Fixture | None, errors).
 
@@ -148,14 +237,7 @@ def parse_fixture(path: Path) -> tuple[Fixture | None, list[str]]:
         (_REQUIRED_ONE_OF_KEY, one_of),
         (_REQUIRED_ALL_OF_KEY, all_of),
     ):
-        for pattern in patterns:
-            try:
-                re.compile(pattern)
-            except re.error as exc:
-                errors.append(
-                    f"fidelity: {path.name}: invalid regex in {label}: "
-                    f"{pattern!r} ({exc})"
-                )
+        errors.extend(_validate_regex_patterns(label, patterns, path.name))
 
     if errors:
         return None, errors
@@ -173,76 +255,17 @@ def parse_fixture(path: Path) -> tuple[Fixture | None, list[str]]:
     word_share_band: WordShareBand | None = None
     ws_raw = fm.get("word_share")
     if ws_raw is not None:
-        if not isinstance(ws_raw, dict):
-            errors.append(f"fidelity: {path.name}: word_share must be a mapping")
-        else:
-            ws_min = ws_raw.get("min")
-            ws_max = ws_raw.get("max")
-            if ws_min is not None and not isinstance(ws_min, (int, float)):
-                errors.append(f"fidelity: {path.name}: word_share.min must be a number")
-            elif ws_max is not None and not isinstance(ws_max, (int, float)):
-                errors.append(f"fidelity: {path.name}: word_share.max must be a number")
-            elif ws_min is not None and ws_max is not None and ws_min > ws_max:
-                errors.append(f"fidelity: {path.name}: word_share.min ({ws_min}) > max ({ws_max})")
-            else:
-                word_share_band = WordShareBand(
-                    min=float(ws_min) if ws_min is not None else None,
-                    max=float(ws_max) if ws_max is not None else None,
-                )
+        ws_min, ws_max, ws_errors = _parse_min_max_band(ws_raw, "word_share", path.name)
+        errors.extend(ws_errors)
+        if not ws_errors:
+            word_share_band = WordShareBand(min=ws_min, max=ws_max)
 
     # pattern_density entries
     pd_entries: list[PatternDensityEntry] = []
     pd_raw = fm.get("pattern_density")
     if pd_raw is not None:
-        if not isinstance(pd_raw, list):
-            errors.append(f"fidelity: {path.name}: pattern_density must be a list")
-        else:
-            for idx, entry in enumerate(pd_raw):
-                if not isinstance(entry, dict):
-                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}] must be a mapping")
-                    continue
-                p_single = entry.get("pattern")
-                p_list = entry.get("patterns", [])
-                if p_single and isinstance(p_single, str):
-                    p_list = [p_single] + (p_list if isinstance(p_list, list) else [])
-                elif not isinstance(p_list, list):
-                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}].patterns must be a list")
-                    continue
-                if not p_list:
-                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}] must declare pattern or patterns")
-                    continue
-                strip_cf = bool(entry.get("strip_code_fences", False))
-                pd_min = entry.get("min")
-                pd_max = entry.get("max")
-                if pd_min is not None and not isinstance(pd_min, (int, float)):
-                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}].min must be a number")
-                    continue
-                if pd_max is not None and not isinstance(pd_max, (int, float)):
-                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}].max must be a number")
-                    continue
-                if pd_min is not None and pd_max is not None and pd_min > pd_max:
-                    errors.append(f"fidelity: {path.name}: pattern_density[{idx}].min ({pd_min}) > max ({pd_max})")
-                    continue
-                # Validate regexes
-                valid = True
-                for p in p_list:
-                    if not isinstance(p, str):
-                        errors.append(f"fidelity: {path.name}: pattern_density[{idx}] pattern must be a string")
-                        valid = False
-                        break
-                    try:
-                        re.compile(p)
-                    except re.error as exc:
-                        errors.append(f"fidelity: {path.name}: invalid regex in pattern_density[{idx}]: {p!r} ({exc})")
-                        valid = False
-                        break
-                if valid:
-                    pd_entries.append(PatternDensityEntry(
-                        patterns=tuple(p_list),
-                        strip_code_fences=strip_cf,
-                        min=float(pd_min) if pd_min is not None else None,
-                        max=float(pd_max) if pd_max is not None else None,
-                    ))
+        pd_entries, pd_errors = _parse_pattern_density_entries(pd_raw, path.name)
+        errors.extend(pd_errors)
 
     if errors:
         return None, errors
