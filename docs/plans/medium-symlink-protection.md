@@ -51,7 +51,7 @@ Add tests in `tests/test_scaffold_symlink.py`:
 
 ## Acceptance criteria
 
-- [ ] `_ensure_within` helper exists and is used in all 3 write paths
-- [ ] Inline containment check in `_write_tree_atomically` replaced with helper call
-- [ ] New test file with symlink attack scenarios
-- [ ] All existing tests pass
+- [x] `_ensure_within` helper exists and is used in all 3 write paths
+- [x] Inline containment check in `_write_tree_atomically` replaced with helper call
+- [x] New test file with symlink attack scenarios
+- [x] All existing tests pass

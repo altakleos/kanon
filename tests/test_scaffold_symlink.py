@@ -1,14 +1,9 @@
 """Tests for symlink/path-traversal protection in scaffold operations."""
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import pytest
-import yaml
-from click.testing import CliRunner
-
-from kanon.cli import main
 
 
 def test_symlink_in_scaffold_target_is_rejected(tmp_path: Path) -> None:
