@@ -863,7 +863,7 @@ def _emit_verify_report(
 @click.option("--tag", required=True, help="Release tag, e.g. v1.2.0")
 @click.option("--dry-run", is_flag=True, help="Run preflight but don't create tag.")
 def release_cmd(target: Path, tag: str, dry_run: bool) -> None:
-    """Gate a release tag on preflight checks (release depth >= 3)."""
+    """Gate a release tag on preflight checks (release depth >= 2)."""
     import re as _re
     import subprocess as _sp
 
@@ -871,12 +871,12 @@ def release_cmd(target: Path, tag: str, dry_run: bool) -> None:
     config = _read_config(target)
     aspects = _config_aspects(config)
 
-    # Check release aspect depth >= 3.
+    # Check release aspect depth >= 2.
     release_depth = aspects.get("kanon-release", 0)
-    if release_depth < 3:
+    if release_depth < 2:
         raise click.ClickException(
-            f"release aspect depth >= 3 required (current: {release_depth}). "
-            f"Run: kanon aspect set-depth {target} release 3"
+            f"release aspect depth >= 2 required (current: {release_depth}). "
+            f"Run: kanon aspect set-depth {target} release 2"
         )
 
     # Validate tag format.
