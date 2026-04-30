@@ -220,7 +220,12 @@ def _principle_rewrites(
     slug_re = _slug_boundary_pattern(old_slug)
 
     # Canonical file: rewrite frontmatter id and move to new path.
-    canonical_text = canonical_src.read_text(encoding="utf-8")
+    try:
+        canonical_text = canonical_src.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise click.ClickException(
+            f"Cannot read principle file {canonical_src}: {exc}"
+        ) from None
     new_canonical_text = _replace_in_frontmatter(canonical_text, slug_re, new_slug)
     new_canonical_text = _replace_link_targets(
         new_canonical_text, "principles", old_slug, new_slug,
@@ -285,7 +290,10 @@ def rewrites_extend_with_frontmatter(
 ) -> None:
     """Helper: append a frontmatter-rewrite for *md* to *rewrites* if the
     slug appears as a token in its frontmatter, else no-op."""
-    text = md.read_text(encoding="utf-8")
+    try:
+        text = md.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise click.ClickException(f"Cannot read {md}: {exc}") from None
     new_text = _replace_in_frontmatter(text, slug_re, new_slug)
     if new_text == text:
         return
@@ -355,10 +363,18 @@ def read_ops_manifest(repo_root: Path) -> OpsManifest | None:
     if not isinstance(data, dict):
         raise click.ClickException(f"{target}: ops-manifest is malformed.")
     files: list[FileRewrite] = []
+    root = repo_root.resolve()
     for entry in data.get("files", []):
+        src = repo_root / entry["src"]
+        dst = repo_root / entry["dst"]
+        if not src.resolve().is_relative_to(root) or not dst.resolve().is_relative_to(root):
+            raise click.ClickException(
+                f"Path traversal in ops-manifest: src={entry['src']!r}, "
+                f"dst={entry['dst']!r} escapes repo root."
+            )
         files.append(FileRewrite(
-            src_path=repo_root / entry["src"],
-            dst_path=repo_root / entry["dst"],
+            src_path=src,
+            dst_path=dst,
             new_content=entry["content"],
             delete_src=bool(entry.get("delete_src", False)),
         ))
