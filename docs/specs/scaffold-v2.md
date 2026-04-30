@@ -1,6 +1,6 @@
 ---
-status: draft
-date: 2026-04-28
+status: accepted
+date: 2026-04-30
 realizes:
   - P-prose-is-code
   - P-tiers-insulate
@@ -39,7 +39,7 @@ Restructure kanon's scaffolding model so that (1) no aspect is structurally priv
 6. **Marker sections eliminated (except protocols-index).** The `sections:` key in aspect sub-manifests is removed. The `<!-- kanon:begin/end -->` marker mechanism is retained only for the dynamically-rendered `protocols-index` table. All former section content moves to protocol files.
 
 <!-- INV-scaffold-v2-sdd-method -->
-7. **SDD method document.** `docs/sdd-method.md` is renamed to `docs/sdd-method.md`, owned by the sdd aspect as an aspect-level file. It is trimmed to ~50 lines containing only content with no other home: the layer stack table, how-work-flows routing, document authority, and glossary. Duplicated content (when-to-write-a-plan, when-to-write-a-spec) is removed — those rules live in the gate protocols. Depth-specific content (foundations, design docs) moves to depth-level files or artifact-directory READMEs.
+7. **SDD method document.** `docs/development-process.md` is renamed to `docs/sdd-method.md`, owned by the sdd aspect as an aspect-level file. It is trimmed to ~85 lines containing only content with no other home: the layer stack table, how-work-flows routing, document authority, and glossary. Duplicated content (when-to-write-a-plan, when-to-write-a-spec) is removed — those rules live in the gate protocols. Depth-specific content (foundations, design docs) moves to depth-level files or artifact-directory READMEs.
 
 <!-- INV-scaffold-v2-kit-global-files -->
 8. **Kit-global files.** The top-level manifest declares `.kanon/kit.md` as a kit-global file. `kit.md` is rewritten to be aspect-neutral (no sdd-specific references). Harness shims remain handled by `harnesses.yaml` (already aspect-agnostic).
