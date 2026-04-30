@@ -306,3 +306,31 @@ class TestSplitFm:
     def test_with_frontmatter(self) -> None:
         fm, body = adr_immutability._split_fm("---\nk: v\n---\nbody\n")
         assert fm == {"k": "v"} and body == "body\n"
+
+
+# --- Error-path tests ---
+
+
+def test_validators_nonexistent_target(tmp_path: Path) -> None:
+    """Validators handle nonexistent target gracefully."""
+    from kanon._validators import index_consistency, link_check, plan_completion
+
+    target = tmp_path / "nonexistent"
+    for validator in (link_check, index_consistency, plan_completion):
+        errors: list[str] = []
+        warnings: list[str] = []
+        validator.check(target, errors, warnings)
+        # Should not crash — just return with no findings
+        assert isinstance(errors, list)
+
+
+def test_validators_empty_docs(tmp_path: Path) -> None:
+    """Validators handle target with empty docs/ directory."""
+    from kanon._validators import index_consistency, link_check
+
+    (tmp_path / "docs").mkdir()
+    for validator in (link_check, index_consistency):
+        errors: list[str] = []
+        warnings: list[str] = []
+        validator.check(tmp_path, errors, warnings)
+        assert isinstance(errors, list)

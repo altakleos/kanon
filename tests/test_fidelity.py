@@ -1284,3 +1284,48 @@ def test_parse_fixture_word_share_valid(tmp_path: Path) -> None:
     assert not errors
     assert fixture is not None
     assert fixture.word_share == WordShareBand(min=0.2, max=0.8)
+
+
+# --- Error-path tests ---
+
+
+def test_parse_fixture_unreadable_file_raw(tmp_path: Path) -> None:
+    """parse_fixture returns error for unreadable file (raw path variant)."""
+    import os
+
+    from kanon._fidelity import parse_fixture
+
+    bad = tmp_path / "bad.fixture.md"
+    bad.write_text("content")
+    os.chmod(str(bad), 0o000)
+    try:
+        fixture, errors = parse_fixture(bad)
+        assert fixture is None
+        assert any("cannot read" in e for e in errors)
+    finally:
+        os.chmod(str(bad), 0o644)
+
+
+def test_parse_fixture_missing_frontmatter(tmp_path: Path) -> None:
+    """parse_fixture returns error for file without YAML frontmatter."""
+    from kanon._fidelity import parse_fixture
+
+    bad = tmp_path / "no-fm.fixture.md"
+    bad.write_text("Just plain text, no frontmatter.\n")
+    fixture, errors = parse_fixture(bad)
+    assert fixture is None
+    assert any("frontmatter" in e for e in errors)
+
+
+def test_parse_fixture_missing_protocol(tmp_path: Path) -> None:
+    """parse_fixture returns error when protocol field is missing."""
+    from kanon._fidelity import parse_fixture
+
+    bad = tmp_path / "no-proto.fixture.md"
+    bad.write_text(
+        "---\nactor: agent\nturn-format: plain\n---\n# Test\n",
+        encoding="utf-8",
+    )
+    fixture, errors = parse_fixture(bad)
+    assert fixture is None
+    assert any("protocol" in e.lower() for e in errors)

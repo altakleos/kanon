@@ -533,3 +533,28 @@ def test_real_repo_inbound_live_excludes_deferred_specs() -> None:
     # be a known node (no dangling inbound entries for missing nodes).
     for key in g.inbound_live:
         assert key in g.by_slug, f"inbound_live points at unknown node {key}"
+
+
+# --- Error-path tests ---
+
+
+def test_build_graph_missing_docs_dir(tmp_path: Path) -> None:
+    """build_graph handles missing docs/ directory gracefully."""
+    from kanon._graph import build_graph
+
+    # tmp_path has no docs/ directory
+    graph = build_graph(tmp_path)
+    assert len(graph.nodes) == 0
+
+
+def test_build_graph_malformed_frontmatter(tmp_path: Path) -> None:
+    """build_graph handles files with malformed YAML frontmatter."""
+    from kanon._graph import build_graph
+
+    docs = tmp_path / "docs" / "plans"
+    docs.mkdir(parents=True)
+    bad = docs / "bad.md"
+    bad.write_text("---\n: invalid yaml [\n---\n# Bad\n", encoding="utf-8")
+    # Should not crash
+    graph = build_graph(tmp_path)
+    assert isinstance(graph.nodes, list)

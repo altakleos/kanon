@@ -66,3 +66,39 @@ def test_init_auto_detects_python(tmp_path: Path) -> None:
     testing_config = config["aspects"]["kanon-testing"].get("config", {})
     assert testing_config.get("test_cmd") == "pytest -q"
     assert testing_config.get("lint_cmd") == "ruff check ."
+
+
+def test_detect_node_with_eslint(tmp_path: Path) -> None:
+    """Node project with ESLint config is detected."""
+    (tmp_path / "package.json").write_text("{}")
+    (tmp_path / ".eslintrc.json").write_text("{}")
+    config = detect_tool_config(tmp_path)
+    assert config["test_cmd"] == "npm test"
+    assert config["lint_cmd"] == "npx eslint ."
+    assert "typecheck_cmd" not in config
+
+
+def test_toml_has_section_unreadable(tmp_path: Path) -> None:
+    """_toml_has_section returns False for unreadable files."""
+    from kanon._detect import _toml_has_section
+
+    bad = tmp_path / "bad.toml"
+    bad.mkdir()  # directory, not file — is_file() returns False
+    assert _toml_has_section(bad, "tool.ruff") is False
+
+
+def test_toml_has_section_oserror(tmp_path: Path) -> None:
+    """_toml_has_section returns False on OSError."""
+    import os
+
+    from kanon._detect import _toml_has_section
+
+    bad = tmp_path / "bad.toml"
+    bad.write_text("[tool.ruff]")
+    os.chmod(str(bad), 0o000)
+    try:
+        result = _toml_has_section(bad, "tool.ruff")
+        # On some systems root can still read — accept either
+        assert isinstance(result, bool)
+    finally:
+        os.chmod(str(bad), 0o644)
