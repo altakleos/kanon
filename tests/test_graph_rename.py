@@ -460,6 +460,34 @@ def test_read_ops_manifest_malformed_data(tmp_path: Path) -> None:
         read_ops_manifest(tmp_path)
 
 
+def test_read_ops_manifest_path_traversal(tmp_path: Path) -> None:
+    """Path traversal in ops-manifest src/dst is rejected."""
+    import json
+
+    import click
+
+    from kanon._rename import read_ops_manifest
+
+    (tmp_path / ".kanon").mkdir(parents=True)
+    payload = {
+        "old": "a", "new": "b", "type": "spec",
+        "files": [{"src": "ok.md", "dst": "../../escape.md", "content": "x"}],
+    }
+    (tmp_path / ".kanon" / "graph-rename.ops").write_text(json.dumps(payload))
+    with pytest.raises(click.ClickException, match="Path traversal"):
+        read_ops_manifest(tmp_path)
+
+
+def test_compute_principle_rewrites_missing_file(tmp_path: Path) -> None:
+    """_principle_rewrites raises ClickException on missing principle file."""
+    import click
+
+    from kanon._rename import _principle_rewrites
+
+    with pytest.raises(click.ClickException, match="Cannot read principle file"):
+        _principle_rewrites(tmp_path, "nonexistent", "new-name")
+
+
 # --- _rename.py coverage: format_dry_run empty rewrites ---
 
 

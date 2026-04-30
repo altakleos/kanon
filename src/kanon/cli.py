@@ -1227,7 +1227,10 @@ def _rewrite_assembled_views(
     from kanon._atomic import atomic_write_text
 
     new_agents = _assemble_agents_md(new_aspects, project_name)
-    existing_agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    agents_path = target / "AGENTS.md"
+    if not agents_path.is_file():
+        return
+    existing_agents = agents_path.read_text(encoding="utf-8")
     merged = _merge_agents_md(existing_agents, new_agents)
     if merged != existing_agents:
         atomic_write_text(target / "AGENTS.md", merged)

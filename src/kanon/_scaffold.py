@@ -79,7 +79,10 @@ def _migrate_legacy_config(config: dict[str, Any]) -> dict[str, Any]:
     # for already-namespaced keys (which match `_ASPECT_NAME_RE`).
     aspects = config["aspects"]
     if not isinstance(aspects, dict):
-        return config
+        raise click.ClickException(
+            "Malformed .kanon/config.yaml: 'aspects' must be a mapping, "
+            f"got {type(aspects).__name__}. Hand-edit the file to fix."
+        )
     bare_keys = [
         name for name in aspects
         if isinstance(name, str)
@@ -119,7 +122,15 @@ def _migrate_legacy_config(config: dict[str, Any]) -> dict[str, Any]:
 def _config_aspects(config: dict[str, Any]) -> dict[str, int]:
     """Extract {aspect_name: depth} from a v2 config."""
     aspects = config.get("aspects", {})
-    return {name: int(entry["depth"]) for name, entry in aspects.items()}
+    result: dict[str, int] = {}
+    for name, entry in aspects.items():
+        if not isinstance(entry, dict) or "depth" not in entry:
+            raise click.ClickException(
+                f"Malformed .kanon/config.yaml: aspect {name!r} must be a "
+                f"mapping with a 'depth' key."
+            )
+        result[name] = int(entry["depth"])
+    return result
 
 
 def _write_config(
@@ -570,8 +581,13 @@ def _write_tree_atomically(
 ) -> None:
     from kanon._atomic import atomic_write_text
 
+    resolved_target = target.resolve()
     for rel, content in sorted(files.items()):
         dst = target / rel
+        if not dst.resolve().is_relative_to(resolved_target):
+            raise click.ClickException(
+                f"Scaffold path escapes target directory: {rel!r}"
+            )
         if dst.exists() and not force:
             continue
         dst.parent.mkdir(parents=True, exist_ok=True)
