@@ -12,16 +12,16 @@ Ship the `security` aspect (depth 0–2) as the fifth kanon aspect, following th
 
 ## Acceptance Criteria
 
-- [ ] ADR-0022 authored and indexed.
-- [ ] `src/kanon/kit/aspects/security/` exists with manifest, agents-md (depth 0–2), sections, protocols, and files subdirectories.
-- [ ] Top-level `manifest.yaml` registers the security aspect (experimental, depth 0–2, default 1, requires: []).
-- [ ] `kanon aspect add <target> security` scaffolds protocol and AGENTS.md section at default depth.
-- [ ] `kanon aspect set-depth <target> security 2` scaffolds `ci/check_security_patterns.py`.
-- [ ] Self-hosting: `.kanon/protocols/kanon-security/` contains canonical protocol copies; security enabled at depth 2 on this repo.
-- [ ] Kit integrity tests pass for the new aspect.
-- [ ] CLI tests cover add and depth-2 scaffolding.
-- [ ] All existing tests still pass; coverage ≥ 90%.
-- [ ] `kanon verify .`, `ruff check`, `mypy` all clean.
+- [x] ADR-0022 authored and indexed.
+- [x] `src/kanon/kit/aspects/security/` exists with manifest, agents-md (depth 0–2), sections, protocols, and files subdirectories.
+- [x] Top-level `manifest.yaml` registers the security aspect (experimental, depth 0–2, default 1, requires: []).
+- [x] `kanon aspect add <target> security` scaffolds protocol and AGENTS.md section at default depth.
+- [x] `kanon aspect set-depth <target> security 2` scaffolds `ci/check_security_patterns.py`.
+- [x] Self-hosting: `.kanon/protocols/kanon-security/` contains canonical protocol copies; security enabled at depth 2 on this repo.
+- [x] Kit integrity tests pass for the new aspect.
+- [x] CLI tests cover add and depth-2 scaffolding.
+- [x] All existing tests still pass; coverage ≥ 90%.
+- [x] `kanon verify .`, `ruff check`, `mypy` all clean.
 
 ## Tasks
 

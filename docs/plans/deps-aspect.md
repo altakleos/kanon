@@ -12,16 +12,16 @@ Ship the `deps` aspect (depth 0–2) as the sixth kanon aspect, following the sa
 
 ## Acceptance Criteria
 
-- [ ] ADR-0023 authored and indexed.
-- [ ] `src/kanon/kit/aspects/deps/` exists with manifest, agents-md (depth 0–2), sections, protocols, and files subdirectories.
-- [ ] Top-level `manifest.yaml` registers the deps aspect (experimental, depth 0–2, default 1, requires: []).
-- [ ] `kanon aspect add <target> deps` scaffolds protocol and AGENTS.md section at default depth.
-- [ ] `kanon aspect set-depth <target> deps 2` scaffolds `ci/check_deps.py`.
-- [ ] Self-hosting: `.kanon/protocols/kanon-deps/` contains canonical protocol copies; deps enabled at depth 2 on this repo.
-- [ ] Kit integrity tests pass for the new aspect.
-- [ ] CLI tests cover add and depth-2 scaffolding.
-- [ ] All existing tests still pass; coverage ≥ 90%.
-- [ ] `kanon verify .`, `ruff check` all clean.
+- [x] ADR-0023 authored and indexed.
+- [x] `src/kanon/kit/aspects/deps/` exists with manifest, agents-md (depth 0–2), sections, protocols, and files subdirectories.
+- [x] Top-level `manifest.yaml` registers the deps aspect (experimental, depth 0–2, default 1, requires: []).
+- [x] `kanon aspect add <target> deps` scaffolds protocol and AGENTS.md section at default depth.
+- [x] `kanon aspect set-depth <target> deps 2` scaffolds `ci/check_deps.py`.
+- [x] Self-hosting: `.kanon/protocols/kanon-deps/` contains canonical protocol copies; deps enabled at depth 2 on this repo.
+- [x] Kit integrity tests pass for the new aspect.
+- [x] CLI tests cover add and depth-2 scaffolding.
+- [x] All existing tests still pass; coverage ≥ 90%.
+- [x] `kanon verify .`, `ruff check` all clean.
 
 ## Tasks
 
