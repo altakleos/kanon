@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import sys
 
-
 _BANNER = r"""
   _  __
  | |/ /__ _ _ __   ___  _ __
