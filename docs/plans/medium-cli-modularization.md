@@ -1,5 +1,5 @@
 ---
-status: deferred
+status: done (superseded by docs/plans/cli-modularization — merged)
 date: 2026-04-30
 slug: medium-cli-modularization
 ---
