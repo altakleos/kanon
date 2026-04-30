@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 date: 2026-05-01
 spec: ../specs/cli.md
 adr: ../decisions/0038-init-merge-into-existing-agents-md.md

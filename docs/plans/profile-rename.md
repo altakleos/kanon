@@ -1,5 +1,5 @@
 ---
-status: in-progress
+status: done
 date: 2026-04-30
 spec: ../specs/cli.md
 adr: ../decisions/0037-profile-rename-and-max.md
