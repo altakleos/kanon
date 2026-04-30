@@ -1,3 +1,5 @@
+<!-- kanon:begin:banner -->
+<!-- kanon:end:banner -->
 # AGENTS.md — ${project_name}
 
 <!-- kanon:begin:hard-gates -->
