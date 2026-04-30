@@ -14,6 +14,7 @@ _INDEX_DIRS = ("decisions", "plans", "specs", "design")
 
 
 def check(target: Path, errors: list[str], warnings: list[str]) -> None:
+    """Flag docs/ files missing from their directory's README index."""
     docs_dir = target / "docs"
     if not docs_dir.is_dir():
         return

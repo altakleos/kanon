@@ -13,6 +13,7 @@ _EXTERNAL_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+\-.]*:")
 
 
 def check(target: Path, errors: list[str], warnings: list[str]) -> None:
+    """Flag broken internal markdown links under docs/."""
     docs_dir = target / "docs"
     if not docs_dir.is_dir():
         return

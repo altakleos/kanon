@@ -10,6 +10,7 @@ from pathlib import Path
 
 
 def check(target: Path, errors: list[str], warnings: list[str]) -> None:
+    """Flag plans whose status conflicts with their acceptance criteria."""
     plans_dir = target / "docs" / "plans"
     if not plans_dir.is_dir():
         return

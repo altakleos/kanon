@@ -210,7 +210,7 @@ AGENTS.md assembly walks enabled aspects in stable order (sorted by aspect name)
 ### sdd (depth 3)
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
-| [tier-up-advisor](.kanon/protocols/kanon-sdd/tier-up-advisor.md) | 1 | … |
+| [tier-up-advisor](../../.kanon/protocols/kanon-sdd/tier-up-advisor.md) | 1 | … |
 …
 
 ### worktrees (depth 1)

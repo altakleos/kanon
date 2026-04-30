@@ -12,6 +12,7 @@ import yaml
 
 
 def check(target: Path, errors: list[str], warnings: list[str]) -> None:
+    """Flag specs missing a companion design doc and vice versa."""
     specs_dir = target / "docs" / "specs"
     design_dir = target / "docs" / "design"
     if not specs_dir.is_dir():

@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 implements: docs/specs/preflight.md
 date: 2026-04-28
 ---

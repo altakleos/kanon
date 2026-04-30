@@ -25,6 +25,7 @@ _ACCEPTED = frozenset({"accepted", "accepted (lite)"})
 
 
 def check(target: Path, errors: list[str], warnings: list[str]) -> None:
+    """Flag accepted ADRs whose body was modified after acceptance."""
     head = _git(["rev-parse", "HEAD"], target).strip()
     if not head or not _has_parent(head, target):
         return

@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-04-28
 realizes:
   - P-prose-is-code

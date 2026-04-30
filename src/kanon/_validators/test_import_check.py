@@ -16,6 +16,7 @@ _CI_REF_RE = re.compile(
 
 
 def check(target: Path, errors: list[str], warnings: list[str]) -> None:
+    """Flag CI checker scripts that are not imported by a test file."""
     tests_ci = target / "tests" / "ci"
     if not tests_ci.is_dir():
         return

@@ -383,7 +383,7 @@ def _check_pending_recovery(target: Path) -> None:
 @click.group()
 @click.version_option(__version__, prog_name="kanon")
 def main() -> None:
-    """kanon — portable, self-hosting SDD kit for LLM-agent-driven repos."""
+    """kanon — portable, self-hosting development-discipline kit for LLM-agent-driven repos."""
 
 
 @main.command()

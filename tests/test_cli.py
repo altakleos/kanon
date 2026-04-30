@@ -588,29 +588,21 @@ def test_upgrade_already_current(tmp_path: Path) -> None:
     assert "already at" in result.output.lower()
 
 
-def test_upgrade_noop_does_not_churn_enabled_at(tmp_path: Path) -> None:
-    """A no-op `upgrade` (version unchanged, no edits) must not rewrite the
-    config — `enabled_at` must be byte-identical after the call."""
-    import time
+def test_upgrade_noop_does_not_churn_config(tmp_path: Path) -> None:
+    """A no-op upgrade must not rewrite the config file."""
 
     runner = CliRunner()
     target = tmp_path / "scratch"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
 
     config_path = target / ".kanon" / "config.yaml"
-    captured = yaml.safe_load(config_path.read_text(encoding="utf-8"))[
-        "aspects"
-    ]["kanon-sdd"]["enabled_at"]
-
-    # Sleep > 1 second so a churn-write would yield a different ISO-second.
-    time.sleep(1.1)
+    before_bytes = config_path.read_bytes()
 
     result = runner.invoke(main, ["upgrade", str(target)])
     assert result.exit_code == 0, result.output
 
-    after = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    assert after["aspects"]["kanon-sdd"]["enabled_at"] == captured, (
-        "upgrade must not rewrite enabled_at on a no-op"
+    assert config_path.read_bytes() == before_bytes, (
+        "upgrade must not rewrite config on a no-op"
     )
 
 
