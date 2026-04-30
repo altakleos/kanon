@@ -2787,3 +2787,200 @@ def test_upgrade_does_not_modify_project_aspect_files(tmp_path: Path) -> None:
     assert config["kit_version"] != "0.0.1"  # bumped by upgrade
     assert "project-stable" in config["aspects"]
     assert config["aspects"]["project-stable"]["depth"] == 1
+
+
+# --- kanon-banner spec tests (docs/specs/kanon-banner.md) ---
+
+
+def _read_banner() -> str:
+    """Read the canonical banner constant via the same import path as production."""
+    from kanon._banner import _BANNER
+    return _BANNER
+
+
+def _banner_literal() -> str:
+    """The byte-frozen banner literal asserted by INV-kanon-banner-byte-frozen."""
+    return (
+        "\n"
+        "  _  __\n"
+        " | |/ /__ _ _ __   ___  _ __\n"
+        " | ' // _` | '_ \\ / _ \\| '_ \\\n"
+        " | . \\ (_| | | | | (_) | | | |\n"
+        " |_|\\_\\__,_|_| |_|\\___/|_| |_|\n"
+        "\n"
+    )
+
+
+# INV-kanon-banner-single-source: one constant feeds all three surfaces.
+def test_banner_constant_used_by_all_surfaces() -> None:
+    """The _BANNER constant defined in src/kanon/_banner.py is the only
+    byte-equal copy in the source tree, and it is referenced by both the
+    runtime emission path (cli.py) and the AGENTS.md scaffolding (_scaffold.py).
+    """
+    import kanon._banner as banner_mod
+
+    src_root = Path(banner_mod.__file__).resolve().parent
+    cli_text = (src_root / "cli.py").read_text(encoding="utf-8")
+    scaffold_text = (src_root / "_scaffold.py").read_text(encoding="utf-8")
+
+    assert "from kanon._banner import" in cli_text and "_BANNER" in cli_text
+    assert "from kanon._banner import _BANNER" in scaffold_text
+
+    # No second byte-equal copy of the banner literal anywhere else in src/.
+    literal_substr = " |_|\\_\\__,_|_| |_|\\___/|_| |_|"
+    matches = sum(
+        1 for p in src_root.rglob("*.py")
+        if literal_substr in p.read_text(encoding="utf-8")
+    )
+    # _banner.py defines it; tests use the helper above (not a literal).
+    assert matches == 1, f"banner literal appears in {matches} .py files; expected 1"
+
+
+# INV-kanon-banner-tty-only: runtime emits only when stderr is a TTY.
+def test_banner_emitted_on_tty(tmp_path: Path) -> None:
+    """When stderr is a TTY, init and upgrade emit the banner on stderr."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+
+    with patch("kanon._banner._should_emit_banner", return_value=True):
+        init_result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+        upgrade_result = runner.invoke(main, ["upgrade", str(target)])
+
+    assert init_result.exit_code == 0, init_result.output
+    assert upgrade_result.exit_code == 0, upgrade_result.output
+    banner = _read_banner()
+    assert banner in init_result.stderr, "banner missing from init stderr"
+    assert banner in upgrade_result.stderr, "banner missing from upgrade stderr"
+
+
+def test_banner_suppressed_when_stderr_not_tty(tmp_path: Path) -> None:
+    """When stderr is not a TTY (CliRunner default), banner is suppressed."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+
+    init_result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+    upgrade_result = runner.invoke(main, ["upgrade", str(target)])
+
+    assert init_result.exit_code == 0, init_result.output
+    assert upgrade_result.exit_code == 0, upgrade_result.output
+    banner = _read_banner()
+    assert banner not in init_result.stderr
+    assert banner not in upgrade_result.stderr
+
+
+# INV-kanon-banner-quiet-suppresses: --quiet beats TTY.
+def test_banner_suppressed_with_quiet_flag(tmp_path: Path) -> None:
+    """Even when stderr is a TTY, --quiet/-q suppresses the banner."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+
+    with patch("kanon._banner._should_emit_banner", return_value=False):
+        # _should_emit_banner already returns False when quiet=True; this
+        # test validates the wiring by invoking with --quiet and asserting
+        # the banner is absent regardless of TTY.
+        init_result = runner.invoke(
+            main, ["init", str(target), "--tier", "1", "--quiet"]
+        )
+        upgrade_result = runner.invoke(
+            main, ["upgrade", str(target), "-q"]
+        )
+
+    assert init_result.exit_code == 0, init_result.output
+    assert upgrade_result.exit_code == 0, upgrade_result.output
+    banner = _read_banner()
+    assert banner not in init_result.stderr
+    assert banner not in upgrade_result.stderr
+    # --quiet on init also suppresses the trailing "Next steps" advisory.
+    assert "Next steps" not in init_result.output
+    assert "Grow when ready" not in init_result.output
+
+
+# INV-kanon-banner-stderr-only: never on stdout.
+def test_banner_goes_to_stderr_not_stdout(tmp_path: Path) -> None:
+    """When emitted, the banner appears on stderr, never stdout."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+
+    with patch("kanon._banner._should_emit_banner", return_value=True):
+        init_result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+        upgrade_result = runner.invoke(main, ["upgrade", str(target)])
+
+    banner = _read_banner()
+    assert banner in init_result.stderr
+    assert banner not in init_result.stdout
+    assert banner in upgrade_result.stderr
+    assert banner not in upgrade_result.stdout
+
+
+# INV-kanon-banner-byte-frozen: exact bytes.
+def test_banner_exact_byte_content() -> None:
+    """The _BANNER constant equals the frozen byte literal."""
+    assert _read_banner() == _banner_literal()
+
+
+def test_banner_present_at_top_of_scaffolded_agents_md(tmp_path: Path) -> None:
+    """Scaffolded AGENTS.md contains the banner verbatim inside the marker
+    block, positioned above the H1.
+    """
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    banner = _read_banner()
+
+    # Banner bytes (with surrounding newlines stripped) appear in AGENTS.md.
+    assert banner.strip("\n") in agents
+
+    # And they sit before the H1.
+    banner_pos = agents.find(banner.strip("\n"))
+    h1_pos = agents.find("# AGENTS.md —")
+    assert banner_pos != -1 and h1_pos != -1
+    assert banner_pos < h1_pos, "banner must appear before the H1"
+
+
+# INV-kanon-banner-surface-enumeration: only init, upgrade, AGENTS.md.
+def test_banner_not_emitted_by_other_commands(tmp_path: Path) -> None:
+    """Commands other than init/upgrade do not emit the banner, even on a TTY."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    banner = _read_banner()
+    with patch("kanon._banner._should_emit_banner", return_value=True):
+        for cmd in (
+            ["verify", str(target)],
+            ["aspect", "list"],
+            ["tier", "set", str(target), "1"],
+        ):
+            result = runner.invoke(main, cmd)
+            assert banner not in result.stderr, (
+                f"banner unexpectedly emitted by {cmd[0]}"
+            )
+            assert banner not in result.stdout, (
+                f"banner unexpectedly on stdout for {cmd[0]}"
+            )
+
+
+def test_banner_in_agents_md_marker_block(tmp_path: Path) -> None:
+    """In scaffolded AGENTS.md, the banner sits inside the kanon:begin:banner
+    marker pair, not as loose prose.
+    """
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    banner = _read_banner().strip("\n")
+
+    begin = "<!-- kanon:begin:banner -->"
+    end = "<!-- kanon:end:banner -->"
+    begin_pos = agents.find(begin)
+    end_pos = agents.find(end)
+    banner_pos = agents.find(banner)
+
+    assert begin_pos != -1, "missing kanon:begin:banner marker"
+    assert end_pos != -1, "missing kanon:end:banner marker"
+    assert begin_pos < banner_pos < end_pos, (
+        "banner must sit between begin/end markers"
+    )

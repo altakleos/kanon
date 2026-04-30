@@ -418,6 +418,12 @@ def main() -> None:
     default=None,
     help="Preset aspect bundles. solo=sdd:1, team=sdd+testing+security+deps+worktrees, full=all aspects.",
 )
+@click.option(
+    "--quiet", "-q",
+    "quiet_arg",
+    is_flag=True,
+    help="Suppress banner and trailing advisory output.",
+)
 def init(
     target: Path,
     tier_arg: int | None,
@@ -426,8 +432,13 @@ def init(
     harness_arg: tuple[str, ...],
     lite: bool,
     profile_arg: str | None,
+    quiet_arg: bool,
 ) -> None:
     """Scaffold a new kanon project at TARGET."""
+    from kanon._banner import _BANNER, _should_emit_banner
+    if _should_emit_banner(quiet_arg):
+        click.echo(_BANNER, err=True, nl=False)
+
     exclusive_count = sum([
         tier_arg is not None,
         aspects_arg is not None,
@@ -529,6 +540,9 @@ def init(
     aspect_summary = ", ".join(f"{a}={d}" for a, d in sorted(aspects_to_enable.items()))
     click.echo(f"\n✓ Created kanon project at {target} ({aspect_summary})")
 
+    if quiet_arg:
+        return
+
     # Preflight health check — show which hooks are armed.
     testing_cfg = aspects_meta.get("kanon-testing", {}).get("config", {})
     _pf_checks = [
@@ -583,8 +597,18 @@ def init(
 
 @main.command()
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
-def upgrade(target: Path) -> None:
+@click.option(
+    "--quiet", "-q",
+    "quiet_arg",
+    is_flag=True,
+    help="Suppress banner output.",
+)
+def upgrade(target: Path, quiet_arg: bool) -> None:
     """Refresh TARGET's .kanon/ from the installed kit (preserving docs/, AGENTS.md, config)."""
+    from kanon._banner import _BANNER, _should_emit_banner
+    if _should_emit_banner(quiet_arg):
+        click.echo(_BANNER, err=True, nl=False)
+
     target = target.resolve()
     config_path = target / ".kanon" / "config.yaml"
     if not config_path.is_file():

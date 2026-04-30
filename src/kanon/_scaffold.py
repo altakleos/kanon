@@ -439,6 +439,10 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
     context.setdefault("tier", context.get("sdd_depth", "0"))
     text = _render_placeholder(base.read_text(encoding="utf-8"), context)
 
+    # Render the brand banner above the H1 (single source: src/kanon/_banner.py).
+    from kanon._banner import _BANNER
+    text = _replace_section(text, "banner", _BANNER)
+
     # Render the hard-gates table (only gates whose aspects are enabled).
     gates_text = _render_hard_gates(aspects)
     text = _replace_section(text, "hard-gates", gates_text)
@@ -455,7 +459,9 @@ def _replace_section(text: str, section: str, content: str) -> str:
     if pair is None:
         return text
     _, begin_line_end, end_line_start, _ = pair
-    return text[:begin_line_end] + content.strip() + "\n" + text[end_line_start:]
+    # strip("\n") (not strip()) so leading whitespace inside the section content
+    # is preserved — required by the banner ASCII art (kanon-banner spec INV-5).
+    return text[:begin_line_end] + content.strip("\n") + "\n" + text[end_line_start:]
 
 
 def _remove_section(text: str, section: str) -> str:

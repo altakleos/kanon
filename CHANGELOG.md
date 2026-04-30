@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- **`kanon` brand banner** — emitted on `kanon init` and `kanon upgrade` (stderr only, suppressed automatically when stderr is not a TTY) and rendered at the top of scaffolded `AGENTS.md` inside a `<!-- kanon:begin:banner -->` marker block. Single source of truth (`src/kanon/_banner.py`) feeds all three surfaces; bytes are frozen and asserted by test. New `--quiet` / `-q` flag on both commands suppresses the banner regardless of TTY (and the trailing "Next steps" advisory on `init`).
+
 ## [0.3.0a6] — 2026-04-29
 
 ### Added
