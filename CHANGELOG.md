@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.1a2] — 2026-04-30
+
+### Fixed
+
+- **Per-worktree venv isolation for release preflight** — `ci/release-preflight.py` now uses the local `.venv/bin/python` for all subprocess invocations (pytest, ruff, kanon verify), ensuring worktree preflight validates the worktree's code, not the main tree's. The fragile `PYTHONPATH` hack is removed. Fails fast with a clear error if no local `.venv/` exists.
+- **`worktree-setup.sh` auto-runs `uv sync`** for Python projects (detected via `pyproject.toml`), giving each worktree its own `.venv/` with correct editable-install paths.
+- **`kanon-release` config depth lowered from 3 to 2** in the self-hosting `.kanon/config.yaml` to match the corrected depth-range.
+
+### Changed
+
+- **Removed dead code in `_cli_helpers.py`** — unreachable boolean type-check branch and unreachable empty-result guard. Coverage now 100% (was 98%).
+- **`worktree-lifecycle` protocol strengthened** — per-worktree dependency install is now documented as mandatory for Python projects, with an explanation of why editable installs require it.
+
 ## [0.3.1a1] — 2026-04-30
 
 ### Fixed
