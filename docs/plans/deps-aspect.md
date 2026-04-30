@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: done
 date: 2026-04-24
 spec: ../specs/deps.md
 adr: ../decisions/0023-deps-aspect.md
