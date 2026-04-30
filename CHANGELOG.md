@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Changed
+
+- **`kanon init --profile full` renamed to `--profile all`**, and a new `--profile max` was added (per [ADR-0037](docs/decisions/0037-profile-rename-and-max.md)). `all` enables every kit-shipped aspect at its `default-depth` (every aspect at depth 1 today); `max` enables every aspect at the upper end of its `depth-range` (`kanon-sdd:3`, `kanon-release:3`, `kanon-testing:3`, `kanon-security:2`, `kanon-deps:2`, `kanon-worktrees:2`, `kanon-fidelity:1`). The rename addresses a UX defect surfaced after v0.3.0a7 shipped: users reading "full" naturally expected "every aspect cranked", but the actual behaviour was "every aspect at the kit's recommended starting depth". `solo` and `team` semantics are unchanged. Spec amendment in `docs/specs/cli.md` (new INV-cli-init-profile).
+
+### Removed
+
+- **`kanon init --profile full` is removed outright** (no deprecation alias — kanon has no public consumers yet). `--profile full` now exits with click's standard "invalid choice" error pointing at the four accepted values: `solo`, `team`, `all`, `max`.
+
 ## [0.3.0a7] — 2026-04-30
 
 ### Added
