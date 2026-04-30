@@ -33,8 +33,3 @@ depth-2:
     release:
       - run: "python ci/release-preflight.py --tag $TAG"
         label: release-preflight
-
-depth-3:
-  files: []
-  protocols: []
-  sections: []

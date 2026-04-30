@@ -12,7 +12,7 @@ The `--profile` flag on `kanon init` accepts four named values: `solo`, `team`, 
 `all` and `max` are differentiated by their depth source:
 
 - **`all`** — every kit-shipped `kanon-*` aspect at its `default-depth` (currently `1` for every aspect).
-- **`max`** — every kit-shipped `kanon-*` aspect at the upper end of its `depth-range` (`kanon-sdd:3`, `kanon-release:3`, `kanon-testing:3`, `kanon-security:2`, `kanon-deps:2`, `kanon-worktrees:2`, `kanon-fidelity:1`).
+- **`max`** — every kit-shipped `kanon-*` aspect at the upper end of its `depth-range` (`kanon-sdd:3`, `kanon-release:2`, `kanon-testing:3`, `kanon-security:2`, `kanon-deps:2`, `kanon-worktrees:2`, `kanon-fidelity:1`).
 
 `solo` and `team` continue to name aspect-depth pairs explicitly so a future `default-depth` change in the manifest cannot drift their semantics.
 

@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ### Changed
 
-- **`kanon init --profile full` renamed to `--profile all`**, and a new `--profile max` was added (per [ADR-0037](docs/decisions/0037-profile-rename-and-max.md)). `all` enables every kit-shipped aspect at its `default-depth` (every aspect at depth 1 today); `max` enables every aspect at the upper end of its `depth-range` (`kanon-sdd:3`, `kanon-release:3`, `kanon-testing:3`, `kanon-security:2`, `kanon-deps:2`, `kanon-worktrees:2`, `kanon-fidelity:1`). The rename addresses a UX defect surfaced after v0.3.0a7 shipped: users reading "full" naturally expected "every aspect cranked", but the actual behaviour was "every aspect at the kit's recommended starting depth". `solo` and `team` semantics are unchanged. Spec amendment in `docs/specs/cli.md` (new INV-cli-init-profile).
+- **`kanon init --profile full` renamed to `--profile all`**, and a new `--profile max` was added (per [ADR-0037](docs/decisions/0037-profile-rename-and-max.md)). `all` enables every kit-shipped aspect at its `default-depth` (every aspect at depth 1 today); `max` enables every aspect at the upper end of its `depth-range` (`kanon-sdd:3`, `kanon-release:2`, `kanon-testing:3`, `kanon-security:2`, `kanon-deps:2`, `kanon-worktrees:2`, `kanon-fidelity:1`). The rename addresses a UX defect surfaced after v0.3.0a7 shipped: users reading "full" naturally expected "every aspect cranked", but the actual behaviour was "every aspect at the kit's recommended starting depth". `solo` and `team` semantics are unchanged. Spec amendment in `docs/specs/cli.md` (new INV-cli-init-profile).
 
 ### Removed
 

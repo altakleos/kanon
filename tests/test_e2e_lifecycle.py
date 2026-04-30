@@ -316,7 +316,7 @@ def test_release_lifecycle(tmp_path: Path) -> None:
     assert "depth >=" in result.output
 
     # Step 3: set release depth high enough to pass the gate
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-release", "3"])
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-release", "2"])
     assert result.exit_code == 0, result.output
 
     # Step 4: init git repo for release

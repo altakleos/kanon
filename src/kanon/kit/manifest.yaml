@@ -58,7 +58,7 @@ aspects:
   kanon-release:
     path: aspects/kanon-release
     stability: experimental
-    depth-range: [0, 3]
+    depth-range: [0, 2]
     default-depth: 1
     description: "Release checklist, preflight, and CLI gate"
     requires: []
