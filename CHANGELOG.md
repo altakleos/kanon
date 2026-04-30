@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 ### Changed
 
 - **Secure-defaults protocol gains a same-repo config trust-boundary carve-out** (per [ADR-0036](docs/decisions/0036-secure-defaults-config-trust-carveout.md)). `subprocess.run(cmd, shell=True, ...)` is acceptable when `cmd` originates from a config file inside the running CLI's repo — the trust boundary is repo write-access. The kit-shipped `secure-defaults` § Injection paragraph spells the carve-out out so a future reader doesn't have to re-derive it. `src/kanon/_preflight.py:96` (the first lived call site) now carries a `# nosec` comment naming the ADR; refactoring to argv form was rejected because it would silently break consumer commands using shell features (`$VAR`, `&&`, pipes, redirection).
+- **`docs/specs/scaffold-v2.md` promoted from `draft` to `accepted`.** INV-7 had two pre-acceptance defects fixed in the same commit: a self-referential rename (`docs/sdd-method.md is renamed to docs/sdd-method.md` → `docs/development-process.md is renamed to docs/sdd-method.md`, matching the v0.2.0a1 ship) and a stale line-count target (`~50` → `~85`, matching the post-trim file). Surfaced by the `spec-review` protocol applied during the audit closeout.
 
 ### Fixed
 
