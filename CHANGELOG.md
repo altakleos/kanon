@@ -370,12 +370,23 @@ First public alpha under the name `kanon`. The project was previously developed 
 - Spec-graph tooling (rename, orphan detection, spec-diff rendering) is deferred to v0.2. See `docs/specs/spec-graph-tooling.md`.
 - Multi-agent coordination primitives (reservations ledger, plan-SHA pins, decision handshake) deferred to v0.2. See `docs/specs/multi-agent-coordination.md`.
 
-[Unreleased]: https://github.com/altakleos/kanon/compare/v0.2.0a8...HEAD
+[Unreleased]: https://github.com/altakleos/kanon/compare/v0.3.0a6...HEAD
+[0.3.0a6]: https://github.com/altakleos/kanon/compare/v0.3.0a5...v0.3.0a6
+[0.3.0a5]: https://github.com/altakleos/kanon/compare/v0.3.0a4...v0.3.0a5
+[0.3.0a4]: https://github.com/altakleos/kanon/compare/v0.3.0a3...v0.3.0a4
+[0.3.0a3]: https://github.com/altakleos/kanon/compare/v0.3.0a2...v0.3.0a3
+[0.3.0a2]: https://github.com/altakleos/kanon/compare/v0.3.0a1...v0.3.0a2
+[0.3.0a1]: https://github.com/altakleos/kanon/compare/v0.2.0a11...v0.3.0a1
+[0.2.0a11]: https://github.com/altakleos/kanon/compare/v0.2.0a10...v0.2.0a11
+[0.2.0a10]: https://github.com/altakleos/kanon/compare/v0.2.0a9...v0.2.0a10
+[0.2.0a9]: https://github.com/altakleos/kanon/compare/v0.2.0a8...v0.2.0a9
 [0.2.0a8]: https://github.com/altakleos/kanon/compare/v0.2.0a7...v0.2.0a8
 [0.2.0a7]: https://github.com/altakleos/kanon/compare/v0.2.0a6...v0.2.0a7
+[0.2.0a6]: https://github.com/altakleos/kanon/compare/v0.2.0a5...v0.2.0a6
 [0.2.0a5]: https://github.com/altakleos/kanon/compare/v0.2.0a4...v0.2.0a5
 [0.2.0a4]: https://github.com/altakleos/kanon/compare/v0.2.0a3...v0.2.0a4
 [0.2.0a3]: https://github.com/altakleos/kanon/compare/v0.2.0a2...v0.2.0a3
 [0.2.0a2]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a2
 [0.2.0a1]: https://github.com/altakleos/kanon/releases/tag/v0.2.0a1
 [0.1.0a1]: https://github.com/makutaku/kanon/releases/tag/v0.1.0a1
+<!-- v0.1.0a1 was published on the `makutaku` org before the project moved to `altakleos`; see ADR-0009. -->
