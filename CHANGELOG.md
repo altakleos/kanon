@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.0a8] — 2026-04-30
+
 ### Changed
 
 - **`kanon init --profile full` renamed to `--profile all`**, and a new `--profile max` was added (per [ADR-0037](docs/decisions/0037-profile-rename-and-max.md)). `all` enables every kit-shipped aspect at its `default-depth` (every aspect at depth 1 today); `max` enables every aspect at the upper end of its `depth-range` (`kanon-sdd:3`, `kanon-release:3`, `kanon-testing:3`, `kanon-security:2`, `kanon-deps:2`, `kanon-worktrees:2`, `kanon-fidelity:1`). The rename addresses a UX defect surfaced after v0.3.0a7 shipped: users reading "full" naturally expected "every aspect cranked", but the actual behaviour was "every aspect at the kit's recommended starting depth". `solo` and `team` semantics are unchanged. Spec amendment in `docs/specs/cli.md` (new INV-cli-init-profile).
@@ -410,7 +412,9 @@ First public alpha under the name `kanon`. The project was previously developed 
 - Spec-graph tooling (rename, orphan detection, spec-diff rendering) is deferred to v0.2. See `docs/specs/spec-graph-tooling.md`.
 - Multi-agent coordination primitives (reservations ledger, plan-SHA pins, decision handshake) deferred to v0.2. See `docs/specs/multi-agent-coordination.md`.
 
-[Unreleased]: https://github.com/altakleos/kanon/compare/v0.3.0a6...HEAD
+[Unreleased]: https://github.com/altakleos/kanon/compare/v0.3.0a8...HEAD
+[0.3.0a8]: https://github.com/altakleos/kanon/compare/v0.3.0a7...v0.3.0a8
+[0.3.0a7]: https://github.com/altakleos/kanon/compare/v0.3.0a6...v0.3.0a7
 [0.3.0a6]: https://github.com/altakleos/kanon/compare/v0.3.0a5...v0.3.0a6
 [0.3.0a5]: https://github.com/altakleos/kanon/compare/v0.3.0a4...v0.3.0a5
 [0.3.0a4]: https://github.com/altakleos/kanon/compare/v0.3.0a3...v0.3.0a4
