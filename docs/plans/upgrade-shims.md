@@ -1,5 +1,5 @@
 ---
-status: draft
+status: done
 serves: docs/specs/cli.md
 design: "Follows existing upgrade() pattern"
 touches:
@@ -19,11 +19,11 @@ changes a harness shim leaves stale shims on disk.
 
 ## Tasks
 
-- [ ] T1: Add `_render_shims()` call to `upgrade()` in cli.py,
+- [x] T1: Add `_render_shims()` call to `upgrade()` in cli.py,
   between the kit.md write and the config write. Iterate the returned
   dict and write each shim via `atomic_write_text()`, creating parent
   dirs as needed.
-- [ ] T2: Add a test that verifies upgrade refreshes shims (e.g.,
+- [x] T2: Add a test that verifies upgrade refreshes shims (e.g.,
   init a project, corrupt a shim, run upgrade, assert shim is
   restored).
 

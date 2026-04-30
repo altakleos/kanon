@@ -1,5 +1,5 @@
 ---
-status: draft
+status: done
 date: 2026-04-27
 spec: n/a
 design: "Follows ADR-0028 project-aspect validator pattern; extends to kit aspects"
@@ -22,18 +22,18 @@ as internal modules gated by aspect + depth.
 
 ## Acceptance Criteria
 
-- [ ] `_verify.py` gains `run_kit_validators()` that discovers and runs validators from kit-aspect manifests
-- [ ] Kit validators run AFTER kit structural checks (trusted code, no INV-9 concern)
-- [ ] `kanon-sdd` sub-manifest declares `validators:` at depth 1 and depth 2
-- [ ] Three validator modules exist under `src/kanon/kit/aspects/kanon-sdd/validators/`:
+- [x] `_verify.py` gains `run_kit_validators()` that discovers and runs validators from kit-aspect manifests
+- [x] Kit validators run AFTER kit structural checks (trusted code, no INV-9 concern)
+- [x] `kanon-sdd` sub-manifest declares `validators:` at depth 1 and depth 2
+- [x] Three validator modules exist under `src/kanon/kit/aspects/kanon-sdd/validators/`:
     - `plan_completion.py` — depth 1+: done plans must have all tasks ticked
     - `link_check.py` — depth 2+: markdown relative links must resolve
     - `adr_immutability.py` — depth 2+: accepted ADR bodies must be immutable
-- [ ] Validators respect aspect config from `.kanon/config.yaml` (future: not wired in this PR)
-- [ ] Validators are depth-gated: only run when the consumer's sdd depth >= the validator's minimum
-- [ ] All existing tests pass
-- [ ] New tests cover the three validators and the kit-validator discovery mechanism
-- [ ] `kanon verify .` passes on kanon's own repo
+- [x] Validators respect aspect config from `.kanon/config.yaml` (future: not wired in this PR)
+- [x] Validators are depth-gated: only run when the consumer's sdd depth >= the validator's minimum
+- [x] All existing tests pass
+- [x] New tests cover the three validators and the kit-validator discovery mechanism
+- [x] `kanon verify .` passes on kanon's own repo
 
 ## Files Created
 

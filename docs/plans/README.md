@@ -113,13 +113,18 @@ Batching related commits on one branch is fine: a spec commit + its design doc c
 | [merge-caution-guidance](merge-caution-guidance.md) | Add merge-caution guidance to worktree-lifecycle | done |
 | [name-extension-points](name-extension-points.md) | Name the extension-point convention in sdd-method.md | done |
 | [phase1-sensei-upstreams](phase1-sensei-upstreams.md) | Upstream sensei worktree hardening + process prose | done |
-| [phase2-kit-validators](phase2-kit-validators.md) | Kit-aspect validators via `kanon verify` | draft |
+| [phase2-kit-validators](phase2-kit-validators.md) | Kit-aspect validators via `kanon verify` | done |
 | [plan-src-separation](plan-src-separation.md) | Enforce plan/src commit separation | done |
 | [task-playbook](task-playbook.md) | Restructure agent routing as a capability-neutral Task Playbook | done |
 | [track-a-doc-fixes](track-a-doc-fixes.md) | Track A documentation/config fixes | done |
 | [track-c-dx](track-c-dx.md) | Reduce agent context overhead (Track C) | done |
 | [wire-ci-scripts](wire-ci-scripts.md) | Wire unwired CI scripts into GitHub Actions workflows | done |
 | [scaffold-v2](scaffold-v2.md) | Thin kernel, routing-index AGENTS.md, three file categories | done |
+| [harness-filtering](harness-filtering.md) | `--harness` flag for init shim filtering | done |
+| [ci-fixes](ci-fixes.md) | CI scanner false-positive fixes | done |
+| [upgrade-shims](upgrade-shims.md) | Add shim re-rendering to upgrade command | done |
+| [fix-upgrade-config-preservation](fix-upgrade-config-preservation.md) | Fix upgrade config preservation for aspect config, timestamps, root keys | done |
+| [tier-uniform-raise](tier-uniform-raise.md) | Tier as uniform aspect-depth raise (ADR-0035) | done |
 
 ## Roadmap
 

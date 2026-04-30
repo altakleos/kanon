@@ -1,5 +1,5 @@
 ---
-status: draft
+status: done
 touches:
   - ci/check_security_patterns.py
   - src/kanon/kit/aspects/kanon-security/files/ci/check_security_patterns.py
@@ -12,12 +12,12 @@ touches:
 
 ## Tasks
 
-- [ ] T1: Add `# nosec` inline suppression to `check_security_patterns.py`.
+- [x] T1: Add `# nosec` inline suppression to `check_security_patterns.py`.
   Lines containing `# nosec` are skipped. Update both copies (ci/ and
   kit aspect) to stay byte-identical.
-- [ ] T2: Restrict `check_test_quality.py` to scan only `tests/` and
+- [x] T2: Restrict `check_test_quality.py` to scan only `tests/` and
   `test/` directories instead of rglob from root. Update both copies.
-- [ ] T3: Add the 9 missing CI script steps to `release.yml`'s verify
+- [x] T3: Add the 9 missing CI script steps to `release.yml`'s verify
   job, mirroring `verify.yml`.
 
 ## Acceptance criteria
