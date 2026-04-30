@@ -52,8 +52,8 @@ Add a step before "Remove the worktree" in the Teardown section:
 
 ## Acceptance criteria
 
-- [ ] Contribution Conventions in agents-md-base.md includes delivery guidance
-- [ ] completion-checklist exit criteria references committing/pushing
-- [ ] worktree-lifecycle teardown includes push/PR step before removal
-- [ ] `kanon verify` passes on the kanon repo itself after changes
-- [ ] Existing tests pass
+- [x] Contribution Conventions in agents-md-base.md includes delivery guidance
+- [x] completion-checklist exit criteria references committing/pushing
+- [x] worktree-lifecycle teardown includes push/PR step before removal
+- [x] `kanon verify` passes on the kanon repo itself after changes
+- [x] Existing tests pass

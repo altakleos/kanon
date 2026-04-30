@@ -52,7 +52,7 @@ Add tests for both paths:
 
 ## Acceptance criteria
 
-- [ ] `_write_tree_atomically()` raises `ClickException` for paths resolving outside target
-- [ ] `read_ops_manifest()` raises `ClickException` for paths resolving outside repo root
-- [ ] Tests cover both happy path and traversal rejection
-- [ ] Existing tests pass
+- [x] `_write_tree_atomically()` raises `ClickException` for paths resolving outside target
+- [x] `read_ops_manifest()` raises `ClickException` for paths resolving outside repo root
+- [x] Tests cover both happy path and traversal rejection
+- [x] Existing tests pass

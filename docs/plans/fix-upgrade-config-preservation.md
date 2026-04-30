@@ -49,7 +49,7 @@ Alternatively, introduce a new `_merge_config_for_upgrade()` that reads the old 
 
 ## Acceptance criteria
 
-- [ ] `kanon upgrade` preserves per-aspect `config` dicts
-- [ ] `kanon upgrade` preserves per-aspect `enabled_at` timestamps on version bump
-- [ ] `kanon upgrade` preserves root-level extra keys like `preflight-stages`
-- [ ] All existing tests pass
+- [x] `kanon upgrade` preserves per-aspect `config` dicts
+- [x] `kanon upgrade` preserves per-aspect `enabled_at` timestamps on version bump
+- [x] `kanon upgrade` preserves root-level extra keys like `preflight-stages`
+- [x] All existing tests pass
