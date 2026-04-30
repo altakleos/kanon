@@ -270,8 +270,11 @@ def run_kit_validators(
             continue
         try:
             module_paths = _aspect_depth_validators(aspect_name, depth)
-        except Exception:
-            continue  # Unknown aspect or missing manifest — already caught by structural checks
+        except Exception as exc:
+            warnings.append(
+                f"verify: {aspect_name}: kit-validator lookup failed: {exc}"
+            )
+            continue
         for module_path in module_paths:
             try:
                 module = importlib.import_module(module_path)
@@ -333,7 +336,10 @@ def check_fidelity_assertions(
             continue
         try:
             provides = _aspect_provides(name)
-        except Exception:
+        except Exception as exc:
+            warnings.append(
+                f"verify: {name}: capability lookup failed: {exc}"
+            )
             continue
         if BEHAVIOURAL_VERIFICATION_CAPABILITY in provides:
             capability_aspect = name
