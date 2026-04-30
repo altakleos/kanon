@@ -44,7 +44,7 @@ Also test the newly-surfaced warnings from item 7:
 
 ## Acceptance criteria
 
-- [ ] Both silent `except Exception:` blocks now capture `exc` and append warnings
-- [ ] 5 new tests covering all validator error branches
-- [ ] All existing tests pass
-- [ ] mypy clean
+- [x] Both silent `except Exception:` blocks now capture `exc` and append warnings
+- [x] 5 new tests covering all validator error branches
+- [x] All existing tests pass
+- [x] mypy clean

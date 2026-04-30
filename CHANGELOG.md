@@ -6,9 +6,32 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.3.0a7] — 2026-04-30
+
 ### Added
 
 - **`kanon` brand banner** — emitted on `kanon init` and `kanon upgrade` (stderr only, suppressed automatically when stderr is not a TTY) and rendered at the top of scaffolded `AGENTS.md` inside a `<!-- kanon:begin:banner -->` marker block. Single source of truth (`src/kanon/_banner.py`) feeds all three surfaces; bytes are frozen and asserted by test. New `--quiet` / `-q` flag on both commands suppresses the banner regardless of TTY (and the trailing "Next steps" advisory on `init`).
+- **Symlink/path-traversal protection** — new `_ensure_within()` helper validates that resolved paths stay inside the target directory before scaffold writes. Applied to `_write_config`, `_write_tree_atomically`, and `_migrate_flat_protocols`.
+- **Security model section in README** — documents the trust boundary for `kanon preflight` and `kanon verify` code execution (repo write-access, same as Makefile/package.json scripts). References ADR-0036.
+- **24 new tests** — validator error-branch tests, error-path tests for `_detect`, `_fidelity`, `_graph`, `_validators`, and 6 new e2e lifecycle tests (preflight, release, aspect set-config, aspect info, graph orphans, fidelity).
+
+### Changed
+
+- **`kanon release` gate lowered from depth 3 to depth 2** — depth 3 added zero files/protocols/sections over depth 2. The gate was an empty level; now `kanon release` works at depth 2 which provides the preflight script and release workflow.
+- **CLI tagline aligned with README** — `kanon --help` now says "development-discipline kit" (was "SDD kit").
+- **cli.py modularized** — extracted `_cli_helpers.py` (7 pure-logic functions), `_cli_aspect.py` (6 aspect-depth-engine functions), and moved 3 fidelity helpers to `_fidelity.py`. cli.py reduced from 1,589 to 1,084 lines (-32%).
+- **test_cli.py split** — split into 5 focused files: `test_cli.py` (init/upgrade), `test_cli_aspect.py`, `test_cli_helpers.py`, `test_cli_verify.py`, `test_cli_fidelity.py`. Reduced from 2,978 to 1,129 lines (-62%).
+- **Oversized functions extracted** — `parse_fixture` (178→108 lines), `init` (158→113 lines) via 5 new helper functions.
+- **Silent exceptions surfaced in `_verify.py`** — two bare `except Exception: continue` blocks now capture and append warnings to the verify report.
+- **Preflight spec/design promoted** from `status: draft` to `status: accepted`.
+
+### Fixed
+
+- **`kanon init` no longer crashes with raw traceback** on invalid paths — now shows `Error: Cannot create target directory: ...`.
+- **README `tier set` description corrected** — was incorrectly described as sugar for `aspect set-depth sdd`; actually does a uniform raise across all default aspects (ADR-0035).
+- **Broken doc link fixed** in `docs/design/aspect-model.md` (incorrect relative path to tier-up-advisor protocol).
+- **Ruff I001 import-sort issue fixed** in `_banner.py`.
+- **Validator `check()` functions** now have docstrings (6 validators).
 
 ### Changed
 

@@ -40,7 +40,7 @@ Scope to the 3 most impactful files (not all 16 — diminishing returns):
 
 ## Acceptance criteria
 
-- [ ] `_detect.py` coverage ≥ 95%
-- [ ] Error-path tests added to test_detect, test_fidelity, test_graph, test_validators
-- [ ] All existing tests pass
-- [ ] Overall coverage ≥ 94%
+- [x] `_detect.py` coverage ≥ 95%
+- [x] Error-path tests added to test_detect, test_fidelity, test_graph, test_validators
+- [x] All existing tests pass
+- [x] Overall coverage ≥ 94%
