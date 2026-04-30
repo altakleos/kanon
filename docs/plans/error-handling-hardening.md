@@ -32,7 +32,7 @@ Three code paths produce raw Python tracebacks instead of user-friendly `ClickEx
 
 ## Acceptance criteria
 
-- [ ] All three error paths produce `ClickException` with file path context
-- [ ] No raw tracebacks for missing files or malformed config
-- [ ] Tests cover each error path
-- [ ] Existing tests pass
+- [x] All three error paths produce `ClickException` with file path context
+- [x] No raw tracebacks for missing files or malformed config
+- [x] Tests cover each error path
+- [x] Existing tests pass
