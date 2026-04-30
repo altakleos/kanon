@@ -246,6 +246,60 @@ def test_profile_full_is_rejected(tmp_path: Path) -> None:
     assert not (target / ".kanon").exists()
 
 
+def test_init_writes_full_agents_md_when_absent(tmp_path: Path) -> None:
+    """INV-cli-init-agents-md-merge: absent AGENTS.md → write the full kit-rendered file."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    result = runner.invoke(main, ["init", str(target), "--profile", "solo"])
+    assert result.exit_code == 0, result.output
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    # Kit-rendered AGENTS.md carries the hard-gates table and a kanon marker.
+    assert "## Hard Gates" in agents
+    assert "<!-- kanon:begin:" in agents
+
+
+def test_init_refreshes_marker_bodies_when_present(tmp_path: Path) -> None:
+    """INV-cli-init-agents-md-merge: existing AGENTS.md with kanon markers \
+→ refresh marker bodies, preserve outside content."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    target.mkdir()
+    # Pre-existing AGENTS.md with a kanon marker block + user prose outside.
+    user_prose_above = "# My project\n\nUser-authored content above the marker.\n\n"
+    user_prose_below = "\n\n## Project notes\n\nUser-authored content below the marker.\n"
+    marker_block = (
+        "<!-- kanon:begin:protocols-index -->\nSTALE BODY\n<!-- kanon:end:protocols-index -->"
+    )
+    (target / "AGENTS.md").write_text(user_prose_above + marker_block + user_prose_below, encoding="utf-8")
+    result = runner.invoke(main, ["init", str(target), "--profile", "team"])
+    assert result.exit_code == 0, result.output
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    # Outside-marker content survives byte-for-byte.
+    assert "User-authored content above the marker." in agents
+    assert "User-authored content below the marker." in agents
+    # Stale marker body was refreshed (no longer literal "STALE BODY").
+    assert "STALE BODY" not in agents
+
+
+def test_init_prepends_kit_content_when_no_markers(tmp_path: Path) -> None:
+    """INV-cli-init-agents-md-merge: existing AGENTS.md without markers \
+→ prepend kit content above existing prose under `## Project context`."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    target.mkdir()
+    existing = "# My project\n\nThis repo is for X. We use Y. Conventions: Z.\n"
+    (target / "AGENTS.md").write_text(existing, encoding="utf-8")
+    result = runner.invoke(main, ["init", str(target), "--profile", "team"])
+    assert result.exit_code == 0, result.output
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    # Kit content sits at the top.
+    hard_gates_idx = agents.find("## Hard Gates")
+    project_context_idx = agents.find("## Project context")
+    assert hard_gates_idx >= 0, "kit content not present"
+    assert project_context_idx > hard_gates_idx, "kit content must precede `## Project context`"
+    # Existing prose preserved verbatim under the H2.
+    assert existing.strip() in agents
+
 
 def test_init_mutual_exclusion(tmp_path: Path) -> None:
     """--lite and --profile are mutually exclusive with --tier and --aspects."""

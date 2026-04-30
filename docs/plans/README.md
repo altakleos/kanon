@@ -132,6 +132,7 @@ Batching related commits on one branch is fine: a spec commit + its design doc c
 | [kanon-banner](kanon-banner.md) | `kanon` brand banner across init, upgrade, and AGENTS.md | done |
 | [preflight-shell-trust-boundary](preflight-shell-trust-boundary.md) | Secure-defaults carve-out for `_preflight.py` shell=True | done |
 | [profile-rename](profile-rename.md) | Rename `--profile full` → `all`, add `max` profile (ADR-0037) | done |
+| [init-agents-md-merge](init-agents-md-merge.md) | `kanon init` merges into existing AGENTS.md (ADR-0038) | done |
 
 ## Roadmap
 
