@@ -119,7 +119,7 @@ Batching related commits on one branch is fine: a spec commit + its design doc c
 | [track-a-doc-fixes](track-a-doc-fixes.md) | Track A documentation/config fixes | done |
 | [track-c-dx](track-c-dx.md) | Reduce agent context overhead (Track C) | done |
 | [wire-ci-scripts](wire-ci-scripts.md) | Wire unwired CI scripts into GitHub Actions workflows | done |
-| [scaffold-v2](scaffold-v2.md) | Thin kernel, routing-index AGENTS.md, three file categories | in-progress |
+| [scaffold-v2](scaffold-v2.md) | Thin kernel, routing-index AGENTS.md, three file categories | done |
 
 ## Roadmap
 
