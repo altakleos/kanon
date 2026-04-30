@@ -38,7 +38,7 @@ def atomic_write_text(path: Path, content: str) -> None:
                 os.fsync(dir_fd)
             finally:
                 os.close(dir_fd)
-    except Exception:
+    except OSError:
         with contextlib.suppress(OSError):
             tmp.unlink(missing_ok=True)
         raise

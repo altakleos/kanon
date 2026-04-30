@@ -8,76 +8,12 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+[a-z][0-9]+'
 
 jobs:
-  verify:
-    name: pytest (py${{ matrix.python-version }})
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install package with dev extras
-        run: pip install -e '.[dev]'
-
-      - name: Run pytest
-        run: pytest -v
-
-      - name: Lint with ruff
-        run: ruff check src/ tests/ ci/
-
-      - name: Type check with mypy
-        run: mypy src/kanon
-
-      - name: Check foundations layer
-        run: python ci/check_foundations.py
-
-      - name: Check markdown links
-        run: python ci/check_links.py
-
-      - name: Check kit consistency
-        run: python ci/check_kit_consistency.py
-
-      - name: Check ADR immutability
-        run: python ci/check_adr_immutability.py
-
-      - name: Check process gates
-        run: python ci/check_process_gates.py
-
-      - name: Check commit messages (soft)
-        run: python ci/check_commit_messages.py
-        continue-on-error: true
-
-      - name: Check test quality
-        run: python ci/check_test_quality.py
-
-      - name: Check spec invariant coverage
-        run: python ci/check_verified_by.py
-
-      - name: Check invariant IDs
-        run: python ci/check_invariant_ids.py
-
-      - name: Check security patterns (warnings)
-        run: python ci/check_security_patterns.py
-        continue-on-error: true
-
-      - name: Check dependency hygiene (warnings)
-        run: python ci/check_deps.py
-        continue-on-error: true
-
-      - name: Check status consistency (warnings)
-        run: python ci/check_status_consistency.py
-        continue-on-error: true
+  checks:
+    uses: ./.github/workflows/checks.yml
 
   build-and-check:
     name: build + check package contents
-    needs: verify
+    needs: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5

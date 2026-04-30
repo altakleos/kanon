@@ -7,96 +7,12 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    name: pytest (${{ matrix.os }}, py${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          # The ADR-immutability gate (below) walks commit history to
-          # compare ADR bodies before vs after each commit. Default
-          # fetch-depth: 1 is too shallow even for the push-mode HEAD~
-          # lookup; PR mode against `origin/<base>` needs full history.
-          fetch-depth: 0
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install package with dev extras
-        run: pip install -e '.[dev]'
-
-      - name: Run pytest
-        run: pytest -v
-
-      - name: Lint with ruff
-        run: ruff check src/ tests/ ci/
-
-      - name: Type check with mypy
-        run: mypy src/kanon
-
-      - name: Check foundations layer
-        run: python ci/check_foundations.py
-
-      - name: Check markdown links
-        run: python ci/check_links.py
-
-      - name: Check kit consistency
-        run: python ci/check_kit_consistency.py
-
-      - name: Check ADR immutability (per ADR-0032)
-        # PR mode walks every commit in BASE..HEAD; push mode (default)
-        # checks only HEAD. Both modes need full history (fetch-depth: 0
-        # on the checkout step above).
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            python ci/check_adr_immutability.py --base-ref "origin/${{ github.base_ref }}"
-          else
-            python ci/check_adr_immutability.py
-          fi
-
-      - name: Check process gates (plan-before-build, spec-before-design)
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            python ci/check_process_gates.py --base-ref "origin/${{ github.base_ref }}"
-          else
-            python ci/check_process_gates.py
-          fi
-
-      - name: Check commit messages (soft — warnings only)
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            python ci/check_commit_messages.py --base-ref "origin/${{ github.base_ref }}"
-          else
-            python ci/check_commit_messages.py
-          fi
-
-      - name: Check test quality
-        run: python ci/check_test_quality.py
-
-      - name: Check spec invariant coverage
-        run: python ci/check_verified_by.py
-
-      - name: Check invariant IDs
-        run: python ci/check_invariant_ids.py
-
-      - name: Check security patterns (warnings)
-        run: python ci/check_security_patterns.py
-        continue-on-error: true
-
-      - name: Check dependency hygiene (warnings)
-        run: python ci/check_deps.py
-        continue-on-error: true
-
-      - name: Check status consistency (warnings)
-        run: python ci/check_status_consistency.py
-        continue-on-error: true
+  checks:
+    uses: ./.github/workflows/checks.yml
+    with:
+      fetch-depth: 0
+      os: '"ubuntu-latest","macos-latest"'
+      is-pr: ${{ github.event_name == 'pull_request' }}
 
   e2e:
     name: e2e (${{ matrix.os }})

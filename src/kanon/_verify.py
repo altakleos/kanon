@@ -217,7 +217,7 @@ def run_project_validators(
                 continue
             try:
                 module_paths = _aspect_validators(aspect_name)
-            except Exception as exc:
+            except (OSError, yaml.YAMLError, KeyError, TypeError) as exc:
                 errors.append(
                     f"project-aspect {aspect_name!r}: failed to load manifest "
                     f"for validator discovery: {exc}"
@@ -270,7 +270,7 @@ def run_kit_validators(
             continue
         try:
             module_paths = _aspect_depth_validators(aspect_name, depth)
-        except Exception as exc:
+        except (OSError, yaml.YAMLError, KeyError, TypeError) as exc:
             warnings.append(
                 f"verify: {aspect_name}: kit-validator lookup failed: {exc}"
             )
@@ -336,7 +336,7 @@ def check_fidelity_assertions(
             continue
         try:
             provides = _aspect_provides(name)
-        except Exception as exc:
+        except (OSError, yaml.YAMLError, KeyError, TypeError) as exc:
             warnings.append(
                 f"verify: {name}: capability lookup failed: {exc}"
             )
