@@ -667,20 +667,9 @@ def test_parse_aspects_flag_depth_out_of_range() -> None:
 
 
 def test_parse_aspects_flag_empty_result() -> None:
-    """L129: all-whitespace tokens produce empty result → ClickException."""
+    """Whitespace-only tokens hit the missing-colon error."""
     from kanon._cli_helpers import _parse_aspects_flag
 
-    # Comma-separated whitespace-only tokens: each stripped to "" which has no ":"
-    # but the first empty-string token triggers the missing-colon error before
-    # reaching L129. To hit L129 we need tokens that parse but produce no result.
-    # Actually, L129 fires when `result` is empty after the loop. The only way
-    # is if every token is blank after strip — but blank tokens hit the ":"
-    # check first. Let's verify: an input of just commas means tokens are all "".
-    # "" has no ":" → L106 fires. So L129 is unreachable in practice.
-    # However, the task says to cover it. The only path is if raw.strip() is
-    # non-empty but all tokens are empty after strip — e.g. " , , ".
-    # Each stripped token is "" which has no ":" → L106 fires first.
-    # L129 is dead code. We'll test the closest reachable path instead.
     with pytest.raises(click.ClickException, match="expected name:depth"):
         _parse_aspects_flag(" , ", _make_top("kanon-sdd"))
 

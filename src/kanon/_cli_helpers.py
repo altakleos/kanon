@@ -36,8 +36,6 @@ def _value_matches_schema_type(value: Any, expected: str) -> bool:
         return isinstance(value, str)
     if expected == "integer":
         return isinstance(value, int)
-    if expected == "boolean":
-        return isinstance(value, bool)
     if expected == "number":
         return isinstance(value, (int, float))
     return False
@@ -125,8 +123,6 @@ def _parse_aspects_flag(raw: str, top: dict[str, Any]) -> dict[str, int]:
                 f"Aspect {name!r}: depth {depth} outside range [{min_d},{max_d}]."
             )
         result[name] = depth
-    if not result:
-        raise click.ClickException("--aspects requires at least one aspect:depth pair.")
     return result
 
 
