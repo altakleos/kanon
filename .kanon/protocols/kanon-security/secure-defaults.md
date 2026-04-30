@@ -24,6 +24,8 @@ Ensure LLM-agent-authored code follows hardened security defaults. Agents invoke
 - Never use string interpolation or concatenation to build queries or commands.
 - Use subprocess APIs with argument lists, not shell=True with interpolated strings.
 
+**Trust-boundary carve-out (config-sourced commands):** `subprocess.run(cmd, shell=True, ...)` is acceptable when `cmd` is sourced from a config file inside the same git repository as the running CLI — the trust boundary is repo write-access, which an attacker already needs to influence the command at all. Both clauses must hold: the source must be a same-repo config file, and the legitimising boundary must be repo write-access. Commands sourced from environment variables, network input, or a file outside the repo do *not* qualify. Mark the call site with a `# nosec` comment naming this carve-out so a future reader can audit it without re-deriving the rationale. See [ADR-0036](../../../docs/decisions/0036-secure-defaults-config-trust-carveout.md).
+
 ### 3. Transport
 
 - Verify TLS is not disabled (`verify=False`, `rejectUnauthorized: false`, `NODE_TLS_REJECT_UNAUTHORIZED=0`).

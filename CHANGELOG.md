@@ -10,6 +10,14 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 - **`kanon` brand banner** — emitted on `kanon init` and `kanon upgrade` (stderr only, suppressed automatically when stderr is not a TTY) and rendered at the top of scaffolded `AGENTS.md` inside a `<!-- kanon:begin:banner -->` marker block. Single source of truth (`src/kanon/_banner.py`) feeds all three surfaces; bytes are frozen and asserted by test. New `--quiet` / `-q` flag on both commands suppresses the banner regardless of TTY (and the trailing "Next steps" advisory on `init`).
 
+### Changed
+
+- **Secure-defaults protocol gains a same-repo config trust-boundary carve-out** (per [ADR-0036](docs/decisions/0036-secure-defaults-config-trust-carveout.md)). `subprocess.run(cmd, shell=True, ...)` is acceptable when `cmd` originates from a config file inside the running CLI's repo — the trust boundary is repo write-access. The kit-shipped `secure-defaults` § Injection paragraph spells the carve-out out so a future reader doesn't have to re-derive it. `src/kanon/_preflight.py:96` (the first lived call site) now carries a `# nosec` comment naming the ADR; refactoring to argv form was rejected because it would silently break consumer commands using shell features (`$VAR`, `&&`, pipes, redirection).
+
+### Fixed
+
+- **`ci/check_process_gates.py` is robust to developer `diff.external` settings.** The spec co-presence regex scans `git diff` output for `+`-prefixed lines; when a developer's global git config sets `diff.external` (e.g., `difft`, `delta`), those markers are stripped and the gate silently misses real violations. `_diff_content` now passes `--no-ext-diff` to both `git diff` invocations. CI was unaffected; this fix only matters for local pytest runs.
+
 ## [0.3.0a6] — 2026-04-29
 
 ### Added

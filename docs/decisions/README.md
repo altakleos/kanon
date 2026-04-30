@@ -89,6 +89,8 @@ Bug fixes, threshold tuning, documentation improvements, presentation/formatting
 | [0032](0032-adr-immutability-gate.md) | ADR-immutability gate — mechanical enforcement with a calibrated escape hatch | accepted | process |
 | [0033](0033-fidelity-quantitative-families.md) | Fidelity quantitative assertion families and turn-format extensibility | accepted | testing |
 | [0034](0034-routing-index-agents-md.md) | Routing-index AGENTS.md — refined enforcement proximity | accepted | process |
+| [0035](0035-tier-as-uniform-aspect-raise.md) | Tier as uniform aspect-depth raise | accepted | aspects |
+| [0036](0036-secure-defaults-config-trust-carveout.md) | Secure-defaults carve-out for same-repo config commands | accepted (lite) | process |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 

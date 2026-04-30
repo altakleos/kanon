@@ -38,7 +38,7 @@ Also update:
 
 ## Acceptance criteria
 
-- [ ] `kanon release` works at depth 2
-- [ ] `kanon release` fails at depth 1 with clear error
-- [ ] All existing tests pass
-- [ ] No depth-3 references remain for the release gate
+- [x] `kanon release` works at depth 2
+- [x] `kanon release` fails at depth 1 with clear error
+- [x] All existing tests pass
+- [x] No depth-3 references remain for the release gate

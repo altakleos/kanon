@@ -130,6 +130,7 @@ Batching related commits on one branch is fine: a spec commit + its design doc c
 | [error-handling-hardening](error-handling-hardening.md) | Error handling hardening across the CLI | done |
 | [path-containment-checks](path-containment-checks.md) | Path containment checks for target/source operations | done |
 | [kanon-banner](kanon-banner.md) | `kanon` brand banner across init, upgrade, and AGENTS.md | done |
+| [preflight-shell-trust-boundary](preflight-shell-trust-boundary.md) | Secure-defaults carve-out for `_preflight.py` shell=True | done |
 
 ## Roadmap
 

@@ -32,7 +32,7 @@ New test functions using CliRunner (matching existing pattern):
 
 ## Acceptance criteria
 
-- [ ] 6 new e2e tests added
-- [ ] All new tests pass
-- [ ] All existing tests still pass
-- [ ] Each test exercises the full init → command → verify cycle
+- [x] 6 new e2e tests added
+- [x] All new tests pass
+- [x] All existing tests still pass
+- [x] Each test exercises the full init → command → verify cycle
