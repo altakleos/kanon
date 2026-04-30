@@ -1,4 +1,4 @@
-# kanon kit — scaffold-v2-p2
+# kanon kit — kanon
 
 > **Kernel doc.** Scaffolded by `kanon init` and refreshed by `kanon upgrade`. This file describes what the kanon kit gives this repo at its current configuration.
 
@@ -6,7 +6,7 @@
 
 - **kanon-deps** at depth 2
 - **kanon-fidelity** at depth 1
-- **kanon-release** at depth 2
+- **kanon-release** at depth 3
 - **kanon-sdd** at depth 3
 - **kanon-security** at depth 2
 - **kanon-testing** at depth 3

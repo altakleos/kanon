@@ -1,4 +1,4 @@
-kit_version: 0.2.0a11
+kit_version: 0.3.0a6
 aspects:
   kanon-deps:
     depth: 2
@@ -20,10 +20,10 @@ aspects:
     depth: 3
     enabled_at: '2026-04-28T22:48:17+00:00'
     config:
-      test_cmd: ".venv/bin/python -m pytest --no-cov -q"
-      lint_cmd: ".venv/bin/ruff check src/ tests/ ci/"
-      typecheck_cmd: ".venv/bin/mypy src/kanon"
-      format_cmd: ""
+      test_cmd: .venv/bin/python -m pytest --no-cov -q
+      lint_cmd: .venv/bin/ruff check src/ tests/ ci/
+      typecheck_cmd: .venv/bin/mypy src/kanon
+      format_cmd: ''
   kanon-worktrees:
     depth: 2
     enabled_at: '2026-04-28T22:48:17+00:00'
@@ -34,10 +34,11 @@ aspects:
     config: {}
 preflight-stages:
   push:
-    - run: ".venv/bin/python ci/check_security_patterns.py"
-      label: security-scan
-    - run: ".venv/bin/python ci/check_deps.py"
-      label: deps-scan
+  - run: .venv/bin/python ci/check_security_patterns.py
+    label: security-scan
+  - run: .venv/bin/python ci/check_deps.py
+    label: deps-scan
   release:
-    - run: ".venv/bin/python -c \"import kanon; v='$TAG'.lstrip('v'); assert kanon.__version__ == v, f'{kanon.__version__} != {v}'\""
-      label: release-preflight
+  - run: .venv/bin/python -c "import kanon; v='$TAG'.lstrip('v'); assert kanon.__version__
+      == v, f'{kanon.__version__} != {v}'"
+    label: release-preflight
