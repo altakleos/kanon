@@ -648,7 +648,20 @@ def upgrade(target: Path) -> None:
         atomic_write_text(shim_path, content)
 
     if version_changed:
-        _write_config(target, __version__, _aspects_with_meta(aspects))
+        # Preserve per-aspect metadata (enabled_at, config) from existing config.
+        existing_aspects = config.get("aspects", {})
+        upgraded_aspects = {}
+        now = _now_iso()
+        for name, depth in aspects.items():
+            old = existing_aspects.get(name, {})
+            upgraded_aspects[name] = {
+                "depth": depth,
+                "enabled_at": old.get("enabled_at", now),
+                "config": old.get("config", {}),
+            }
+        # Preserve root-level keys beyond kit_version and aspects.
+        extra = {k: v for k, v in config.items() if k not in ("kit_version", "aspects")}
+        _write_config(target, __version__, upgraded_aspects, extra=extra)
     clear_sentinel(target / ".kanon")
 
     if was_legacy:

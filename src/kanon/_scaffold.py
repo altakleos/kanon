@@ -126,13 +126,18 @@ def _write_config(
     target: Path,
     kit_version: str,
     aspects_with_meta: dict[str, dict[str, Any]],
+    *,
+    extra: dict[str, Any] | None = None,
 ) -> None:
     """Write a v2 .kanon/config.yaml atomically."""
     from kanon._atomic import atomic_write_text
 
     config_dir = target / ".kanon"
     config_dir.mkdir(parents=True, exist_ok=True)
-    payload = {"kit_version": kit_version, "aspects": aspects_with_meta}
+    payload: dict[str, Any] = {"kit_version": kit_version, "aspects": aspects_with_meta}
+    if extra:
+        # Defensive: never let extra overwrite canonical keys.
+        payload.update({k: v for k, v in extra.items() if k not in ("kit_version", "aspects")})
     atomic_write_text(config_dir / "config.yaml", yaml.safe_dump(payload, sort_keys=False))
 
 

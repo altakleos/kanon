@@ -614,6 +614,70 @@ def test_upgrade_noop_does_not_churn_enabled_at(tmp_path: Path) -> None:
     )
 
 
+def test_upgrade_preserves_aspect_config(tmp_path: Path) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    config_path = target / ".kanon" / "config.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["aspects"]["kanon-testing"] = {
+        "depth": 3,
+        "enabled_at": "2025-01-01T00:00:00+00:00",
+        "config": {"test_cmd": "pytest -q", "lint_cmd": "ruff check"},
+    }
+    config["kit_version"] = "0.0.0"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+
+    updated = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    assert updated["aspects"]["kanon-testing"]["config"]["test_cmd"] == "pytest -q"
+    assert updated["aspects"]["kanon-testing"]["config"]["lint_cmd"] == "ruff check"
+
+
+def test_upgrade_preserves_enabled_at_on_version_bump(tmp_path: Path) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    config_path = target / ".kanon" / "config.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    # Set a distinctive timestamp that cannot coincidentally match _now_iso().
+    config["aspects"]["kanon-sdd"]["enabled_at"] = "2024-06-15T12:00:00+00:00"
+    config["kit_version"] = "0.0.0"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+
+    updated = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    assert updated["aspects"]["kanon-sdd"]["enabled_at"] == "2024-06-15T12:00:00+00:00"
+
+
+def test_upgrade_preserves_extra_root_keys(tmp_path: Path) -> None:
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--tier", "1"])
+
+    config_path = target / ".kanon" / "config.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["preflight-stages"] = {
+        "push": [{"run": "echo test", "label": "test-scan"}],
+    }
+    config["kit_version"] = "0.0.0"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+
+    updated = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    assert updated["preflight-stages"] == {
+        "push": [{"run": "echo test", "label": "test-scan"}],
+    }
+
+
 def test_upgrade_heals_edited_markers(tmp_path: Path) -> None:
     """`upgrade` re-renders kit-managed marker sections even when kit_version
     is unchanged. User content outside markers is preserved."""
