@@ -51,8 +51,8 @@ _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
 
 # Allow this script to run from a fresh clone without an installed kanon.
 sys.path.insert(0, str(_REPO_ROOT / "src"))
+from kanon._cli_helpers import _classify_predicate  # noqa: E402
 from kanon._manifest import _iter_markers  # noqa: E402
-from kanon.cli import _classify_predicate  # noqa: E402
 
 _UNPREFIXED_SECTIONS: frozenset[str] = frozenset({"protocols-index"})
 _STABILITY_VALUES: frozenset[str] = frozenset({"experimental", "stable", "deprecated"})

@@ -25,8 +25,8 @@ invariant_coverage:
   INV-protocols-byte-equality:
     - tests/test_protocols.py::test_protocol_byte_equals_repo_canonical
   INV-protocols-additive-across-tier-up:
-    - tests/test_cli.py::test_tier_up_additive_only
-    - tests/test_cli.py::test_tier_set_below_current_is_noop
+    - tests/test_cli_aspect.py::test_tier_up_additive_only
+    - tests/test_cli_aspect.py::test_tier_set_below_current_is_noop
   INV-protocols-no-runtime-dispatch:
     - tests/test_protocols.py
 ---

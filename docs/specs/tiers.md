@@ -13,11 +13,11 @@ invariant_coverage:
   INV-tiers-tier-taxonomy:
     - tests/test_cli.py::test_init_scaffolds_all_required_files
   INV-tiers-strict-inclusion:
-    - tests/test_cli.py::test_tier_up_additive_only
+    - tests/test_cli_aspect.py::test_tier_up_additive_only
   INV-tiers-tier-stored-explicitly:
     - tests/test_cli.py::test_init_scaffolds_all_required_files
   INV-tiers-tier-is-mutable:
-    - tests/test_cli.py::test_tier_set_idempotent
+    - tests/test_cli_aspect.py::test_tier_set_idempotent
   INV-tiers-process-gates-tier-dependent:
     - tests/test_cli.py::test_protocols_index_marker_present_tier1_plus
     - tests/test_cli.py::test_protocols_index_present_at_tier_0

@@ -24,6 +24,11 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
+from kanon._cli_helpers import (
+    _check_removal_dependents,
+    _check_requires,
+    _classify_predicate,
+)
 from kanon._manifest import (
     _aspect_provides,
     _capability_suppliers,
@@ -31,9 +36,6 @@ from kanon._manifest import (
     _validate_provides_field,
 )
 from kanon.cli import (
-    _check_removal_dependents,
-    _check_requires,
-    _classify_predicate,
     main,
 )
 
@@ -385,20 +387,20 @@ def test_split_aspect_name() -> None:
 
 def test_classify_predicate_bare_aspect_name_sugars() -> None:
     """A 3-token depth predicate with a bare aspect name sugars to `kanon-` form."""
-    from kanon.cli import _classify_predicate
+    from kanon._cli_helpers import _classify_predicate
     classified = _classify_predicate("sdd >= 1")
     assert classified == ("depth", "kanon-sdd", ">=", 1)
 
 
 def test_classify_predicate_namespaced_aspect_name_unchanged() -> None:
     """A 3-token depth predicate with a namespaced aspect name passes through."""
-    from kanon.cli import _classify_predicate
+    from kanon._cli_helpers import _classify_predicate
     classified = _classify_predicate("kanon-sdd >= 1")
     assert classified == ("depth", "kanon-sdd", ">=", 1)
 
 
 def test_classify_predicate_capability_unaffected_by_namespace_grammar() -> None:
     """A 1-token capability predicate is not subject to aspect-name sugar."""
-    from kanon.cli import _classify_predicate
+    from kanon._cli_helpers import _classify_predicate
     classified = _classify_predicate("planning-discipline")
     assert classified == ("capability", "planning-discipline")

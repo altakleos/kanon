@@ -14,24 +14,24 @@ fixtures:
 invariant_coverage:
   INV-worktrees-scaffolding-location:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_init_with_worktrees_depth_1
-    - tests/test_cli.py::test_init_with_worktrees_depth_2
+    - tests/test_cli_aspect.py::test_init_with_worktrees_depth_1
+    - tests/test_cli_aspect.py::test_init_with_worktrees_depth_2
   INV-worktrees-depth-range:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_worktrees_manifest_has_expected_depths
   INV-worktrees-protocol-shaped:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_aspect_add
+    - tests/test_cli_aspect.py::test_aspect_add
   INV-worktrees-reference-automation-snippets:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_init_with_worktrees_depth_2
+    - tests/test_cli_aspect.py::test_init_with_worktrees_depth_2
   INV-worktrees-non-destructive-teardown:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_aspect_remove_leaves_files
+    - tests/test_cli_aspect.py::test_aspect_remove_leaves_files
   INV-worktrees-cross-aspect-dependency:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_aspect_add_worktrees_without_sdd
-    - tests/test_cli.py::test_aspect_add_requires_met
+    - tests/test_cli_aspect.py::test_aspect_add_worktrees_without_sdd
+    - tests/test_cli_aspect.py::test_aspect_add_requires_met
   INV-worktrees-namespaced-agents-md-section:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
 ---

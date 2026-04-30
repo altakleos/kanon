@@ -11,21 +11,21 @@ fixtures:
   - tests/test_cli.py
 invariant_coverage:
   INV-tier-migration-mutable-tier:
-    - tests/test_cli.py::test_tier_set_idempotent
+    - tests/test_cli_aspect.py::test_tier_set_idempotent
   INV-tier-migration-idempotent:
-    - tests/test_cli.py::test_tier_set_idempotent
+    - tests/test_cli_aspect.py::test_tier_set_idempotent
   INV-tier-migration-tier-up-additive:
-    - tests/test_cli.py::test_tier_up_additive_only
+    - tests/test_cli_aspect.py::test_tier_up_additive_only
   INV-tier-migration-tier-down-non-destructive:
-    - tests/test_cli.py::test_tier_set_below_current_is_noop
+    - tests/test_cli_aspect.py::test_tier_set_below_current_is_noop
   INV-tier-migration-agents-md-marker-delimited:
     - tests/test_cli.py::test_init_preserves_user_content_outside_markers
   INV-tier-migration-atomic:
-    - tests/test_cli.py::test_tier_migration_round_trip_preserves_user_file
+    - tests/test_cli_aspect.py::test_tier_migration_round_trip_preserves_user_file
   INV-tier-migration-section-list-per-tier:
-    - tests/test_cli.py::test_tier_up_additive_only
+    - tests/test_cli_aspect.py::test_tier_up_additive_only
   INV-tier-migration-invalid-targets-rejected:
-    - tests/test_cli.py::test_aspect_set_depth_invalid
+    - tests/test_cli_aspect.py::test_aspect_set_depth_invalid
 ---
 # Spec: Tier migration — `kanon tier set`
 

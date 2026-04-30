@@ -18,11 +18,11 @@ invariant_coverage:
     - tests/test_kit_integrity.py::test_deps_manifest_has_expected_depths
   INV-deps-protocol:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_aspect_add_deps
+    - tests/test_cli_aspect.py::test_aspect_add_deps
   INV-deps-agents-md-section:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
   INV-deps-ci-validator:
-    - tests/test_cli.py::test_deps_depth_2_has_ci_script
+    - tests/test_cli_aspect.py::test_deps_depth_2_has_ci_script
     - tests/ci/test_check_deps.py::test_requirements_unpinned_detected
   INV-deps-no-dependency:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips

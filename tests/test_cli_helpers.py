@@ -1,0 +1,574 @@
+"""Tests for kanon internal helpers: _manifest.py, _scaffold.py, _cli_aspect.py."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import click
+import pytest
+import yaml
+
+
+# Helper for fake kit roots used by monkeypatched manifest tests.
+def _make_fake_kit(tmp: Path | None, content: str) -> Path:
+    import tempfile
+
+    d = Path(tempfile.mkdtemp())
+    (d / "manifest.yaml").write_text(content, encoding="utf-8")
+    return d
+
+
+
+
+
+
+# ---------------------------------------------------------------------------
+# Coverage-gap tests: _manifest.py, _scaffold.py, cli.py uncovered branches
+# ---------------------------------------------------------------------------
+
+
+# --- _manifest.py: _load_top_manifest validation errors ---
+
+
+def test_load_top_manifest_not_a_dict(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Line 42: top manifest YAML is not a dict."""
+    from kanon._manifest import _load_top_manifest
+
+    _load_top_manifest.cache_clear()
+    monkeypatch.setattr(
+        "kanon._manifest._kit_root",
+        lambda: _make_fake_kit(tmp=None, content="- just a list"),
+    )
+    with pytest.raises(click.ClickException, match="expected a YAML mapping"):
+        _load_top_manifest()
+    _load_top_manifest.cache_clear()
+
+
+
+def test_load_top_manifest_missing_aspects(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Line 45: aspects key missing or empty."""
+    from kanon._manifest import _load_top_manifest
+
+    _load_top_manifest.cache_clear()
+    monkeypatch.setattr(
+        "kanon._manifest._kit_root",
+        lambda: _make_fake_kit(tmp=None, content="foo: bar"),
+    )
+    with pytest.raises(click.ClickException, match="missing or empty"):
+        _load_top_manifest()
+    _load_top_manifest.cache_clear()
+
+
+
+def test_load_top_manifest_aspect_not_mapping(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Line 48: an aspect entry is not a dict."""
+    from kanon._manifest import _load_top_manifest
+
+    _load_top_manifest.cache_clear()
+    monkeypatch.setattr(
+        "kanon._manifest._kit_root",
+        lambda: _make_fake_kit(tmp=None, content="aspects:\n  kanon-sdd: not-a-dict"),
+    )
+    with pytest.raises(click.ClickException, match="must be a mapping"):
+        _load_top_manifest()
+    _load_top_manifest.cache_clear()
+
+
+
+def test_load_top_manifest_missing_field(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Line 51: required field missing from aspect entry."""
+    import click as _click
+
+    from kanon._manifest import _load_top_manifest
+
+    _load_top_manifest.cache_clear()
+    content = yaml.safe_dump({"aspects": {"kanon-sdd": {"path": "x"}}})
+    monkeypatch.setattr(
+        "kanon._manifest._kit_root",
+        lambda: _make_fake_kit(tmp=None, content=content),
+    )
+    with pytest.raises(_click.ClickException, match="missing required field"):
+        _load_top_manifest()
+    _load_top_manifest.cache_clear()
+
+
+
+def test_load_top_manifest_invalid_stability(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Line 55: invalid stability value."""
+    import click as _click
+
+    from kanon._manifest import _load_top_manifest
+
+    _load_top_manifest.cache_clear()
+    content = yaml.safe_dump(
+        {
+            "aspects": {
+                "kanon-sdd": {
+                    "path": "aspects/kanon-sdd",
+                    "stability": "bogus",
+                    "depth-range": [0, 3],
+                    "default-depth": 1,
+                }
+            }
+        }
+    )
+    monkeypatch.setattr(
+        "kanon._manifest._kit_root",
+        lambda: _make_fake_kit(tmp=None, content=content),
+    )
+    with pytest.raises(_click.ClickException, match="invalid stability"):
+        _load_top_manifest()
+    _load_top_manifest.cache_clear()
+
+
+
+def test_load_top_manifest_bad_depth_range(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Line 60: depth-range is not a 2-element list."""
+    import click as _click
+
+    from kanon._manifest import _load_top_manifest
+
+    _load_top_manifest.cache_clear()
+    content = yaml.safe_dump(
+        {
+            "aspects": {
+                "kanon-sdd": {
+                    "path": "aspects/kanon-sdd",
+                    "stability": "stable",
+                    "depth-range": [0],
+                    "default-depth": 1,
+                }
+            }
+        }
+    )
+    monkeypatch.setattr(
+        "kanon._manifest._kit_root",
+        lambda: _make_fake_kit(tmp=None, content=content),
+    )
+    with pytest.raises(_click.ClickException, match="depth-range must be"):
+        _load_top_manifest()
+    _load_top_manifest.cache_clear()
+
+
+
+def test_load_top_manifest_missing_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Line 39: manifest.yaml file doesn't exist."""
+    import tempfile
+
+    import click as _click
+
+    from kanon._manifest import _load_top_manifest
+
+    _load_top_manifest.cache_clear()
+    with tempfile.TemporaryDirectory() as d:
+        monkeypatch.setattr("kanon._manifest._kit_root", lambda: Path(d))
+        with pytest.raises(_click.ClickException, match="kit manifest missing"):
+            _load_top_manifest()
+    _load_top_manifest.cache_clear()
+
+
+# Helper for fake kit roots used by monkeypatched manifest tests.
+def _make_fake_kit(tmp: Path | None, content: str) -> Path:
+    import tempfile
+
+    d = Path(tempfile.mkdtemp())
+    (d / "manifest.yaml").write_text(content, encoding="utf-8")
+    return d
+
+
+
+# --- _manifest.py: _parse_frontmatter edge cases ---
+
+
+def test_parse_frontmatter_no_end_marker() -> None:
+    """Line 170: frontmatter start but no closing ---."""
+    from kanon._manifest import _parse_frontmatter
+
+    assert _parse_frontmatter("---\ntitle: hello\nno closing") == {}
+
+
+
+def test_parse_frontmatter_non_dict_yaml() -> None:
+    """Line 173: frontmatter YAML parses to non-dict."""
+    from kanon._manifest import _parse_frontmatter
+
+    assert _parse_frontmatter("---\n- a list item\n---\nbody") == {}
+
+
+
+# --- _manifest.py: _namespaced_section unprefixed path ---
+
+
+def test_namespaced_section_unprefixed() -> None:
+    """Line 147→149: section in _UNPREFIXED_SECTIONS stays unprefixed."""
+    from kanon._manifest import _namespaced_section
+
+    assert _namespaced_section("kanon-sdd", "protocols-index") == "protocols-index"
+
+
+
+# --- _scaffold.py: _read_config / _migrate_legacy_config ---
+
+
+def test_read_config_malformed(tmp_path: Path) -> None:
+    """Line 45: config.yaml is not a dict."""
+    from kanon._scaffold import _read_config
+
+    config_dir = tmp_path / ".kanon"
+    config_dir.mkdir()
+    (config_dir / "config.yaml").write_text('"just a string"', encoding="utf-8")
+    with pytest.raises(click.ClickException, match="Malformed"):
+        _read_config(tmp_path)
+
+
+
+def test_load_yaml_invalid_syntax(tmp_path: Path) -> None:
+    """_load_yaml wraps yaml.YAMLError into ClickException."""
+    from kanon._manifest import _load_yaml
+
+    bad = tmp_path / "bad.yaml"
+    bad.write_text(":\n  - :\n  bad: [unterminated", encoding="utf-8")
+    with pytest.raises(click.ClickException, match="Invalid YAML"):
+        _load_yaml(bad)
+
+
+
+def test_load_yaml_wrong_type(tmp_path: Path) -> None:
+    """_load_yaml raises ClickException when top-level type doesn't match."""
+    from kanon._manifest import _load_yaml
+
+    f = tmp_path / "list.yaml"
+    f.write_text("- one\n- two\n", encoding="utf-8")
+    with pytest.raises(click.ClickException, match="expected a YAML mapping"):
+        _load_yaml(f, expected_type=dict)
+
+
+
+def test_migrate_legacy_config_no_tier_no_aspects() -> None:
+    """Line 54: config has neither 'aspects' nor 'tier'."""
+    from kanon._scaffold import _migrate_legacy_config
+
+    result = _migrate_legacy_config({"kit_version": "1.0"})
+    assert result == {"kit_version": "1.0"}
+
+
+
+# --- _scaffold.py: _load_harnesses / _render_shims ---
+
+
+def test_load_harnesses_missing_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Line 101: harnesses.yaml doesn't exist."""
+    import tempfile
+
+    from kanon._scaffold import _load_harnesses
+
+    with tempfile.TemporaryDirectory() as d:
+        monkeypatch.setattr("kanon._scaffold._kit_root", lambda: Path(d))
+        assert _load_harnesses() == []
+
+
+
+def test_load_harnesses_malformed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Line 104: harnesses.yaml is not a list."""
+    import tempfile
+
+    from kanon._scaffold import _load_harnesses
+
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d)
+        (p / "harnesses.yaml").write_text("not_a_list: true", encoding="utf-8")
+        monkeypatch.setattr("kanon._scaffold._kit_root", lambda: p)
+        with pytest.raises(click.ClickException, match="expected a YAML list"):
+            _load_harnesses()
+
+
+
+def test_render_shims_frontmatter_and_plain(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Lines 142, 147: _render_shims with and without frontmatter."""
+    import tempfile
+
+    from kanon._scaffold import _render_shims
+
+    harnesses = [
+        {"path": "with_fm.md", "body": "hello\n", "frontmatter": {"key": "val"}},
+        {"path": "plain.md", "body": "plain body\n"},
+    ]
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d)
+        (p / "harnesses.yaml").write_text(
+            yaml.safe_dump(harnesses), encoding="utf-8"
+        )
+        monkeypatch.setattr("kanon._scaffold._kit_root", lambda: p)
+        result = _render_shims()
+    assert "---" in result["with_fm.md"]
+    assert "key: val" in result["with_fm.md"]
+    assert result["plain.md"] == "plain body\n"
+
+
+
+# --- _scaffold.py: _replace_section / _remove_section / _insert_section ---
+
+
+def test_replace_section_no_markers() -> None:
+    """Line 271→274: markers not found, text returned unchanged."""
+    from kanon._scaffold import _replace_section
+
+    text = "no markers here"
+    assert _replace_section(text, "missing", "content") == text
+
+
+
+def test_remove_section_no_markers() -> None:
+    """_remove_section with no markers returns text unchanged."""
+    from kanon._scaffold import _remove_section
+
+    text = "no markers here"
+    assert _remove_section(text, "missing") == text
+
+
+
+def test_insert_section_no_anchor_no_trailing_newline() -> None:
+    """Lines 289-291: no anchor found, text doesn't end with newline."""
+    from kanon._scaffold import _insert_section
+
+    result = _insert_section("some text", "test-section", "new content")
+    assert "<!-- kanon:begin:test-section -->" in result
+    assert "<!-- kanon:end:test-section -->" in result
+    assert "new content" in result
+
+
+
+# --- _scaffold.py: _render_protocols_index edge cases ---
+
+
+def test_render_protocols_index_no_protocols() -> None:
+    """Line 217: no protocols at depth 0 → 'No protocols active' message."""
+    from kanon._scaffold import _render_protocols_index
+
+    result = _render_protocols_index({"kanon-sdd": 0})
+    assert "No protocols active" in result
+
+
+
+# --- _scaffold.py: _render_kit_md returns None ---
+
+
+def test_render_kit_md_no_kit_file(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Line 232: kit.md doesn't exist → returns None."""
+    import tempfile
+
+    from kanon._scaffold import _render_kit_md
+
+    # Use a fake kit root with no kit.md
+    with tempfile.TemporaryDirectory() as d:
+        p = Path(d)
+        monkeypatch.setattr("kanon._manifest._kit_root", lambda: p)
+        monkeypatch.setattr("kanon._scaffold._kit_root", lambda: p)
+        result = _render_kit_md({"kanon-sdd": 0}, "test")
+    assert result is None
+
+
+
+# --- _scaffold.py: _migrate_flat_protocols edge cases ---
+
+
+def test_migrate_flat_protocols_no_flat_files(tmp_path: Path) -> None:
+    """Line 375: protocols dir exists but no flat .md files."""
+    from kanon._scaffold import _migrate_flat_protocols
+
+    protocols_dir = tmp_path / ".kanon" / "protocols"
+    protocols_dir.mkdir(parents=True)
+    assert _migrate_flat_protocols(tmp_path, {"kanon-sdd": 1}) is False
+
+
+
+def test_migrate_flat_protocols_no_sdd_aspect(tmp_path: Path) -> None:
+    """Line 380: flat files exist but 'kanon-sdd' not in aspects."""
+    from kanon._scaffold import _migrate_flat_protocols
+
+    protocols_dir = tmp_path / ".kanon" / "protocols"
+    protocols_dir.mkdir(parents=True)
+    (protocols_dir / "test.md").write_text("test", encoding="utf-8")
+    assert _migrate_flat_protocols(tmp_path, {"other": 1}) is False
+
+
+
+def test_migrate_flat_protocols_dest_exists(tmp_path: Path) -> None:
+    """Line 386: destination already exists → unlink source instead of rename."""
+    from kanon._scaffold import _migrate_flat_protocols
+
+    protocols_dir = tmp_path / ".kanon" / "protocols"
+    sdd_dir = protocols_dir / "kanon-sdd"
+    sdd_dir.mkdir(parents=True)
+    (protocols_dir / "dup.md").write_text("flat version", encoding="utf-8")
+    (sdd_dir / "dup.md").write_text("already there", encoding="utf-8")
+    assert _migrate_flat_protocols(tmp_path, {"kanon-sdd": 1}) is True
+    assert not (protocols_dir / "dup.md").exists()
+    assert (sdd_dir / "dup.md").read_text() == "already there"
+
+
+
+# --- _scaffold.py: _write_tree_atomically skip existing ---
+
+
+def test_write_tree_atomically_skips_existing(tmp_path: Path) -> None:
+    """Line 363: existing file not overwritten when force=False."""
+    from kanon._scaffold import _write_tree_atomically
+
+    (tmp_path / "existing.txt").write_text("original", encoding="utf-8")
+    _write_tree_atomically(tmp_path, {"existing.txt": "new content"}, force=False)
+    assert (tmp_path / "existing.txt").read_text() == "original"
+
+
+
+def test_write_tree_atomically_rejects_path_traversal(tmp_path: Path) -> None:
+    """Scaffold paths escaping the target directory are rejected."""
+    from kanon._scaffold import _write_tree_atomically
+
+    with pytest.raises(click.ClickException, match="Path escapes target directory"):
+        _write_tree_atomically(tmp_path, {"../../escape.txt": "malicious"}, force=True)
+
+
+
+def test_rewrite_assembled_views_missing_agents_md(tmp_path: Path) -> None:
+    """_rewrite_assembled_views returns early when AGENTS.md is absent."""
+    from kanon._cli_aspect import _rewrite_assembled_views
+
+    # Should not raise — just returns early.
+    _rewrite_assembled_views(tmp_path, {"kanon-sdd": 1}, "test-project")
+    assert not (tmp_path / "AGENTS.md").exists()
+
+
+
+def test_config_aspects_rejects_malformed_entry(tmp_path: Path) -> None:
+    """_config_aspects raises ClickException when an entry is not a dict."""
+    from kanon._scaffold import _config_aspects
+
+    with pytest.raises(click.ClickException, match="must be a mapping"):
+        _config_aspects({"aspects": {"kanon-sdd": 2}})
+
+
+
+def test_migrate_legacy_config_rejects_non_dict_aspects() -> None:
+    """_migrate_legacy_config raises when aspects is not a dict."""
+    from kanon._scaffold import _migrate_legacy_config
+
+    with pytest.raises(click.ClickException, match="must be a mapping"):
+        _migrate_legacy_config({"aspects": "garbage"})
+
+
+
+# --- _scaffold.py: _rewrite_legacy_markers ---
+
+
+def test_rewrite_legacy_markers() -> None:
+    """Covers the legacy marker rewriting path in _rewrite_legacy_markers."""
+    from kanon._scaffold import _rewrite_legacy_markers
+
+    text = (
+        "<!-- kanon:begin:protocols-index -->\nold\n"
+        "<!-- kanon:end:protocols-index -->\n"
+    )
+    result = _rewrite_legacy_markers(text)
+    # protocols-index is unprefixed — it should remain unchanged.
+    assert "<!-- kanon:begin:protocols-index -->" in result
+
+
+
+# --- ADR-0028 / Phase 2: config migration round-trips (T17) ---
+
+
+def test_migrate_legacy_config_v1_to_v3_produces_namespaced_key() -> None:
+    """A v1 config (`tier: N`) migrates to v3 with the canonical `kanon-sdd` key."""
+    from kanon._scaffold import _migrate_legacy_config
+
+    v1 = {"kit_version": "0.1.0a1", "tier": 2, "tier_set_at": "2026-04-25T00:00:00+00:00"}
+    v3 = _migrate_legacy_config(v1)
+    assert "tier" not in v3
+    assert "aspects" in v3
+    assert list(v3["aspects"]) == ["kanon-sdd"]
+    assert v3["aspects"]["kanon-sdd"]["depth"] == 2
+    assert v3["aspects"]["kanon-sdd"]["enabled_at"] == "2026-04-25T00:00:00+00:00"
+
+
+
+def test_migrate_legacy_config_v3_is_idempotent_no_op() -> None:
+    """A config already in v3 (namespaced keys) returns unchanged — no rewrite."""
+    from kanon._scaffold import _migrate_legacy_config
+
+    v3 = {
+        "kit_version": "0.3.0",
+        "aspects": {
+            "kanon-sdd": {"depth": 1, "enabled_at": "x", "config": {}},
+            "kanon-worktrees": {"depth": 2, "enabled_at": "x", "config": {}},
+            "project-auth-policy": {"depth": 1, "enabled_at": "x", "config": {}},
+        },
+    }
+    out = _migrate_legacy_config(v3)
+    assert out == v3, "v3 → v3 must be a no-op (project-aspects INV-5 idempotency)"
+
+
+
+def test_migrate_legacy_config_v2_all_six_aspects_round_trip() -> None:
+    """A v2 config containing all six bare aspect keys migrates each to its
+    `kanon-` form. Insertion order and config blocks survive."""
+    from kanon._scaffold import _migrate_legacy_config
+
+    v2 = {
+        "kit_version": "0.2.0a6",
+        "aspects": {
+            bare: {
+                "depth": 1,
+                "enabled_at": f"2026-04-25T00:00:0{i}+00:00",
+                "config": {"k": i} if i % 2 else {},
+            }
+            for i, bare in enumerate(
+                ["sdd", "worktrees", "release", "testing", "security", "deps"]
+            )
+        },
+    }
+    v3 = _migrate_legacy_config(v2)
+    assert set(v3["aspects"].keys()) == {
+        "kanon-sdd", "kanon-worktrees", "kanon-release",
+        "kanon-testing", "kanon-security", "kanon-deps",
+    }
+    # Per-entry payloads carry through unchanged.
+    assert v3["aspects"]["kanon-sdd"]["depth"] == 1
+    assert v3["aspects"]["kanon-sdd"]["enabled_at"] == "2026-04-25T00:00:00+00:00"
+    assert v3["aspects"]["kanon-worktrees"]["config"] == {"k": 1}
+    assert v3["aspects"]["kanon-release"]["config"] == {}
+
+
+
+def test_migrate_legacy_config_mixed_state_hard_fails() -> None:
+    """A config with both `<local>` and `kanon-<local>` keys hard-fails with a
+    message that names every collision and asks for manual deduplication.
+    """
+    import click
+    import pytest
+
+    from kanon._scaffold import _migrate_legacy_config
+
+    mixed = {
+        "kit_version": "0.3.0",
+        "aspects": {
+            "sdd": {"depth": 1, "enabled_at": "a", "config": {}},
+            "kanon-sdd": {"depth": 2, "enabled_at": "b", "config": {}},
+            "worktrees": {"depth": 1, "enabled_at": "c", "config": {}},
+            "kanon-worktrees": {"depth": 2, "enabled_at": "d", "config": {}},
+        },
+    }
+    with pytest.raises(click.ClickException) as excinfo:
+        _migrate_legacy_config(mixed)
+    msg = excinfo.value.message
+    # Both collisions named, sorted, in the canonical "<bare>` and `kanon-<bare>"
+    # form so the user can grep for them in their config.
+    assert "`sdd` and `kanon-sdd`" in msg
+    assert "`worktrees` and `kanon-worktrees`" in msg
+    assert "Hand-edit" in msg

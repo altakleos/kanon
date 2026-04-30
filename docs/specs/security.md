@@ -18,11 +18,11 @@ invariant_coverage:
     - tests/test_kit_integrity.py::test_security_manifest_has_expected_depths
   INV-security-protocol:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_aspect_add_security
+    - tests/test_cli_aspect.py::test_aspect_add_security
   INV-security-agents-md-section:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
   INV-security-ci-validator:
-    - tests/test_cli.py::test_security_depth_2_has_ci_script
+    - tests/test_cli_aspect.py::test_security_depth_2_has_ci_script
     - tests/ci/test_check_security_patterns.py::test_sql_interpolation_detected
   INV-security-no-dependency:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
@@ -32,7 +32,7 @@ invariant_coverage:
     - tests/ci/test_check_security_patterns.py::test_clean_file_no_findings
   INV-security-non-destructive:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli.py::test_aspect_remove_leaves_files
+    - tests/test_cli_aspect.py::test_aspect_remove_leaves_files
   INV-security-stability:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_kit_security_aspect_dir_exists

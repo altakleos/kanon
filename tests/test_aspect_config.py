@@ -13,7 +13,8 @@ import pytest
 import yaml
 from click.testing import CliRunner
 
-from kanon.cli import _parse_config_pair, main
+from kanon._cli_helpers import _parse_config_pair
+from kanon.cli import main
 
 
 def _init_with(runner: CliRunner, target: Path, *aspects: str) -> None:
@@ -259,7 +260,7 @@ def test_set_config_persists_sentinel_on_mid_write_failure(tmp_path: Path) -> No
     pending = target / ".kanon" / ".pending"
 
     # Patch _write_config to raise after the sentinel write but before clear.
-    with patch("kanon.cli._write_config", side_effect=OSError("simulated disk full")):
+    with patch("kanon._cli_aspect._write_config", side_effect=OSError("simulated disk full")):
         runner.invoke(
             main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=90"]
         )
