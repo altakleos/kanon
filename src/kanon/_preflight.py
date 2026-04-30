@@ -105,8 +105,9 @@ def _run_preflight(
                 capture_output=True, text=True,
             )
             passed = proc.returncode == 0
-        except Exception:
+        except Exception as exc:
             passed = False
+            print(f"  error: {exc}", file=sys.stderr)
         duration = round(time.monotonic() - t0, 1)
         mark = "✓" if passed else "✗"
         print(f"{mark} {label}: {cmd}  {duration}s", file=sys.stderr)

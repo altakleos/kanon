@@ -129,7 +129,13 @@ def _config_aspects(config: dict[str, Any]) -> dict[str, int]:
                 f"Malformed .kanon/config.yaml: aspect {name!r} must be a "
                 f"mapping with a 'depth' key."
             )
-        result[name] = int(entry["depth"])
+        try:
+            result[name] = int(entry["depth"])
+        except (ValueError, TypeError):
+            raise click.ClickException(
+                f"Malformed .kanon/config.yaml: aspect {name!r} has "
+                f"non-integer depth {entry['depth']!r}."
+            )
     return result
 
 
