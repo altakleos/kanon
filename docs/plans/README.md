@@ -125,6 +125,7 @@ Batching related commits on one branch is fine: a spec commit + its design doc c
 | [upgrade-shims](upgrade-shims.md) | Add shim re-rendering to upgrade command | done |
 | [fix-upgrade-config-preservation](fix-upgrade-config-preservation.md) | Fix upgrade config preservation for aspect config, timestamps, root keys | done |
 | [tier-uniform-raise](tier-uniform-raise.md) | Tier as uniform aspect-depth raise (ADR-0035) | done |
+| [preflight](preflight.md) | Implement `kanon preflight` command | done |
 
 ## Roadmap
 

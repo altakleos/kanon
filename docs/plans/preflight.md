@@ -1,5 +1,5 @@
 ---
-status: draft
+status: done
 serves: docs/specs/preflight.md
 design: docs/design/preflight.md
 touches:
@@ -15,20 +15,20 @@ touches:
 
 ## Tasks
 
-- [ ] T1: Create `src/kanon/_preflight.py` with:
+- [x] T1: Create `src/kanon/_preflight.py` with:
   - `_resolve_preflight_checks(aspects, config, stage)` — the
     resolution algorithm from the design doc
   - `_run_preflight(target, checks, fail_fast)` — subprocess runner
     with structured output
-- [ ] T2: Add `preflight` Click command to `cli.py`
-- [ ] T3: Add `config-schema` keys (`test_cmd`, `lint_cmd`,
+- [x] T2: Add `preflight` Click command to `cli.py`
+- [x] T3: Add `config-schema` keys (`test_cmd`, `lint_cmd`,
   `typecheck_cmd`, `format_cmd`) to kanon-testing manifest
-- [ ] T4: Add `preflight:` entries to kanon-testing, kanon-security,
+- [x] T4: Add `preflight:` entries to kanon-testing, kanon-security,
   and kanon-release manifests
-- [ ] T5: Update `_load_aspect_manifest()` to accept optional
+- [x] T5: Update `_load_aspect_manifest()` to accept optional
   `preflight:` key in depth-N blocks
-- [ ] T6: Add tests in `tests/test_preflight.py`
-- [ ] T7: Self-host: configure preflight for the kanon repo itself
+- [x] T6: Add tests in `tests/test_preflight.py`
+- [x] T7: Self-host: configure preflight for the kanon repo itself
 
 ## Acceptance criteria
 
