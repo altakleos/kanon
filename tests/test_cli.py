@@ -1838,14 +1838,14 @@ def test_release_depth_2_has_ci_files(tmp_path: Path) -> None:
 # --- release_cmd tests ---
 
 
-def test_release_cmd_requires_depth_3(tmp_path: Path) -> None:
-    """release command rejects when release aspect depth < 3."""
+def test_release_cmd_requires_depth_2(tmp_path: Path) -> None:
+    """release command rejects when release aspect depth < 2."""
     runner = CliRunner()
     target = tmp_path / "proj"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
     result = runner.invoke(main, ["release", str(target), "--tag", "v1.0.0"])
     assert result.exit_code != 0
-    assert "depth >= 3 required" in result.output
+    assert "depth >= 2 required" in result.output
 
 
 def test_release_cmd_invalid_tag(tmp_path: Path) -> None:
@@ -1853,10 +1853,10 @@ def test_release_cmd_invalid_tag(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "proj"
     runner.invoke(main, ["init", str(target), "--tier", "1"])
-    # Set release depth to 3 via config manipulation.
+    # Set release depth to 2 via config manipulation.
     config_path = target / ".kanon" / "config.yaml"
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    config["aspects"]["kanon-release"] = {"depth": 3, "enabled_at": "2026-01-01", "config": {}}
+    config["aspects"]["kanon-release"] = {"depth": 2, "enabled_at": "2026-01-01", "config": {}}
     config_path.write_text(yaml.dump(config), encoding="utf-8")
     result = runner.invoke(main, ["release", str(target), "--tag", "bad-tag"])
     assert result.exit_code != 0
@@ -1875,10 +1875,10 @@ def test_release_cmd_dirty_tree(tmp_path: Path) -> None:
     subprocess.run(["git", "add", "."], cwd=str(target), capture_output=True)
     subprocess.run(["git", "commit", "-m", "init"], cwd=str(target), capture_output=True)
     (target / "dirty.txt").write_text("uncommitted")
-    # Set release depth to 3.
+    # Set release depth to 2.
     config_path = target / ".kanon" / "config.yaml"
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    config["aspects"]["kanon-release"] = {"depth": 3, "enabled_at": "2026-01-01", "config": {}}
+    config["aspects"]["kanon-release"] = {"depth": 2, "enabled_at": "2026-01-01", "config": {}}
     config_path.write_text(yaml.dump(config), encoding="utf-8")
     result = runner.invoke(main, ["release", str(target), "--tag", "v1.0.0"])
     assert result.exit_code != 0
@@ -1907,11 +1907,11 @@ def test_release_cmd_dry_run(tmp_path: Path) -> None:
         ["git", "commit", "-m", "init"],
         cwd=str(target), capture_output=True, env=git_env,
     )
-    # Set release depth to 3.
+    # Set release depth to 2.
     config_path = target / ".kanon" / "config.yaml"
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     config["aspects"]["kanon-release"] = {
-        "depth": 3, "enabled_at": "2026-01-01", "config": {},
+        "depth": 2, "enabled_at": "2026-01-01", "config": {},
     }
     config_path.write_text(yaml.dump(config), encoding="utf-8")
     subprocess.run(["git", "add", "."], cwd=str(target), capture_output=True)
