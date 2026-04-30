@@ -83,7 +83,7 @@ Per [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md) and [ADR-00
 | 2 | Team work with user-facing promises | + `docs/specs/` |
 | 3 | Platform projects, multi-team | + `docs/design/`, `docs/foundations/` |
 
-The legacy `kanon tier set` command is preserved as sugar for `kanon aspect set-depth <target> sdd <N>`.
+The legacy `kanon tier set` command is preserved as sugar for a uniform depth raise across all default aspects, capped at each aspect's maximum (ADR-0035).
 
 ## Supported agent harnesses
 
@@ -129,6 +129,12 @@ Run tests:
 .venv/bin/pytest -m e2e       # installed-package E2E tests (~7s)
 .venv/bin/pytest -m ''        # everything
 ```
+
+## Security model
+
+`kanon preflight` and `kanon verify` execute commands and code from project-local config files (`.kanon/config.yaml`, project-aspect manifests). The trust boundary is **repo write-access**: if you can commit to the repo, you can control what these commands run. This is the same trust model as `Makefile`, `package.json` scripts, or `.github/workflows/` — cloning a repo implies trusting its build/check configuration.
+
+See [ADR-0036](docs/decisions/0036-secure-defaults-config-trust-carveout.md) for the full rationale.
 
 ## Status
 
