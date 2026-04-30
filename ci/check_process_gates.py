@@ -109,10 +109,18 @@ def _commit_messages(base_ref: str | None, repo: Path) -> str:
 
 
 def _diff_content(base_ref: str | None, repo: Path) -> str:
-    """Return the actual diff content for src/ files."""
+    """Return the actual diff content for src/ files.
+
+    ``--no-ext-diff`` forces canonical unified-diff output regardless of any
+    developer-environment ``diff.external`` setting (``difft``, ``delta``).
+    Without it, the spec-gate regex below silently matches nothing because
+    external differs strip the leading ``+`` markers it scans for. CI is
+    unaffected (no global git config); local runs on developer machines
+    would otherwise produce false-negative test results.
+    """
     if base_ref is not None:
-        return _git(["diff", f"{base_ref}..HEAD", "--", "src/"], repo)
-    return _git(["diff", "HEAD~..HEAD", "--", "src/"], repo)
+        return _git(["diff", "--no-ext-diff", f"{base_ref}..HEAD", "--", "src/"], repo)
+    return _git(["diff", "--no-ext-diff", "HEAD~..HEAD", "--", "src/"], repo)
 
 
 def _has_trivial_override(messages: str) -> bool:

@@ -59,11 +59,11 @@ Address all 7 low/informational issues identified during the codebase analysis.
 
 ## Acceptance criteria
 
-- [ ] `kanon verify .` passes (no broken links)
-- [ ] `ruff check src/kanon/` clean
-- [ ] `mypy src/kanon/` clean
-- [ ] All 765+ tests pass
-- [ ] No `time.sleep` in the modified test
+- [x] `kanon verify .` passes (no broken links)
+- [x] `ruff check src/kanon/` clean
+- [x] `mypy src/kanon/` clean
+- [x] All 765+ tests pass
+- [x] No `time.sleep` in the modified test
 
 ## Scope exclusions
 

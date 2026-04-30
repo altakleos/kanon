@@ -93,7 +93,14 @@ def _run_preflight(
         label = check["label"]
         t0 = time.monotonic()
         try:
-            proc = subprocess.run(
+            # `shell=True` here is governed by ADR-0036 / secure-defaults
+            # § Trust-boundary carve-out: `cmd` is sourced from
+            # `.kanon/config.yaml` (or aspect manifest `preflight:` entries),
+            # both inside the same repo as the running CLI. Trust boundary
+            # is repo write-access. Refactoring to argv form would silently
+            # break consumer commands using shell features (`$VAR`, `&&`,
+            # pipes, redirection).
+            proc = subprocess.run(  # nosec — see ADR-0036
                 cmd, shell=True, cwd=str(target), env=env,
                 capture_output=True, text=True,
             )
