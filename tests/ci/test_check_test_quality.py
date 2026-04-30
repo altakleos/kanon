@@ -2,31 +2,20 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
 import pytest
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_SCRIPT_PATH = _REPO_ROOT / "ci" / "check_test_quality.py"
-assert _SCRIPT_PATH.is_file(), f"script not found: {_SCRIPT_PATH}"
+
+@pytest.fixture(scope="module")
+def mod(load_ci_script):
+    return load_ci_script("check_test_quality.py")
 
 
-def _load():
-    spec = importlib.util.spec_from_file_location("check_test_quality", _SCRIPT_PATH)
-    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-    assert spec is not None and spec.loader is not None
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
-    return module
-
-
-mod = _load()
-
-
-def test_real_repo_passes() -> None:
+def test_real_repo_passes(mod, repo_root) -> None:
     """The kanon repo's own tests must have zero quality errors."""
-    test_files = mod._find_test_files(_REPO_ROOT)
+    test_files = mod._find_test_files(repo_root)
     all_errors: list[str] = []
     for tf in test_files:
         errs, _ = mod._check_file(tf)
@@ -34,7 +23,7 @@ def test_real_repo_passes() -> None:
     assert all_errors == [], "check_test_quality errors:\n  " + "\n  ".join(all_errors)
 
 
-def test_trivial_pass_body_detected(tmp_path: Path) -> None:
+def test_trivial_pass_body_detected(mod, tmp_path: Path) -> None:
     f = tmp_path / "test_example.py"
     f.write_text("def test_nothing():\n    pass\n", encoding="utf-8")
     errors, _ = mod._check_file(f)
@@ -42,21 +31,21 @@ def test_trivial_pass_body_detected(tmp_path: Path) -> None:
     assert any("trivial" in e for e in errors)
 
 
-def test_trivial_assert_true_detected(tmp_path: Path) -> None:
+def test_trivial_assert_true_detected(mod, tmp_path: Path) -> None:
     f = tmp_path / "test_example.py"
     f.write_text("def test_nothing():\n    assert True\n", encoding="utf-8")
     errors, _ = mod._check_file(f)
     assert errors, "expected errors for trivial assert True body"
 
 
-def test_real_test_passes(tmp_path: Path) -> None:
+def test_real_test_passes(mod, tmp_path: Path) -> None:
     f = tmp_path / "test_example.py"
     f.write_text("def test_addition():\n    assert 1 + 1 == 2\n", encoding="utf-8")
     errors, _ = mod._check_file(f)
     assert errors == []
 
 
-def test_no_test_functions_warns(tmp_path: Path) -> None:
+def test_no_test_functions_warns(mod, tmp_path: Path) -> None:
     f = tmp_path / "test_example.py"
     f.write_text("x = 1\n", encoding="utf-8")
     _, warnings = mod._check_file(f)
@@ -64,7 +53,7 @@ def test_no_test_functions_warns(tmp_path: Path) -> None:
     assert any("zero test functions" in w for w in warnings)
 
 
-def test_find_test_files_patterns(tmp_path: Path) -> None:
+def test_find_test_files_patterns(mod, tmp_path: Path) -> None:
     (tmp_path / "test_foo.py").write_text("", encoding="utf-8")
     (tmp_path / "bar.py").write_text("", encoding="utf-8")
     found = mod._find_test_files(tmp_path)
@@ -74,7 +63,7 @@ def test_find_test_files_patterns(tmp_path: Path) -> None:
 
 
 def test_main_exits_zero_on_clean(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch,
+    mod, tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     (tmp_path / "test_ok.py").write_text(
         "def test_real():\n    assert 1 + 1 == 2\n", encoding="utf-8",
@@ -90,7 +79,7 @@ def test_main_exits_zero_on_clean(
 
 
 def test_main_exits_one_on_trivial(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch,
+    mod, tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     (tmp_path / "test_bad.py").write_text(
         "def test_nothing():\n    pass\n", encoding="utf-8",
@@ -100,7 +89,7 @@ def test_main_exits_one_on_trivial(
         mod.main()
 
 
-def test_skip_dirs_excludes_venv_and_friends(tmp_path: Path) -> None:
+def test_skip_dirs_excludes_venv_and_friends(mod, tmp_path: Path) -> None:
     """Test files inside `.venv/`, `node_modules/`, etc. are not collected."""
     real = tmp_path / "tests" / "test_real.py"
     real.parent.mkdir(parents=True)

@@ -1,7 +1,6 @@
 """Tests for ci/release-preflight.py."""
 from __future__ import annotations
 
-import importlib.util
 import json
 import re
 from pathlib import Path
@@ -9,40 +8,30 @@ from unittest.mock import patch
 
 import pytest
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_SCRIPT_PATH = _REPO_ROOT / "ci" / "release-preflight.py"
-assert _SCRIPT_PATH.is_file()
 
-
-def _load():
-    spec = importlib.util.spec_from_file_location("release_preflight", _SCRIPT_PATH)
-    module = importlib.util.module_from_spec(spec)
-    assert spec is not None and spec.loader is not None
-    spec.loader.exec_module(module)
-    return module
-
-
-mod = _load()
+@pytest.fixture(scope="module")
+def mod(load_ci_script):
+    return load_ci_script("release-preflight.py")
 
 
 # -- _find_version tests --
 
 
-def test_find_version_from_repo(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_find_version_from_repo(mod, repo_root, monkeypatch: pytest.MonkeyPatch) -> None:
     """_find_version() returns a valid semver-ish string from the real repo."""
-    monkeypatch.chdir(_REPO_ROOT)
+    monkeypatch.chdir(repo_root)
     version = mod._find_version()
     assert version is not None
     assert re.match(r"\d+\.\d+\.\d+", version)
 
 
-def test_find_version_missing(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_find_version_missing(mod, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """_find_version() returns None when no src/ directory exists."""
     monkeypatch.chdir(tmp_path)
     assert mod._find_version() is None
 
 
-def test_find_version_from_init(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_find_version_from_init(mod, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """_find_version() extracts version from a synthetic __init__.py."""
     init = tmp_path / "src" / "pkg" / "__init__.py"
     init.parent.mkdir(parents=True)
@@ -65,7 +54,7 @@ def test_changelog_entry_present(tmp_path: Path) -> None:
 
 
 def test_main_all_pass(
-    capsys: pytest.CaptureFixture[str],
+    mod, capsys: pytest.CaptureFixture[str],
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -88,7 +77,7 @@ def test_main_all_pass(
 
 
 def test_main_version_mismatch(
-    capsys: pytest.CaptureFixture[str],
+    mod, capsys: pytest.CaptureFixture[str],
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:
@@ -111,7 +100,7 @@ def test_main_version_mismatch(
 
 
 def test_main_missing_changelog(
-    capsys: pytest.CaptureFixture[str],
+    mod, capsys: pytest.CaptureFixture[str],
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
 ) -> None:

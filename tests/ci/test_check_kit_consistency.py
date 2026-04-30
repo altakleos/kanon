@@ -2,35 +2,24 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
 import pytest
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_VALIDATOR_PATH = _REPO_ROOT / "ci" / "check_kit_consistency.py"
-assert _VALIDATOR_PATH.is_file(), f"validator not found: {_VALIDATOR_PATH}"
+
+@pytest.fixture(scope="module")
+def ckc(load_ci_script):
+    return load_ci_script("check_kit_consistency.py")
 
 
-def _load_validator():
-    spec = importlib.util.spec_from_file_location("check_kit_consistency", _VALIDATOR_PATH)
-    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-    assert spec is not None and spec.loader is not None
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
-    return module
-
-
-ckc = _load_validator()
-
-
-def test_real_repo_passes() -> None:
+def test_real_repo_passes(ckc) -> None:
     """The kanon repo itself must satisfy kit-consistency invariants."""
     errors = ckc.run_checks()
     assert errors == [], "kit-consistency check failed:\n  " + "\n  ".join(errors)
 
 
-def test_main_exits_zero_on_ok(capsys: pytest.CaptureFixture[str]) -> None:
+def test_main_exits_zero_on_ok(ckc, capsys: pytest.CaptureFixture[str]) -> None:
     rc = ckc.main([])
     assert rc == 0
     parsed = json.loads(capsys.readouterr().out)
@@ -71,7 +60,7 @@ def _make_minimal_kit(tmp_path: Path) -> Path:
     return kit
 
 
-def test_byte_equality_drift_detected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_byte_equality_drift_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Byte-equality check catches divergent files."""
     kit = _make_minimal_kit(tmp_path)
     monkeypatch.setattr(ckc, "_KIT", kit)
@@ -99,7 +88,7 @@ def test_byte_equality_drift_detected(tmp_path: Path, monkeypatch: pytest.Monkey
     assert "byte-equality drift" in errors[0]
 
 
-def test_missing_kit_md_detected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_missing_kit_md_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Missing kit.md is caught."""
     kit = _make_minimal_kit(tmp_path)
     (kit / "kit.md").unlink()
@@ -112,7 +101,7 @@ def test_missing_kit_md_detected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     assert "missing kernel doc" in errors[0]
 
 
-def test_kit_md_bad_heading_detected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_kit_md_bad_heading_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """kit.md without a top-level heading is caught."""
     kit = _make_minimal_kit(tmp_path)
     (kit / "kit.md").write_text("No heading here.\n", encoding="utf-8")
@@ -125,7 +114,7 @@ def test_kit_md_bad_heading_detected(tmp_path: Path, monkeypatch: pytest.MonkeyP
     assert "expected top-level" in errors[0]
 
 
-def test_registry_bad_stability_detected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_registry_bad_stability_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Invalid stability value is caught."""
     kit = _make_minimal_kit(tmp_path)
     (kit / "manifest.yaml").write_text(
@@ -146,7 +135,7 @@ def test_registry_bad_stability_detected(tmp_path: Path, monkeypatch: pytest.Mon
 
 
 def test_cross_aspect_ownership_conflict_detected(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Two aspects scaffolding the same file is caught."""
     kit = _make_minimal_kit(tmp_path)
@@ -193,7 +182,7 @@ def test_cross_aspect_ownership_conflict_detected(
     assert "shared.md" in errors[0]
 
 
-def test_marker_imbalance_detected(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_marker_imbalance_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Unbalanced begin/end markers in agents-md templates are caught."""
     kit = _make_minimal_kit(tmp_path)
     agents_md_dir = kit / "aspects" / "kanon-sdd" / "agents-md"
@@ -212,7 +201,7 @@ def test_marker_imbalance_detected(tmp_path: Path, monkeypatch: pytest.MonkeyPat
 
 
 def test_harnesses_yaml_missing_field_detected(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Harness entry missing required field is caught."""
     kit = _make_minimal_kit(tmp_path)
@@ -234,7 +223,7 @@ def test_harnesses_yaml_missing_field_detected(
 
 
 def test_kit_aspect_with_project_prefix_rejected(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """A kit-side directory may not declare a `project-` aspect (ADR-0028).
 
@@ -272,7 +261,7 @@ def test_kit_aspect_with_project_prefix_rejected(
 
 
 def test_kit_aspect_with_bare_name_rejected(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """A kit-side directory may not declare a bare (unprefixed) aspect (ADR-0028).
 

@@ -2,26 +2,17 @@
 
 from __future__ import annotations
 
-import importlib.util
 import zipfile
 from pathlib import Path
 
 import yaml
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_SCRIPT_PATH = _REPO_ROOT / "ci" / "check_package_contents.py"
-assert _SCRIPT_PATH.is_file(), f"script not found: {_SCRIPT_PATH}"
+# This file needs module-level access to the loaded module (for _build_wheel),
+# so we call the conftest loader directly rather than using a fixture.
+from conftest import REPO_ROOT as _REPO_ROOT  # noqa: E402
+from conftest import _load_ci_script  # noqa: E402
 
-
-def _load():
-    spec = importlib.util.spec_from_file_location("check_package_contents", _SCRIPT_PATH)
-    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-    assert spec is not None and spec.loader is not None
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
-    return module
-
-
-mod = _load()
+mod = _load_ci_script("check_package_contents.py")
 
 _TAG = "v1.0.0"
 _VERSION = "1.0.0"

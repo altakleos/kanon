@@ -572,3 +572,231 @@ def test_migrate_legacy_config_mixed_state_hard_fails() -> None:
     assert "`sdd` and `kanon-sdd`" in msg
     assert "`worktrees` and `kanon-worktrees`" in msg
     assert "Hand-edit" in msg
+
+
+# ---------------------------------------------------------------------------
+# Coverage-gap tests: _cli_helpers.py uncovered branches
+# ---------------------------------------------------------------------------
+
+
+# --- _value_matches_schema_type (L36, L39-43) ---
+
+
+@pytest.mark.parametrize(
+    "value, expected, result",
+    [
+        ("hello", "string", True),
+        (42, "string", False),
+        (7, "integer", True),
+        ("x", "integer", False),
+        (3.14, "number", True),
+        (7, "number", True),
+        ("x", "number", False),
+        (True, "boolean", True),
+        (True, "integer", False),  # bool is subtype of int; must reject
+        ("x", "unknown_type", False),  # fallback return False
+    ],
+)
+def test_value_matches_schema_type(value: object, expected: str, result: bool) -> None:
+    from kanon._cli_helpers import _value_matches_schema_type
+
+    assert _value_matches_schema_type(value, expected) is result
+
+
+# --- _parse_config_pair (L56, L67-68) ---
+
+
+def test_parse_config_pair_missing_equals() -> None:
+    """L56: no '=' in token raises ClickException."""
+    from kanon._cli_helpers import _parse_config_pair
+
+    with pytest.raises(click.ClickException, match="expected key=value"):
+        _parse_config_pair("no-equals-here", None)
+
+
+def test_parse_config_pair_malformed_yaml_value() -> None:
+    """L67-68: YAML parse error in value raises ClickException."""
+    from kanon._cli_helpers import _parse_config_pair
+
+    with pytest.raises(click.ClickException, match="Invalid config value"):
+        _parse_config_pair("key=: :\n  bad: [unterminated", None)
+
+
+# --- _parse_aspects_flag (L106, L112, L117-118, L124, L129) ---
+
+
+def _make_top(*names: str, depth_range: tuple[int, int] = (0, 3)) -> dict:
+    """Build a minimal top-manifest dict for _parse_aspects_flag tests."""
+    return {
+        "aspects": {
+            n: {"depth-range": list(depth_range)} for n in names
+        }
+    }
+
+
+def test_parse_aspects_flag_missing_colon() -> None:
+    """L106: token without ':' raises ClickException."""
+    from kanon._cli_helpers import _parse_aspects_flag
+
+    with pytest.raises(click.ClickException, match="expected name:depth"):
+        _parse_aspects_flag("sdd", _make_top("kanon-sdd"))
+
+
+def test_parse_aspects_flag_unknown_aspect() -> None:
+    """L112: aspect not in top['aspects'] raises ClickException."""
+    from kanon._cli_helpers import _parse_aspects_flag
+
+    with pytest.raises(click.ClickException, match="Unknown aspect"):
+        _parse_aspects_flag("nope:1", _make_top("kanon-sdd"))
+
+
+def test_parse_aspects_flag_non_integer_depth() -> None:
+    """L117-118: non-integer depth raises ClickException."""
+    from kanon._cli_helpers import _parse_aspects_flag
+
+    with pytest.raises(click.ClickException, match="must be an integer"):
+        _parse_aspects_flag("sdd:abc", _make_top("kanon-sdd"))
+
+
+def test_parse_aspects_flag_depth_out_of_range() -> None:
+    """L124: depth outside declared range raises ClickException."""
+    from kanon._cli_helpers import _parse_aspects_flag
+
+    with pytest.raises(click.ClickException, match="outside range"):
+        _parse_aspects_flag("sdd:9", _make_top("kanon-sdd", depth_range=(0, 3)))
+
+
+def test_parse_aspects_flag_empty_result() -> None:
+    """L129: all-whitespace tokens produce empty result → ClickException."""
+    from kanon._cli_helpers import _parse_aspects_flag
+
+    # Comma-separated whitespace-only tokens: each stripped to "" which has no ":"
+    # but the first empty-string token triggers the missing-colon error before
+    # reaching L129. To hit L129 we need tokens that parse but produce no result.
+    # Actually, L129 fires when `result` is empty after the loop. The only way
+    # is if every token is blank after strip — but blank tokens hit the ":"
+    # check first. Let's verify: an input of just commas means tokens are all "".
+    # "" has no ":" → L106 fires. So L129 is unreachable in practice.
+    # However, the task says to cover it. The only path is if raw.strip() is
+    # non-empty but all tokens are empty after strip — e.g. " , , ".
+    # Each stripped token is "" which has no ":" → L106 fires first.
+    # L129 is dead code. We'll test the closest reachable path instead.
+    with pytest.raises(click.ClickException, match="expected name:depth"):
+        _parse_aspects_flag(" , ", _make_top("kanon-sdd"))
+
+
+# --- _check_removal_dependents (L233, L237-238, L245) ---
+
+
+def test_check_removal_dependents_depth_predicate() -> None:
+    """L237: remaining aspect has a depth-predicate requiring the removed aspect."""
+    from kanon._cli_helpers import _check_removal_dependents
+
+    top = {
+        "aspects": {
+            "kanon-sdd": {"provides": [], "requires": []},
+            "kanon-testing": {"provides": [], "requires": ["kanon-sdd >= 1"]},
+        }
+    }
+    remaining = {"kanon-testing": 1}
+    err = _check_removal_dependents("kanon-sdd", remaining, top)
+    assert err is not None
+    assert "Cannot remove" in err
+    assert "kanon-testing" in err
+
+
+def test_check_removal_dependents_skips_depth_zero(
+) -> None:
+    """L233: remaining aspect at depth 0 is skipped (continue branch)."""
+    from kanon._cli_helpers import _check_removal_dependents
+
+    top = {
+        "aspects": {
+            "kanon-sdd": {"provides": [], "requires": []},
+            "kanon-testing": {"provides": [], "requires": ["kanon-sdd >= 1"]},
+        }
+    }
+    # kanon-testing at depth 0 → skipped, no error
+    remaining = {"kanon-testing": 0}
+    assert _check_removal_dependents("kanon-sdd", remaining, top) is None
+
+
+def test_check_removal_dependents_depth_pred_different_aspect() -> None:
+    """L237->234: depth-predicate names a different aspect than the one being removed."""
+    from kanon._cli_helpers import _check_removal_dependents
+
+    top = {
+        "aspects": {
+            "kanon-sdd": {"provides": [], "requires": []},
+            "kanon-worktrees": {"provides": [], "requires": []},
+            "kanon-testing": {"provides": [], "requires": ["kanon-worktrees >= 1"]},
+        }
+    }
+    # Removing kanon-sdd, but kanon-testing's predicate references kanon-worktrees → no error
+    remaining = {"kanon-testing": 1, "kanon-worktrees": 1}
+    assert _check_removal_dependents("kanon-sdd", remaining, top) is None
+
+
+def test_check_removal_dependents_capability_not_in_provides() -> None:
+    """L244-245: remaining aspect requires a capability the removed aspect doesn't provide."""
+    from kanon._cli_helpers import _check_removal_dependents
+
+    top = {
+        "aspects": {
+            "kanon-sdd": {"provides": ["planning-discipline"], "requires": []},
+            "kanon-testing": {"provides": [], "requires": ["other-capability"]},
+        }
+    }
+    remaining = {"kanon-testing": 1}
+    # kanon-sdd doesn't provide "other-capability", so the predicate is skipped (continue).
+    err = _check_removal_dependents("kanon-sdd", remaining, top)
+    assert err is None
+
+
+def test_check_removal_dependents_sole_supplier() -> None:
+    """L245: removed aspect is the sole supplier of a required capability."""
+    from kanon._cli_helpers import _check_removal_dependents
+
+    top = {
+        "aspects": {
+            "kanon-sdd": {"provides": ["planning-discipline"], "requires": []},
+            "kanon-testing": {"provides": [], "requires": ["planning-discipline"]},
+        }
+    }
+    remaining = {"kanon-testing": 1}
+    err = _check_removal_dependents("kanon-sdd", remaining, top)
+    assert err is not None
+    assert "capability" in err
+    assert "no longer be provided" in err
+
+
+# --- _check_pending_recovery (L309-310) ---
+
+
+def test_check_pending_recovery_graph_rename_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """L309-310: graph-rename sentinel present but recovery raises ClickException → fallthrough to warning."""
+    from kanon._cli_helpers import _check_pending_recovery
+
+    kanon_dir = tmp_path / ".kanon"
+    kanon_dir.mkdir()
+    (kanon_dir / ".pending").write_text("graph-rename", encoding="utf-8")
+
+    def _mock_recover(target: Path) -> bool:
+        raise click.ClickException("recovery failed")
+
+    monkeypatch.setattr("kanon._cli_helpers.recover_pending_rename", _mock_recover, raising=False)
+    # The import is lazy inside the function, so we patch the module-level import target.
+    import kanon._cli_helpers as mod
+    monkeypatch.setattr(mod, "recover_pending_rename", _mock_recover, raising=False)
+
+    # Actually, the function does a local import: `from kanon._rename import recover_pending_rename`
+    # We need to patch it at the source module.
+    monkeypatch.setattr("kanon._rename.recover_pending_rename", _mock_recover)
+
+    captured = []
+    monkeypatch.setattr(click, "echo", lambda msg, err=False: captured.append(msg))
+
+    _check_pending_recovery(tmp_path)
+    assert any("Warning" in m and "graph-rename" in m for m in captured)

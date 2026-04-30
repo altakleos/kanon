@@ -2,48 +2,37 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 from pathlib import Path
 
 import pytest
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_SCRIPT_PATH = _REPO_ROOT / "ci" / "check_foundations.py"
-assert _SCRIPT_PATH.is_file(), f"script not found: {_SCRIPT_PATH}"
+
+@pytest.fixture(scope="module")
+def mod(load_ci_script):
+    return load_ci_script("check_foundations.py")
 
 
-def _load():
-    spec = importlib.util.spec_from_file_location("check_foundations", _SCRIPT_PATH)
-    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-    assert spec is not None and spec.loader is not None
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
-    return module
-
-
-mod = _load()
-
-
-def test_real_repo_passes() -> None:
+def test_real_repo_passes(mod, repo_root) -> None:
     """The kanon repo itself must pass foundation checks."""
     errors, _warnings = mod.check(
-        _REPO_ROOT / "docs" / "foundations",
-        _REPO_ROOT / "docs" / "specs",
+        repo_root / "docs" / "foundations",
+        repo_root / "docs" / "specs",
     )
     assert errors == [], "check_foundations failed:\n  " + "\n  ".join(errors)
 
 
-def test_main_exits_zero_on_ok(capsys: pytest.CaptureFixture[str]) -> None:
+def test_main_exits_zero_on_ok(mod, repo_root, capsys: pytest.CaptureFixture[str]) -> None:
     rc = mod.main([
-        "--foundations", str(_REPO_ROOT / "docs" / "foundations"),
-        "--specs", str(_REPO_ROOT / "docs" / "specs"),
+        "--foundations", str(repo_root / "docs" / "foundations"),
+        "--specs", str(repo_root / "docs" / "specs"),
     ])
     assert rc == 0
     parsed = json.loads(capsys.readouterr().out)
     assert parsed["status"] == "ok"
 
 
-def test_missing_foundation_ref(tmp_path: Path) -> None:
+def test_missing_foundation_ref(mod, tmp_path: Path) -> None:
     """A spec referencing a non-existent foundation slug should error."""
     foundations = tmp_path / "foundations"
     foundations.mkdir()
@@ -58,7 +47,7 @@ def test_missing_foundation_ref(tmp_path: Path) -> None:
     assert "nonexistent-slug" in errors[0]
 
 
-def test_invalid_principle_kind(tmp_path: Path) -> None:
+def test_invalid_principle_kind(mod, tmp_path: Path) -> None:
     """A principle with an invalid kind should error."""
     foundations = tmp_path / "foundations"
     foundations.mkdir()
@@ -75,7 +64,7 @@ def test_invalid_principle_kind(tmp_path: Path) -> None:
     assert "invalid" in errors[0]
 
 
-def test_superseded_spec_exempt_from_fixtures_check(tmp_path: Path) -> None:
+def test_superseded_spec_exempt_from_fixtures_check(mod, tmp_path: Path) -> None:
     """A superseded spec with `realizes:` but no `fixtures:`/`fixtures_deferred:`
     is exempt — its contract has been replaced by another spec, so requiring
     fixtures would be wrong (the fixtures, if any, live in the replacement).
@@ -100,7 +89,7 @@ def test_superseded_spec_exempt_from_fixtures_check(tmp_path: Path) -> None:
     assert not any("'fixtures:'" in e for e in errors), errors
 
 
-def test_orphan_exempt_requires_reason(tmp_path: Path) -> None:
+def test_orphan_exempt_requires_reason(mod, tmp_path: Path) -> None:
     """Per spec-graph-orphans INV-5, `orphan-exempt: true` MUST pair
     with a non-empty `orphan-exempt-reason:`. Missing reason is an error."""
     foundations = tmp_path / "foundations"
@@ -118,7 +107,7 @@ def test_orphan_exempt_requires_reason(tmp_path: Path) -> None:
     assert any("orphan-exempt-reason" in e for e in errors), errors
 
 
-def test_orphan_exempt_with_reason_passes(tmp_path: Path) -> None:
+def test_orphan_exempt_with_reason_passes(mod, tmp_path: Path) -> None:
     foundations = tmp_path / "foundations"
     foundations.mkdir()
     principles = foundations / "principles"
@@ -134,7 +123,7 @@ def test_orphan_exempt_with_reason_passes(tmp_path: Path) -> None:
     assert not any("orphan-exempt" in e for e in errors), errors
 
 
-def test_orphan_exempt_empty_reason_fails(tmp_path: Path) -> None:
+def test_orphan_exempt_empty_reason_fails(mod, tmp_path: Path) -> None:
     """Whitespace-only or empty reason strings are rejected."""
     foundations = tmp_path / "foundations"
     foundations.mkdir()
@@ -151,7 +140,7 @@ def test_orphan_exempt_empty_reason_fails(tmp_path: Path) -> None:
     assert any("orphan-exempt-reason" in e for e in errors), errors
 
 
-def test_deferred_spec_still_exempt_from_fixtures_check(tmp_path: Path) -> None:
+def test_deferred_spec_still_exempt_from_fixtures_check(mod, tmp_path: Path) -> None:
     """Regression: extending the exemption to `superseded` must NOT remove
     the existing `deferred` exemption."""
     foundations = tmp_path / "foundations"

@@ -5,49 +5,20 @@ then asserts the linter's verdict.
 """
 from __future__ import annotations
 
-import importlib.util
 import json
-import os
-import subprocess
 from pathlib import Path
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_SCRIPT_PATH = _REPO_ROOT / "ci" / "check_commit_messages.py"
-assert _SCRIPT_PATH.is_file(), f"script not found: {_SCRIPT_PATH}"
+import pytest
+
+from conftest import REPO_ROOT, _git
 
 
-def _load_module():
-    spec = importlib.util.spec_from_file_location(
-        "check_commit_messages", _SCRIPT_PATH
-    )
-    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-    assert spec is not None and spec.loader is not None
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
-    return module
+@pytest.fixture(scope="module")
+def _M(load_ci_script):
+    return load_ci_script("check_commit_messages.py")
 
 
-_M = _load_module()
-
-_ENV = {
-    "GIT_AUTHOR_NAME": "Test",
-    "GIT_AUTHOR_EMAIL": "test@example.com",
-    "GIT_COMMITTER_NAME": "Test",
-    "GIT_COMMITTER_EMAIL": "test@example.com",
-    "HOME": os.environ.get("HOME", "/tmp"),
-    "PATH": os.environ.get("PATH", ""),
-}
-
-
-def _git(repo: Path, *args: str) -> str:
-    result = subprocess.run(
-        ["git", *args],
-        cwd=repo,
-        capture_output=True,
-        text=True,
-        check=True,
-        env=_ENV,
-    )
-    return result.stdout.strip()
+_SCRIPT_PATH = REPO_ROOT / "ci" / "check_commit_messages.py"
 
 
 def _init_repo(tmp_path: Path) -> Path:
@@ -70,7 +41,7 @@ def _commit(repo: Path, msg: str, filename: str = "f.txt") -> str:
     return _git(repo, "rev-parse", "HEAD").strip()
 
 
-def _run(repo: Path, base_ref: str | None = None) -> dict:
+def _run(_M, repo: Path, base_ref: str | None = None) -> dict:
     import contextlib
     import io
 
@@ -88,42 +59,42 @@ def _run(repo: Path, base_ref: str | None = None) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def test_valid_conventional_commit(tmp_path: Path) -> None:
+def test_valid_conventional_commit(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "feat: add new feature")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert report["status"] == "ok"
     assert report["warnings"] == []
 
 
-def test_all_valid_types(tmp_path: Path) -> None:
+def test_all_valid_types(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _git(repo, "rev-parse", "HEAD").strip()
     for t in ("feat", "fix", "docs", "refactor", "test", "chore"):
         _commit(repo, f"{t}: valid message", f"{t}.txt")
-    report = _run(repo, base_ref=base)
+    report = _run(_M, repo, base_ref=base)
     assert report["status"] == "ok"
     assert report["warnings"] == []
 
 
-def test_scoped_type_is_valid(tmp_path: Path) -> None:
+def test_scoped_type_is_valid(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "feat(cli): add new flag")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert report["status"] == "ok"
 
 
-def test_breaking_change_bang_is_valid(tmp_path: Path) -> None:
+def test_breaking_change_bang_is_valid(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "feat!: breaking change")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert report["status"] == "ok"
 
 
-def test_merge_commit_is_skipped(tmp_path: Path) -> None:
+def test_merge_commit_is_skipped(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "Merge branch 'feature' into main")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert report["status"] == "ok"
     assert report["warnings"] == []
 
@@ -133,28 +104,28 @@ def test_merge_commit_is_skipped(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_no_type_prefix_warns(tmp_path: Path) -> None:
+def test_no_type_prefix_warns(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "added a new feature")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert report["status"] == "warn"
     assert len(report["warnings"]) == 1
     assert "not Conventional Commits format" in report["warnings"][0]
 
 
-def test_unknown_type_warns(tmp_path: Path) -> None:
+def test_unknown_type_warns(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "yolo: did something")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert report["status"] == "warn"
     assert len(report["warnings"]) == 1
     assert "unknown type 'yolo'" in report["warnings"][0]
 
 
-def test_missing_space_after_colon_warns(tmp_path: Path) -> None:
+def test_missing_space_after_colon_warns(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "feat:no space")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert report["status"] == "warn"
     assert len(report["warnings"]) == 1
 
@@ -164,10 +135,10 @@ def test_missing_space_after_colon_warns(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_always_exits_zero_even_with_warnings(tmp_path: Path) -> None:
+def test_always_exits_zero_even_with_warnings(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "bad message no prefix")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert report["status"] == "warn"
     assert report["errors"] == []
 
@@ -177,12 +148,12 @@ def test_always_exits_zero_even_with_warnings(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_pr_mode_checks_range(tmp_path: Path) -> None:
+def test_pr_mode_checks_range(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
-    base = _git(repo, "rev-parse", "HEAD")
+    base = _git(repo, "rev-parse", "HEAD").strip()
     _commit(repo, "no prefix at all", "a.txt")
     _commit(repo, "feat: valid one", "b.txt")
-    report = _run(repo, base_ref=base)
+    report = _run(_M, repo, base_ref=base)
     assert report["status"] == "warn"
     assert len(report["warnings"]) == 1
     assert "no prefix at all" in report["warnings"][0]
@@ -193,10 +164,10 @@ def test_pr_mode_checks_range(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_report_has_required_keys(tmp_path: Path) -> None:
+def test_report_has_required_keys(_M, tmp_path: Path) -> None:
     repo = _init_repo(tmp_path)
     _commit(repo, "feat: something")
-    report = _run(repo)
+    report = _run(_M, repo)
     assert set(report.keys()) == {"status", "errors", "warnings"}
     assert isinstance(report["errors"], list)
     assert isinstance(report["warnings"], list)

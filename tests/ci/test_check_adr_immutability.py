@@ -24,52 +24,16 @@ Categories covered:
 
 from __future__ import annotations
 
-import importlib.util
-import os
-import subprocess
 from pathlib import Path
 
 import pytest
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_VALIDATOR_PATH = _REPO_ROOT / "ci" / "check_adr_immutability.py"
-assert _VALIDATOR_PATH.is_file(), f"validator not found: {_VALIDATOR_PATH}"
+from conftest import _git
 
 
-def _load_validator():
-    spec = importlib.util.spec_from_file_location(
-        "check_adr_immutability", _VALIDATOR_PATH
-    )
-    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-    assert spec is not None and spec.loader is not None
-    spec.loader.exec_module(module)  # type: ignore[union-attr]
-    return module
-
-
-_M = _load_validator()
-
-
-def _git(repo: Path, *args: str) -> str:
-    """Run git in *repo* with non-interactive identity. Returns stdout."""
-    env = {
-        "GIT_AUTHOR_NAME": "Test",
-        "GIT_AUTHOR_EMAIL": "test@example.com",
-        "GIT_COMMITTER_NAME": "Test",
-        "GIT_COMMITTER_EMAIL": "test@example.com",
-        "GIT_CONFIG_GLOBAL": "/dev/null",
-        "GIT_CONFIG_SYSTEM": "/dev/null",
-        "PATH": os.environ.get("PATH", ""),
-        "HOME": str(repo),
-    }
-    result = subprocess.run(
-        ["git", *args],
-        cwd=repo,
-        env=env,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return result.stdout
+@pytest.fixture(scope="module")
+def _M(load_ci_script):
+    return load_ci_script("check_adr_immutability.py")
 
 
 def _init_repo(repo: Path) -> None:
@@ -102,7 +66,7 @@ def _commit(repo: Path, message: str, *paths: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def test_frontmatter_only_status_flip_is_allowed(tmp_path: Path) -> None:
+def test_frontmatter_only_status_flip_is_allowed(_M, tmp_path: Path) -> None:
     """Status FSM transition with body unchanged is exception class 1."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0001", "accepted", "Body content.\n")
@@ -115,7 +79,7 @@ def test_frontmatter_only_status_flip_is_allowed(tmp_path: Path) -> None:
     assert errors == []
 
 
-def test_body_change_to_provisional_adr_is_allowed(tmp_path: Path) -> None:
+def test_body_change_to_provisional_adr_is_allowed(_M, tmp_path: Path) -> None:
     """Provisional ADRs are mutable by definition (rule applies only to accepted)."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0002", "provisional", "Old body.\n")
@@ -128,7 +92,7 @@ def test_body_change_to_provisional_adr_is_allowed(tmp_path: Path) -> None:
 
 
 def test_body_change_to_accepted_adr_without_trailer_fails(
-    tmp_path: Path,
+    _M, tmp_path: Path,
 ) -> None:
     """The core rule: post-acceptance body change without exception fails."""
     _init_repo(tmp_path)
@@ -142,7 +106,7 @@ def test_body_change_to_accepted_adr_without_trailer_fails(
     assert any("0003" in e and "not allowed" in e for e in errors)
 
 
-def test_body_change_with_valid_trailer_is_allowed(tmp_path: Path) -> None:
+def test_body_change_with_valid_trailer_is_allowed(_M, tmp_path: Path) -> None:
     """Valid Allow-ADR-edit trailer is exception class 3."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0004", "accepted", "Body.\n")
@@ -157,7 +121,7 @@ def test_body_change_with_valid_trailer_is_allowed(tmp_path: Path) -> None:
     assert code == 0, errors
 
 
-def test_trailer_naming_a_different_adr_fails(tmp_path: Path) -> None:
+def test_trailer_naming_a_different_adr_fails(_M, tmp_path: Path) -> None:
     """A trailer for ADR-0006 does not authorise editing ADR-0005."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0005", "accepted", "Body.\n", slug="five")
@@ -173,7 +137,7 @@ def test_trailer_naming_a_different_adr_fails(tmp_path: Path) -> None:
     assert any("0005" in e for e in errors)
 
 
-def test_trailer_with_empty_reason_fails(tmp_path: Path) -> None:
+def test_trailer_with_empty_reason_fails(_M, tmp_path: Path) -> None:
     """A trailer with no reason is silently ignored — the edit is not authorised."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0007", "accepted", "Body.\n")
@@ -186,7 +150,7 @@ def test_trailer_with_empty_reason_fails(tmp_path: Path) -> None:
 
 
 def test_status_transition_to_superseded_with_body_unchanged(
-    tmp_path: Path,
+    _M, tmp_path: Path,
 ) -> None:
     """Adding `superseded-by:` frontmatter without touching body is allowed."""
     _init_repo(tmp_path)
@@ -204,7 +168,7 @@ def test_status_transition_to_superseded_with_body_unchanged(
     assert code == 0, errors
 
 
-def test_historical_note_append_is_allowed(tmp_path: Path) -> None:
+def test_historical_note_append_is_allowed(_M, tmp_path: Path) -> None:
     """Appending a `## Historical Note` section is exception class 2."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0009", "accepted", "Original wisdom.\n")
@@ -221,7 +185,7 @@ def test_historical_note_append_is_allowed(tmp_path: Path) -> None:
     assert code == 0, errors
 
 
-def test_new_adr_creation_is_allowed(tmp_path: Path) -> None:
+def test_new_adr_creation_is_allowed(_M, tmp_path: Path) -> None:
     """Adding a new ADR file (no parent version) is allowed unconditionally."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0010", "accepted", "Body.\n")
@@ -235,7 +199,7 @@ def test_new_adr_creation_is_allowed(tmp_path: Path) -> None:
     assert code == 0, errors
 
 
-def test_deleted_adr_fails(tmp_path: Path) -> None:
+def test_deleted_adr_fails(_M, tmp_path: Path) -> None:
     """Deleting an accepted ADR is a violation — supersede instead."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0012", "accepted", "Body.\n")
@@ -249,7 +213,7 @@ def test_deleted_adr_fails(tmp_path: Path) -> None:
 
 
 def test_multiple_adrs_with_single_trailer_covering_both(
-    tmp_path: Path,
+    _M, tmp_path: Path,
 ) -> None:
     """Comma-separated ADR numbers in one trailer authorise multiple edits."""
     _init_repo(tmp_path)
@@ -267,7 +231,7 @@ def test_multiple_adrs_with_single_trailer_covering_both(
     assert code == 0, errors
 
 
-def test_mixed_legal_and_illegal_changes_in_one_commit(tmp_path: Path) -> None:
+def test_mixed_legal_and_illegal_changes_in_one_commit(_M, tmp_path: Path) -> None:
     """A trailer for ADR-0015 does not cover an unannotated edit to ADR-0016."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0015", "accepted", "Body 15.\n", slug="fifteen")
@@ -287,7 +251,7 @@ def test_mixed_legal_and_illegal_changes_in_one_commit(tmp_path: Path) -> None:
     assert "0016" in errors[0]
 
 
-def test_ascii_hyphen_separator_is_accepted(tmp_path: Path) -> None:
+def test_ascii_hyphen_separator_is_accepted(_M, tmp_path: Path) -> None:
     """The trailer accepts `-` as separator in addition to `—` and `:`."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0017", "accepted", "Body.\n")
@@ -302,7 +266,7 @@ def test_ascii_hyphen_separator_is_accepted(tmp_path: Path) -> None:
     assert code == 0, errors
 
 
-def test_en_dash_separator_is_accepted(tmp_path: Path) -> None:
+def test_en_dash_separator_is_accepted(_M, tmp_path: Path) -> None:
     """The trailer accepts en-dash `–` (U+2013) as separator."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0018", "accepted", "Body.\n")
@@ -317,7 +281,7 @@ def test_en_dash_separator_is_accepted(tmp_path: Path) -> None:
     assert code == 0, errors
 
 
-def test_colon_separator_is_accepted(tmp_path: Path) -> None:
+def test_colon_separator_is_accepted(_M, tmp_path: Path) -> None:
     """The trailer accepts `:` as separator (Conventional Commits-friendly)."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0019", "accepted", "Body.\n")
@@ -332,7 +296,7 @@ def test_colon_separator_is_accepted(tmp_path: Path) -> None:
     assert code == 0, errors
 
 
-def test_range_mode_walks_every_commit(tmp_path: Path) -> None:
+def test_range_mode_walks_every_commit(_M, tmp_path: Path) -> None:
     """In PR mode (BASE..HEAD), every commit in range is checked."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0020", "accepted", "Body.\n")
@@ -353,7 +317,7 @@ def test_range_mode_walks_every_commit(tmp_path: Path) -> None:
     assert any("0020" in e for e in errors)
 
 
-def test_root_commit_is_skipped(tmp_path: Path) -> None:
+def test_root_commit_is_skipped(_M, tmp_path: Path) -> None:
     """The root commit has no parent to diff against; it must not crash."""
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0021", "accepted", "Body.\n")
@@ -370,7 +334,7 @@ def test_root_commit_is_skipped(tmp_path: Path) -> None:
 
 
 def test_cli_exit_zero_on_clean_repo(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    _M, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0022", "accepted", "Body.\n")
@@ -383,7 +347,7 @@ def test_cli_exit_zero_on_clean_repo(
 
 
 def test_cli_exit_one_on_violation(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+    _M, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     _init_repo(tmp_path)
     _write_adr(tmp_path, "0023", "accepted", "Body.\n")
