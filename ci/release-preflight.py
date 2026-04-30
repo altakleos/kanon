@@ -18,8 +18,25 @@ def _find_version() -> str | None:
     return None
 
 
-def _check(name: str, cmd: list[str]) -> bool:
-    result = subprocess.run(cmd, capture_output=True)
+def _local_src_env() -> dict[str, str]:
+    """Return env with local ``src/`` prepended to PYTHONPATH.
+
+    When the preflight runs inside a git worktree the editable install
+    still points at the *main* tree's ``src/``.  Prepending the local
+    ``src/`` ensures pytest (and any other subprocess) imports the
+    worktree's code, not the main tree's.
+    """
+    import os
+
+    env = os.environ.copy()
+    local_src = str(Path.cwd() / "src")
+    existing = env.get("PYTHONPATH", "")
+    env["PYTHONPATH"] = f"{local_src}:{existing}" if existing else local_src
+    return env
+
+
+def _check(name: str, cmd: list[str], env: dict[str, str] | None = None) -> bool:
+    result = subprocess.run(cmd, capture_output=True, env=env)
     return result.returncode == 0
 
 
@@ -39,8 +56,10 @@ def main() -> None:
     changelog = Path("CHANGELOG.md")
     results["changelog_entry"] = changelog.exists() and expected in changelog.read_text()
 
+    local_env = _local_src_env()
+
     # Test suite
-    results["tests"] = _check("pytest", [sys.executable, "-m", "pytest", "-q"])
+    results["tests"] = _check("pytest", [sys.executable, "-m", "pytest", "-q"], env=local_env)
 
     # Lint
     results["lint"] = _check("ruff", [sys.executable, "-m", "ruff", "check", "."])
