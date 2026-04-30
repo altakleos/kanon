@@ -449,7 +449,10 @@ def init(
         raise click.ClickException("--tier, --aspects, --lite, and --profile are mutually exclusive.")
 
     target = target.resolve()
-    target.mkdir(parents=True, exist_ok=True)
+    try:
+        target.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        raise click.ClickException(f"Cannot create target directory: {exc}") from exc
 
     config_path = target / ".kanon" / "config.yaml"
     if config_path.exists() and not force:
