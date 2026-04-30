@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: done
 date: 2026-04-24
 spec: ../specs/security.md
 adr: ../decisions/0022-security-aspect.md

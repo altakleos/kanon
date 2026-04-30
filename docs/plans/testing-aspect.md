@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: done
 date: 2026-04-24
 spec: ../specs/testing.md
 adr: ../decisions/0021-testing-aspect.md
