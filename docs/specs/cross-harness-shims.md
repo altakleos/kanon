@@ -21,7 +21,7 @@ invariant_coverage:
   INV-cross-harness-shims-harness-yaml-schema:
     - tests/test_kit_integrity.py::test_harnesses_yaml_is_valid
   INV-cross-harness-shims-adding-new-harness:
-    - tests/test_cli.py::test_load_harnesses_missing_file
+    - tests/test_cli_helpers.py::test_load_harnesses_missing_file
   INV-cross-harness-shims-harness-selection:
     - tests/test_cli.py::test_init_writes_all_shims
 ---

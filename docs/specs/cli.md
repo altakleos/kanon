@@ -16,35 +16,35 @@ invariant_coverage:
     - tests/test_cli.py::test_init_scaffolds_all_required_files
     - tests/test_cli.py::test_upgrade_bumps_version
     - tests/test_cli.py::test_init_verify_returns_ok
-    - tests/test_cli.py::test_tier_set_idempotent
-    - tests/test_cli.py::test_aspect_add
-    - tests/test_cli.py::test_aspect_remove
-    - tests/test_cli.py::test_fidelity_update_creates_lock
+    - tests/test_cli_aspect.py::test_tier_set_idempotent
+    - tests/test_cli_aspect.py::test_aspect_add
+    - tests/test_cli_aspect.py::test_aspect_remove
+    - tests/test_cli_fidelity.py::test_fidelity_update_creates_lock
     - tests/test_aspect_config.py::test_set_config_idempotent_apart_from_timestamp
     - tests/test_graph_orphans.py::test_inv1_cli_text_default_no_orphans
     - tests/test_graph_rename.py::test_inv1_type_required
   INV-cli-init:
     - tests/test_cli.py::test_init_scaffolds_all_required_files
     - tests/test_cli.py::test_init_force_overwrites
-    - tests/test_cli.py::test_init_with_aspects_flag
+    - tests/test_cli_aspect.py::test_init_with_aspects_flag
     - tests/test_cli.py::test_init_rejects_existing_without_force
   INV-cli-upgrade:
     - tests/test_cli.py::test_upgrade_bumps_version
     - tests/test_cli.py::test_upgrade_already_current
   INV-cli-verify:
     - tests/test_cli.py::test_init_verify_returns_ok
-    - tests/test_cli.py::test_verify_fails_on_missing_file
-    - tests/test_cli.py::test_verify_marker_imbalance
+    - tests/test_cli_verify.py::test_verify_fails_on_missing_file
+    - tests/test_cli_verify.py::test_verify_marker_imbalance
   INV-cli-tier-set:
-    - tests/test_cli.py::test_tier_set_idempotent
+    - tests/test_cli_aspect.py::test_tier_set_idempotent
   INV-cli-aspect-group:
-    - tests/test_cli.py::test_aspect_add
-    - tests/test_cli.py::test_aspect_remove
-    - tests/test_cli.py::test_aspect_set_depth
-    - tests/test_cli.py::test_aspect_list
+    - tests/test_cli_aspect.py::test_aspect_add
+    - tests/test_cli_aspect.py::test_aspect_remove
+    - tests/test_cli_aspect.py::test_aspect_set_depth
+    - tests/test_cli_aspect.py::test_aspect_list
     - tests/test_aspect_config.py::test_set_config_idempotent_apart_from_timestamp
   INV-cli-fidelity-group:
-    - tests/test_cli.py::test_fidelity_update_creates_lock
+    - tests/test_cli_fidelity.py::test_fidelity_update_creates_lock
   INV-cli-graph-group:
     - tests/test_graph_orphans.py::test_inv1_cli_text_default_no_orphans
     - tests/test_graph_rename.py::test_inv1_type_required

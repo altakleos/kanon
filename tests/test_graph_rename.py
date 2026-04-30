@@ -17,13 +17,14 @@ import pytest
 from click.testing import CliRunner
 
 from kanon._atomic import read_sentinel
+from kanon._cli_helpers import _PENDING_OP_TO_COMMAND
 from kanon._rename import (
     _OP_GRAPH_RENAME,
     OPS_MANIFEST_FILENAME,
     perform_rename,
     recover_pending_rename,
 )
-from kanon.cli import _PENDING_OP_TO_COMMAND, main
+from kanon.cli import main
 
 
 def _make_minimal_repo(root: Path) -> None:

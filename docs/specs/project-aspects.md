@@ -19,9 +19,9 @@ fixtures:
   - tests/ci/test_check_kit_consistency.py
 invariant_coverage:
   INV-project-aspects-discovery-location:
-    - tests/test_cli.py::test_project_aspect_lifecycle_list_info_add_remove
+    - tests/test_cli_aspect.py::test_project_aspect_lifecycle_list_info_add_remove
   INV-project-aspects-manifest-shape-mirrors-kit:
-    - tests/test_cli.py::test_project_aspect_lifecycle_list_info_add_remove
+    - tests/test_cli_aspect.py::test_project_aspect_lifecycle_list_info_add_remove
   INV-project-aspects-namespace-grammar:
     - tests/test_aspect_provides.py::test_normalise_aspect_name_bare_sugars_to_kanon
     - tests/test_aspect_provides.py::test_normalise_aspect_name_namespaced_passes_through
@@ -30,29 +30,29 @@ invariant_coverage:
     - tests/test_aspect_provides.py::test_classify_predicate_bare_aspect_name_sugars
     - tests/test_aspect_provides.py::test_classify_predicate_namespaced_aspect_name_unchanged
   INV-project-aspects-namespace-ownership:
-    - tests/test_cli.py::test_project_aspect_kanon_namespace_in_consumer_dir_rejected
+    - tests/test_cli_aspect.py::test_project_aspect_kanon_namespace_in_consumer_dir_rejected
     - tests/ci/test_check_kit_consistency.py::test_kit_aspect_with_project_prefix_rejected
     - tests/ci/test_check_kit_consistency.py::test_kit_aspect_with_bare_name_rejected
   INV-project-aspects-namespace-migration:
-    - tests/test_cli.py::test_migrate_legacy_config_v1_to_v3_produces_namespaced_key
-    - tests/test_cli.py::test_migrate_legacy_config_v3_is_idempotent_no_op
-    - tests/test_cli.py::test_migrate_legacy_config_v2_all_six_aspects_round_trip
-    - tests/test_cli.py::test_migrate_legacy_config_mixed_state_hard_fails
+    - tests/test_cli_helpers.py::test_migrate_legacy_config_v1_to_v3_produces_namespaced_key
+    - tests/test_cli_helpers.py::test_migrate_legacy_config_v3_is_idempotent_no_op
+    - tests/test_cli_helpers.py::test_migrate_legacy_config_v2_all_six_aspects_round_trip
+    - tests/test_cli_helpers.py::test_migrate_legacy_config_mixed_state_hard_fails
     - tests/test_cli.py::test_upgrade_v1_legacy_round_trip_preserves_user_content
-    - tests/test_cli.py::test_cli_legacy_v2_config_auto_migrates_to_v3
+    - tests/test_cli_aspect.py::test_cli_legacy_v2_config_auto_migrates_to_v3
     - tests/test_scaffold_marker_hardening.py::test_rewrite_legacy_markers_handles_all_six_bare_aspects
     - tests/test_scaffold_marker_hardening.py::test_rewrite_legacy_markers_idempotent_on_already_namespaced
     - tests/test_scaffold_marker_hardening.py::test_rewrite_legacy_markers_preserves_user_prose_outside_markers
     - tests/test_scaffold_marker_hardening.py::test_rewrite_legacy_markers_preserves_balance
   INV-project-aspects-runtime-ownership-exclusivity:
-    - tests/test_cli.py::test_project_aspect_cross_source_path_collision_raises
+    - tests/test_cli_aspect.py::test_project_aspect_cross_source_path_collision_raises
   INV-project-aspects-trust-boundary-in-process:
-    - tests/test_cli.py::test_project_aspect_validator_emits_findings_in_verify_report
-    - tests/test_cli.py::test_project_aspect_validator_import_failure_recorded
+    - tests/test_cli_aspect.py::test_project_aspect_validator_emits_findings_in_verify_report
+    - tests/test_cli_aspect.py::test_project_aspect_validator_import_failure_recorded
   INV-project-aspects-requires-and-substitutability:
-    - tests/test_cli.py::test_project_aspect_capability_substitutes_kit_capability_requirement
+    - tests/test_cli_aspect.py::test_project_aspect_capability_substitutes_kit_capability_requirement
   INV-project-aspects-validators-non-overriding:
-    - tests/test_cli.py::test_project_aspect_validator_cannot_suppress_kit_errors
+    - tests/test_cli_aspect.py::test_project_aspect_validator_cannot_suppress_kit_errors
   INV-project-aspects-upgrade-source-routing:
     - tests/test_cli.py::test_upgrade_does_not_modify_project_aspect_files
 ---

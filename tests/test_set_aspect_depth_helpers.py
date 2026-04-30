@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from kanon.cli import _apply_tier_down
+from kanon._cli_aspect import _apply_tier_down
 
 
 def test_apply_tier_down_returns_only_existing_files(tmp_path: Path) -> None:

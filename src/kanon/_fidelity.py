@@ -16,6 +16,7 @@ See :doc:`docs/specs/fidelity.md` for the full invariant surface.
 
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -416,3 +417,43 @@ def discover_fixtures(target: Path) -> list[Path]:
 def dogfood_path_for(fixture_path: Path) -> Path:
     """Return the expected ``.dogfood.md`` capture path for a fixture file."""
     return fixture_path.with_name(fixture_path.stem + ".dogfood.md")
+
+
+def _spec_sha(path: Path) -> str:
+    """Return ``sha256:<hex>`` of raw file bytes."""
+    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _accepted_or_draft_specs(specs_dir: Path) -> list[Path]:
+    """Return sorted spec paths with status accepted or draft."""
+    result: list[Path] = []
+    if not specs_dir.is_dir():
+        return result
+    for p in sorted(specs_dir.glob("*.md")):
+        if p.name.startswith("_") or p.name == "README.md":
+            continue
+        fm = _parse_frontmatter(p.read_text(encoding="utf-8"))
+        if fm.get("status") in ("accepted", "draft"):
+            result.append(p)
+    return result
+
+
+def _fixture_shas(spec_path: Path, target: Path) -> dict[str, str]:
+    """Extract unique fixture file paths from invariant_coverage and compute their SHAs."""
+    fm = _parse_frontmatter(spec_path.read_text(encoding="utf-8"))
+    coverage = fm.get("invariant_coverage")
+    if not coverage or not isinstance(coverage, dict):
+        return {}
+    paths: set[str] = set()
+    for targets in coverage.values():
+        if not isinstance(targets, list):
+            continue
+        for t in targets:
+            # Strip ::test_func suffix to get the file path
+            paths.add(t.split("::")[0])
+    result: dict[str, str] = {}
+    for fp in sorted(paths):
+        full = target / fp
+        if full.is_file():
+            result[fp] = _spec_sha(full)
+    return result

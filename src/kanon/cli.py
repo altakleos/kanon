@@ -21,31 +21,38 @@ See docs/design/aspect-model.md and ADR-0012 / ADR-0013.
 
 from __future__ import annotations
 
-import hashlib
 import json
-import operator
-import re
 import sys
 from pathlib import Path
 from typing import Any
 
 import click
-import yaml
 
 from kanon import __version__
+from kanon._cli_aspect import _commit_aspect_meta, _set_aspect_depth
+from kanon._cli_helpers import (
+    _OP_ASPECT_REMOVE,
+    _OP_FIDELITY_UPDATE,
+    _OP_INIT,
+    _OP_SET_CONFIG,
+    _OP_UPGRADE,
+    _check_pending_recovery,
+    _check_removal_dependents,
+    _check_requires,
+    _parse_aspects_flag,
+    _parse_config_pair,
+)
+from kanon._fidelity import _accepted_or_draft_specs, _fixture_shas, _spec_sha
 from kanon._graph import (
     ORPHAN_CANDIDATE_NAMESPACES,
     build_graph,
     compute_orphans,
 )
 from kanon._manifest import (
-    _CAPABILITY_NAME_RE,
     _aspect_config_schema,
     _aspect_depth_range,
     _aspect_provides,
-    _capability_suppliers,
     _default_aspects,
-    _expected_files,
     _kit_root,
     _load_aspect_manifest,
     _load_aspect_registry,
@@ -53,7 +60,6 @@ from kanon._manifest import (
     _load_yaml,
     _normalise_aspect_name,
     _now_iso,
-    _parse_frontmatter,
     _render_placeholder,
 )
 from kanon._scaffold import (
@@ -71,313 +77,6 @@ from kanon._scaffold import (
     _write_config,
     _write_tree_atomically,
 )
-
-# Aspect config-key grammar (INV-aspect-config-key-format).
-_CONFIG_KEY_RE = re.compile(r"^[a-z][a-z0-9_-]*$")
-
-
-def _value_matches_schema_type(value: Any, expected: str) -> bool:
-    """Return True iff a parsed YAML scalar satisfies the schema's ``type:``.
-
-    `bool` is a subtype of `int` in Python; reject `bool` for integer / number
-    checks so a stray `coverage_floor=true` does not silently pass.
-    """
-    if isinstance(value, bool):
-        return expected == "boolean"
-    if expected == "string":
-        return isinstance(value, str)
-    if expected == "integer":
-        return isinstance(value, int)
-    if expected == "boolean":
-        return isinstance(value, bool)
-    if expected == "number":
-        return isinstance(value, (int, float))
-    return False
-
-
-def _parse_config_pair(
-    raw: str, schema: dict[str, dict[str, Any]] | None
-) -> tuple[str, Any]:
-    """Parse one ``key=value`` token for ``aspect set-config`` / ``aspect add --config``.
-
-    Value parsed via :func:`yaml.safe_load` (INV-aspect-config-yaml-scalar-parsing);
-    lists and mappings rejected. When *schema* is non-None, the key must appear
-    in it and the parsed value's type must satisfy the declared schema ``type:``.
-    """
-    if "=" not in raw:
-        raise click.ClickException(
-            f"Invalid config token {raw!r}: expected key=value."
-        )
-    key, _, value_str = raw.partition("=")
-    key = key.strip()
-    if not _CONFIG_KEY_RE.match(key):
-        raise click.ClickException(
-            f"Invalid config key {key!r}: must match {_CONFIG_KEY_RE.pattern}."
-        )
-    try:
-        parsed = yaml.safe_load(value_str)
-    except yaml.YAMLError as exc:
-        raise click.ClickException(
-            f"Invalid config value for {key!r}: {exc}"
-        ) from None
-    if isinstance(parsed, (list, dict)):
-        raise click.ClickException(
-            f"Invalid config value for {key!r}: lists and mappings are not "
-            f"supported on the CLI; hand-edit .kanon/config.yaml for structured values."
-        )
-    if schema is not None:
-        if key not in schema:
-            raise click.ClickException(
-                f"Unknown config key {key!r}: not declared in this aspect's "
-                f"config-schema. Allowed keys: {sorted(schema.keys())}."
-            )
-        # `type:` presence is enforced by `_validate_config_schema` at manifest
-        # load time; cast to str here so mypy --strict is satisfied.
-        expected = str(schema[key]["type"])
-        if not _value_matches_schema_type(parsed, expected):
-            raise click.ClickException(
-                f"Invalid type for config key {key!r}: expected {expected}, "
-                f"got {type(parsed).__name__} ({parsed!r})."
-            )
-    return key, parsed
-
-
-# --- CLI commands ---
-
-
-def _parse_aspects_flag(raw: str, top: dict[str, Any]) -> dict[str, int]:
-    """Parse ``--aspects sdd:1,worktrees:2`` into a validated dict.
-
-    Bare aspect names sugar to the ``kanon`` namespace per ADR-0028
-    (e.g., ``sdd`` → ``kanon-sdd``). Project-aspects must be referenced by
-    their full ``project-<local>`` name.
-    """
-    result: dict[str, int] = {}
-    if not raw.strip():
-        return result
-    for token in raw.split(","):
-        token = token.strip()
-        if ":" not in token:
-            raise click.ClickException(
-                f"Invalid aspect token {token!r}: expected name:depth."
-            )
-        raw_name, depth_s = token.split(":", 1)
-        name = _normalise_aspect_name(raw_name)
-        if name not in top["aspects"]:
-            raise click.ClickException(
-                f"Unknown aspect {name!r}. See `kanon aspect list`."
-            )
-        try:
-            depth = int(depth_s)
-        except ValueError:
-            raise click.ClickException(
-                f"Invalid depth {depth_s!r} for aspect {name!r}: must be an integer."
-            ) from None
-        rng = top["aspects"][name]["depth-range"]
-        min_d, max_d = int(rng[0]), int(rng[1])
-        if not (min_d <= depth <= max_d):
-            raise click.ClickException(
-                f"Aspect {name!r}: depth {depth} outside range [{min_d},{max_d}]."
-            )
-        result[name] = depth
-    if not result:
-        raise click.ClickException("--aspects requires at least one aspect:depth pair.")
-    return result
-
-
-_OPS: dict[str, Any] = {
-    ">=": operator.ge,
-    ">": operator.gt,
-    "==": operator.eq,
-    "<": operator.lt,
-    "<=": operator.le,
-}
-
-
-def _classify_predicate(predicate: str) -> tuple[Any, ...]:
-    """Classify a ``requires:`` predicate as a depth predicate or capability presence.
-
-    Returns one of:
-        ``("depth", name: str, op: str, depth: int)`` for a 3-token form like ``"sdd >= 1"``,
-        ``("capability", name: str)`` for a 1-token form like ``"planning-discipline"``.
-
-    Raises :class:`click.ClickException` on malformed input — designed to fire
-    eagerly at manifest-load time so kit-author mistakes fail fast.
-    """
-    tokens = predicate.split()
-    if len(tokens) == 3:
-        raw_name, op, depth_s = tokens
-        if op not in _OPS:
-            raise click.ClickException(
-                f"Invalid requires predicate {predicate!r}: unknown operator {op!r}; "
-                f"expected one of {sorted(_OPS)}."
-            )
-        try:
-            depth = int(depth_s)
-        except ValueError:
-            raise click.ClickException(
-                f"Invalid requires predicate {predicate!r}: depth {depth_s!r} is not an integer."
-            ) from None
-        # Bare names sugar to `kanon-` per ADR-0028; namespaced names pass through.
-        name = _normalise_aspect_name(raw_name)
-        return ("depth", name, op, depth)
-    if len(tokens) == 1:
-        token = tokens[0]
-        if not _CAPABILITY_NAME_RE.match(token):
-            raise click.ClickException(
-                f"Invalid requires predicate {predicate!r}: 1-token form must be a "
-                f"capability name matching {_CAPABILITY_NAME_RE.pattern}."
-            )
-        return ("capability", token)
-    raise click.ClickException(
-        f"Invalid requires predicate {predicate!r}: expected either "
-        f"'<aspect> <op> <depth>' (3 tokens) or '<capability>' (1 token), "
-        f"got {len(tokens)} tokens."
-    )
-
-
-def _check_requires(
-    aspect_name: str, proposed_aspects: dict[str, int], top: dict[str, Any]
-) -> str | None:
-    """Return error message if requires: predicates are unmet, else None.
-
-    Capability-presence predicates (1-token form, per ADR-0026) require a
-    supplier at depth ≥ 1. A supplier whose depth is 0 — the opt-out /
-    vibe-coding level for an aspect — does not satisfy the predicate;
-    depth-0 means the aspect contributes no scaffolding, so it cannot be
-    treated as actively providing the capability. See aspect-provides spec
-    INV-resolution (Depth-0 corner case).
-    """
-    for predicate in top["aspects"][aspect_name].get("requires", []):
-        classified = _classify_predicate(predicate)
-        if classified[0] == "depth":
-            _, dep_name, op, dep_depth = classified
-            actual = proposed_aspects.get(dep_name, 0)
-            if not _OPS[op](actual, dep_depth):
-                return (
-                    f"Aspect {aspect_name!r} requires {predicate!r}, "
-                    f"but {dep_name!r} is at depth {actual}."
-                )
-        else:  # "capability"
-            _, capability = classified
-            suppliers = _capability_suppliers(top, capability)
-            if not any(proposed_aspects.get(s, 0) >= 1 for s in suppliers):
-                kit_suppliers = ", ".join(suppliers) if suppliers else "(none)"
-                return (
-                    f"Aspect {aspect_name!r} requires capability {capability!r}, "
-                    f"but no enabled aspect provides it. "
-                    f"Suppliers in this kit: {kit_suppliers}."
-                )
-    return None
-
-
-def _check_removal_dependents(
-    aspect_name: str, remaining_aspects: dict[str, int], top: dict[str, Any]
-) -> str | None:
-    """Return error if any remaining aspect depends on the one being removed.
-
-    Handles both depth-predicate references (must name the aspect being removed)
-    and capability-presence predicates (the removed aspect must be the *only*
-    enabled supplier).
-    """
-    being_removed_provides = set(
-        top["aspects"][aspect_name].get("provides", []) or []
-    )
-    for name, depth in remaining_aspects.items():
-        if depth <= 0:
-            continue
-        for predicate in top["aspects"][name].get("requires", []):
-            classified = _classify_predicate(predicate)
-            if classified[0] == "depth":
-                if classified[1] == aspect_name:
-                    return (
-                        f"Cannot remove {aspect_name!r}: "
-                        f"aspect {name!r} requires {predicate!r}."
-                    )
-            else:  # capability
-                capability = classified[1]
-                if capability not in being_removed_provides:
-                    continue
-                # Removed aspect supplied this capability. Check whether any
-                # other still-enabled aspect also supplies it.
-                others = [
-                    s for s in _capability_suppliers(top, capability)
-                    if s != aspect_name
-                ]
-                if not any(remaining_aspects.get(s, 0) >= 1 for s in others):
-                    return (
-                        f"Cannot remove {aspect_name!r}: aspect {name!r} requires "
-                        f"capability {capability!r}, which would no longer be provided."
-                    )
-    return None
-
-
-# Sentinel operation strings written to .kanon/.pending. Single source of
-# truth — every `write_sentinel(...)` callsite uses one of these constants,
-# and `_check_pending_recovery` maps them to the correct user-facing
-# command form via `_PENDING_OP_TO_COMMAND`.
-_OP_INIT = "init"
-_OP_UPGRADE = "upgrade"
-_OP_SET_DEPTH = "set-depth"
-_OP_SET_CONFIG = "set-config"
-_OP_ASPECT_REMOVE = "aspect-remove"
-_OP_FIDELITY_UPDATE = "fidelity-update"
-_OP_GRAPH_RENAME = "graph-rename"
-
-_PENDING_OP_TO_COMMAND: dict[str, str] = {
-    _OP_INIT: "kanon init",
-    _OP_UPGRADE: "kanon upgrade",
-    _OP_SET_DEPTH: "kanon aspect set-depth",
-    _OP_SET_CONFIG: "kanon aspect set-config",
-    _OP_ASPECT_REMOVE: "kanon aspect remove",
-    _OP_FIDELITY_UPDATE: "kanon fidelity update",
-    _OP_GRAPH_RENAME: "kanon graph rename",
-}
-
-
-def _check_pending_recovery(target: Path) -> None:
-    """If a previous operation was interrupted, recover or warn.
-
-    Per ADR-0030 the recovery model is hybrid:
-
-    - `graph-rename` carries an ops-manifest at `.kanon/graph-rename.ops`
-      that captures the per-file rewrite plan. On detecting that sentinel,
-      this function calls :func:`kanon._rename.recover_pending_rename` to
-      replay the manifest idempotently, clear the sentinel, and emit a
-      one-line "Recovered ..." message. No manual re-run required.
-    - Other sentinels (init / upgrade / set-depth / set-config /
-      aspect-remove / fidelity-update) point at idempotent commands; this
-      function emits a warning naming the correct command to re-run via
-      `_PENDING_OP_TO_COMMAND`. The user types the suggested command and
-      it completes the partial state.
-    """
-    from kanon._atomic import read_sentinel
-
-    pending = read_sentinel(target / ".kanon")
-    if pending is None:
-        return
-    if pending == _OP_GRAPH_RENAME:
-        # Auto-recover graph-rename: the ops-manifest replays idempotently.
-        from kanon._rename import recover_pending_rename
-        try:
-            recovered = recover_pending_rename(target)
-        except click.ClickException:
-            recovered = False
-        if recovered:
-            click.echo(
-                f"Recovered interrupted '{pending}' operation by replaying "
-                f"the ops-manifest.",
-                err=True,
-            )
-            return
-        # No manifest on disk (or recovery failed) → fall through to warn.
-    rerun = _PENDING_OP_TO_COMMAND.get(pending, f"kanon {pending}")
-    click.echo(
-        f"Warning: previous '{pending}' operation was interrupted. "
-        f"Re-run '{rerun}' to complete it, or run "
-        f"'kanon upgrade' to re-render all files.",
-        err=True,
-    )
 
 
 @click.group()
@@ -1203,211 +902,10 @@ def aspect_set_config(target: Path, aspect_name: str, pair: str) -> None:
     )
 
 
-def _validate_aspect_and_depth(
-    aspect_name: str, n: int, top: dict[str, Any]
-) -> None:
-    """Raise ``click.ClickException`` if *aspect_name* is unknown or *n* is out of range."""
-    if aspect_name not in top["aspects"]:
-        raise click.ClickException(f"Unknown aspect: {aspect_name!r}.")
-    min_d, max_d = _aspect_depth_range(aspect_name)
-    if not (min_d <= n <= max_d):
-        raise click.ClickException(
-            f"aspect {aspect_name}: depth {n} outside range [{min_d},{max_d}]."
-        )
 
-
-def _apply_tier_up(target: Path, target_bundle: dict[str, str]) -> int:
-    """Write any new-bundle files that don't yet exist; return the count added."""
-    from kanon._atomic import atomic_write_text
-
-    added = 0
-    for rel, content in sorted(target_bundle.items()):
-        dst = target / rel
-        if dst.exists():
-            continue
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        atomic_write_text(dst, content)
-        added += 1
-    return added
-
-
-def _apply_tier_down(
-    target: Path, old_aspects: dict[str, int], new_aspects: dict[str, int]
-) -> list[str]:
-    """Return paths that exist on disk but are no longer required at the new depth.
-
-    Pure compute: no file writes, no deletions. Tier-down is non-destructive
-    by design (ADR-0008); the caller surfaces the list to the user.
-    """
-    required = set(_expected_files(new_aspects))
-    return [
-        rel
-        for rel in _expected_files(old_aspects)
-        if rel not in required and (target / rel).exists()
-    ]
-
-
-def _rewrite_assembled_views(
-    target: Path, new_aspects: dict[str, int], project_name: str
-) -> None:
-    """Re-merge AGENTS.md and re-render kit.md. Skips no-op AGENTS.md writes."""
-    from kanon._atomic import atomic_write_text
-
-    new_agents = _assemble_agents_md(new_aspects, project_name)
-    agents_path = target / "AGENTS.md"
-    if not agents_path.is_file():
-        return
-    existing_agents = agents_path.read_text(encoding="utf-8")
-    merged = _merge_agents_md(existing_agents, new_agents)
-    if merged != existing_agents:
-        atomic_write_text(target / "AGENTS.md", merged)
-
-    kit_md = _render_kit_md(new_aspects, project_name)
-    if kit_md is not None:
-        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
-
-
-def _commit_aspect_meta(
-    target: Path,
-    kit_version: str,
-    aspects_meta: dict[str, dict[str, Any]],
-    aspect_name: str,
-    depth: int,
-    extra_config: dict[str, Any] | None = None,
-) -> None:
-    """Stamp ``aspects_meta[aspect_name]`` and atomically write config.yaml.
-
-    config.yaml is the commit marker for the multi-file `aspect set-depth`
-    sequence (ADR-0024); this is the single callsite that mutates it during
-    that operation.
-
-    When *extra_config* is supplied, its keys are merged into the entry's
-    ``config:`` block (overwriting prior values for shared keys). This lets
-    ``aspect add --config k=v`` populate config keys at enable time without a
-    second config write.
-    """
-    entry = dict(aspects_meta.get(aspect_name, {}))
-    entry["depth"] = depth
-    entry["enabled_at"] = _now_iso()
-    config_block = dict(entry.get("config") or {})
-    if extra_config:
-        config_block.update(extra_config)
-    entry["config"] = config_block
-    aspects_meta[aspect_name] = entry
-    _write_config(target, kit_version, aspects_meta)
-
-
-def _set_aspect_depth(
-    target: Path,
-    aspect_name: str,
-    n: int,
-    legacy_tier_verb: bool = False,
-    extra_config: dict[str, Any] | None = None,
-) -> None:
-    target = target.resolve()
-    config = _read_config(target)
-    _check_pending_recovery(target)
-    top = _load_aspect_registry(target)
-    _validate_aspect_and_depth(aspect_name, n, top)
-
-    aspects = _config_aspects(config)
-    proposed = {**aspects, aspect_name: n}
-    err = _check_requires(aspect_name, proposed, top)
-    if err:
-        raise click.ClickException(err)
-
-    kit_version = config.get("kit_version", __version__)
-    current = aspects.get(aspect_name, -1)
-    aspects_meta = dict(config.get("aspects", {}))
-
-    from kanon._atomic import clear_sentinel, write_sentinel
-
-    # Single sentinel wraps every mutation (file writes + AGENTS.md/kit.md
-    # rewrites + config.yaml). Cleared only on the success path; if any call
-    # below raises, the sentinel persists for the next invocation to detect.
-    write_sentinel(target / ".kanon", _OP_SET_DEPTH)
-
-    if current == n:
-        _commit_aspect_meta(
-            target, kit_version, aspects_meta, aspect_name, n,
-            extra_config=extra_config,
-        )
-        clear_sentinel(target / ".kanon")
-        verb = "Tier" if legacy_tier_verb else f"Aspect {aspect_name} depth"
-        click.echo(f"{verb} already {n}. Noop (timestamp refreshed).")
-        return
-
-    new_aspects = {**aspects, aspect_name: n}
-    target_bundle = _build_bundle(
-        new_aspects, {"project_name": target.name, "tier": str(n)}
-    )
-
-    if n > current:
-        added = _apply_tier_up(target, target_bundle)
-        verb = "Tier-up" if legacy_tier_verb else f"Aspect-up ({aspect_name})"
-        click.echo(f"{verb} {current} → {n}: added {added} new file(s).")
-    else:
-        beyond = _apply_tier_down(target, aspects, new_aspects)
-        verb = "Tier-down" if legacy_tier_verb else f"Aspect-down ({aspect_name})"
-        click.echo(f"{verb} {current} → {n} is non-destructive.")
-        if beyond:
-            click.echo("The following artifacts are now beyond required for this depth:")
-            for rel in beyond:
-                click.echo(f"  - {rel}")
-            click.echo("You may keep, archive, or delete them as you choose.")
-
-    _rewrite_assembled_views(target, new_aspects, target.name)
-    _commit_aspect_meta(
-        target, kit_version, aspects_meta, aspect_name, n,
-        extra_config=extra_config,
-    )
-    clear_sentinel(target / ".kanon")
-
-    verb = "Tier" if legacy_tier_verb else f"Aspect {aspect_name} depth"
-    click.echo(f"{verb} set to {n} in .kanon/config.yaml.")
 
 
 # --- fidelity lock ---
-
-
-def _spec_sha(path: Path) -> str:
-    """Return ``sha256:<hex>`` of raw file bytes."""
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
-
-
-def _accepted_or_draft_specs(specs_dir: Path) -> list[Path]:
-    """Return sorted spec paths with status accepted or draft."""
-    result: list[Path] = []
-    if not specs_dir.is_dir():
-        return result
-    for p in sorted(specs_dir.glob("*.md")):
-        if p.name.startswith("_") or p.name == "README.md":
-            continue
-        fm = _parse_frontmatter(p.read_text(encoding="utf-8"))
-        if fm.get("status") in ("accepted", "draft"):
-            result.append(p)
-    return result
-
-
-def _fixture_shas(spec_path: Path, target: Path) -> dict[str, str]:
-    """Extract unique fixture file paths from invariant_coverage and compute their SHAs."""
-    fm = _parse_frontmatter(spec_path.read_text(encoding="utf-8"))
-    coverage = fm.get("invariant_coverage")
-    if not coverage or not isinstance(coverage, dict):
-        return {}
-    paths: set[str] = set()
-    for targets in coverage.values():
-        if not isinstance(targets, list):
-            continue
-        for t in targets:
-            # Strip ::test_func suffix to get the file path
-            paths.add(t.split("::")[0])
-    result: dict[str, str] = {}
-    for fp in sorted(paths):
-        full = target / fp
-        if full.is_file():
-            result[fp] = _spec_sha(full)
-    return result
 
 
 @main.group()
