@@ -47,6 +47,7 @@ Any spec claiming to `realize:` a principle or `serve:` a foundation must name a
 | [process-gates](process-gates.md) | Process-gate CI enforcement | v0.2.0a7 |
 | [project-aspects](project-aspects.md) | Project-defined aspects — consumer-specific discipline | v0.2.0a7 |
 | [scaffold-v2](scaffold-v2.md) | Thin kernel, routing-index AGENTS.md, three file categories | v0.2.0a12 |
+| [kanon-banner](kanon-banner.md) | `kanon` brand banner across init, upgrade, and AGENTS.md | v0.3.0a7 |
 
 ## Deferred specs (scheduled for v0.2+)
 
@@ -54,7 +55,7 @@ See [`../plans/roadmap.md`](../plans/roadmap.md). Each is a real spec file with 
 
 | Spec | Capability | Target |
 |---|---|---|
-| [spec-graph-tooling](spec-graph-tooling.md) | Atomic rename + orphan detection + spec-diff | v0.2 |
+| [spec-graph-tooling](spec-graph-tooling.md) | Atomic rename + orphan detection + spec-diff | superseded — split into `spec-graph-rename`, `spec-graph-orphans`, `spec-graph-diff` |
 | [ambiguity-budget](ambiguity-budget.md) | Two-agents-one-spec falsifier | v0.2 |
 | [multi-agent-coordination](multi-agent-coordination.md) | Reservations ledger + plan SHA + handshake | v0.2 |
 | [expand-and-contract-lifecycle](expand-and-contract-lifecycle.md) | Pattern for breaking spec changes | v0.3 |

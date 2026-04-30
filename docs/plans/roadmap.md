@@ -16,7 +16,7 @@ Capabilities committed to but not yet shipped. Each is tracked as a `status: def
 | [`specs/multi-agent-coordination.md`](../specs/multi-agent-coordination.md) | Reservations ledger, plan SHA pins, decision handshake, sub-agent AGENTS.md inheritance. | Deferred |
 | [`specs/invariant-ids.md`](../specs/invariant-ids.md) | Stable per-invariant anchors + `verified_by:` references. | **Shipped** (v0.2.0a4) |
 
-## Drafted for v0.3 (work in flight)
+## Shipped in v0.3 (originally drafted for v0.3)
 
 | Spec | Capability | Status |
 |---|---|---|
