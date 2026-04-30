@@ -1,11 +1,11 @@
-kit_version: 0.3.0a6
+kit_version: 0.3.1a1
 aspects:
   kanon-deps:
     depth: 2
     enabled_at: '2026-04-28T22:48:17+00:00'
     config: {}
   kanon-release:
-    depth: 3
+    depth: 2
     enabled_at: '2026-04-28T22:48:17+00:00'
     config: {}
   kanon-sdd:

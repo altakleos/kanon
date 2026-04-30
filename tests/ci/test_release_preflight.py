@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from pathlib import Path
 from unittest.mock import patch
 
@@ -67,7 +68,9 @@ def test_main_all_pass(
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("sys.argv", ["prog", "--tag", "v1.2.3"])
 
-    with patch.object(mod, "_check", return_value=True), pytest.raises(SystemExit) as exc_info:
+    with patch.object(mod, "_check", return_value=True), \
+         patch.object(mod, "_local_python", return_value=sys.executable), \
+         pytest.raises(SystemExit) as exc_info:
         mod.main()
 
     assert exc_info.value.code == 0
@@ -90,7 +93,9 @@ def test_main_version_mismatch(
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("sys.argv", ["prog", "--tag", "v1.2.3"])
 
-    with patch.object(mod, "_check", return_value=True), pytest.raises(SystemExit) as exc_info:
+    with patch.object(mod, "_check", return_value=True), \
+         patch.object(mod, "_local_python", return_value=sys.executable), \
+         pytest.raises(SystemExit) as exc_info:
         mod.main()
 
     assert exc_info.value.code == 1
@@ -113,7 +118,9 @@ def test_main_missing_changelog(
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("sys.argv", ["prog", "--tag", "v1.2.3"])
 
-    with patch.object(mod, "_check", return_value=True), pytest.raises(SystemExit) as exc_info:
+    with patch.object(mod, "_check", return_value=True), \
+         patch.object(mod, "_local_python", return_value=sys.executable), \
+         pytest.raises(SystemExit) as exc_info:
         mod.main()
 
     assert exc_info.value.code == 1

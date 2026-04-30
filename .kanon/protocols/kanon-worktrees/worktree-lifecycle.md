@@ -63,7 +63,7 @@ When multiple worktrees are active simultaneously:
 
 **Submodules.** Git worktrees are NOT recommended for repos with git submodules. The official git documentation (BUGS section) warns: "Multiple checkouts of a superproject are not recommended." If your repo uses submodules, consider separate clones instead.
 
-**Dependency install required.** New worktrees do not contain gitignored files (`.venv/`, `node_modules/`, `dist/`, `build/`). After creating a worktree, run your project's dependency install command (`uv sync`, `npm install`, `pip install -e .`, etc.) before working.
+**Dependency install required.** New worktrees do not contain gitignored files (`.venv/`, `node_modules/`, `dist/`, `build/`). After creating a worktree, run your project's dependency install command (`uv sync`, `npm install`, `pip install -e .`, etc.) before working. For Python projects this is **mandatory, not optional** — without a per-worktree `.venv/`, editable installs and console-script entry points (e.g., `kanon`, `pytest`) resolve to the main tree's source, silently validating the wrong code. The depth-2 `worktree-setup.sh` script automates this for projects with a `pyproject.toml`.
 
 **Git hooks are shared.** Hooks in `.git/hooks/` are shared across all worktrees. Pre-commit hooks or scripts that assume `.git` is a directory (not a file) may break in worktrees — `.git` in a worktree is a file pointing to the main checkout's `.git` directory.
 

@@ -25,3 +25,12 @@ fi
 
 git worktree add "$wt_dir" -b "$branch"
 echo "Worktree created: ${wt_dir} (branch: ${branch})"
+
+# Each worktree needs its own .venv so that editable installs and
+# console-script entry points resolve to the worktree's source tree.
+if [[ -f pyproject.toml ]] && [[ ! -d "$wt_dir/.venv" ]]; then
+  echo "Running uv sync in ${wt_dir}..."
+  (cd "$wt_dir" && uv sync --quiet 2>/dev/null) || {
+    echo "Warning: uv sync failed in ${wt_dir}. Run 'uv sync' manually." >&2
+  }
+fi

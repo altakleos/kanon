@@ -57,7 +57,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | [`fidelity-fixture-authoring`](.kanon/protocols/kanon-fidelity/fidelity-fixture-authoring.md) | 1 | Adding a new fidelity fixture, updating an existing fixture's assertions, or recapturing a `.dogfood.md` after a protocol's prose has changed |
 | [`fidelity-discipline`](.kanon/protocols/kanon-fidelity/fidelity-discipline.md) | 1 | Committing fidelity captures, editing protocol prose, or working with fidelity fixtures |
 
-### kanon-release (depth 3)
+### kanon-release (depth 2)
 
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |

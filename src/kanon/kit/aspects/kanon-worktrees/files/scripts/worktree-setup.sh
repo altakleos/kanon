@@ -39,4 +39,19 @@ for slug in "$@"; do
   echo "Worktree created: ${wt_dir} (branch: ${branch})"
 done
 
-echo "NOTE: Run your dependency install command (uv sync, npm install, etc.) in the new worktree(s)."
+# Auto-install dependencies if pyproject.toml is present (Python projects).
+# Each worktree needs its own .venv so that editable installs, console-script
+# entry points, and tool invocations resolve to the worktree's source tree.
+if [[ -f pyproject.toml ]]; then
+  for slug in "$@"; do
+    wt_dir=".worktrees/${slug}"
+    if [[ -d "$wt_dir" ]] && [[ ! -d "$wt_dir/.venv" ]]; then
+      echo "Running uv sync in ${wt_dir}..."
+      (cd "$wt_dir" && uv sync --quiet 2>/dev/null) || {
+        echo "Warning: uv sync failed in ${wt_dir}. Run your dependency install command manually." >&2
+      }
+    fi
+  done
+else
+  echo "NOTE: Run your dependency install command (npm install, etc.) in the new worktree(s)."
+fi
