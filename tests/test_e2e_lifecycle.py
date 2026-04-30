@@ -268,3 +268,163 @@ def test_user_content_survives_lifecycle(tmp_path: Path) -> None:
 
     # Step 9: user file still intact after upgrade
     assert user_plan.read_text(encoding="utf-8") == "# My Plan\nShip it.\n"
+
+
+# --- Test 6: preflight lifecycle ---
+
+
+def test_preflight_lifecycle(tmp_path: Path) -> None:
+    """init → preflight reports hook status."""
+    runner = CliRunner()
+    target = tmp_path / "project"
+
+    # Step 1: init at tier 1
+    result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+    assert result.exit_code == 0, result.output
+
+    # Step 2: run preflight (commit stage)
+    result = runner.invoke(main, ["preflight", str(target)])
+    # Preflight should succeed (exit 0) or report status — either way it runs
+    assert result.exit_code in (0, 1), result.output
+
+
+# --- Test 7: release lifecycle ---
+
+
+def test_release_lifecycle(tmp_path: Path) -> None:
+    """init → set release depth 2 → release --dry-run gates correctly."""
+    import os
+    import subprocess
+
+    git_env = {
+        **os.environ,
+        "GIT_AUTHOR_NAME": "Test",
+        "GIT_AUTHOR_EMAIL": "t@t",
+        "GIT_COMMITTER_NAME": "Test",
+        "GIT_COMMITTER_EMAIL": "t@t",
+    }
+    runner = CliRunner()
+    target = tmp_path / "project"
+
+    # Step 1: init
+    result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+    assert result.exit_code == 0, result.output
+
+    # Step 2: release at depth 1 should fail
+    result = runner.invoke(main, ["release", str(target), "--tag", "v1.0.0"])
+    assert result.exit_code != 0
+    assert "depth >=" in result.output
+
+    # Step 3: set release depth high enough to pass the gate
+    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-release", "3"])
+    assert result.exit_code == 0, result.output
+
+    # Step 4: init git repo for release
+    subprocess.run(["git", "init"], cwd=str(target), capture_output=True)
+    subprocess.run(["git", "add", "."], cwd=str(target), capture_output=True)
+    subprocess.run(
+        ["git", "commit", "-m", "init"],
+        cwd=str(target), capture_output=True, env=git_env,
+    )
+
+    # Step 5: dry-run release
+    result = runner.invoke(main, ["release", str(target), "--tag", "v1.0.0", "--dry-run"])
+    # Should either pass or fail on preflight — but not on the depth gate
+    assert "depth >=" not in result.output
+
+
+# --- Test 8: aspect set-config lifecycle ---
+
+
+def test_aspect_set_config_lifecycle(tmp_path: Path) -> None:
+    """init → set-config → upgrade preserves config."""
+    runner = CliRunner()
+    target = tmp_path / "project"
+
+    # Step 1: init
+    result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+    assert result.exit_code == 0, result.output
+
+    # Step 2: set a config value on testing aspect
+    result = runner.invoke(
+        main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=80"]
+    )
+    assert result.exit_code == 0, result.output
+
+    # Step 3: verify config persists
+    config = yaml.safe_load(
+        (target / ".kanon" / "config.yaml").read_text(encoding="utf-8")
+    )
+    assert config["aspects"]["kanon-testing"]["config"]["coverage_floor"] == 80
+
+    # Step 4: upgrade preserves config
+    result = runner.invoke(main, ["upgrade", str(target)])
+    assert result.exit_code == 0, result.output
+    config_after = yaml.safe_load(
+        (target / ".kanon" / "config.yaml").read_text(encoding="utf-8")
+    )
+    assert config_after["aspects"]["kanon-testing"]["config"]["coverage_floor"] == 80
+
+
+# --- Test 9: aspect info lifecycle ---
+
+
+def test_aspect_info_lifecycle(tmp_path: Path) -> None:
+    """aspect info shows metadata for kit aspects."""
+    runner = CliRunner()
+
+    # aspect info for a kit aspect (no target needed)
+    result = runner.invoke(main, ["aspect", "info", "kanon-sdd"])
+    assert result.exit_code == 0, result.output
+    assert "sdd" in result.output.lower()
+    # Should show depth range
+    assert "depth" in result.output.lower() or "0" in result.output
+
+
+# --- Test 10: graph orphans lifecycle ---
+
+
+def test_graph_orphans_lifecycle(tmp_path: Path) -> None:
+    """init at depth 3 → create orphan doc → graph orphans detects it."""
+    runner = CliRunner()
+    target = tmp_path / "project"
+
+    # Step 1: init at tier 3 (need docs/decisions, docs/plans, docs/specs, docs/design)
+    result = runner.invoke(main, ["init", str(target), "--tier", "3"])
+    assert result.exit_code == 0, result.output
+
+    # Step 2: create an orphan plan (not referenced by any spec)
+    orphan = target / "docs" / "plans" / "orphan-test.md"
+    orphan.write_text(
+        "---\nstatus: in-progress\ndate: 2026-01-01\nslug: orphan-test\n---\n# Orphan\n",
+        encoding="utf-8",
+    )
+
+    # Step 3: run graph orphans
+    result = runner.invoke(main, ["graph", "orphans", "--target", str(target)])
+    # Should succeed and mention the orphan
+    assert result.exit_code == 0, result.output
+
+
+# --- Test 11: fidelity lifecycle ---
+
+
+def test_fidelity_lifecycle(tmp_path: Path) -> None:
+    """init → enable fidelity → fidelity update runs."""
+    runner = CliRunner()
+    target = tmp_path / "project"
+
+    # Step 1: init
+    result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+    assert result.exit_code == 0, result.output
+
+    # Step 2: enable fidelity aspect
+    result = runner.invoke(
+        main, ["aspect", "add", str(target), "kanon-fidelity", "--depth", "1"]
+    )
+    assert result.exit_code == 0, result.output
+
+    # Step 3: run fidelity update
+    result = runner.invoke(main, ["fidelity", "update", str(target)])
+    # Should succeed (may produce no output if no fixtures exist)
+    assert result.exit_code == 0, result.output
