@@ -85,6 +85,62 @@ def main() -> None:
     """kanon — portable, self-hosting development-discipline kit for LLM-agent-driven repos."""
 
 
+def _resolve_init_harnesses(
+    harness_arg: tuple[str, ...], target: Path,
+) -> set[str]:
+    """Determine which harness shims to write."""
+    if harness_arg:
+        if "auto" in harness_arg:
+            return _detect_harnesses(target) | {"claude-code"}
+        return set(harness_arg)
+    return _detect_harnesses(target) | {"claude-code"}
+
+
+def _emit_init_hints(
+    aspects_meta: dict[str, dict[str, Any]],
+    aspects_to_enable: dict[str, int],
+) -> None:
+    """Print preflight readiness and grow-when-ready hints to stderr."""
+    testing_cfg = aspects_meta.get("kanon-testing", {}).get("config", {})
+    _pf_checks = [
+        ("lint", testing_cfg.get("lint_cmd", "")),
+        ("tests", testing_cfg.get("test_cmd", "")),
+        ("typecheck", testing_cfg.get("typecheck_cmd", "")),
+        ("format", testing_cfg.get("format_cmd", "")),
+    ]
+    armed = [(n, c) for n, c in _pf_checks if c]
+    unarmed = [n for n, c in _pf_checks if not c]
+    if armed:
+        click.echo("\n  Preflight readiness:")
+        for name, cmd in armed:
+            click.echo(f"    \u2713 {name:10s} \u2192 {cmd}")
+        for name in unarmed:
+            click.echo(
+                f"    \u2717 {name:10s} \u2192 not configured  "
+                f"(kanon aspect set-config . testing {name}_cmd=\"...\")"
+            )
+
+    grow_hints: list[str] = []
+    if "kanon-sdd" in aspects_to_enable and aspects_to_enable["kanon-sdd"] < 2:
+        grow_hints.append("    kanon aspect set-depth . sdd 2     # add specs")
+    if "kanon-testing" not in aspects_to_enable:
+        grow_hints.append("    kanon aspect add . testing          # add test discipline")
+    if "kanon-security" not in aspects_to_enable:
+        grow_hints.append("    kanon aspect add . security         # add secure-by-default protocols")
+    if "kanon-worktrees" not in aspects_to_enable:
+        grow_hints.append("    kanon aspect add . worktrees        # add worktree isolation")
+    grow_hints.append("    kanon verify .                      # check project health")
+    grow_section = "\n".join(grow_hints)
+
+    click.echo(
+        f"\n  Next steps:\n"
+        f"  1. Open this folder with your LLM coding agent\n"
+        f"  2. The agent will read AGENTS.md and follow the process\n"
+        f"\n  Grow when ready:\n"
+        f"{grow_section}"
+    )
+
+
 @main.command()
 @click.argument("target", type=click.Path(file_okay=False, path_type=Path))
 @click.option(
@@ -201,18 +257,7 @@ def init(
 
     bundle = _build_bundle(aspects_to_enable, context)
     bundle["AGENTS.md"] = _assemble_agents_md(aspects_to_enable, target.name)
-    # Determine which harness shims to write.
-    if harness_arg:
-        if "auto" in harness_arg:
-            detected = _detect_harnesses(target)
-            shim_names = detected | {"claude-code"}
-        else:
-            shim_names = set(harness_arg)
-    else:
-        # Default: auto-detect, fallback to claude-code only.
-        detected = _detect_harnesses(target)
-        shim_names = detected | {"claude-code"}
-
+    shim_names = _resolve_init_harnesses(harness_arg, target)
     bundle.update(_render_shims(only=shim_names))
 
     from kanon._atomic import clear_sentinel, write_sentinel
@@ -245,56 +290,8 @@ def init(
     if quiet_arg:
         return
 
-    # Preflight health check — show which hooks are armed.
-    testing_cfg = aspects_meta.get("kanon-testing", {}).get("config", {})
-    _pf_checks = [
-        ("lint", testing_cfg.get("lint_cmd", "")),
-        ("tests", testing_cfg.get("test_cmd", "")),
-        ("typecheck", testing_cfg.get("typecheck_cmd", "")),
-        ("format", testing_cfg.get("format_cmd", "")),
-    ]
-    armed = [(n, c) for n, c in _pf_checks if c]
-    unarmed = [n for n, c in _pf_checks if not c]
-    if armed:
-        click.echo("\n  Preflight readiness:")
-        for name, cmd in armed:
-            click.echo(f"    ✓ {name:10s} → {cmd}")
-        for name in unarmed:
-            click.echo(
-                f"    ✗ {name:10s} → not configured  "
-                f"(kanon aspect set-config . testing {name}_cmd=\"...\")"
-            )
-
-    # Build dynamic "Grow when ready" hints based on what's NOT enabled.
-    grow_hints: list[str] = []
-    if "kanon-sdd" in aspects_to_enable and aspects_to_enable["kanon-sdd"] < 2:
-        grow_hints.append(
-            "    kanon aspect set-depth . sdd 2     # add specs"
-        )
-    if "kanon-testing" not in aspects_to_enable:
-        grow_hints.append(
-            "    kanon aspect add . testing          # add test discipline"
-        )
-    if "kanon-security" not in aspects_to_enable:
-        grow_hints.append(
-            "    kanon aspect add . security         # add secure-by-default protocols"
-        )
-    if "kanon-worktrees" not in aspects_to_enable:
-        grow_hints.append(
-            "    kanon aspect add . worktrees        # add worktree isolation"
-        )
-    grow_hints.append(
-        "    kanon verify .                      # check project health"
-    )
-    grow_section = "\n".join(grow_hints)
-
-    click.echo(
-        f"\n  Next steps:\n"
-        f"  1. Open this folder with your LLM coding agent\n"
-        f"  2. The agent will read AGENTS.md and follow the process\n"
-        f"\n  Grow when ready:\n"
-        f"{grow_section}"
-    )
+    if not quiet_arg:
+        _emit_init_hints(aspects_meta, aspects_to_enable)
 
 
 @main.command()
