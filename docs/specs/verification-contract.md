@@ -93,4 +93,4 @@ The check set is the intersection of what Sensei's `sensei verify`, `check_found
 
 ## Decisions
 
-See ADR-0005 (model-version compatibility), ADR-0008 (tier-aware checks), ADR-0029 (fidelity-fixture replay carve-out from INV-9), [ADR-0039](../decisions/0039-contract-resolution-model.md) (resolution-replay structural conformance and INV-11 exit-zero scope boundary).
+See ADR-0005 (model-version compatibility), ADR-0008 (tier-aware checks), ADR-0029 (fidelity-fixture replay carve-out from INV-9), [ADR-0039](../decisions/0039-contract-resolution-model.md) (resolution-replay structural conformance and INV-11 exit-zero scope boundary), [ADR-0042](../decisions/0042-verification-scope-of-exit-zero.md) (canonical public claim wording for INV-11; immutable across substrate releases).
