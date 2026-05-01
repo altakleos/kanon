@@ -46,6 +46,7 @@ Any spec claiming to `realize:` a principle or `serve:` a foundation must name a
 | [aspect-config](aspect-config.md) | Aspect configuration values (`kanon aspect set-config`) | v0.2.0a6 |
 | [dialect-grammar](dialect-grammar.md) | Contract grammar — `kanon-dialect:` pin, `realization-shape:` schema, composition algebra (`surface:`+`before/after:`+`replaces:`) | v0.4 (ADR-0041) |
 | [release-cadence](release-cadence.md) | Kernel-daily / reference-weekly / dialect-quarterly cadence; breaking-changes-not-in-kernel rule | v0.4 (ADR-0043) |
+| [substrate-self-conformance](substrate-self-conformance.md) | Substrate-independence + self-host probe + public-CI signal — five permanent invariants | v0.4 (ADR-0044) |
 | [aspect-provides](aspect-provides.md) | Aspect capability namespace (`provides:`) | v0.2.0a6 |
 | [process-gates](process-gates.md) | Process-gate CI enforcement | v0.2.0a7 |
 | [project-aspects](project-aspects.md) | Project-defined aspects — consumer-specific discipline | v0.2.0a7 |
