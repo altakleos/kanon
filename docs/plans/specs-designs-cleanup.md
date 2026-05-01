@@ -49,7 +49,7 @@ Bodies preserved per immutability discipline. Retirement is frontmatter-only.
 
 - **All other spec amendments** — `cli.md`, `aspects.md`, `aspect-config.md`, `aspect-provides.md`, `project-aspects.md`, `verification-contract.md`, `testing.md`, `deps.md`, `preflight.md`, `scaffold-v2.md`, `protocols.md`, etc. These need amendments tied to Phase 0/A code changes and the ADRs that ratify them.
 - **All other design amendments** — `scaffold-v2.md`, `preflight.md` will amend in Phase A when their underlying code changes.
-- **New designs** — `resolutions-engine.md`, `dialect-grammar.md`, `kernel-reference-interface.md`, `verification-scope.md`, `distribution-boundary.md` ride along with their Phase 0 ADRs (0039–0044, 0040.5).
+- **New designs** — `resolutions-engine.md`, `dialect-grammar.md`, `kernel-reference-interface.md`, `verification-scope.md`, `distribution-boundary.md` ride along with their Phase 0 ADRs (0039–0045).
 - **New INVs** — INV-11 in `verification-contract.md` (verifier panel proposed wording) defers to ADR-0041's plan.
 - **No source / aspect-manifest / protocol-prose changes.**
 - **No new ADR.** ADR-0048 already supersedes the kit-shape framing; these retirements are consequences, not new decisions.
