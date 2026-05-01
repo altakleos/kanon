@@ -7,30 +7,19 @@ This doc walks **abstract → concrete**: mental model first, then the aspect mo
 For *why* the kit is shaped this way, follow links to ADRs in [`docs/decisions/`](decisions/) and design docs in [`docs/design/`](design/). This doc is a router, not a re-derivation.
 
 ```mermaid
-flowchart TB
-    subgraph consumer["Consumer repo"]
-        AM["AGENTS.md"]
-        KC[".kanon/ config"]
-        DD["docs/ plans/ specs/"]
-    end
-    subgraph agent["LLM agent"]
-        RP["reads protocols"]
-        EA["emits audit sentences"]
-    end
-    subgraph kit["kanon-kit"]
-        CLI["CLI<br/>(kanon init/upgrade)"]
-        SRC["src/kanon/kit/"]
-    end
-    CLI -->|"scaffold prose"| AM
-    CLI -->|"scaffold prose"| KC
-    AM -->|"instructs"| RP
-    RP --> EA
-    EA -->|"audit trail in transcript"| DD
-    DD -->|"kanon verify reads"| CLI
-    SRC -->|"ships protocols"| AM
-    style consumer fill:#f5f5f0,stroke:#999
-    style agent fill:#f0f5ff,stroke:#6699cc
-    style kit fill:#f0fff4,stroke:#66aa88
+flowchart LR
+    KIT["kanon kit"]
+    REPO["consumer repo"]
+    AGENT["LLM agent"]
+
+    KIT -->|"scaffolds discipline"| REPO
+    REPO -->|"instructs"| AGENT
+    AGENT -->|"writes code &amp; artifacts"| REPO
+    KIT -.->|"verifies"| REPO
+
+    style KIT fill:#dbeafe,stroke:#1e40af,stroke-width:2px
+    style REPO fill:#dcfce7,stroke:#166534,stroke-width:2px
+    style AGENT fill:#fef3c7,stroke:#92400e,stroke-width:2px
 ```
 
 ## 1. What kanon is, in one screen
@@ -53,32 +42,21 @@ An **aspect** is an opt-in bundle of (prose rules + protocols + AGENTS.md sectio
 
 ```mermaid
 flowchart LR
-    subgraph shipped["Kit-shipped aspects"]
-        SDD["kanon-sdd<br/>(stable)<br/>provides: planning-discipline,<br/>spec-discipline"]
-        WT["kanon-worktrees<br/>provides: worktree-isolation"]
-        REL["kanon-release<br/>provides: release-discipline"]
-        TST["kanon-testing<br/>provides: test-discipline"]
-        SEC["kanon-security<br/>provides: security-discipline"]
-        DEP["kanon-deps<br/>provides: dependency-hygiene"]
-        FID["kanon-fidelity<br/>provides: behavioural-verification"]
-    end
-    subgraph project["Project aspects"]
-        PA["project-&lt;local&gt;"]
-    end
-    REG["_load_aspect_registry()"]
-    subgraph cli["CLI surface"]
-        AL["aspect list/info"]
-        AA["aspect add/remove"]
-        AD["aspect set-depth<br/>set-config"]
-        VR["verify"]
-    end
-    shipped --> REG
-    project --> REG
-    REG --> AL
-    REG --> AA
-    REG --> AD
-    REG --> VR
-    style SDD fill:#e8f5e9,stroke:#4caf50
+    ASPECT(["one aspect"])
+    PROSE["prose rules"]
+    PROTOS["protocols"]
+    FILES["scaffolded files"]
+    SECTIONS["AGENTS.md sections"]
+
+    PROSE --> ASPECT
+    PROTOS --> ASPECT
+    FILES --> ASPECT
+    SECTIONS --> ASPECT
+
+    ASPECT -->|"depth dial"| DIAL["0 → N"]
+
+    style ASPECT fill:#dbeafe,stroke:#1e40af,stroke-width:2px
+    style DIAL fill:#fef3c7,stroke:#92400e
 ```
 
 The 7 kit-shipped aspects (verbatim from [`src/kanon/kit/manifest.yaml:35-108`](../src/kanon/kit/manifest.yaml)):
@@ -104,29 +82,15 @@ The same machinery powers `init`, `upgrade`, `verify`, and `aspect set-depth`: l
 ```mermaid
 sequenceDiagram
     actor User
-    participant CLI as cli.py
-    participant M as _manifest
-    participant S as _scaffold
-    participant A as _atomic
-    participant FS as filesystem
+    participant K as kanon
+    participant R as your repo
 
-    User->>CLI: kanon init [--profile all]
-    CLI->>M: _load_aspect_registry(target)
-    M-->>CLI: kit + project aspect registry
-    CLI->>S: _build_bundle(aspects, context)
-    S-->>CLI: {path: rendered_content}
-    CLI->>S: _assemble_agents_md(aspects)
-    Note over S: hard-gates table + protocols-index<br/>+ marker bodies (dynamic)
-    CLI->>A: write_sentinel(_OP_INIT)
-    A->>FS: .kanon/.pending
-    CLI->>S: _write_tree_atomically(target, bundle)
-    S->>A: atomic_write_text per file
-    Note over A,FS: tmp → fsync → rename → fsync parent
-    A->>FS: files
-    CLI->>A: atomic_write_text(AGENTS.md)
-    Note over CLI,A: AGENTS.md written out-of-band<br/>so init always refreshes (ADR-0038)
-    CLI->>A: clear_sentinel()
-    CLI-->>User: "Next steps:" hints
+    User->>K: state intent (init / upgrade / verify)
+    K->>K: load aspects, plan changes
+    K->>R: transform atomically (or inspect)
+    Note right of K: atomic and crash-recoverable
+    R-->>K: ok / findings
+    K-->>User: result
 ```
 
 Three things to internalize:
@@ -142,40 +106,20 @@ Three things to internalize:
 The codebase has four layers, top-down: dispatcher → CLI-support → domain core → kernel + validators.
 
 ```mermaid
-graph TB
-    subgraph entry["Entry point"]
-        CLIP["cli.py"]
-    end
-    subgraph support["CLI-support layer"]
-        CLH["_cli_helpers.py"]
-        CLA["_cli_aspect.py"]
-    end
-    subgraph domain["Domain core"]
-        MAN["_manifest.py"]
-        SCA["_scaffold.py"]
-        VER["_verify.py"]
-        FID["_fidelity.py"]
-        GR["_graph.py"]
-        PF["_preflight.py"]
-        DT["_detect.py"]
-    end
-    subgraph leaf["Kernel + validators"]
-        AT["_atomic.py"]
-        BN["_banner.py"]
-        VAL["_validators/*"]
-    end
-    CLIP --> CLH & CLA & MAN & SCA & VER & FID & GR
-    CLH --> MAN
-    CLA --> MAN
-    SCA --> MAN & AT
-    VER --> MAN & FID & VAL
-    FID --> MAN
-    PF --> DT
-    AT --> BN
-    style entry fill:#e3f2fd,stroke:#1976d2
-    style support fill:#e8f5e9,stroke:#388e3c
-    style domain fill:#fff3e0,stroke:#f57c00
-    style leaf fill:#fce4ec,stroke:#c62828
+flowchart TB
+    DISPATCH["Dispatcher<br/>(CLI surface)"]
+    DOMAIN["Domain logic<br/>(aspects, scaffold, verify)"]
+    KERNEL["I/O kernel<br/>(atomic writes, sentinels)"]
+    PLUGINS["Validators<br/>(pluggable rules)"]
+
+    DISPATCH --> DOMAIN
+    DOMAIN --> KERNEL
+    DOMAIN --> PLUGINS
+
+    style DISPATCH fill:#dbeafe,stroke:#1e40af,stroke-width:2px
+    style DOMAIN fill:#fef3c7,stroke:#92400e,stroke-width:2px
+    style KERNEL fill:#fee2e2,stroke:#991b1b,stroke-width:2px
+    style PLUGINS fill:#e0e7ff,stroke:#3730a3,stroke-width:2px
 ```
 
 | Module | LOC | Role | Primary tests | Governing ADR |
@@ -240,51 +184,18 @@ Three layers fire when you push:
 
 ```mermaid
 flowchart TB
-    PUSH["git push / pull_request"]
-    TAG["git push v* tag"]
-    subgraph checks_yml["checks.yml (reusable)"]
-        MAT["matrix: py3.10-3.13<br/>x ubuntu + macos"]
-        PT["pytest"]
-        LN["ruff + mypy"]
-        CI["13 ci/check_*.py validators"]
-        MAT --> PT & LN & CI
-    end
-    PUSH --> verify_yml["verify.yml"]
-    TAG --> release_yml["release.yml"]
-    verify_yml --> checks_yml
-    verify_yml --> e2e["e2e job<br/>(pytest -m e2e)"]
-    release_yml --> checks_yml
-    release_yml --> bld["build wheel<br/>+ check_package_contents.py"]
-    bld --> pub["publish<br/>(OIDC trusted publisher)"]
+    UNIVERSAL["Universal gates<br/>tests · lint · types"]
+    STRUCTURAL["Structural gates<br/>CI scripts: links, ADR immutability,<br/>process gates, kit consistency, …"]
+    SEMANTIC["Semantic gate<br/>kanon verify ."]
+
+    UNIVERSAL --> STRUCTURAL --> SEMANTIC
+
+    style UNIVERSAL fill:#dcfce7,stroke:#166534
+    style STRUCTURAL fill:#fef3c7,stroke:#92400e
+    style SEMANTIC fill:#fee2e2,stroke:#991b1b,stroke-width:2px
 ```
 
-The verify pipeline (run by both CI and local `kanon verify .`):
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant CLI as cli.py
-    participant V as _verify
-    participant PV as project-validators
-    participant KV as kit-validators
-    participant F as _fidelity
-
-    User->>CLI: kanon verify [path]
-    CLI->>V: run_verify(path)
-    V->>V: structural checks<br/>(config, manifest, links)
-    V->>PV: import & run<br/>project validators
-    PV-->>V: findings[]
-    V->>KV: import & run<br/>kit validators
-    Note over KV,V: kit results OVERWRITE<br/>project clears (ADR-0028)
-    KV-->>V: findings[]
-    V->>V: has behavioural-verification<br/>capability? (ADR-0029)
-    alt capability present
-        V->>F: fidelity_replay(fixtures)
-        F-->>V: replay results
-    end
-    V-->>CLI: JSON report
-    CLI-->>User: status: ok | warn | fail
-```
+`kanon verify .` reads but does not write: it walks the consumer repo, asks each enabled aspect whether its contract is satisfied at the declared depth, aggregates findings, and returns `ok` or `fail`. Project-defined validators run first; kit validators run after and override (ADR-0028 § non-overriding). When the `behavioural-verification` capability is present, fidelity assertions replay against committed `.dogfood.md` captures (ADR-0029). Implementation: [`src/kanon/_verify.py`](../src/kanon/_verify.py).
 
 The full gate matrix:
 
