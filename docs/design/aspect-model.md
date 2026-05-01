@@ -258,3 +258,13 @@ New Click subgroup `kanon aspect` with commands `list`, `info`, `add`, `remove`,
 - **ADR-0008** — tier-migration contract (generalised to `aspect add/remove`).
 - **ADR-0010** — protocol layer (namespace extended to `<aspect>/<name>`).
 - **ADR-0011** — kit-bundle refactor (manifest-driven data shape; this design extends it by nesting per-aspect manifests).
+
+## Status under ADR-0048
+
+[ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) supersedes the kit-shape framing in this document while preserving the aspect primitive itself. Specifically:
+
+- **Survives:** the aspect-as-primitive decision (aspects are the unit of opt-in discipline; depth is per-aspect; namespace grammar is `kanon-` / `project-` / `acme-`); the manifest-registry shape; namespaced markers; the capability registry per [ADR-0026](../decisions/0026-aspect-provides-and-generalised-requires.md); the project-aspect discovery model per [ADR-0028](../decisions/0028-project-aspects.md). These are exactly the substrate primitives the protocol composes over.
+- **Superseded:** the kit-shape framing in this document — the assumption that `kanon-` aspects are privileged in resolver paths, that `defaults:` auto-enables a curated set, that `kanon-tier set` is sugar for the privileged `sdd` aspect, that the kit-global `files:` field is a substrate feature. These are kit-shape vestiges retired by ADR-0048.
+- **Phase A reshapes:** Phase A code changes will rewrite specific sections (the `_PROFILES` discussion, the `defaults:` semantics, the bare-name CLI sugar). Until then, code paragraphs in this document describe today's behaviour, not the protocol-substrate target. Read this document for the *aspect mechanism*; read [`vision.md`](../foundations/vision.md), [`de-opinionation.md`](../foundations/de-opinionation.md), and ADR-0048 for the *protocol-substrate framing* the mechanism now serves.
+
+The pre-amendment body (without this section) is preserved at predecessor commit `46d7cbe` ("docs: foundations rewrite for protocol substrate commitment"). Amendment landed under [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) at the moment public-tier discipline crossed over (per the same prospective application that covered the public-tier principle amendments in PR #50).

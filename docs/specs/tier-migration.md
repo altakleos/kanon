@@ -1,5 +1,6 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0048
 design: "Follows ADR-0008"
 date: 2026-04-22
 realizes:
