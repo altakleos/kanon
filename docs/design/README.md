@@ -44,5 +44,6 @@ When skipping, the plan's frontmatter should declare `design: "Follows ADR-NNNN"
 | [resolutions-engine](resolutions-engine.md) | `../specs/resolutions.md` — `.kanon/resolutions.yaml` schema, replay algorithm, resolver/replayer split |
 | [kernel-reference-interface](kernel-reference-interface.md) | `../specs/aspects.md` (extended per ADR-0040) — Python entry-points group, registry composition, `_kit_root()` retirement walkthrough |
 | [dialect-grammar](dialect-grammar.md) | `../specs/dialect-grammar.md` — `realization-shape:` schema, dialect frontmatter, composition resolution algorithm, `kanon contracts validate` walk |
+| [distribution-boundary](distribution-boundary.md) | `../specs/release-cadence.md` — `pyproject.toml` shapes for substrate/reference/meta-alias, recipe YAML schema, cadence-CI-gate algorithm, migration script outline |
 
 More design docs will land as features grow beyond pattern-instantiation.
