@@ -44,6 +44,7 @@ Any spec claiming to `realize:` a principle or `serve:` a foundation must name a
 | [deps](deps.md) | Dependency hygiene for LLM-agent-driven repos | v0.2.0a5 |
 | [fidelity](fidelity.md) | Tier-1 behavioural-conformance verification (lexical replay over committed transcripts) | v0.3 |
 | [aspect-config](aspect-config.md) | Aspect configuration values (`kanon aspect set-config`) | v0.2.0a6 |
+| [dialect-grammar](dialect-grammar.md) | Contract grammar — `kanon-dialect:` pin, `realization-shape:` schema, composition algebra (`surface:`+`before/after:`+`replaces:`) | v0.4 (ADR-0041) |
 | [aspect-provides](aspect-provides.md) | Aspect capability namespace (`provides:`) | v0.2.0a6 |
 | [process-gates](process-gates.md) | Process-gate CI enforcement | v0.2.0a7 |
 | [project-aspects](project-aspects.md) | Project-defined aspects — consumer-specific discipline | v0.2.0a7 |
