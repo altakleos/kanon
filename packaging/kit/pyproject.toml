@@ -1,0 +1,22 @@
+# Phase A.1 skeleton (per docs/plans/phase-a.1-distribution-split.md, per ADR-0045).
+# Schema-of-record for the kanon-kit meta-package per docs/design/distribution-boundary.md.
+# Top-level kanon-kit v0.3.x build remains active until later in Phase A.
+
+[project]
+name = "kanon-kit"
+version = "1.0.0a1"
+description = "Convenience meta-package: installs kanon-substrate plus kanon-reference."
+readme = "../../README.md"
+requires-python = ">=3.10"
+license = { file = "../../LICENSE" }
+dependencies = [
+    "kanon-substrate==1.0.0a1",
+    "kanon-reference==1.0.0a1",
+]
+
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/_kanon_kit_meta"]
