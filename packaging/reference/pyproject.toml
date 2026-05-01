@@ -1,0 +1,35 @@
+# Phase A.1 skeleton (per docs/plans/phase-a.1-distribution-split.md, per ADR-0045).
+# Schema-of-record for the kanon-reference wheel per docs/design/distribution-boundary.md.
+# NOT runtime-functional yet: kanon_reference Python package + LOADER stubs are authored
+# by Phase A.2 (per docs/design/kernel-reference-interface.md). Entry-point declarations
+# below are commented out for traceability and uncommented when Phase A.2 lands LOADER
+# infrastructure.
+
+[project]
+name = "kanon-reference"
+version = "1.0.0a1"
+description = "Reference discipline aspects for the kanon protocol substrate."
+readme = "../../README.md"
+requires-python = ">=3.10"
+license = { file = "../../LICENSE" }
+dependencies = [
+    "kanon-substrate==1.0.0a1",
+]
+
+# Activated by Phase A.2 — see docs/design/kernel-reference-interface.md.
+# [project.entry-points."kanon.aspects"]
+# kanon-deps = "kanon_reference.aspects.kanon_deps:LOADER"
+# kanon-fidelity = "kanon_reference.aspects.kanon_fidelity:LOADER"
+# kanon-release = "kanon_reference.aspects.kanon_release:LOADER"
+# kanon-sdd = "kanon_reference.aspects.kanon_sdd:LOADER"
+# kanon-security = "kanon_reference.aspects.kanon_security:LOADER"
+# kanon-testing = "kanon_reference.aspects.kanon_testing:LOADER"
+# kanon-worktrees = "kanon_reference.aspects.kanon_worktrees:LOADER"
+
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# Source tree authored by Phase A.2; placeholder for hatch parseability.
+packages = ["src/_kanon_reference_placeholder"]
