@@ -97,6 +97,7 @@ Bug fixes, threshold tuning, documentation improvements, presentation/formatting
 | [0039](0039-contract-resolution-model.md) | Contract-resolution model — prose contracts → agent-resolved YAML → kernel replay | accepted | process |
 | [0040](0040-kernel-reference-runtime-interface.md) | Kernel/reference runtime interface — Python entry-points group `kanon.aspects`; publisher-symmetric registry; substrate-independence invariant | accepted | aspects |
 | [0041](0041-realization-shape-dialect-grammar.md) | Realization-shape, dialect grammar, composition algebra — `kanon-dialect:` pin, per-contract `realization-shape:`, `surface:`+`before/after:`+`replaces:` | accepted | aspects |
+| [0042](0042-verification-scope-of-exit-zero.md) | Verification scope-of-exit-zero — canonical public claim wording for what `kanon verify` exit-0 means and does NOT mean | accepted | process |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 
