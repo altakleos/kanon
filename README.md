@@ -130,6 +130,8 @@ Run tests:
 .venv/bin/pytest -m ''        # everything
 ```
 
+New contributor? Start with [`docs/contributing.md`](docs/contributing.md) — module map, gate matrix, and a "where does my change go?" decision flow.
+
 ## Security model
 
 `kanon preflight` and `kanon verify` execute commands and code from project-local config files (`.kanon/config.yaml`, project-aspect manifests). The trust boundary is **repo write-access**: if you can commit to the repo, you can control what these commands run. This is the same trust model as `Makefile`, `package.json` scripts, or `.github/workflows/` — cloning a repo implies trusting its build/check configuration.
