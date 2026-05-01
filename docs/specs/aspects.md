@@ -124,3 +124,9 @@ Under [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md)'s protocol-su
 - **No kit-global privilege**: the `defaults:` block, kit-global `files:` field, and bare-name CLI sugar are retired (per ADR-0048). The substrate's deliverable is the contract grammar plus the discovery mechanism; reference aspects are demonstrations.
 
 The existing INVs in this spec (aspect-as-primitive, depth-dial, namespace grammar, explicit opt-in, non-destructive add/remove, capability registry per ADR-0026) survive verbatim. ADR-0040 specifies *how* the substrate finds aspects at runtime; this spec specifies *what* an aspect is. The two compose without conflict.
+
+## Contract grammar (added per ADR-0041)
+
+The shape an aspect's contracts take — required `kanon-dialect:` pin, per-contract `realization-shape:` schema, composition algebra (`surface:` + `before/after:` + `replaces:`) — lives in [`docs/specs/dialect-grammar.md`](dialect-grammar.md), ratified by [ADR-0041](../decisions/0041-realization-shape-dialect-grammar.md). That spec carries the publisher-facing contract that `acme-` authors cite by INV; this spec describes the aspect-level shape that contains those contracts.
+
+The two specs compose without conflict: an aspect manifest validates against this spec's INVs (aspect-as-primitive, depth-dial, namespace grammar, capability registry); the contracts inside that manifest validate against the dialect-grammar spec's INVs (dialect pin, realization-shape, composition algebra). The kernel walks both layers at load time.

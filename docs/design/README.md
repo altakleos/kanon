@@ -43,5 +43,6 @@ When skipping, the plan's frontmatter should declare `design: "Follows ADR-NNNN"
 | [aspect-model](aspect-model.md) | `../specs/aspects.md` — manifest registry, namespaced markers, and legacy-tier auto-migration |
 | [resolutions-engine](resolutions-engine.md) | `../specs/resolutions.md` — `.kanon/resolutions.yaml` schema, replay algorithm, resolver/replayer split |
 | [kernel-reference-interface](kernel-reference-interface.md) | `../specs/aspects.md` (extended per ADR-0040) — Python entry-points group, registry composition, `_kit_root()` retirement walkthrough |
+| [dialect-grammar](dialect-grammar.md) | `../specs/dialect-grammar.md` — `realization-shape:` schema, dialect frontmatter, composition resolution algorithm, `kanon contracts validate` walk |
 
 More design docs will land as features grow beyond pattern-instantiation.
