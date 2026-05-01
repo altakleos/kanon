@@ -1,6 +1,7 @@
 ---
 id: platform-team
-status: accepted
+status: superseded
+superseded-by: 0048
 date: 2026-04-22
 stresses:
   - P-specs-are-source
@@ -10,6 +11,8 @@ stresses:
   - multi-agent-coordination
 ---
 # Persona: Platform Team
+
+> **Status:** Superseded by [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md). The "tier-3 platform team" framing assumes a multi-human, multi-agent adoption story that the lead has explicitly deferred under vision-led design with no current external consumers. The persona's stress dimensions (tier-3 scale, cross-team adoption, reviewer-cohort ergonomics, audit-trail compliance) are not load-bearing for the protocol-substrate transition. Body preserved verbatim per the immutability discipline applied to personas from ADR-0048 onward; the file remains as historical record. A future plan may resurrect this persona — possibly reframed as "platform-publisher" for organizations shipping `acme-` aspects — when the audience becomes real.
 
 **One sentence:** A multi-person engineering group building shared infrastructure (library, service, tool, framework) consumed by other teams inside the same company, where specs are the contract between producers and consumers.
 

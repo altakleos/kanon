@@ -1,6 +1,7 @@
 ---
 id: P-cross-link-dont-duplicate
 kind: technical
+tier: kit-author-internal
 status: accepted
 date: 2026-04-22
 ---
@@ -30,3 +31,7 @@ This is why the kit's shims (per ADR-0003) are pointers, not content copies. Why
 ## Source
 
 Sensei's foundational convention (`cross-link-dont-duplicate`) ported unchanged. Observed pain during Sensei's own development: cross-reference drift between AGENTS.md and sdd-method.md was the motivating failure mode.
+
+## Tier
+
+This principle is **kit-author-internal** (per [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md)). It governs kit-author hygiene during prose authoring; it is not part of the substrate's published protocol. Publishers do not need to honour it; the substrate does not enforce it on consumer repos. Body amendments are kit-author concerns and do not require dialect supersession.

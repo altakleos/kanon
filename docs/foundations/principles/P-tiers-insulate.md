@@ -1,10 +1,13 @@
 ---
 id: P-tiers-insulate
 kind: product
-status: accepted
+status: superseded
+superseded-by: 0048
 date: 2026-04-22
 ---
 # Tiers insulate consumer experience, not producer experience
+
+> **Status:** Superseded by [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md). The "tier" vocabulary this principle codified was a kit-shape consumer-experience concern; under the protocol-substrate commitment, tiers are gone — depths are per-aspect dials, not a global axis. The body below is preserved verbatim per the immutability discipline applied to principles from [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md) onward; it remains as historical record. This principle no longer governs substrate behaviour.
 
 ## Statement
 
