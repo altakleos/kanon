@@ -1,0 +1,33 @@
+---
+# Phase 0.5 self-host hand-over (per ADR-0045): the kanon repo opts into reference
+# aspects via the publisher recipe — the same mechanism any external consumer would
+# use. Schema per docs/design/distribution-boundary.md (per ADR-0043).
+#
+# This recipe is checked into the kanon repo's .kanon/recipes/ as a stand-in for
+# what kanon-reference's installed recipes/ directory will eventually ship (Phase A.1).
+schema-version: 1
+recipe-id: reference-default
+publisher: kanon-reference
+recipe-version: "1.0"
+target-dialect: "2026-05-01"
+description: "Default reference recipe — opts the consumer into all seven kanon-reference aspects at the kanon repo's current self-host depths."
+aspects:
+  - id: kanon-sdd
+    depth: 3
+  - id: kanon-testing
+    depth: 3
+    config:
+      test_cmd: .venv/bin/python -m pytest --no-cov -q
+      lint_cmd: .venv/bin/ruff check src/ tests/ ci/
+      typecheck_cmd: .venv/bin/mypy src/kanon
+      format_cmd: ''
+  - id: kanon-worktrees
+    depth: 2
+  - id: kanon-release
+    depth: 2
+  - id: kanon-security
+    depth: 2
+  - id: kanon-deps
+    depth: 2
+  - id: kanon-fidelity
+    depth: 1
