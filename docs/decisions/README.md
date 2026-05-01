@@ -100,6 +100,7 @@ Bug fixes, threshold tuning, documentation improvements, presentation/formatting
 | [0042](0042-verification-scope-of-exit-zero.md) | Verification scope-of-exit-zero — canonical public claim wording for what `kanon verify` exit-0 means and does NOT mean | accepted | process |
 | [0043](0043-distribution-boundary-and-cadence.md) | Distribution boundary, release cadence, recipe artifact — `kanon-substrate`+`kanon-reference`+`kanon-kit` meta-alias; kernel-daily / reference-weekly / dialect-quarterly cadence; recipes as inert YAML | accepted | release |
 | [0044](0044-substrate-self-conformance.md) | Substrate self-conformance discipline — independence invariant elevated to permanent commitment; self-host as primary correctness probe; CI gate publicly-readable | accepted | process |
+| [0045](0045-de-opinionation-transition.md) | De-opinionation transition — Phase 0.5 self-host hand-over before Phase A deletions; canonical 9-step Phase A sequence; clean break, no v0.3.x backward compat | accepted | process |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 
