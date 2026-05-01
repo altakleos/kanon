@@ -1,6 +1,7 @@
 ---
 id: P-prose-is-code
 kind: technical
+tier: public-protocol
 status: accepted
 date: 2026-04-22
 ---
@@ -28,3 +29,7 @@ The principle is weaker for non-gating prose — principle descriptions, vision 
 ## Source
 
 Sensei's foundational principle of the same name, ported unchanged. The user's company has been piloting this discipline inside Sensei for months; `kanon` packages the discipline.
+
+## Tier
+
+This principle is **public-protocol** (per [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md)). It is the substrate's founding axiom: every other public-tier principle is downstream of this one. Publishers authoring `acme-` aspects can rely on the substrate honouring it. Body is immutable post-acceptance under the same discipline that protects ADR bodies (extended from ADR-0032 by ADR-0048).
