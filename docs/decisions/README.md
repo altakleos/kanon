@@ -99,6 +99,7 @@ Bug fixes, threshold tuning, documentation improvements, presentation/formatting
 | [0041](0041-realization-shape-dialect-grammar.md) | Realization-shape, dialect grammar, composition algebra — `kanon-dialect:` pin, per-contract `realization-shape:`, `surface:`+`before/after:`+`replaces:` | accepted | aspects |
 | [0042](0042-verification-scope-of-exit-zero.md) | Verification scope-of-exit-zero — canonical public claim wording for what `kanon verify` exit-0 means and does NOT mean | accepted | process |
 | [0043](0043-distribution-boundary-and-cadence.md) | Distribution boundary, release cadence, recipe artifact — `kanon-substrate`+`kanon-reference`+`kanon-kit` meta-alias; kernel-daily / reference-weekly / dialect-quarterly cadence; recipes as inert YAML | accepted | release |
+| [0044](0044-substrate-self-conformance.md) | Substrate self-conformance discipline — independence invariant elevated to permanent commitment; self-host as primary correctness probe; CI gate publicly-readable | accepted | process |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 
