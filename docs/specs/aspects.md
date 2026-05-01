@@ -113,3 +113,14 @@ See:
 - **ADR-0013** — vision amendment: reference automation snippets are kit-shippable for cryptographic / irreversible / persistent-state operations; supersedes the prose-only clause of `foundations/vision.md` § Non-Goals.
 
 ADR numbers are provisional until authored alongside this spec's promotion from `draft` to `accepted`.
+
+## Protocol-substrate composition (added per ADR-0040)
+
+Under [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md)'s protocol-substrate commitment, the existing INVs in this spec compose with the kernel/reference runtime interface ratified by [ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md).
+
+- **Aspect-as-primitive survives**: aspects remain the unit of opt-in discipline; depth is per-aspect; the namespace grammar is `kanon-` / `project-` / `acme-`.
+- **Discovery is via Python entry-points**: kit-shipped (`kanon-`) and third-party (`acme-`) aspects register under entry-point group `kanon.aspects`. Project-aspects (`.kanon/aspects/project-*/`) compose alongside per [ADR-0028](../decisions/0028-project-aspects.md).
+- **Publisher symmetry is enforced in code paths**: every aspect — regardless of namespace — flows through the same `_load_aspect_registry()` algorithm, the same manifest validation, the same depth-range enforcement, the same scaffolding pipeline. Asymmetries are bugs (per [`P-publisher-symmetry`](../foundations/principles/P-publisher-symmetry.md)).
+- **No kit-global privilege**: the `defaults:` block, kit-global `files:` field, and bare-name CLI sugar are retired (per ADR-0048). The substrate's deliverable is the contract grammar plus the discovery mechanism; reference aspects are demonstrations.
+
+The existing INVs in this spec (aspect-as-primitive, depth-dial, namespace grammar, explicit opt-in, non-destructive add/remove, capability registry per ADR-0026) survive verbatim. ADR-0040 specifies *how* the substrate finds aspects at runtime; this spec specifies *what* an aspect is. The two compose without conflict.

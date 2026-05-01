@@ -134,3 +134,14 @@ Future namespaces (`acme-<local>` for a hypothetical published third-party kit) 
 - **ADR-0028** (to be authored alongside this spec's promotion to `accepted`) — Project-defined aspects: namespace grammar, discovery location, runtime ownership exclusivity, and the v2→v3 config migration.
 - Pattern instantiation under ADR-0012 (aspect model), ADR-0024 (atomic writes for migration), and ADR-0026 (`provides:` capability registry).
 - Specifies INV-5 in terms of the existing `_rewrite_legacy_markers` and `_migrate_legacy_config` patterns — does not invent a parallel migration mechanism.
+
+## Protocol-substrate composition (added per ADR-0040)
+
+Under [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md)'s protocol-substrate commitment, project-aspects compose with the kernel/reference runtime interface ratified by [ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md).
+
+- **Project-aspects retain filesystem discovery**: `<target>/.kanon/aspects/project-*/manifest.yaml` is the canonical location; this spec's INVs survive verbatim.
+- **Entry-point publishers compose alongside**: kit-shipped (`kanon-`) and third-party (`acme-`) aspects discovered via Python entry-points (group `kanon.aspects`) per ADR-0040 union with project-aspects in `_load_aspect_registry()`. The three sources have equal status under [`P-publisher-symmetry`](../foundations/principles/P-publisher-symmetry.md).
+- **Project-aspects MUST NOT register via entry-points**: namespace ownership is source-bounded (per this spec's `INV-project-aspects-namespace-ownership` invariant). The kernel rejects entry-point registrations under the `project-` namespace.
+- **Project-validators retain their in-process trust boundary**: ADR-0028's `validators:` field semantics survive; the trust model is unchanged by ADR-0040's runtime-interface commitment.
+
+The existing INVs in this spec (namespace grammar, discovery location, runtime ownership exclusivity, validators-as-extensions, capability substitutability) survive verbatim. ADR-0040 specifies how the kernel composes project-aspects with entry-point publishers in a unified registry without privileging either.

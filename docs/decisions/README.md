@@ -95,6 +95,7 @@ Bug fixes, threshold tuning, documentation improvements, presentation/formatting
 | [0038](0038-init-merge-into-existing-agents-md.md) | `kanon init` merges into an existing `AGENTS.md` instead of skipping | accepted (lite) | cli |
 | [0048](0048-kanon-as-protocol-substrate.md) | kanon as protocol substrate — supersedes kit-shape framing in ADR-0012 | accepted | process |
 | [0039](0039-contract-resolution-model.md) | Contract-resolution model — prose contracts → agent-resolved YAML → kernel replay | accepted | process |
+| [0040](0040-kernel-reference-runtime-interface.md) | Kernel/reference runtime interface — Python entry-points group `kanon.aspects`; publisher-symmetric registry; substrate-independence invariant | accepted | aspects |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 
