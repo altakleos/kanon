@@ -12,7 +12,7 @@ kanon's foundational bet has been the same since the first commit: **prose consu
 
 Every other choice in the substrate's design is a downstream consequence of this bet: the cross-harness shim registry exists because the prose has to reach the agent regardless of harness; the aspect model exists because disciplines need to compose without overwriting each other's prose; the fidelity replay engine exists because prose-as-code needs an evidence layer that catches when the agent did not in fact obey.
 
-The substrate commits to this bet without hedging. If frontier LLMs cannot reliably resolve prose contracts into evidence-grounded runtime bindings, the substrate is reducible to a fancy Makefile with version-pinning — and the project would have been wrong to ship. We will know within v0.4. Until then, every architectural decision pushes the bet harder, not softer.
+The substrate commits to this bet without hedging. If frontier LLMs cannot reliably resolve prose contracts into evidence-grounded runtime bindings, the substrate is reducible to a fancy Makefile with version-pinning — and the project would have been wrong to ship. Every architectural decision pushes the bet harder, not softer.
 
 ## The kit was a prototype against our DNA
 
@@ -43,7 +43,7 @@ Three normative refusals, drawn from prior-art lessons (Markdown's refusal to st
 
 1. **The substrate SHALL NOT acquire a runtime component that intercepts or validates LLM-agent behaviour.** Prose gates are enforced by agent compliance, observable from transcripts. No daemon, no hook, no session supervisor compensates for non-compliant agents. (Codified as [`P-runtime-non-interception`](principles/P-runtime-non-interception.md).)
 
-2. **The substrate SHALL NOT define a machine-parseable schema for `AGENTS.md` prose, protocol prose, or principle prose bodies.** Manifests are machine-parsed; the substrate's human/agent prose surface is read, not validated against a schema. (`realization-shape:` schemas exist at the per-contract artifact level; they govern contract structure, not prose content.)
+2. **The substrate SHALL NOT define a machine-parseable schema for `AGENTS.md` prose, protocol prose, or principle prose bodies.** Manifests are machine-parsed; the substrate's human/agent prose surface is read, not validated against a schema. (Principles carry a stable `id:` frontmatter field for citation purposes; that is identity, not schema. `realization-shape:` schemas exist at the per-contract artifact level; they govern contract structure, not prose content.)
 
 3. **The substrate SHALL NOT ship code-generation tooling that derives code from specs.** Agents read specs and write code. The substrate does not close that loop mechanically; closing it would make specs documentation again, contradicting [`P-specs-are-source`](principles/P-specs-are-source.md).
 
@@ -55,7 +55,13 @@ Under demand-led design, self-hosting is dogfooding — the team uses the thing 
 
 The kanon repo is not a user sample. It is the entire empirical universe. If `kanon verify .` cannot pass on the kanon repo, the substrate has failed its one controlled experiment. If a substrate feature cannot be exercised by the kanon repo's own state, the feature is speculative and must not ship until self-host can falsify it.
 
-This elevates self-hosting from a quality practice to an epistemological requirement. The substrate's primary correctness probes are framed as self-host failures: P1 ("the kanon repo cannot self-host on the latest substrate from a fresh clone with explicit opt-in") and P2 ("two `kanon verify` runs on the same SHA produce non-byte-equal JSON"). Both fire on the substrate's own evidence with no LLM, no consumers, no Tier-2 infrastructure.
+This elevates self-hosting from a quality practice to an epistemological requirement. The substrate's primary correctness probes are layered:
+
+- **P1 — self-host-from-clone:** the kanon repo cannot self-host on the latest substrate from a fresh clone with explicit opt-in. Failure means the substrate cannot run on its own evidence; halt before any other probe matters.
+- **P2 — substrate-determinism:** two `kanon verify` runs on the same SHA must produce byte-equal JSON. Failure means the verification layer is non-deterministic; results from any other probe become uninterpretable.
+- **P0 — resolution-determinism (Tier-2, deferred):** two clean LLM resolutions of the same `(contract, model, inputs)` must agree. Failure falsifies the late-binding premise. Wired only when Tier-2 resolver infrastructure exists.
+
+P1 and P2 fire on the substrate's own evidence with no LLM, no consumers, no Tier-2 infrastructure.
 
 [`P-self-hosted-bootstrap`](principles/P-self-hosted-bootstrap.md) codifies the technical discipline. This document codifies the epistemological framing. The principle says *how* to self-host; this document says *why* self-host is load-bearing in the absence of consumers.
 
@@ -72,7 +78,7 @@ This elevates self-hosting from a quality practice to an epistemological require
 ## What this is not
 
 - **This is not a retreat from opinion.** The substrate is heavily opinionated about prose-as-code, runtime-non-interception, publisher-symmetry, and the public principle set. These opinions are stronger now, not weaker.
-- **This is not a deferral of audience.** The lead has explicitly named the audience as "vision-led with no current external consumers." That is a positive commitment, not a deferred decision. Future plans may resurrect the deferred personas (`solo-engineer`, `platform-team`) under protocol-mode framing if and when they become real.
+- **This is not a deferral of audience.** The lead has explicitly named the audience as "vision-led with no current external consumers." That is a positive commitment, not a deferred decision. Future plans may resurrect the retired `solo-engineer` and `platform-team` personas under protocol-mode framing if their audiences become real.
 - **This is not a promise of `acme-` ecosystem adoption.** The substrate enables it; it does not predict it. Success at v1.0 is the substrate working, the dialect cadence holding, and the self-host probes staying green. External adoption is welcome and unrequired.
 
 ## References

@@ -13,9 +13,7 @@ The substrate MUST NOT acquire a runtime component that intercepts, blocks, vali
 
 ## Rationale
 
-The substrate's bet is that prose consumed by an LLM agent is the new source of truth. That bet collapses the moment the substrate adds runtime supervision: a session monitor that blocks an agent's attempted edit before the audit sentence is emitted is no longer trusting prose-as-code; it is trusting code-as-code, with prose as an advisory comment.
-
-Three downstream costs of runtime supervision argue for this refusal:
+`P-prose-is-code` makes prose the source of truth for agent behaviour; runtime supervision would invert that — a session monitor blocking an attempted edit before the audit sentence is emitted trusts code-as-code, with prose as an advisory comment. Three downstream costs of runtime supervision argue for this refusal:
 
 1. **Adapter proliferation.** Every harness (Claude Code, Cursor, Codex, Windsurf, …) has different tool-call shapes; a supervisor would need an adapter per harness. Cross-harness coverage becomes fragile in exactly the surface area the substrate's shim registry was designed to keep simple.
 2. **Identity collapse.** If the substrate enforces gates at runtime, the substrate is a runtime tool, not a prose substrate. The aspect model, the cross-harness shims, the dialect grammar — all become subordinate to "the supervisor." `acme-` publishers would author against the supervisor's behaviour, not against the published prose.
@@ -26,7 +24,7 @@ The substrate refuses runtime supervision and accepts the cost: agents that igno
 ## Implications
 
 - **No agent-harness adapters.** The substrate ships no code that runs inside any harness's tool-call path. Cross-harness reach is achieved through `harnesses.yaml` shim files (pointers, not interceptors).
-- **No session daemons.** The substrate has no long-running process. `kanon` is invoked, runs, exits. No background watcher, no pre-commit-time agent-monitor, no MCP server kanon-substrate ships on its own behalf.
+- **No session daemons.** The substrate has no long-running process. `kanon` is invoked, runs, exits. No background watcher, no pre-commit-time agent-monitor, no MCP server **shipped by `kanon-substrate`**. Consumers may install MCP integrations of their own; the substrate does not require, ship, or supervise any.
 - **No tool-call filters.** The substrate does not validate, transform, or block tool calls an agent makes inside a harness.
 - **Gates are forced-token sentences, not interceptions.** Audit-trail sentences (per `P-prose-is-code`) are the enforcement mechanism: their absence in a transcript is how violations get caught, after the fact.
 - **`kanon verify` is read-only against committed evidence.** It examines committed `.dogfood.md` captures, manifests, and resolutions; it does not invoke an agent or replay a session.

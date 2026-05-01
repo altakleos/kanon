@@ -100,7 +100,7 @@ What this constrains: substrate features that cannot be exercised by the kanon r
 - `kanon init` produces a bare scaffold with no aspects auto-enabled.
 - The repo passes `kanon verify .` opting into reference aspects via a publisher recipe, with no kernel-side privilege.
 - Public-tier principles are versioned with the dialect; `acme-` publishers can cite them.
-- Phase 0 ADRs (0039–0044, plus 0040.5 kernel/reference runtime interface) ratify the implementation.
+- Phase 0 ADRs ratify the implementation: contract-resolution, realization-shape, dialect grammar, kernel/reference runtime interface, verification scope, distribution + cadence, substrate self-conformance, de-opinionation transition.
 
 ### v1.0 (vision)
 
@@ -118,7 +118,7 @@ What this constrains: substrate features that cannot be exercised by the kanon r
 
 ## Historical Note
 
-The pre-protocol-commitment vision described kanon as *"a portable, self-hosting kit that packages development disciplines"* — the kit-shape framing that v0.4 supersedes. The previous vision body is preserved verbatim at commit `7b7d8d4` ("docs: vision + README sweep against current shipped state"). The body is preserved per the immutability discipline applied to vision documents from this PR onward.
+The pre-protocol-commitment vision described kanon as *"a portable, self-hosting kit that packages development disciplines"* — the kit-shape framing that v0.4 supersedes. The previous body is preserved at commit `7b7d8d4` ("docs: vision + README sweep against current shipped state"), per the immutability discipline applied to vision documents from this PR onward.
 
 The kit-shape vision was correct for what it described — a transitional packaging that proved out the aspect model, the cross-harness shim registry, and the self-hosting property. It was incorrect as a destination. The protocol substrate is what the project always was reaching toward; the kit was the path, not the place.
 

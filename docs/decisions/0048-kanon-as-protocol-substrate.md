@@ -6,7 +6,7 @@ date: 2026-05-01
 
 ## Context
 
-kanon was conceived around a single bet: that **prose consumed by an LLM agent is the new source of truth**, and that engineering discipline can be packaged as prose contracts the agent reads, follows, and produces evidence against. v0.1 and v0.2 prototyped this as a *kit* — a curated bundle of opinionated aspects (`kanon-sdd`, `kanon-testing`, `kanon-worktrees`, …) shipped through a single pip wheel and auto-enabled by `kanon init` profiles. v0.3 layered the aspect model and capability registry (ADR-0012, ADR-0026, ADR-0028) on top of that kit shape.
+kanon was conceived around a single bet: that **prose consumed by an LLM agent is the new source of truth**, and that engineering discipline can be packaged as prose contracts the agent reads, follows, and produces evidence against. v0.1 and v0.2 prototyped this as a *kit* — a curated bundle of opinionated aspects (`kanon-sdd`, `kanon-testing`, `kanon-worktrees`, …) shipped through a single pip wheel, with `defaults:` enabling five reference aspects and CLI profiles offering wider sets. v0.3 layered the aspect model and capability registry (ADR-0012, ADR-0026, ADR-0028) on top of that kit shape.
 
 By v0.3.1 the kit shape had revealed itself as a transitional artifact, not the destination. Three forces converged:
 
@@ -24,9 +24,9 @@ Specifically:
 
 1. **The substrate's deliverable is a contract grammar plus a replay engine**, not a curated discipline bundle. The pip distribution `kanon-substrate` ships the kernel (atomic writes, scaffolding, verify orchestration, fidelity replay, resolution-replay engine, dialect grammar parser, structural validators). It scaffolds nothing on its own behalf into consumer trees.
 
-2. **Reference aspects (`kanon-sdd`, `kanon-testing`, `kanon-worktrees`, `kanon-release`, `kanon-security`, `kanon-deps`, `kanon-fidelity`) are demonstrations, not the product.** They ship in a separate, opt-in `kanon-reference` distribution. They are de-installable and replaceable by any publisher offering the same capabilities. A `kanon-kit` meta-package alias preserves the convenience-install path.
+2. **Reference aspects (`kanon-sdd`, `kanon-testing`, `kanon-worktrees`, `kanon-release`, `kanon-security`, `kanon-deps`, `kanon-fidelity`) are demonstrations, not the product.** They ship in a separate, opt-in `kanon-reference` distribution. They are de-installable, and the substrate's capability registry (per ADR-0026) admits substitution by other publishers as the cross-publisher arbitration semantics are completed in Phase 0. A `kanon-kit` meta-package alias preserves the convenience-install path.
 
-3. **The substrate publishes a defined set of principles as stable protocol commitments.** Six principles cross over into public-tier status: `P-prose-is-code`, `P-protocol-not-product`, `P-publisher-symmetry`, `P-runtime-non-interception`, `P-specs-are-source`, `P-verification-co-authored`. Two remain kit-author-internal: `P-self-hosted-bootstrap`, `P-cross-link-dont-duplicate`. Public-tier principles are versioned with the dialect, citable by `acme-` publishers, and immutable post-acceptance under the same discipline that protects ADR bodies (ADR-0032).
+3. **The substrate publishes a defined set of principles as stable protocol commitments.** Six principles cross over into public-tier status: `P-prose-is-code`, `P-protocol-not-product`, `P-publisher-symmetry`, `P-runtime-non-interception`, `P-specs-are-source`, `P-verification-co-authored`. Two remain kit-author-internal: `P-self-hosted-bootstrap`, `P-cross-link-dont-duplicate`. Public-tier principles are versioned with the dialect, citable by `acme-` publishers, and immutable post-acceptance under the same discipline that protects ADR bodies (ADR-0032). This discipline applies prospectively from this ADR's acceptance: the principle amendments ratified in this PR (`P-specs-are-source`, `P-self-hosted-bootstrap`, `P-verification-co-authored`) are the moment public-tier principles cross over into stable-commitment status. Future amendments require dialect supersession, not in-place edits.
 
 4. **`P-tiers-insulate` is retired.** The "tier" vocabulary it codified was a kit-shape consumer-experience concern; the substrate model uses depth dials per aspect and recipe-shaped opt-in by publisher, neither of which the principle's body addresses. The principle file is preserved with `status: superseded; superseded-by: 0048`.
 
@@ -42,7 +42,7 @@ Specifically:
 
 2. **Hybrid: protocol substrate but `kanon-` aspects auto-enable at init for "out-of-the-box experience."** Rejected. The privilege is exactly what the protocol commitment is removing. Auto-enabling reference aspects creates a "secret default" path that re-establishes kit-shape behaviour through a side door. Recipes (publisher-authored, target-tree YAML) are the right path for users who want a starter set; the substrate has no opinion about which recipe.
 
-3. **Defer the protocol commitment until a real `acme-` author asks.** Rejected. The lead has zero current consumers and full optionality. The point of no return is the first non-kanon publisher: once `acme-X` ships and a downstream consumer pins it, the kit cannot revert without breaking that consumer. Committing while consumers are zero is the cheapest moment.
+3. **Defer the protocol commitment until a real `acme-` author asks.** Rejected. The lead has zero current consumers and full optionality. The point of no return is the first non-kanon publisher: once `acme-X` ships and a downstream consumer pins it, the protocol cannot revert without breaking that consumer. Committing while consumers are zero is the cheapest moment.
 
 4. **Keep all principles kit-author-internal; do not publish any as protocol commitments.** Rejected. Publishers need stable guarantees to author against. Without a public principle commitment, every substrate version-bump is a potential breaking change for `acme-` bundles. The choice is between explicit guarantees the substrate honours and implicit ones publishers have to reverse-engineer; the former is cheaper to maintain.
 
@@ -61,7 +61,7 @@ Specifically:
 ### Principles
 
 - **The principles README reorganises by tier.** Public-protocol principles list first; kit-author-internal second; superseded principles in a third section.
-- **Public-tier principle bodies become immutable post-acceptance.** Future amendments require dialect supersession, not in-place edits. The CI gate currently protecting accepted ADRs (`ci/check_adr_immutability.py` per ADR-0032) extends to public-tier principles. This applies *prospectively*: the amendments to `P-specs-are-source`, `P-self-hosted-bootstrap`, and `P-verification-co-authored` ratified in this PR are the moment public-tier principles cross over into stable-commitment status. The amendments are explicit and recorded; future amendments are not.
+- **Public-tier principle bodies become immutable post-acceptance** (Decision §3). The CI gate currently protecting accepted ADRs (`ci/check_adr_immutability.py` per ADR-0032) extends to public-tier principles in Phase 0.
 - **Three new principles ship with this ADR**: `P-protocol-not-product`, `P-publisher-symmetry`, `P-runtime-non-interception`. The third is promoted from vision Non-Goal #2.
 - **`P-tiers-insulate` is retired.** Its body is preserved per immutability; its frontmatter changes to `status: superseded; superseded-by: 0048`.
 
@@ -78,7 +78,7 @@ Specifically:
 
 ### Migration
 
-- **Clean break with explicit migration script.** `kanon-substrate==1.0.0a1` ships as a hard cut from `kanon-kit==0.3.x`. A `kanon migrate v0.3→v0.4` script exists, marked deprecated-on-arrival, deleted after the kanon repo migrates itself. The script's existence is acknowledged honestly: `P-self-hosted-bootstrap` makes a literal clean break impossible (the kit's own working tree is the first migration victim).
+- **Clean break with explicit migration script.** `kanon-substrate==1.0.0a1` ships as a hard cut from `kanon-kit==0.3.x`. A `kanon migrate v0.3→v0.4` script will be written, marked deprecated-on-arrival in its initial release, and deleted after the kanon repo's own migration commit lands. The script's existence is acknowledged honestly: `P-self-hosted-bootstrap` makes a literal clean break impossible (the kit's own working tree is the first migration victim).
 
 ### Versioning
 
@@ -107,4 +107,4 @@ Specifically:
 - [ADR-0026](0026-aspect-provides-and-generalised-requires.md) — capability registry; preserved verbatim; semantics extend to the `acme-` plane.
 - [ADR-0028](0028-project-aspects.md) — project-aspect namespacing; preserved; the `acme-` plane it reserved is now in-scope, not deferred.
 - [ADR-0032](0032-adr-immutability-gate.md) — ADR body immutability; this ADR extends the discipline to public-tier principles.
-- Conversation log — five rounds of panel review and explicit lead ratification across rounds 4–5; not formally citable but referenced as design evidence.
+- Design evidence: panel-review rounds 1–5 conducted during May 2026 ratification.
