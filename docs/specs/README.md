@@ -25,10 +25,10 @@ Any spec claiming to `realize:` a principle or `serve:` a foundation must name a
 | Spec | Intent | Accepted |
 |---|---|---|
 | [cli](cli.md) | The `kanon` CLI surface and contracts | v0.1 |
-| [template-bundle](template-bundle.md) | What gets scaffolded by `init` and what `upgrade` replaces | v0.1 |
+| [template-bundle](template-bundle.md) | What gets scaffolded by `init` and what `upgrade` replaces | superseded by ADR-0048 — kit-shape bundle retired under protocol-substrate commitment |
 | [cross-harness-shims](cross-harness-shims.md) | The shim registry and per-harness contracts | v0.1 |
-| [tiers](tiers.md) | Tier-0 through tier-3 content and triggers | v0.1 |
-| [tier-migration](tier-migration.md) | `tier set` semantics — mutable, idempotent, non-destructive | v0.1 |
+| [tiers](tiers.md) | Tier-0 through tier-3 content and triggers | superseded by ADR-0048 — tier vocabulary retired; depths are per-aspect dials |
+| [tier-migration](tier-migration.md) | `tier set` semantics — mutable, idempotent, non-destructive | superseded by ADR-0048 — tier vocabulary retired |
 | [verification-contract](verification-contract.md) | What `kanon verify` guarantees about a consumer repo | v0.1 |
 | [protocols](protocols.md) | Prose-as-code judgment procedures at `.kanon/protocols/` | v0.1.0a2 |
 | [aspects](aspects.md) | Opt-in discipline bundles; aspects subsume tiers | v0.2.0a1 |
