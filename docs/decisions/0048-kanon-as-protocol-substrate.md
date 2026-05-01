@@ -52,7 +52,7 @@ Specifically:
 
 ### Substrate-level
 
-- **`kanon-substrate` ships the kernel only.** The current `kanon-kit` wheel splits: substrate (kernel + grammar parser + structural validators), reference (the seven `kanon-` aspects as data), meta-alias (`kanon-kit`) for the convenience-install path. Phase 0 ADRs (0039–0044, plus 0040.5 kernel/reference runtime interface) author the implementation.
+- **`kanon-substrate` ships the kernel only.** The current `kanon-kit` wheel splits: substrate (kernel + grammar parser + structural validators), reference (the seven `kanon-` aspects as data), meta-alias (`kanon-kit`) for the convenience-install path. Phase 0 ADRs (0039–0045) author the implementation.
 - **`kanon init` produces a bare scaffold.** No aspects auto-enabled. The scaffolded `AGENTS.md` teaches the substrate's nature; recipes are discovered via documentation, not built into the kernel.
 - **`defaults:` and `_detect.py` are removed.** Both are kit-shape vestiges that contradict publisher symmetry.
 - **Bare-name CLI sugar (`--aspects sdd:1`) is deprecated.** Future invocations require explicit publisher prefixes. A deprecation shim runs for one minor version with a warning.

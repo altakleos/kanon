@@ -16,7 +16,7 @@ Two structural commitments emerged in ratification:
 1. **The substrate publishes its principles as stable protocol commitments** — versioned with the dialect, citable by `acme-` publishers, immutable post-acceptance.
 2. **Principles split into two tiers**: public protocol commitments (six) and kit-author internal stances (two).
 
-This plan executes the foundations rewrite as a single cohesive change. Phase 0 ADRs (0039–0044, plus 0040.5 kernel/reference interface) follow in subsequent plans.
+This plan executes the foundations rewrite as a single cohesive change. Phase 0 ADRs (0039–0045) follow in subsequent plans.
 
 ## Goal
 
@@ -105,13 +105,13 @@ Deliver a foundations layer that:
 #### F. Cross-cutting docs touch
 
 - **Update `docs/foundations/README.md`** if it exists (tbd from worktree state) to list de-opinionation manifesto alongside principles + personas
-- **No spec changes** — those land in subsequent ADR-0039–0044+0040.5 plans
+- **No spec changes** — those land in subsequent Phase 0 ADR plans (0039–0045)
 - **No source changes** — Phase A territory
 - **No protocol changes** — the principles drive future protocol changes; this PR doesn't touch `.kanon/protocols/`
 
 ### Out of scope (explicitly deferred)
 
-- Phase 0 ADRs (0039 contract-resolution, 0040 realization-shape+grammar, 0040.5 kernel/reference interface, 0041 verification scope, 0042 distribution+cadence, 0043 self-conformance, 0044 de-opinionation transition) — separate plans
+- Phase 0 ADRs (0039 contract-resolution, 0040 kernel/reference interface, 0041 realization-shape+grammar, 0042 verification scope, 0043 distribution+cadence, 0044 self-conformance, 0045 de-opinionation transition) — separate plans
 - Phase 0.5 self-host hand-over (`.kanon/config.yaml` rewrite) — separate plan
 - Phase A implementation (`_resolutions.py`, dialect parser, `kanon contracts validate`, etc.) — separate plans
 - Migration script (`kanon migrate v0.3→v0.4`) — Phase A territory
