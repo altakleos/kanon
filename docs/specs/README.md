@@ -29,7 +29,8 @@ Any spec claiming to `realize:` a principle or `serve:` a foundation must name a
 | [cross-harness-shims](cross-harness-shims.md) | The shim registry and per-harness contracts | v0.1 |
 | [tiers](tiers.md) | Tier-0 through tier-3 content and triggers | superseded by ADR-0048 — tier vocabulary retired; depths are per-aspect dials |
 | [tier-migration](tier-migration.md) | `tier set` semantics — mutable, idempotent, non-destructive | superseded by ADR-0048 — tier vocabulary retired |
-| [verification-contract](verification-contract.md) | What `kanon verify` guarantees about a consumer repo | v0.1 |
+| [verification-contract](verification-contract.md) | What `kanon verify` guarantees about a consumer repo | v0.1 (INV-11 added v0.4 per ADR-0039) |
+| [resolutions](resolutions.md) | Contract-resolution artifacts: `.kanon/resolutions.yaml` shape and invariants | v0.4 (ADR-0039) |
 | [protocols](protocols.md) | Prose-as-code judgment procedures at `.kanon/protocols/` | v0.1.0a2 |
 | [aspects](aspects.md) | Opt-in discipline bundles; aspects subsume tiers | v0.2.0a1 |
 | [worktrees](worktrees.md) | Isolated parallel execution for concurrent LLM agents | v0.2.0a2 |

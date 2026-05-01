@@ -94,6 +94,7 @@ Bug fixes, threshold tuning, documentation improvements, presentation/formatting
 | [0037](0037-profile-rename-and-max.md) | `--profile full` renamed to `all`, new `max` profile added | accepted (lite) | cli |
 | [0038](0038-init-merge-into-existing-agents-md.md) | `kanon init` merges into an existing `AGENTS.md` instead of skipping | accepted (lite) | cli |
 | [0048](0048-kanon-as-protocol-substrate.md) | kanon as protocol substrate — supersedes kit-shape framing in ADR-0012 | accepted | process |
+| [0039](0039-contract-resolution-model.md) | Contract-resolution model — prose contracts → agent-resolved YAML → kernel replay | accepted | process |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 

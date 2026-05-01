@@ -33,6 +33,8 @@ invariant_coverage:
     - tests/test_cli.py::test_init_verify_returns_ok
   INV-verification-contract-fidelity-replay-carveout:
     - tests/test_fidelity.py::test_invariant_anchor_resolves
+  INV-verification-contract-exit-zero-scope:
+    - tests/test_cli.py::test_init_verify_returns_ok
 ---
 # Spec: Verification contract — what `kanon verify` guarantees
 
@@ -70,6 +72,13 @@ Define the checks `kanon verify <target>` runs on a consumer repo, the error/war
 
     Tier-2 (workstation capture via `kanon transcripts capture`) and Tier-3 (paid nightly e2e against a live LLM) are **not** authorised by this carve-out and require their own ADRs if/when proposed.
 
+<!-- INV-verification-contract-exit-zero-scope -->
+11. **Exit-zero scope boundary.** `kanon verify` exit-0 means: the consumer repo conforms to the structural and behavioural contracts expressed in the discipline aspects the consumer has explicitly enabled, at the depths the consumer has declared. It MUST NOT be interpreted as — and the substrate MUST NOT represent it as — (a) a signal that the consumer's repository follows good engineering practices beyond what the enabled aspects define; (b) a correctness or quality endorsement of any prose, protocol, or code in the consumer's tree; (c) a guarantee that the consumer's declared agent will comply with the enabled protocols at runtime — exit-0 is a static structural check, not a runtime behavioural guarantee; (d) confirmation that resolution-replay invocations are semantically correct realizations of their contracts (resolutions are checked for *structural* coherence per [`docs/specs/resolutions.md`](resolutions.md), not for semantic correctness; the agent's choice of invocation is the resolution publisher's responsibility, not the substrate's).
+
+    Aspects from any namespace (`kanon-`, `project-`, `acme-`) are verified identically; no publisher receives a warranty exemption (per `P-publisher-symmetry`). The substrate enforces structural coherence relative to the consumer's chosen aspects; correctness of those aspects' prose is each publisher's responsibility.
+
+    This INV is the verification-contract anchor for the protocol-substrate's published commitments. It records what the substrate's exit code claims and — equally importantly — what it does NOT claim. Authored under [ADR-0039](../decisions/0039-contract-resolution-model.md); future ADRs (0042 verification scope-of-exit-zero) may extend the public-facing claim wording without weakening this structural anchor.
+
 ## Rationale
 
 Consumer-facing `verify` is the most visible CLI for users. It must be fast (read-only static check), reliable (no stochasticity), and tier-aware (not complain about missing specs in tier-1 projects).
@@ -84,4 +93,4 @@ The check set is the intersection of what Sensei's `sensei verify`, `check_found
 
 ## Decisions
 
-See ADR-0005 (model-version compatibility), ADR-0008 (tier-aware checks), ADR-0029 (fidelity-fixture replay carve-out from INV-9).
+See ADR-0005 (model-version compatibility), ADR-0008 (tier-aware checks), ADR-0029 (fidelity-fixture replay carve-out from INV-9), [ADR-0039](../decisions/0039-contract-resolution-model.md) (resolution-replay structural conformance and INV-11 exit-zero scope boundary).
