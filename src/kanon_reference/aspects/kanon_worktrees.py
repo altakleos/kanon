@@ -8,6 +8,13 @@ YAML and the LOADER stubs become the canonical shape.
 from typing import Any
 
 MANIFEST: dict[str, Any] = {
+    "stability": "experimental",
+    "depth-range": [0, 2],
+    "default-depth": 1,
+    "description": "Worktree isolation for parallel work",
+    "requires": [],
+    "suggests": ["kanon-sdd >= 1"],
+    "provides": ["worktree-isolation"],
     "files": [],
     "depth-0": {"files": [], "protocols": [], "sections": []},
     "depth-1": {

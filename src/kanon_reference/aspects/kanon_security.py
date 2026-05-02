@@ -8,6 +8,12 @@ YAML and the LOADER stubs become the canonical shape.
 from typing import Any
 
 MANIFEST: dict[str, Any] = {
+    "stability": "experimental",
+    "depth-range": [0, 2],
+    "default-depth": 1,
+    "description": "Secure-by-default protocols and CI scanner",
+    "requires": [],
+    "provides": ["security-discipline"],
     "files": [],
     "depth-0": {"files": [], "protocols": [], "sections": []},
     "depth-1": {

@@ -8,6 +8,12 @@ YAML and the LOADER stubs become the canonical shape.
 from typing import Any
 
 MANIFEST: dict[str, Any] = {
+    "stability": "stable",
+    "depth-range": [0, 3],
+    "default-depth": 1,
+    "description": "Spec-Driven Development: plans, specs, design docs",
+    "requires": [],
+    "provides": ["planning-discipline", "spec-discipline"],
     "byte-equality": [
         {"kit": "docs/sdd-method.md", "repo": "docs/sdd-method.md"},
         {"kit": "docs/decisions/_template.md", "repo": "docs/decisions/_template.md"},
