@@ -14,7 +14,10 @@ import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
-_SDD = _KIT / "aspects" / "kanon-sdd"
+# Per substrate-content-move sub-plan: kanon-* aspect data lives at
+# src/kanon_reference/data/<slug>/. Tests below reference _REF_DATA.
+_REF_DATA = _REPO_ROOT / "src" / "kanon_reference" / "data"
+_SDD = _REF_DATA / "kanon-sdd"
 
 
 def _load_top_manifest() -> dict:
@@ -35,7 +38,7 @@ def test_kit_root_has_expected_top_level_entries() -> None:
 
 
 def test_kit_aspects_dir_has_sdd() -> None:
-    assert (_KIT / "aspects" / "kanon-sdd").is_dir()
+    assert (_REF_DATA / "kanon-sdd").is_dir()
 
 
 def test_sdd_aspect_has_required_subdirs() -> None:
@@ -137,7 +140,7 @@ def test_manifest_paths_resolve() -> None:
 
 # --- worktrees aspect ---
 
-_WORKTREES = _KIT / "aspects" / "kanon-worktrees"
+_WORKTREES = _REF_DATA / "kanon-worktrees"
 
 
 def _load_worktrees_manifest() -> dict:
@@ -197,7 +200,7 @@ def _skip_test_worktrees_depth_1_has_no_section_markers() -> None:
 
 # --- release aspect ---
 
-_RELEASE = _KIT / "aspects" / "kanon-release"
+_RELEASE = _REF_DATA / "kanon-release"
 
 
 def _load_release_manifest() -> dict:
@@ -250,7 +253,7 @@ def test_release_manifest_paths_resolve() -> None:
 
 # --- testing aspect ---
 
-_TESTING = _KIT / "aspects" / "kanon-testing"
+_TESTING = _REF_DATA / "kanon-testing"
 
 
 def _load_testing_manifest() -> dict:
@@ -303,7 +306,7 @@ def test_testing_manifest_paths_resolve() -> None:
 
 # --- security aspect ---
 
-_SECURITY = _KIT / "aspects" / "kanon-security"
+_SECURITY = _REF_DATA / "kanon-security"
 
 
 def _load_security_manifest() -> dict:
@@ -356,7 +359,7 @@ def test_security_manifest_paths_resolve() -> None:
 
 # --- deps aspect ---
 
-_DEPS = _KIT / "aspects" / "kanon-deps"
+_DEPS = _REF_DATA / "kanon-deps"
 
 
 def _load_deps_manifest() -> dict:

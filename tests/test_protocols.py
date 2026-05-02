@@ -14,9 +14,11 @@ import pytest
 import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-_SDD_PROTOCOLS = _REPO_ROOT / "src" / "kanon" / "kit" / "aspects" / "kanon-sdd" / "protocols"
+# Per substrate-content-move sub-plan: kanon-* aspect data lives under
+# src/kanon_reference/data/<slug>/.
+_SDD_PROTOCOLS = _REPO_ROOT / "src" / "kanon_reference" / "data" / "kanon-sdd" / "protocols"
 _REPO_SDD_PROTOCOLS = _REPO_ROOT / ".kanon" / "protocols" / "kanon-sdd"
-_SDD_MANIFEST = _REPO_ROOT / "src" / "kanon" / "kit" / "aspects" / "kanon-sdd" / "manifest.yaml"
+_SDD_MANIFEST = _REPO_ROOT / "src" / "kanon_reference" / "data" / "kanon-sdd" / "manifest.yaml"
 
 _REQUIRED_FRONTMATTER_KEYS = ("status", "date", "depth-min", "invoke-when")
 
