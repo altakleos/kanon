@@ -67,6 +67,11 @@ def test_contracts_validate_missing_manifest_errors(tmp_path: Path) -> None:
     parsed = json.loads(result.output)
     assert parsed["status"] == "fail"
     assert any(e["code"] == "missing-manifest" for e in parsed["errors"])
+    # Per plan v040a3-p2-fixes AC3: missing-manifest branch carries
+    # `dialect: null` and `contracts: []` for schema parity with the
+    # success path so consumers don't have to special-case the failure shape.
+    assert parsed["dialect"] is None
+    assert parsed["contracts"] == []
 
 
 def test_contracts_validate_missing_dialect_pin_errors(tmp_path: Path) -> None:

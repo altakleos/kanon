@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.4.0a3] — 2026-05-02
+
+P2 sweep from the v0.3.1a2..HEAD re-review (critic agent `aca79d08a9e3bc30b`, 2026-05-02). Both findings are non-blocking but worth fixing before tagging — addressed per plan `v040a3-p2-fixes`.
+
+### Fixed
+
+- **`kanon migrate` schema-version YAML quirks rejected**: the prior `isinstance(schema_version, int)` guard at `cli.py:1445` silently bypassed string (`schema-version: "5"`) and float (`schema-version: 5.0`) values. Both bypass paths now hit a typed-then-value guard that refuses non-integer schema-versions with an `"Unsupported schema-version type"` diagnostic, and integer-but-too-high versions with the existing `"Unknown schema-version"` diagnostic. `bool` is excluded because `True`/`False` are technically `int` subclasses in Python. New tests `test_migrate_rejects_string_schema_version` + `test_migrate_rejects_float_schema_version` cover both bypass paths. Today's blast radius is zero (no v5+ kanon exists; verb is deprecated-on-arrival), but the failure mode would have produced a "hybrid that no reader understands" file — the exact thing the original PR 3 guard was meant to prevent.
+- **`kanon contracts validate` JSON schema parity for missing-manifest branch**: the prior missing-manifest branch returned `{"errors":[...], "status":"fail"}` without `dialect` or `contracts` keys, breaking schema parity with the success path. Now includes `"dialect": null` and `"contracts": []` so JSON consumers don't have to special-case the failure shape. Test `test_contracts_validate_missing_manifest_errors` extended to assert both keys are present.
+
+### Bumped
+
+- `__version__`: 0.4.0a2 → 0.4.0a3. Self-host `.kanon/config.yaml` `kit_version` matched.
+
 ## [0.4.0a2] — 2026-05-02
 
 Paper-cuts sweep deferred from `v040a1-release-prep` (plan: `v040a1-followup`).
