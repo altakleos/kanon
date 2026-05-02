@@ -414,8 +414,10 @@ def test_fidelity_lifecycle(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "project"
 
-    # Step 1: init
-    result = runner.invoke(main, ["init", str(target), "--tier", "1"])
+    # Step 1: init with profile that doesn't include fidelity (Phase A.3:
+    # `--tier 1` now enables every kanon-* aspect including fidelity, so
+    # use --profile solo for a starter set that excludes it).
+    result = runner.invoke(main, ["init", str(target), "--profile", "solo"])
     assert result.exit_code == 0, result.output
 
     # Step 2: enable fidelity aspect

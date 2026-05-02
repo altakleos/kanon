@@ -21,16 +21,6 @@
 #
 # See docs/design/aspect-model.md, ADR-0012, and ADR-0028.
 
-defaults:
-  - kanon-sdd
-  - kanon-testing
-  - kanon-security
-  - kanon-deps
-  - kanon-worktrees
-
-files:
-  - .kanon/kit.md
-
 aspects:
   kanon-sdd:
     path: aspects/kanon-sdd

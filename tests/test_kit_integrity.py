@@ -29,7 +29,8 @@ def _load_sdd_manifest() -> dict:
 
 
 def test_kit_root_has_expected_top_level_entries() -> None:
-    for entry in ("manifest.yaml", "harnesses.yaml", "kit.md", "aspects"):
+    # Phase A.3: kit.md retired per ADR-0048 de-opinionation.
+    for entry in ("manifest.yaml", "harnesses.yaml", "aspects"):
         assert (_KIT / entry).exists(), f"missing kit entry: {entry}"
 
 
@@ -90,23 +91,8 @@ def test_harnesses_yaml_is_valid() -> None:
         assert "body" in entry
 
 
-def test_kit_md_has_placeholders() -> None:
-    text = (_KIT / "kit.md").read_text(encoding="utf-8")
-    assert "${sdd_depth}" in text
-    assert "${project_name}" in text
-
-
-def test_kit_md_renders_with_placeholders() -> None:
-    import string as _string
-
-    text = (_KIT / "kit.md").read_text(encoding="utf-8")
-    rendered = _string.Template(text).safe_substitute(
-        {"sdd_depth": "2", "project_name": "demo"}
-    )
-    assert "${sdd_depth}" not in rendered
-    assert "${project_name}" not in rendered
-    assert "**SDD depth:** 2" in rendered
-    assert "demo" in rendered
+# Phase A.3: test_kit_md_has_placeholders + test_kit_md_renders_with_placeholders
+# retired — kit.md template deleted per ADR-0048 de-opinionation.
 
 
 # --- manifests (registry + per-aspect) ---

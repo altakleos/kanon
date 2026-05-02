@@ -52,7 +52,6 @@ from kanon._manifest import (
     _aspect_config_schema,
     _aspect_depth_range,
     _aspect_provides,
-    _default_aspects,
     _kit_root,
     _load_aspect_manifest,
     _load_aspect_registry,
@@ -72,7 +71,6 @@ from kanon._scaffold import (
     _migrate_flat_protocols,
     _migrate_legacy_config,
     _read_config,
-    _render_kit_md,
     _render_shims,
     _write_config,
     _write_tree_atomically,
@@ -242,18 +240,23 @@ def init(
     if aspects_arg is not None:
         aspects_to_enable = _parse_aspects_flag(aspects_arg, top)
     elif tier_arg is not None:
-        # ADR-0035: uniform raise across every aspect in manifest defaults:,
-        # capped at each aspect's max depth.
+        # Phase A.3 (per ADR-0048 de-opinionation): kit-global defaults: was
+        # retired. --tier N now applies to every kit-shipped (kanon-) aspect,
+        # capped per aspect's max depth.
         aspects_to_enable = {
-            name: min(tier_arg, int(top["aspects"][name]["depth-range"][1]))
-            for name in top.get("defaults", [])
+            name: min(tier_arg, int(entry["depth-range"][1]))
+            for name, entry in top["aspects"].items()
+            if name.startswith("kanon-")
         }
     elif lite:
         aspects_to_enable = {"kanon-sdd": 0}
     elif profile_arg is not None:
         aspects_to_enable = _PROFILES[profile_arg]
     else:
-        aspects_to_enable = _default_aspects()
+        # Phase A.3: kit-global defaults: retired. `kanon init` with no flags
+        # now scaffolds an empty project; consumer must opt in via --aspects,
+        # --tier, --lite, or --profile.
+        aspects_to_enable = {}
 
     # Use the kanon-sdd depth as the tier context value when enabled, else "0".
     tier_ctx = str(aspects_to_enable.get("kanon-sdd", 0))
@@ -383,24 +386,8 @@ def upgrade(target: Path, quiet_arg: bool) -> None:
     else:
         atomic_write_text(agents_path, new_agents_md)
 
-    # Kit-global files.
-    top = _load_top_manifest()
-    kit_files_root = _kit_root() / "files"
-    tier_ctx = str(aspects.get("kanon-sdd", 0))
-    aspects_summary = "\n".join(
-        f"- **{a}** at depth {d}" for a, d in sorted(aspects.items())
-    ) or "_No aspects enabled._"
-    gctx: dict[str, str] = {
-        "project_name": target.name,
-        "tier": tier_ctx,
-        "active_aspects_summary": aspects_summary,
-    }
-    for rel in top.get("files", []) or []:
-        src = kit_files_root / rel
-        if src.is_file():
-            dest = target / rel
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            atomic_write_text(dest, _render_placeholder(src.read_text(encoding="utf-8"), gctx))
+    # Phase A.3: kit-global files: retired (per ADR-0048 de-opinionation).
+    # No kit-global file scaffolding. Aspects ship their own files via depth-N.
 
     for rel_path, content in _render_shims().items():
         shim_path = target / rel_path
@@ -662,20 +649,24 @@ def tier() -> None:
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 @click.argument("n", type=click.IntRange(0, 3))
 def tier_set(target: Path, n: int) -> None:
-    """Raise every aspect in manifest defaults: to depth N (capped per aspect).
+    """Raise every enabled aspect to depth N (capped per aspect).
 
     Per ADR-0035: a uniform raise. Aspects already at or above the per-aspect
-    target depth (min(N, max)) are not lowered. Aspects not in defaults: are
-    not touched.
+    target depth (min(N, max)) are not lowered.
+
+    Phase A.3 (per ADR-0048 de-opinionation): operates on the consumer's
+    currently-enabled aspect set (read from .kanon/config.yaml) rather than
+    the retired kit-global ``defaults:`` block.
     """
     target_resolved = target.resolve()
     config = _read_config(target_resolved)
     aspects = _config_aspects(config)
     top = _load_aspect_registry(target_resolved)
-    defaults: list[str] = list(top.get("defaults", []))
 
     raised: list[str] = []
-    for name in defaults:
+    for name in sorted(aspects):
+        if name not in top["aspects"]:
+            continue
         max_depth = int(top["aspects"][name]["depth-range"][1])
         target_depth = min(n, max_depth)
         current = aspects.get(name, -1)
@@ -684,7 +675,7 @@ def tier_set(target: Path, n: int) -> None:
             raised.append(name)
 
     if not raised:
-        click.echo(f"All aspects in defaults: already at or above tier {n}. Noop.")
+        click.echo(f"All enabled aspects already at or above tier {n}. Noop.")
 
 
 @main.group()
@@ -849,7 +840,8 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
     # Remaining aspects for AGENTS.md reassembly
     remaining = {k: int(v["depth"]) for k, v in aspects_meta.items()}
 
-    # Sentinel wraps the multi-file mutation: AGENTS.md + kit.md + config.yaml.
+    # Sentinel wraps the multi-file mutation: AGENTS.md + config.yaml.
+    # (Phase A.3: kit.md retired per ADR-0048 de-opinionation.)
     # Cleared only on the success path; an exception below leaves the sentinel
     # so the next CLI invocation warns the user (ADR-0024 contract).
     write_sentinel(target / ".kanon", _OP_ASPECT_REMOVE)
@@ -862,11 +854,6 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
         merged = _merge_agents_md(existing, new_agents)
         if merged != existing:
             atomic_write_text(agents_path, merged)
-
-    # Update kit.md
-    kit_md = _render_kit_md(remaining, target.name)
-    if kit_md is not None:
-        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
 
     _write_config(target, kit_version, aspects_meta)
     clear_sentinel(target / ".kanon")

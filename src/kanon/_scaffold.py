@@ -240,15 +240,7 @@ def _build_bundle(
     bundle: dict[str, str] = {}
     file_owners: dict[str, str] = {}  # rel-path → first aspect that scaffolded it
 
-    # Kit-global files (top-level manifest `files:`).
-    top = _load_top_manifest()
-    kit_files_root = _kit_root() / "files"
-    for rel in top.get("files", []) or []:
-        src = kit_files_root / rel
-        if not src.is_file():
-            raise click.ClickException(f"kit-global file missing: {src}")
-        file_owners[rel] = "_kit_global"
-        bundle[rel] = _render_placeholder(src.read_text(encoding="utf-8"), context)
+    # Phase A.3: kit-global files (`files:` in top manifest) retired per ADR-0048.
 
     for aspect, depth in aspects.items():
         aspect_root = _aspect_path(aspect)
@@ -405,32 +397,6 @@ def _render_protocols_index(aspects: dict[str, int]) -> str:
         lines.append("_No protocols active at current aspect depths._")
         lines.append("")
     return "\n".join(lines) + "\n"
-
-
-def _render_kit_md(aspects: dict[str, int], project_name: str) -> str | None:
-    """Render kit/kit.md with placeholder substitution.
-
-    Context uses ``${<aspect>_depth}`` for each enabled aspect.
-    ``${tier}`` is preserved as a backward-compat alias for ``${sdd_depth}``.
-    """
-    src = _kit_root() / "kit.md"
-    if not src.is_file():
-        return None
-    context: dict[str, str] = {"project_name": project_name}
-    for aspect, depth in aspects.items():
-        # Strip the `kanon-` prefix for context keys so existing templates'
-        # `${sdd_depth}` / `${worktrees_depth}` placeholders keep working
-        # (ADR-0028 backward-compat for kit-aspect templates). For project-
-        # aspects, replace hyphens with underscores so `${project_foo_depth}`
-        # is a valid `string.Template` identifier.
-        if aspect.startswith("kanon-"):
-            _ctx_local = aspect[len("kanon-"):]
-            context[f"{_ctx_local}_depth"] = str(depth)
-        else:
-            context[f"{aspect.replace('-', '_')}_depth"] = str(depth)
-    # Backward-compat alias: ${tier} → sdd depth.
-    context.setdefault("tier", context.get("sdd_depth", "0"))
-    return _render_placeholder(src.read_text(encoding="utf-8"), context)
 
 
 def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:

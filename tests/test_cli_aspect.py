@@ -565,14 +565,16 @@ def test_init_aspects_and_tier_mutual_exclusion(tmp_path: Path) -> None:
 
 
 def test_init_default_aspects(tmp_path: Path) -> None:
-    """init with no --tier and no --aspects uses default aspects."""
+    """Phase A.3 (per ADR-0048 de-opinionation): init with no flags scaffolds
+    an empty project. Consumers must opt in via --aspects, --tier, --lite,
+    or --profile.
+    """
     runner = CliRunner()
     target = tmp_path / "scratch"
     result = runner.invoke(main, ["init", str(target)])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    assert "kanon-sdd" in config["aspects"]
-    assert config["aspects"]["kanon-sdd"]["depth"] == 1
+    assert config.get("aspects", {}) == {}
 
 
 
