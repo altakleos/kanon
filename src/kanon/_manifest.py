@@ -10,6 +10,7 @@ import importlib.metadata
 import os
 import re
 import string
+import sys
 import warnings
 from collections.abc import Iterator
 from datetime import datetime, timezone
@@ -155,7 +156,12 @@ def _normalise_aspect_name(raw: str) -> str:
     """Return the canonical aspect name for *raw*.
 
     A prefixed name (matching ``_ASPECT_NAME_RE``) passes through unchanged.
-    A bare name (matching ``_BARE_ASPECT_NAME_RE``) sugars to ``kanon-<raw>``.
+    A bare name (matching ``_BARE_ASPECT_NAME_RE``) sugars to ``kanon-<raw>``
+    AND emits a deprecation warning on stderr (Phase A.5; per ADR-0048
+    publisher-symmetry — bare-name sugar privileges the ``kanon-`` namespace
+    at the CLI surface, breaking the substrate's symmetry between ``kanon-``,
+    ``project-``, and ``acme-`` publishers).
+
     Other inputs raise :class:`click.ClickException`.
 
     Per ADR-0028 the bare-name shorthand resolves only to the ``kanon`` namespace;
@@ -164,7 +170,15 @@ def _normalise_aspect_name(raw: str) -> str:
     if _ASPECT_NAME_RE.match(raw):
         return raw
     if _BARE_ASPECT_NAME_RE.match(raw):
-        return f"kanon-{raw}"
+        full = f"{_KANON_NAMESPACE}-{raw}"
+        # Use sys.stderr.write directly so capsys/capfd both capture cleanly
+        # (click.echo's stderr handle is not always captured under pytest).
+        sys.stderr.write(
+            f"warning: bare aspect name {raw!r} is deprecated; "
+            f"use the full name {full!r} instead "
+            f"(per ADR-0048 publisher-symmetry).\n"
+        )
+        return full
     raise click.ClickException(
         f"Invalid aspect name {raw!r}: must match {_ASPECT_NAME_RE.pattern} "
         f"or be a bare name (will sugar to `kanon-<raw>`)."
