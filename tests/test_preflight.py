@@ -41,23 +41,11 @@ def test_resolve_consumer_stages(tmp_path: Path) -> None:
     assert push_checks[1]["label"] == "tests"
 
 
-def test_resolve_aspect_defaults(tmp_path: Path) -> None:
-    """Aspect-contributed preflight entries are collected.
-
-    Phase A.4 (per ADR-0048 de-opinionation): kanon-testing's preflight block
-    was retired with its config-schema. This test now exercises kanon-deps,
-    which still ships a `push: deps-scan` preflight entry as a literal command
-    (no ${var} substitution).
-    """
-    runner = CliRunner()
-    target = tmp_path / "proj"
-    runner.invoke(main, ["init", str(target), "--aspects", "deps:2"])
-    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    aspects = {a: d["depth"] for a, d in config["aspects"].items()}
-
-    checks = _resolve_preflight_checks(aspects, config, "push")
-    labels = [c["label"] for c in checks]
-    assert "deps-scan" in labels
+# Phase A.8: test_resolve_aspect_defaults retired — kanon-deps was the last
+# aspect contributing a preflight block (per ADR-0048; A.8 retired all
+# scaffolded-CI preflight blocks). The aspect-contributed-preflight mechanism
+# in `_resolve_preflight_checks` still works; `acme-` publishers shipping
+# their own preflight blocks would re-exercise it.
 
 
 def test_consumer_overrides_aspect_default(tmp_path: Path) -> None:

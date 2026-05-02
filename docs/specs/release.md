@@ -20,8 +20,7 @@ invariant_coverage:
     - tests/test_cli_aspect.py::test_aspect_add_release
   INV-release-agents-md-section:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-  INV-release-reference-automation-snippets:
-    - tests/test_cli_aspect.py::test_release_depth_2_has_ci_files
+  INV-release-reference-automation-snippets: []  # Phase A.8: scaffolded CI files retired (per ADR-0048).
   INV-release-non-destructive-lifecycle:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_cli_aspect.py::test_aspect_remove_leaves_files

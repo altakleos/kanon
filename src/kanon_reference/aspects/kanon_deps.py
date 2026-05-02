@@ -22,11 +22,11 @@ MANIFEST: dict[str, Any] = {
         "sections": ["protocols-index"],
     },
     "depth-2": {
-        "files": ["ci/check_deps.py"],
+        # Phase A.8: scaffolded ci/check_deps.py + preflight wiring retired
+        # (per ADR-0048 de-opinionation; substrate no longer ships consumer-side
+        # CI scripts).
+        "files": [],
         "protocols": [],
         "sections": [],
-        "preflight": {
-            "push": [{"run": "python ci/check_deps.py", "label": "deps-scan"}],
-        },
     },
 }

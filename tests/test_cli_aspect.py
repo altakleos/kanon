@@ -649,15 +649,8 @@ def test_aspect_add_release(tmp_path: Path) -> None:
 
 
 
-def test_release_depth_2_has_ci_files(tmp_path: Path) -> None:
-    """set-depth release 2 scaffolds CI files."""
-    runner = CliRunner()
-    target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-release", "2"])
-    assert result.exit_code == 0, result.output
-    assert (target / "ci" / "release-preflight.py").is_file()
-    assert (target / ".github" / "workflows" / "release.yml").is_file()
+# Phase A.8: test_release_depth_2_has_ci_files retired — scaffolded files
+# (per ADR-0048 de-opinionation; substrate no longer ships consumer-side CI scripts).
 
 
 
@@ -678,14 +671,7 @@ def test_aspect_add_testing(tmp_path: Path) -> None:
 
 
 
-def test_testing_depth_3_has_ci_script(tmp_path: Path) -> None:
-    """set-depth testing 3 scaffolds ci/check_test_quality.py."""
-    runner = CliRunner()
-    target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-testing", "3"])
-    assert result.exit_code == 0, result.output
-    assert (target / "ci" / "check_test_quality.py").is_file()
+# Phase A.8: test_testing_depth_3_has_ci_script retired (per ADR-0048).
 
 
 
@@ -703,14 +689,7 @@ def test_aspect_add_security(tmp_path: Path) -> None:
 
 
 
-def test_security_depth_2_has_ci_script(tmp_path: Path) -> None:
-    """set-depth security 2 scaffolds ci/check_security_patterns.py."""
-    runner = CliRunner()
-    target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-security", "2"])
-    assert result.exit_code == 0, result.output
-    assert (target / "ci" / "check_security_patterns.py").is_file()
+# Phase A.8: test_security_depth_2_has_ci_script retired (per ADR-0048).
 
 
 
@@ -727,14 +706,7 @@ def test_aspect_add_deps(tmp_path: Path) -> None:
 
 
 
-def test_deps_depth_2_has_ci_script(tmp_path: Path) -> None:
-    """set-depth deps 2 scaffolds ci/check_deps.py."""
-    runner = CliRunner()
-    target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "1"])
-    result = runner.invoke(main, ["aspect", "set-depth", str(target), "kanon-deps", "2"])
-    assert result.exit_code == 0, result.output
-    assert (target / "ci" / "check_deps.py").is_file()
+# Phase A.8: test_deps_depth_2_has_ci_script retired (per ADR-0048).
 
 
 

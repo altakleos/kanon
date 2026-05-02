@@ -31,7 +31,9 @@ MANIFEST: dict[str, Any] = {
         "validators": ["kanon._validators.test_import_check"],
     },
     "depth-3": {
-        "files": ["ci/check_test_quality.py"],
+        # Phase A.8: scaffolded ci/check_test_quality.py retired
+        # (per ADR-0048 de-opinionation).
+        "files": [],
         "protocols": [],
         "sections": [],
     },
