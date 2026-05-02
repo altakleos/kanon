@@ -224,19 +224,7 @@ def test_render_protocols_index_no_protocols() -> None:
 # --- _scaffold.py: _render_kit_md returns None ---
 
 
-def test_render_kit_md_no_kit_file(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Line 232: kit.md doesn't exist → returns None."""
-    import tempfile
-
-    from kanon._scaffold import _render_kit_md
-
-    # Use a fake kit root with no kit.md
-    with tempfile.TemporaryDirectory() as d:
-        p = Path(d)
-        monkeypatch.setattr("kanon._manifest._kit_root", lambda: p)
-        monkeypatch.setattr("kanon._scaffold._kit_root", lambda: p)
-        result = _render_kit_md({"kanon-sdd": 0}, "test")
-    assert result is None
+# Phase A.3: test_render_kit_md_no_kit_file retired with _render_kit_md (per ADR-0048).
 
 
 

@@ -8,10 +8,7 @@ Asserts the invariants that keep kanon self-hosted. All checks operate on
    root MUST be byte-identical to that counterpart. Per-aspect protocols
    at `aspects/<name>/protocols/*.md` must also match `.kanon/protocols/<name>/*.md`.
 
-2. **Kernel doc exists.** `kit/kit.md` is present and has a top-level
-   `# ` heading on the first non-blank line.
-
-3. **Top-level manifest is an aspect registry.** Every aspect entry has
+2. **Top-level manifest is an aspect registry.** Every aspect entry has
    required fields (`path`, `stability`, `depth-range`, `default-depth`);
    `stability ∈ {experimental, stable, deprecated}`; `path` resolves to
    an extant directory under `kit/`.
@@ -145,18 +142,9 @@ def _check_byte_equality(errors: list[str]) -> None:
                 )
 
 
-def _check_kit_md_exists(errors: list[str]) -> None:
-    kit_md = _KIT / "kit.md"
-    if not kit_md.is_file():
-        errors.append(f"missing kernel doc: {kit_md.relative_to(_REPO_ROOT)}")
-        return
-    text = kit_md.read_text(encoding="utf-8")
-    first_line = next((ln for ln in text.splitlines() if ln.strip()), "")
-    if not first_line.startswith("# "):
-        errors.append(
-            f"{kit_md.relative_to(_REPO_ROOT)}: expected top-level `# ` heading "
-            f"on first non-blank line, got {first_line!r}"
-        )
+# Phase A.3: _check_kit_md_exists() retired. Per ADR-0048 de-opinionation,
+# the kit-global kit.md template was deleted (along with `defaults:` and
+# `files:` blocks in src/kanon/kit/manifest.yaml).
 
 
 def _check_registry_and_manifests(errors: list[str]) -> None:
@@ -372,7 +360,6 @@ def _check_requires_resolution(errors: list[str]) -> None:
 def run_checks() -> list[str]:
     errors: list[str] = []
     _check_byte_equality(errors)
-    _check_kit_md_exists(errors)
     _check_registry_and_manifests(errors)
     _check_cross_aspect_exclusivity(errors)
     _check_agents_md_markers(errors)

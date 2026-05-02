@@ -34,7 +34,6 @@ invariant_coverage:
     - tests/ci/test_check_kit_consistency.py::test_real_repo_passes
   INV-aspect-decoupling-tier-placeholder-replaced:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_kit_integrity.py::test_kit_md_has_placeholders
 ---
 # Spec: Aspect Decoupling — remove sdd as a structurally privileged aspect
 

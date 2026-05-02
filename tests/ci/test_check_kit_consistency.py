@@ -88,30 +88,9 @@ def test_byte_equality_drift_detected(ckc, tmp_path: Path, monkeypatch: pytest.M
     assert "byte-equality drift" in errors[0]
 
 
-def test_missing_kit_md_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Missing kit.md is caught."""
-    kit = _make_minimal_kit(tmp_path)
-    (kit / "kit.md").unlink()
-    monkeypatch.setattr(ckc, "_KIT", kit)
-    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
-
-    errors: list[str] = []
-    ckc._check_kit_md_exists(errors)
-    assert len(errors) == 1
-    assert "missing kernel doc" in errors[0]
-
-
-def test_kit_md_bad_heading_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """kit.md without a top-level heading is caught."""
-    kit = _make_minimal_kit(tmp_path)
-    (kit / "kit.md").write_text("No heading here.\n", encoding="utf-8")
-    monkeypatch.setattr(ckc, "_KIT", kit)
-    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
-
-    errors: list[str] = []
-    ckc._check_kit_md_exists(errors)
-    assert len(errors) == 1
-    assert "expected top-level" in errors[0]
+# Phase A.3: test_missing_kit_md_detected and test_kit_md_bad_heading_detected
+# retired with the gate's _check_kit_md_exists() function (per ADR-0048
+# de-opinionation; kit.md template deleted).
 
 
 def test_registry_bad_stability_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

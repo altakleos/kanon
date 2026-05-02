@@ -120,14 +120,7 @@ def test_init_scaffolds_all_required_files(tmp_path: Path, tier: int) -> None:
 
 
 
-def test_kit_global_files_always_present(tmp_path: Path) -> None:
-    """Kit-global files (top manifest `files:`) are scaffolded regardless of aspects."""
-    runner = CliRunner()
-    target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", "0"])
-    # kit.md is kit-global — present even at depth 0.
-    assert (target / ".kanon" / "kit.md").is_file()
-
+# Phase A.3: test_kit_global_files_always_present retired (kit-global files: deleted per ADR-0048).
 
 
 def test_init_without_sdd(tmp_path: Path) -> None:
@@ -138,7 +131,6 @@ def test_init_without_sdd(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert (target / "AGENTS.md").is_file()
     assert (target / ".kanon" / "config.yaml").is_file()
-    assert (target / ".kanon" / "kit.md").is_file()
     # No sdd files
     assert not (target / "docs" / "sdd-method.md").exists()
     assert not (target / "docs" / "decisions").exists()
@@ -160,8 +152,7 @@ def test_init_bare(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert (target / "AGENTS.md").is_file()
     assert (target / ".kanon" / "config.yaml").is_file()
-    assert (target / ".kanon" / "kit.md").is_file()
-    # No aspect files
+    # No aspect files (Phase A.3: kit.md retired per ADR-0048)
     assert not (target / "docs").exists()
     assert not (target / ".kanon" / "protocols").exists()
     # Verify passes (with warning)
@@ -463,20 +454,7 @@ def test_protocols_scaffolded_at_correct_tier(tmp_path: Path, tier: int) -> None
 
 
 
-@pytest.mark.parametrize("tier", [0, 1, 2, 3])
-def test_kit_md_scaffolded_at_all_tiers(tmp_path: Path, tier: int) -> None:
-    runner = CliRunner()
-    target = tmp_path / "scratch"
-    runner.invoke(main, ["init", str(target), "--tier", str(tier)])
-    kit_md = target / ".kanon" / "kit.md"
-    assert kit_md.is_file(), f"kit.md missing at tier {tier}"
-    text = kit_md.read_text(encoding="utf-8")
-    # Placeholders fully substituted.
-    assert "${active_aspects_summary}" not in text
-    assert "${project_name}" not in text
-    assert "kanon-sdd" in text
-    assert "scratch" in text
-
+# Phase A.3: test_kit_md_scaffolded_at_all_tiers retired (kit.md template deleted per ADR-0048).
 
 
 @pytest.mark.parametrize("tier", [1, 2, 3])
@@ -842,14 +820,17 @@ def test_init_force_overwrites(tmp_path: Path) -> None:
 
 
 def test_init_default_tier(tmp_path: Path) -> None:
-    """Line 98→100: init without --tier uses default-depth from manifest."""
+    """Phase A.3 (per ADR-0048 de-opinionation): `kanon init` with no flags
+    scaffolds an empty project (no aspects enabled). Consumers must opt in
+    via --aspects, --tier, --lite, or --profile.
+    """
     runner = CliRunner()
     target = tmp_path / "scratch"
     result = runner.invoke(main, ["init", str(target)])
     assert result.exit_code == 0, result.output
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    # default-depth for sdd is 1
-    assert config["aspects"]["kanon-sdd"]["depth"] == 1
+    # No aspects enabled — de-opinionation default.
+    assert config.get("aspects", {}) == {}
 
 
 

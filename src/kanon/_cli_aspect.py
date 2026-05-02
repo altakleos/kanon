@@ -25,7 +25,6 @@ from kanon._scaffold import (
     _config_aspects,
     _merge_agents_md,
     _read_config,
-    _render_kit_md,
     _write_config,
 )
 
@@ -77,7 +76,10 @@ def _apply_tier_down(
 def _rewrite_assembled_views(
     target: Path, new_aspects: dict[str, int], project_name: str
 ) -> None:
-    """Re-merge AGENTS.md and re-render kit.md. Skips no-op AGENTS.md writes."""
+    """Re-merge AGENTS.md. Skips no-op writes.
+
+    Phase A.3: kit.md re-render retired (kit-global files: deleted per ADR-0048).
+    """
     from kanon._atomic import atomic_write_text
 
     new_agents = _assemble_agents_md(new_aspects, project_name)
@@ -88,10 +90,6 @@ def _rewrite_assembled_views(
     merged = _merge_agents_md(existing_agents, new_agents)
     if merged != existing_agents:
         atomic_write_text(target / "AGENTS.md", merged)
-
-    kit_md = _render_kit_md(new_aspects, project_name)
-    if kit_md is not None:
-        atomic_write_text(target / ".kanon" / "kit.md", kit_md)
 
 
 def _commit_aspect_meta(
@@ -149,9 +147,10 @@ def _set_aspect_depth(
 
     from kanon._atomic import clear_sentinel, write_sentinel
 
-    # Single sentinel wraps every mutation (file writes + AGENTS.md/kit.md
-    # rewrites + config.yaml). Cleared only on the success path; if any call
-    # below raises, the sentinel persists for the next invocation to detect.
+    # Single sentinel wraps every mutation (file writes + AGENTS.md rewrite +
+    # config.yaml). Cleared only on the success path; if any call below
+    # raises, the sentinel persists for the next invocation to detect.
+    # Phase A.3: kit.md rewrite retired (kit-global files: deleted per ADR-0048).
     write_sentinel(target / ".kanon", _OP_SET_DEPTH)
 
     if current == n:

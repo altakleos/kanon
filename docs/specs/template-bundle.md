@@ -29,15 +29,12 @@ invariant_coverage:
   INV-template-bundle-html-comment-markers:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
   INV-template-bundle-config-and-kit-md-seed:
-    - tests/test_cli.py::test_kit_md_scaffolded_at_all_tiers
     - tests/test_cli.py::test_init_rejects_existing_without_force
   INV-template-bundle-no-consumer-state-leaks:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - ci/check_package_contents.py
   INV-template-bundle-placeholders-replaced:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_kit_integrity.py::test_kit_md_has_placeholders
-    - tests/test_kit_integrity.py::test_kit_md_renders_with_placeholders
 ---
 # Spec: Template bundle — what `init` scaffolds
 
