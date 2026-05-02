@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
   - `_resolutions._validate_shape_against_contract` now wraps the `read_text(encoding="utf-8")` in a `try/except (UnicodeDecodeError, OSError)` and surfaces a structured `code: invalid-contract-encoding` ReplayError instead of crashing the CLI with an uncaught `UnicodeDecodeError`. Honors ADR-0041's "findings accumulate" intent.
   - `_manifest._aspect_path` no longer silently falls back to `_kit_root() / aspects/<slug>` (a dead path post-Phase-A.7) when `kanon_reference` is uninstalled. For `kanon-*` slugs without an `_source` and without `kanon_reference` available, raises `click.ClickException` pointing the user at `kanon-kit` or `kanon-reference` install. ADR-0044 substrate-independence is honored: failure modes are explicit, not stale-data.
   - 5 new tests cover each fix; new helper `kanon._scaffold._extras_from_config()` + constant `_DEFAULT_V4_EXTRAS` centralize the config-key-preservation pattern.
+  - **CI green collateral** discovered while watching PR-3's manual-merge gate:
+    - `ci/check_packaging_split.py`: added `import tomli as tomllib` fallback for Python 3.10 (tomllib is stdlib only on 3.11+; `requires-python = ">=3.10"` so 3.10 hit `ModuleNotFoundError: No module named 'tomllib'` on every run prior to this fix).
+    - `.github/workflows/verify.yml` e2e job: added `--no-cov` to `pytest -m e2e` invocation. e2e selection covers a tiny slice of the codebase by design; the 90% global coverage gate enforced against e2e-only collection always failed.
+    - These two failures had been masked by `gh pr merge --auto` merging despite red CI on prior PRs (no required-checks branch protection); PR 3 had to be merged manually, which exposed the broken state.
 
 ## [0.4.0a1] — 2026-05-02
 
