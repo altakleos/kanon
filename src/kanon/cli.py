@@ -1223,10 +1223,15 @@ def contracts_validate(bundle_path: Path) -> None:
         errors.append(
             {"code": "missing-manifest", "detail": f"no manifest.yaml at {bundle_path}"}
         )
+        # Per JSON-schema parity with the success path: missing-manifest
+        # branch carries `dialect: null` and `contracts: []` so consumers
+        # don't have to special-case the failure shape.
         click.echo(
             json.dumps(
                 {
                     "bundle": str(bundle_path),
+                    "dialect": None,
+                    "contracts": [],
                     "errors": errors,
                     "warnings": warnings,
                     "status": "fail",
@@ -1438,16 +1443,27 @@ def migrate(target: Path, dry_run: bool) -> None:
         )
         return
 
-    # Forward-version guard: a v5+ config is from a future kanon and this
-    # migrate verb does not know how to forward-port. Refuse loudly rather
-    # than silently mangling the file (e.g., adding v4 fields beneath a v5
-    # schema header — a hybrid that no reader understands).
-    if isinstance(schema_version, int) and schema_version > 4:
-        raise click.ClickException(
-            f"Unknown schema-version: {schema_version}. This kanon only knows how "
-            f"to migrate v3 → v4. To migrate forward from v{schema_version}, install "
-            f"a newer kanon-substrate."
-        )
+    # Forward-version + type guard: a v5+ config is from a future kanon and
+    # this migrate verb does not know how to forward-port. Refuse loudly
+    # rather than silently mangling the file (e.g., adding v4 fields beneath
+    # a v5 schema header — a hybrid that no reader understands). Type-check
+    # first because YAML quirks (`schema-version: "5"` parses to str;
+    # `schema-version: 5.0` parses to float) bypass a naive isinstance(int)
+    # check; bools are excluded because `True`/`False` are technically int
+    # subclasses in Python.
+    if schema_version is not None:
+        if isinstance(schema_version, bool) or not isinstance(schema_version, int):
+            raise click.ClickException(
+                f"Unsupported schema-version type: {schema_version!r} "
+                f"(got {type(schema_version).__name__}; must be an integer "
+                f"like `schema-version: 4`)."
+            )
+        if schema_version > 4:
+            raise click.ClickException(
+                f"Unknown schema-version: {schema_version}. This kanon only knows how "
+                f"to migrate v3 → v4. To migrate forward from v{schema_version}, install "
+                f"a newer kanon-substrate."
+            )
 
     # v3 → v4 augmentation: prepend v4 fields.
     if "schema-version" not in config:

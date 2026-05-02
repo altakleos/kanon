@@ -152,3 +152,49 @@ def test_migrate_rejects_future_schema_version(tmp_path: Path) -> None:
     assert parsed["kanon-dialect"] == "2027-01-01"
     # Critically: no v4-shape `provenance:` injection happened.
     assert "provenance" not in parsed
+
+
+# --- Plan v040a3-p2-fixes AC2: schema-version YAML quirks (string, float)
+# must hit the same forward-version guard as integer-5. The prior guard used
+# isinstance(int) which silently bypassed both bypass paths.
+
+
+def test_migrate_rejects_string_schema_version(tmp_path: Path) -> None:
+    """`schema-version: "5"` (quoted string in YAML) must be refused, not
+    silently augmented with v4 fields beneath the v5 header."""
+    config_dir = tmp_path / ".kanon"
+    config_dir.mkdir()
+    # Write the YAML literally so PyYAML keeps "5" as a string.
+    (config_dir / "config.yaml").write_text(
+        'schema-version: "5"\nkit_version: "0.5.0"\naspects: {}\n',
+        encoding="utf-8",
+    )
+    runner = CliRunner()
+    result = runner.invoke(main, ["migrate", "--target", str(tmp_path)])
+    assert result.exit_code != 0, result.output
+    # Diagnostic surfaces the type mismatch.
+    assert "schema-version" in result.output
+    assert ("Unsupported" in result.output or "Unknown" in result.output)
+    # File MUST NOT be mutated.
+    parsed = yaml.safe_load((config_dir / "config.yaml").read_text(encoding="utf-8"))
+    assert parsed["schema-version"] == "5"
+    assert "kanon-dialect" not in parsed
+    assert "provenance" not in parsed
+
+
+def test_migrate_rejects_float_schema_version(tmp_path: Path) -> None:
+    """`schema-version: 5.0` (YAML float) must be refused, not augmented."""
+    config_dir = tmp_path / ".kanon"
+    config_dir.mkdir()
+    (config_dir / "config.yaml").write_text(
+        "schema-version: 5.0\nkit_version: \"0.5.0\"\naspects: {}\n",
+        encoding="utf-8",
+    )
+    runner = CliRunner()
+    result = runner.invoke(main, ["migrate", "--target", str(tmp_path)])
+    assert result.exit_code != 0, result.output
+    assert "schema-version" in result.output
+    parsed = yaml.safe_load((config_dir / "config.yaml").read_text(encoding="utf-8"))
+    assert parsed["schema-version"] == 5.0
+    assert "kanon-dialect" not in parsed
+    assert "provenance" not in parsed
