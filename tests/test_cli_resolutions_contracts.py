@@ -79,7 +79,8 @@ def test_contracts_validate_missing_dialect_pin_errors(tmp_path: Path) -> None:
     result = runner.invoke(main, ["contracts", "validate", str(bundle)])
     assert result.exit_code == 1
     parsed = json.loads(result.output)
-    assert any(e["code"] == "dialect-invalid" for e in parsed["errors"])
+    # Per docs/specs/dialect-grammar.md INV 1: missing pin → `code: missing-dialect-pin`.
+    assert any(e["code"] == "missing-dialect-pin" for e in parsed["errors"])
 
 
 def test_contracts_validate_clean_empty_bundle_ok(tmp_path: Path) -> None:

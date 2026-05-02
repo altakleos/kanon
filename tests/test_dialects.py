@@ -147,3 +147,35 @@ def test_deprecation_warning_includes_source_label(
     validate_dialect_pin("2026-05-01", source="kanon-sdd")
     captured = capfd.readouterr()
     assert "kanon-sdd:" in captured.err
+
+
+# --- Spec/impl parity per docs/specs/dialect-grammar.md "Structured error
+# codes — normative emitter map".
+
+
+def test_missing_pin_raises_dialect_pin_error_with_spec_code() -> None:
+    """Missing pin → typed DialectPinError carrying spec-aligned `code`."""
+    from kanon._dialects import DialectPinError
+
+    with pytest.raises(DialectPinError) as exc_info:
+        validate_dialect_pin(None, source="acme-x")
+    assert exc_info.value.code == "missing-dialect-pin"
+
+
+def test_unknown_pin_raises_dialect_pin_error_with_spec_code() -> None:
+    """Unsupported pin → typed DialectPinError carrying spec-aligned `code`."""
+    from kanon._dialects import DialectPinError
+
+    with pytest.raises(DialectPinError) as exc_info:
+        validate_dialect_pin("9999-12-31", source="acme-x")
+    assert exc_info.value.code == "unknown-dialect"
+
+
+def test_dialect_pin_error_subclasses_click_exception() -> None:
+    """Backward-compat: DialectPinError still catchable as click.ClickException."""
+    import click
+
+    from kanon._dialects import DialectPinError
+
+    assert issubclass(DialectPinError, click.ClickException)
+

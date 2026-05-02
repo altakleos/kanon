@@ -391,9 +391,13 @@ def _validate_shape_against_contract(
             raw_shape, dialect=dialect, source=contract_id
         )
     except click.ClickException as exc:
+        # ShapeParseError carries spec-aligned `code: invalid-realization-shape`
+        # per docs/specs/dialect-grammar.md; fallback for plain ClickException
+        # preserves backcompat.
+        code = getattr(exc, "code", "invalid-realization-shape")
         errors.append(
             ReplayError(
-                code="invalid-realization-shape",
+                code=code,
                 contract=contract_id,
                 reason=exc.message,
             )
@@ -406,9 +410,18 @@ def _validate_shape_against_contract(
         shape=shape,
         contract=contract_id,
     )
+    # Per docs/specs/dialect-grammar.md INV 4: every shape mismatch surfaces
+    # as `code: shape-violation`. ShapeValidationError.subcode preserves the
+    # historical impl labels (invalid-verb, invalid-evidence-kind, etc.) for
+    # diagnostics; we prepend that into `reason` so callers reading reports
+    # see both the spec code and the impl-specific kind.
     for f in findings:
+        reason = (
+            f"{f.subcode}: {f.detail}" if f.subcode and f.detail
+            else (f.subcode or f.detail)
+        )
         errors.append(
-            ReplayError(code=f.code, contract=f.contract, reason=f.detail)
+            ReplayError(code=f.code, contract=f.contract, reason=reason)
         )
 
 
