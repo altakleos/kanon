@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-05-02
 ---
 # ADR-0049: Monorepo layout for the protocol substrate
