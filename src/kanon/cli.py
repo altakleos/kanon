@@ -1316,5 +1316,141 @@ def resolve_cmd(target: Path, contracts_arg: str | None) -> None:
     )
 
 
+# --- Phase A.9: kanon migrate v0.3 → v0.4 (deprecated-on-arrival) ---
+
+
+_RETIRED_TESTING_CONFIG_KEYS = (
+    "test_cmd",
+    "lint_cmd",
+    "typecheck_cmd",
+    "format_cmd",
+    "coverage_floor",
+)
+
+
+@main.command("migrate")
+@click.option(
+    "--target",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=Path("."),
+    help="Project root containing .kanon/config.yaml.",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Print proposed changes without writing.",
+)
+def migrate(target: Path, dry_run: bool) -> None:
+    """Migrate `.kanon/config.yaml` from v3 (kit-shape) to v4 (substrate-shape).
+
+    Deprecated-on-arrival per ADR-0045 — this is a one-time migration tool for
+    historical v0.3 consumers; it will be removed before v1.0. The kanon repo
+    itself was migrated manually in Phase 0.5; this verb exists for any
+    consumer resurrecting an old v0.3 install.
+    """
+    import yaml
+
+    from kanon._atomic import atomic_write_text
+
+    deprecation_warning = (
+        "`kanon migrate` is deprecated-on-arrival per ADR-0045; "
+        "it will be removed before v1.0."
+    )
+
+    target = target.resolve()
+    config_path = target / ".kanon" / "config.yaml"
+    if not config_path.is_file():
+        raise click.ClickException(
+            f"no .kanon/config.yaml at {target}; nothing to migrate."
+        )
+
+    try:
+        config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise click.ClickException(
+            f"failed to parse {config_path}: {exc}"
+        ) from exc
+
+    if not isinstance(config, dict):
+        raise click.ClickException(
+            f"{config_path}: top-level must be a mapping (got {type(config).__name__})."
+        )
+
+    changes: list[str] = []
+
+    if config.get("schema-version") == 4:
+        click.echo(
+            json.dumps(
+                {
+                    "target": str(target),
+                    "status": "noop",
+                    "reason": "already v4",
+                    "deprecation": deprecation_warning,
+                },
+                indent=2,
+            )
+        )
+        return
+
+    # v3 → v4 augmentation: prepend v4 fields.
+    if "schema-version" not in config:
+        config["schema-version"] = 4
+        changes.append("added schema-version: 4")
+    if "kanon-dialect" not in config:
+        config["kanon-dialect"] = "2026-05-01"
+        changes.append('added kanon-dialect: "2026-05-01"')
+    if "provenance" not in config:
+        config["provenance"] = [
+            {
+                "recipe": "manual-migration",
+                "publisher": "kanon-migrate",
+                "recipe-version": "1.0",
+                "applied_at": _now_iso(),
+            }
+        ]
+        changes.append("added provenance entry")
+
+    # Strip retired kanon-testing config keys (Phase A.4 deletion).
+    aspects = config.get("aspects") or {}
+    if isinstance(aspects, dict):
+        testing_entry = aspects.get("kanon-testing")
+        if isinstance(testing_entry, dict):
+            testing_config = testing_entry.get("config") or {}
+            if isinstance(testing_config, dict):
+                stripped = []
+                for key in _RETIRED_TESTING_CONFIG_KEYS:
+                    if key in testing_config:
+                        del testing_config[key]
+                        stripped.append(key)
+                if stripped:
+                    changes.append(
+                        f"stripped retired kanon-testing config keys: {stripped}"
+                    )
+                testing_entry["config"] = testing_config
+
+    out = {
+        "target": str(target),
+        "status": "would-write" if dry_run else "written",
+        "changes": changes,
+        "deprecation": deprecation_warning,
+    }
+
+    if not dry_run:
+        # Move v4 fields to top of file via a re-assembled ordered dict.
+        reordered: dict[str, Any] = {}
+        for key in ("schema-version", "kanon-dialect", "provenance"):
+            if key in config:
+                reordered[key] = config[key]
+        for key, value in config.items():
+            if key not in reordered:
+                reordered[key] = value
+        atomic_write_text(
+            config_path,
+            yaml.safe_dump(reordered, sort_keys=False),
+        )
+
+    click.echo(json.dumps(out, indent=2))
+
+
 if __name__ == "__main__":
     main()
