@@ -1,3 +1,4 @@
+kanon-dialect: "2026-05-01"
 # Per-aspect sub-manifest for `sdd` — tier content at each depth of the SDD aspect.
 #
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.

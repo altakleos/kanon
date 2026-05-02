@@ -287,6 +287,12 @@ def _load_aspects_from_entry_points() -> dict[str, dict[str, Any]]:
         # aspect data moves under the publisher's filesystem location.
         if "path" not in entry and ep.name.startswith(f"{_KANON_NAMESPACE}-"):
             entry["path"] = f"aspects/{ep.name}"
+        # Per INV-dialect-grammar-pin-required: every aspect manifest MUST pin
+        # `kanon-dialect:`. Validates the pin is recognized; emits stderr
+        # deprecation warning if pin matches DEPRECATION_WARNING_BEFORE.
+        from kanon._dialects import validate_dialect_pin
+
+        validate_dialect_pin(entry.get("kanon-dialect"), source=ep.name)
         # Validate required registry fields surface from the LOADER MANIFEST.
         for field in ("stability", "depth-range", "default-depth"):
             if field not in entry:
