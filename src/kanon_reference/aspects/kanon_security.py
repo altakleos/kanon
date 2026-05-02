@@ -22,13 +22,10 @@ MANIFEST: dict[str, Any] = {
         "sections": ["protocols-index"],
     },
     "depth-2": {
-        "files": ["ci/check_security_patterns.py"],
+        # Phase A.8: scaffolded ci/check_security_patterns.py + preflight wiring
+        # retired (per ADR-0048 de-opinionation).
+        "files": [],
         "protocols": [],
         "sections": [],
-        "preflight": {
-            "push": [
-                {"run": "python ci/check_security_patterns.py", "label": "security-scan"},
-            ],
-        },
     },
 }

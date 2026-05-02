@@ -22,16 +22,12 @@ MANIFEST: dict[str, Any] = {
         "sections": ["protocols-index"],
     },
     "depth-2": {
-        "files": ["ci/release-preflight.py", ".github/workflows/release.yml"],
+        # Phase A.8: scaffolded ci/release-preflight.py +
+        # .github/workflows/release.yml + preflight wiring retired (per ADR-0048
+        # de-opinionation; substrate no longer ships consumer-side CI scripts
+        # nor GitHub-Actions workflow files).
+        "files": [],
         "protocols": [],
         "sections": [],
-        "preflight": {
-            "release": [
-                {
-                    "run": "python ci/release-preflight.py --tag $TAG",
-                    "label": "release-preflight",
-                },
-            ],
-        },
     },
 }

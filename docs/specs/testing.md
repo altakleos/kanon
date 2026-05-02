@@ -29,7 +29,6 @@ invariant_coverage:
     - tests/test_cli_aspect.py::test_aspect_add_testing
   INV-testing-ci-validator:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/test_cli_aspect.py::test_testing_depth_3_has_ci_script
     - tests/ci/test_check_test_quality.py::test_trivial_pass_body_detected
   INV-testing-no-dependency:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips

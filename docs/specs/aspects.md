@@ -41,8 +41,7 @@ invariant_coverage:
     - tests/test_cli_aspect.py::test_aspect_add
     - tests/test_cli_aspect.py::test_aspect_remove
     - tests/test_cli_aspect.py::test_aspect_remove_leaves_files
-  INV-aspects-reference-automation-shippable:
-    - tests/test_cli_aspect.py::test_release_depth_2_has_ci_files
+  INV-aspects-reference-automation-shippable: []  # Phase A.8: scaffolded CI files retired (per ADR-0048).
   INV-aspects-every-aspect-self-hosted:
     - tests/test_kit_integrity.py::test_kit_root_has_expected_top_level_entries
     - tests/test_kit_integrity.py::test_kit_aspects_dir_has_sdd
