@@ -91,12 +91,12 @@ def test_depth_1_scaffolds_protocol_and_section() -> None:
     assert "fidelity-discipline.md" in depth1["protocols"]
     proto = (
         _REPO_ROOT
-        / "src/kanon_reference/data/kanon-fidelity/protocols/fidelity-fixture-authoring.md"
+        / "src/kanon_reference/aspects/kanon_fidelity/protocols/fidelity-fixture-authoring.md"
     )
     assert proto.is_file()
     proto2 = (
         _REPO_ROOT
-        / "src/kanon_reference/data/kanon-fidelity/protocols/fidelity-discipline.md"
+        / "src/kanon_reference/aspects/kanon_fidelity/protocols/fidelity-discipline.md"
     )
     assert proto2.is_file()
 

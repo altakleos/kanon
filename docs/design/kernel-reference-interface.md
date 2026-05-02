@@ -52,7 +52,7 @@ The entry-point value is a dotted Python path resolving to one of:
 1. **A module attribute named `MANIFEST`** containing the parsed manifest dict (most common).
 2. **A callable** (function or class) returning the manifest dict when invoked with no arguments.
 
-Phase A's entry-point loader tries (1) first, then (2). The kernel does not import the publisher's full package — only the module the entry-point names. The manifest dict has the same shape as today's `src/kanon_reference/data/<aspect>/manifest.yaml` (preserved per ADR-0028).
+Phase A's entry-point loader tries (1) first, then (2). The kernel does not import the publisher's full package — only the module the entry-point names. The manifest dict has the same shape as today's `src/kanon_reference/aspects/kanon_<aspect>/manifest.yaml` (preserved per ADR-0028).
 
 ### Why `MANIFEST`-as-attribute is the recommended shape
 
@@ -198,7 +198,7 @@ This gate is what proves ADR-0040's central claim. Phase A authors it as part of
 Audit reveals (Phase A will confirm):
 
 - `test_e2e_lifecycle.py`: scaffolds `kanon-sdd` and other aspects to test full lifecycles.
-- `test_kit_integrity.py`: byte-equality checks against `src/kanon_reference/data/`.
+- `test_kit_integrity.py`: byte-equality checks against `src/kanon_reference/aspects/`.
 - `test_cli_*.py`: many tests assume default aspects are available.
 - `test_fidelity.py`: uses the `kanon-fidelity` capability.
 

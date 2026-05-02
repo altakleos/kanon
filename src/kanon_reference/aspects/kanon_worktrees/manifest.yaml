@@ -3,9 +3,9 @@ kanon-dialect: "2026-05-01"
 #
 # Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + automation.
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.
-# Paths under `files:` are relative to src/kanon_reference/data/kanon-worktrees/files/.
-# Paths under `protocols:` are relative to src/kanon_reference/data/kanon-worktrees/protocols/.
-# Names under `sections:` resolve to src/kanon_reference/data/kanon-worktrees/sections/<name>.md,
+# Paths under `files:` are relative to src/kanon_reference/aspects/kanon_worktrees/files/.
+# Paths under `protocols:` are relative to src/kanon_reference/aspects/kanon_worktrees/protocols/.
+# Names under `sections:` resolve to src/kanon_reference/aspects/kanon_worktrees/sections/<name>.md,
 # except the unprefixed `protocols-index` which is rendered dynamically by the CLI
 # as the cross-aspect unified catalog.
 #

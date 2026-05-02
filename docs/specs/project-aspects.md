@@ -60,7 +60,7 @@ invariant_coverage:
 
 ## Intent
 
-Let a consumer repo declare its own aspects alongside kit-shipped ones. A project-aspect lives at `.kanon/aspects/<name>/` with the same shape as a kit-side aspect (`src/kanon_reference/data/<name>/`): a sub-manifest, optional `byte-equality:` and `config-schema:` blocks, optional `files/`, `protocols/`, `sections/`, `agents-md/` directories, optional `validators:` declaration. The CLI discovers project-aspects on the same code paths it uses for kit-aspects, with two namespacing rules that keep the two sources distinguishable forever.
+Let a consumer repo declare its own aspects alongside kit-shipped ones. A project-aspect lives at `.kanon/aspects/<name>/` with the same shape as a kit-side aspect (`src/kanon_reference/aspects/kanon_<name>/`): a sub-manifest, optional `byte-equality:` and `config-schema:` blocks, optional `files/`, `protocols/`, `sections/`, `agents-md/` directories, optional `validators:` declaration. The CLI discovers project-aspects on the same code paths it uses for kit-aspects, with two namespacing rules that keep the two sources distinguishable forever.
 
 This spec realises composition without re-opening the deferred third-party-aspect-publishing question (ADR-0012 § Alternatives #5). Project-aspects are not pip packages; they live in the consumer's own git tree and version with the consumer.
 
@@ -68,7 +68,7 @@ This spec realises composition without re-opening the deferred third-party-aspec
 
 To prevent silent collision between kit-shipped and project-defined aspects, **all aspect names carry a source-namespace prefix**:
 
-- `kanon-<local>` — declared by the kit (`src/kanon_reference/data/<local>/`).
+- `kanon-<local>` — declared by the kit (`src/kanon_reference/aspects/kanon_<local>/`).
 - `project-<local>` — declared by the consumer (`.kanon/aspects/<local>/`).
 
 Bare names at every input surface (CLI flags, `requires:` predicates, `--aspects` parsing, `aspect set-depth`/`set-config` arguments) resolve to the `kanon-` namespace. This preserves backward-compatibility for every existing usage; the prefix is mandatory only for project-aspects, which have no shorthand.
@@ -78,7 +78,7 @@ Future namespaces (`acme-<local>` for a hypothetical published third-party kit) 
 ## Invariants
 
 <!-- INV-project-aspects-discovery-location -->
-1. **Discovery location.** Project-aspects live at `.kanon/aspects/<local-name>/`. The directory layout mirrors the kit-side `src/kanon_reference/data/<local-name>/` exactly: `manifest.yaml`, optional `agents-md/depth-N.md`, optional `files/`, `protocols/`, `sections/`. The CLI discovers project-aspects after kit-aspects on every load that calls `_load_top_manifest`; project-aspect entries are unioned into the same in-memory aspect registry the kit-aspects populate.
+1. **Discovery location.** Project-aspects live at `.kanon/aspects/<local-name>/`. The directory layout mirrors the kit-side `src/kanon_reference/aspects/kanon_<local-name>/` exactly: `manifest.yaml`, optional `agents-md/depth-N.md`, optional `files/`, `protocols/`, `sections/`. The CLI discovers project-aspects after kit-aspects on every load that calls `_load_top_manifest`; project-aspect entries are unioned into the same in-memory aspect registry the kit-aspects populate.
 
 <!-- INV-project-aspects-manifest-shape-mirrors-kit -->
 2. **Manifest shape mirrors kit.** A project-aspect's `manifest.yaml` carries the same fields as a kit-side sub-manifest: `depth-N: {files, protocols, sections}`, optional `byte-equality:`, optional `config-schema:`. The top-level registry entry for a project-aspect carries `stability` (always `experimental` for project-aspects in v0.3 — the `stable` label is reserved for the kit), `depth-range`, `default-depth`, optional `requires`, optional `provides`. Validators by `_load_aspect_manifest`'s existing schema enforce both sources identically.
@@ -105,7 +105,7 @@ Future namespaces (`acme-<local>` for a hypothetical published third-party kit) 
 9. **Project validators do not override kit structural checks.** The kit's built-in `kanon verify` checks (`check_aspects_known`, `check_required_files`, `check_agents_md_markers`, `check_fidelity_lock`, `check_verified_by`) are authoritative. Project-aspect validators run additively; they cannot suppress, mutate, or short-circuit a kit-emitted error or warning. Verify report's `status` is `fail` if either source emits an error; `ok` only when both are clean.
 
 <!-- INV-project-aspects-upgrade-source-routing -->
-10. **Upgrade routes by source.** `kanon upgrade` re-renders kit-aspect content from the installed pip kit's `src/kanon_reference/data/<name>/` and project-aspect content from `.kanon/aspects/<name>/`. The `kit_version` pin in config governs only kit-aspect content; project-aspects have no version pin (they version with the consumer's git history). Upgrade does NOT delete or modify files under `.kanon/aspects/` — those are consumer-authored.
+10. **Upgrade routes by source.** `kanon upgrade` re-renders kit-aspect content from the installed pip kit's `src/kanon_reference/aspects/kanon_<name>/` and project-aspect content from `.kanon/aspects/<name>/`. The `kit_version` pin in config governs only kit-aspect content; project-aspects have no version pin (they version with the consumer's git history). Upgrade does NOT delete or modify files under `.kanon/aspects/` — those are consumer-authored.
 
 ## Rationale
 

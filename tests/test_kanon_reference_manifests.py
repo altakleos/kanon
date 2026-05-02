@@ -28,8 +28,8 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent
 KIT_ROOT = REPO_ROOT / "src" / "kanon" / "kit"
 # Per substrate-content-move sub-plan: aspect data moved to
-# src/kanon_reference/data/<slug>/. Top manifest stays at kit/.
-KIT_ASPECTS = REPO_ROOT / "src" / "kanon_reference" / "data"
+# src/kanon_reference/aspects/<slug>/. Top manifest stays at kit/.
+KIT_ASPECTS = REPO_ROOT / "src" / "kanon_reference" / "aspects"
 
 ASPECT_IDS = (
     "kanon-deps",
@@ -63,7 +63,7 @@ def _top_manifest() -> dict:
 @pytest.mark.parametrize("aspect_id", ASPECT_IDS)
 def test_loader_manifest_matches_union(aspect_id: str, _top_manifest: dict) -> None:
     """LOADER MANIFEST must equal {top-entry without path, **sub-manifest}."""
-    sub_path = KIT_ASPECTS / aspect_id / "manifest.yaml"
+    sub_path = KIT_ASPECTS / aspect_id.replace("-", "_") / "manifest.yaml"
     assert sub_path.is_file(), f"missing sub-manifest source-of-truth: {sub_path}"
     sub_manifest = yaml.safe_load(sub_path.read_text(encoding="utf-8"))
 
@@ -72,7 +72,7 @@ def test_loader_manifest_matches_union(aspect_id: str, _top_manifest: dict) -> N
 
     expected = {**top_entry, **sub_manifest}
 
-    module_name = f"kanon_reference.aspects.{aspect_id.replace('-', '_')}"
+    module_name = f"kanon_reference.aspects.{aspect_id.replace('-', '_')}.loader"
     module = importlib.import_module(module_name)
     manifest = getattr(module, "MANIFEST", None)
     assert manifest is not None, f"{module_name}: no MANIFEST attribute"
@@ -87,7 +87,7 @@ def test_loader_manifest_matches_union(aspect_id: str, _top_manifest: dict) -> N
 @pytest.mark.parametrize("aspect_id", ASPECT_IDS)
 def test_loader_manifest_has_no_path_field(aspect_id: str) -> None:
     """LOADER MANIFEST must NOT contain a `path:` field — substrate synthesizes it."""
-    module_name = f"kanon_reference.aspects.{aspect_id.replace('-', '_')}"
+    module_name = f"kanon_reference.aspects.{aspect_id.replace('-', '_')}.loader"
     module = importlib.import_module(module_name)
     assert "path" not in module.MANIFEST, (
         f"{module_name}.MANIFEST: must not contain 'path:' field "

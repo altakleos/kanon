@@ -15,10 +15,10 @@ import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 # Per substrate-content-move sub-plan: kanon-* aspect data lives under
-# src/kanon_reference/data/<slug>/.
-_SDD_PROTOCOLS = _REPO_ROOT / "src" / "kanon_reference" / "data" / "kanon-sdd" / "protocols"
+# src/kanon_reference/aspects/<slug>/.
+_SDD_PROTOCOLS = _REPO_ROOT / "src" / "kanon_reference" / "aspects" / "kanon_sdd" / "protocols"
 _REPO_SDD_PROTOCOLS = _REPO_ROOT / ".kanon" / "protocols" / "kanon-sdd"
-_SDD_MANIFEST = _REPO_ROOT / "src" / "kanon_reference" / "data" / "kanon-sdd" / "manifest.yaml"
+_SDD_MANIFEST = _REPO_ROOT / "src" / "kanon_reference" / "aspects" / "kanon_sdd" / "manifest.yaml"
 
 _REQUIRED_FRONTMATTER_KEYS = ("status", "date", "depth-min", "invoke-when")
 
@@ -43,7 +43,7 @@ def _all_sdd_protocol_files() -> list[Path]:
 
 def test_sdd_protocols_directory_exists() -> None:
     assert _SDD_PROTOCOLS.is_dir()
-    assert _all_sdd_protocol_files(), "expected at least one protocol under aspects/kanon-sdd/protocols/"
+    assert _all_sdd_protocol_files(), "expected at least one protocol under aspects/kanon_sdd/protocols/"
 
 
 @pytest.mark.parametrize("proto", _all_sdd_protocol_files(), ids=lambda p: p.name)
@@ -76,7 +76,7 @@ def test_protocol_depth_min_matches_sub_manifest(proto: Path) -> None:
             declared_depth = d
             break
     assert declared_depth is not None, (
-        f"{proto.name}: not declared in aspects/kanon-sdd/manifest.yaml"
+        f"{proto.name}: not declared in aspects/kanon_sdd/manifest.yaml"
     )
     assert fm["depth-min"] == declared_depth, (
         f"{proto.name}: frontmatter depth-min={fm['depth-min']} "

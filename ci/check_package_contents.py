@@ -114,9 +114,10 @@ def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list
     for name, entry in top["aspects"].items():
         if not isinstance(entry, dict):
             continue
-        # Per substrate-content-move sub-plan: kanon-* aspect data lives at
-        # kanon_reference/data/<slug>/ in the wheel (was: kanon/kit/aspects/<slug>/).
-        aspect_base = f"kanon_reference/data/{name}"
+        # Per ADR-0049 PR A bundle collapse: kanon-* aspect bundles live at
+        # kanon_reference/aspects/kanon_<slug>/ in the wheel (underscore in
+        # dir name; hyphen retained in the runtime aspect SLUG `name`).
+        aspect_base = f"kanon_reference/aspects/{name.replace('-', '_')}"
         required_files.append(f"{aspect_base}/manifest.yaml")
         required_dirs.append(f"{aspect_base}/")
         # Load sub-manifest to get depth-specific files, protocols, sections
