@@ -37,9 +37,15 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import tomllib
 from pathlib import Path
 from typing import Any
+
+# tomllib was added in Python 3.11; fall back to tomli for 3.10 (the lower
+# bound declared by `requires-python = ">=3.10"` in pyproject.toml).
+if sys.version_info >= (3, 11):
+    import tomllib
+else:  # pragma: no cover — only exercised on Python 3.10
+    import tomli as tomllib  # type: ignore[no-redef,import-not-found]
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _PACKAGING = _REPO_ROOT / "packaging"

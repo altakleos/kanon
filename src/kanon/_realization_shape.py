@@ -14,11 +14,10 @@ adding `realization-shape:` to actual contracts (none exist today).
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 import click
-
 
 # v1 dialect (kanon-dialect: 2026-05-01) verb enumeration.
 # Per design §"The substrate's v1 dialect verb enumeration". Future dialects

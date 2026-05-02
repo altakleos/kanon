@@ -119,7 +119,12 @@ def _commit_aspect_meta(
         config_block.update(extra_config)
     entry["config"] = config_block
     aspects_meta[aspect_name] = entry
-    _write_config(target, kit_version, aspects_meta)
+    # Preserve v4 fields (schema-version, kanon-dialect, provenance) and any
+    # other publisher-added top-level keys across the write. Without this,
+    # mutation verbs silently strip the v4 commitment authored at init time.
+    from kanon._scaffold import _extras_from_config, _read_config
+    extras = _extras_from_config(_read_config(target))
+    _write_config(target, kit_version, aspects_meta, extra=extras)
 
 
 def _set_aspect_depth(

@@ -33,4 +33,7 @@ jobs:
         run: pip install -e '.[dev]'
 
       - name: Run E2E tests
-        run: pytest -m e2e -v
+        # --no-cov: e2e selection covers a tiny slice of the codebase by design;
+        # enforcing the 90% global coverage gate against e2e-only collection
+        # always fails. Coverage is enforced in the main checks job.
+        run: pytest -m e2e -v --no-cov

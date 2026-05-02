@@ -701,10 +701,15 @@ def _aspect_path(aspect: str) -> Path:
     absolute ``_source``; kit-aspect entries set ``_source`` via
     :func:`_load_aspect_registry`. When neither is available (callers that
     look up via :func:`_aspect_entry` without first calling the registry),
-    the fallback synthesizes the path: per substrate-content-move sub-plan,
-    kanon-* aspects' data lives at src/kanon_reference/data/<slug>/ (per
-    ADR-0044 substrate-independence). Other slugs fall back to
-    ``_kit_root() / entry["path"]``.
+    the fallback synthesizes the path from kanon_reference for kanon-* aspects.
+
+    Per ADR-0044 substrate-independence: the substrate (kanon-substrate) MUST
+    NOT silently fall back to a dead legacy path when kanon_reference is
+    absent. After Phase A.7 (substrate-content-move), src/kanon/kit/aspects/
+    no longer exists for kanon-* aspects; returning that path would resolve
+    to a non-existent directory and downstream callers (_load_aspect_manifest,
+    file readers, scaffolders) would fail with confusing FileNotFoundError
+    chains. Fail fast with a helpful diagnostic instead.
     """
     entry = _aspect_entry(aspect)
     if entry is None:
@@ -716,8 +721,14 @@ def _aspect_path(aspect: str) -> Path:
             import kanon_reference
 
             return Path(kanon_reference.__file__).parent / "data" / aspect
-        except ImportError:
-            pass
+        except ImportError as exc:
+            raise click.ClickException(
+                f"Cannot resolve aspect {aspect!r}: kanon_reference is not "
+                f"installed. kanon-substrate ships no kanon-* aspect data per "
+                f"ADR-0044 substrate-independence; install kanon-kit (which "
+                f"depends on both kanon-substrate and kanon-reference) or "
+                f"install kanon-reference directly. ({exc})"
+            ) from exc
     return _kit_root() / str(entry["path"])
 
 

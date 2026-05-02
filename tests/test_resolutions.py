@@ -13,7 +13,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pytest
 import yaml
 
 from kanon._resolutions import (
@@ -24,7 +23,6 @@ from kanon._resolutions import (
     replay,
     stale_check,
 )
-
 
 # --- Helpers ---
 
@@ -302,7 +300,7 @@ def test_replay_deterministic(tmp_path: Path) -> None:
     r2 = replay(target, registry=registry)
     assert r1.errors == r2.errors
     assert len(r1.executions) == len(r2.executions)
-    for e1, e2 in zip(r1.executions, r2.executions):
+    for e1, e2 in zip(r1.executions, r2.executions, strict=True):
         assert e1.invocation == e2.invocation
         assert e1.label == e2.label
 
@@ -529,3 +527,24 @@ def test_replay_contract_with_malformed_shape_surfaces(tmp_path: Path) -> None:
     assert any(
         e.code == "invalid-realization-shape" for e in report.errors
     ), f"expected invalid-realization-shape finding, got: {report.errors}"
+
+
+def test_replay_contract_with_non_utf8_bytes_surfaces(tmp_path: Path) -> None:
+    """Per ADR-0041 + design/dialect-grammar findings-accumulate intent: a
+    contract file containing non-UTF-8 bytes MUST surface as a structured
+    `invalid-contract-encoding` ReplayError, not crash the CLI with an
+    uncaught UnicodeDecodeError. Plan v040a1-release-prep PR 3."""
+    target, registry = _build_synthetic_target(tmp_path)
+    contract = Path(registry["aspects"]["synthetic-aspect"]["_source"]) / "contracts" / "preflight.md"
+    # Write a binary file that fails UTF-8 decoding (bytes 0x80-0xff alone
+    # are invalid UTF-8 start bytes).
+    contract.write_bytes(b"\xff\xfe\x00binary garbage\x80\x81")
+    pyproject = target / "pyproject.toml"
+    entry = _make_entry(contract, [("pyproject.toml", pyproject.read_bytes(), "x")])
+    _write_resolutions(target, {"synthetic-aspect/preflight": entry})
+    # MUST NOT raise — the encoding error becomes a structured finding.
+    report = replay(target, registry=registry)
+    assert any(
+        e.code == "invalid-contract-encoding" and e.contract == "synthetic-aspect/preflight"
+        for e in report.errors
+    ), f"expected invalid-contract-encoding finding, got: {report.errors}"

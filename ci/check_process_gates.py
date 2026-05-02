@@ -41,7 +41,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-_PLAN_VALID_STATUSES = frozenset({"done", "accepted", "in-progress"})
+_PLAN_VALID_STATUSES = frozenset({"done", "accepted", "approved", "in-progress"})
 _SPEC_VALID_STATUSES = frozenset({"accepted", "provisional"})
 
 _TRIVIAL_TRAILER = re.compile(

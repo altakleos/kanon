@@ -26,7 +26,6 @@ import sys
 
 import click
 
-
 # The substrate's supported dialect set. v0.4 ships v1 only.
 # Per ADR-0041 cadence: future dialects are added by ADR-driven supersession,
 # not configuration. The substrate honours at least N-1 with a deprecation
