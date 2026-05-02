@@ -11,7 +11,7 @@ stressed_by:
 fixtures:
   - tests/test_cli.py
   - tests/test_kit_integrity.py
-  - tests/ci/test_check_deps.py
+  - tests/scripts/test_check_deps.py
 invariant_coverage:
   INV-deps-depth-range:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
@@ -22,13 +22,13 @@ invariant_coverage:
   INV-deps-agents-md-section:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
   INV-deps-ci-validator:
-    - tests/ci/test_check_deps.py::test_requirements_unpinned_detected
+    - tests/scripts/test_check_deps.py::test_requirements_unpinned_detected
   INV-deps-no-dependency:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_deps_manifest_paths_resolve
   INV-deps-language-agnostic:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/ci/test_check_deps.py::test_package_json_caret_detected
+    - tests/scripts/test_check_deps.py::test_package_json_caret_detected
   INV-deps-stability:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_kit_deps_aspect_dir_exists
@@ -63,7 +63,7 @@ The aspect is language-agnostic at all depths. The protocols describe *principle
 3. **AGENTS.md section.** At depth ≥ 1, the aspect contributes one marker-delimited section `deps/dependency-hygiene` to AGENTS.md — a short prose summary of the core rules so an operating agent sees the dependency discipline on the boot chain.
 
 <!-- INV-deps-ci-validator -->
-4. **CI validator (depth 2).** The aspect scaffolds `ci/check_deps.py` — a language-agnostic CI script that detects:
+4. **CI validator (depth 2).** The aspect scaffolds `scripts/check_deps.py` — a language-agnostic CI script that detects:
    - Unpinned version specifiers in common manifest formats (requirements.txt `>=`, pyproject.toml `>=`, package.json `^` or `~`).
    - Duplicate-purpose packages (best-effort heuristic — e.g., multiple HTTP libraries, multiple date-parsing libraries).
    The script outputs a JSON report with `{errors: [...], warnings: [...], status: "ok"|"fail"}` following the established CI script pattern. Detection is best-effort pattern-based.

@@ -46,7 +46,7 @@ Tier-2 (workstation `kanon transcripts capture`) and Tier-3 (paid nightly e2e) a
 ### Track 2 — ADR-immutability gate (parallel to Track 1)
 
 - [x] T2-1: Full ADR-0032 for the immutability rule, including `Allow-ADR-edit: NNNN — <reason>` trailer escape hatch from sensei. Cites Round-2 Verifier evidence (≥4 violations in kanon's own history) → `docs/decisions/0032-adr-immutability-gate.md`
-- [x] T2-2: Port `ci/check_adr_immutability.py` from sensei. Strip sensei-specific path constants. Add tests for the trailer parser → `ci/check_adr_immutability.py`, `tests/ci/test_check_adr_immutability.py` (depends: T2-1) — *19 tests pass; gate surfaces all 4 documented historical violations when run against root..main; PR mode against `origin/main` is clean.*
+- [x] T2-2: Port `scripts/check_adr_immutability.py` from sensei. Strip sensei-specific path constants. Add tests for the trailer parser → `scripts/check_adr_immutability.py`, `tests/scripts/test_check_adr_immutability.py` (depends: T2-1) — *19 tests pass; gate surfaces all 4 documented historical violations when run against root..main; PR mode against `origin/main` is clean.*
 - [x] T2-3: Wire into `.github/workflows/verify.yml`. **Kit-internal only** — do NOT list under any aspect's `depth-N.files` → `.github/workflows/verify.yml` (depends: T2-2) — *checkout step bumped to `fetch-depth: 0` so PR mode against `origin/<base_ref>` works.*
 - [x] T2-4: Author protocol prose listing enforcement options (CI gate, pre-commit hook, manual review) at `kanon-sdd` depth 3 → `src/kanon/kit/aspects/kanon-sdd/protocols/adr-immutability.md` (depends: T2-1)
 - [x] T2-5: Update `docs/sdd-method.md` § ADRs to mention the trailer (depends: T2-1) — *kit + repo copies updated together; byte-equality preserved.*
@@ -68,7 +68,7 @@ Replacement plan: [`docs/plans/principles-clarification.md`](principles-clarific
 - [~] AC4: Track 3 — superseded by [`docs/plans/principles-clarification.md`](principles-clarification.md). The maintainer's framing correction (kit principles do not propagate to consumers) made the originally-specced override mechanism unnecessary; the docs-clarification plan ships the only deliverable that actually pays rent.
 - [x] AC5: `kanon verify .` passes with no warnings on the kanon repo itself.
 - [x] AC6: `pytest`, `ruff check src/ tests/ ci/`, `mypy src/kanon` all pass.
-- [x] AC7: `python ci/check_kit_consistency.py` returns `status: ok`.
+- [x] AC7: `python scripts/check_kit_consistency.py` returns `status: ok`.
 - [x] AC8: All new INVs (INV-10 in Track 0, plus Track 1's spec INVs) have `invariant_coverage` mappings (or explicit `fixtures_deferred:` justification).
 
 ## Documentation Impact

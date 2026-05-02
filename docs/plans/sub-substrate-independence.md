@@ -5,7 +5,7 @@ date: 2026-05-02
 design: docs/design/kernel-reference-interface.md
 ---
 
-# Plan: Sub-plan — `ci/check_substrate_independence.py` gate (per ADR-0044)
+# Plan: Sub-plan — `scripts/check_substrate_independence.py` gate (per ADR-0044)
 
 ## Context
 
@@ -28,7 +28,7 @@ This is a **partial implementation** of ADR-0044's gate — full implementation 
 
 ### In scope
 
-#### A. `ci/check_substrate_independence.py` (~120 LOC)
+#### A. `scripts/check_substrate_independence.py` (~120 LOC)
 
 Sub-process invocation pattern: spawn `python -c "..."` with `kanon_reference` masked, run substrate-internal queries, exit 0 if all green.
 
@@ -63,7 +63,7 @@ print("substrate-independence: OK")
     return 0 if result.returncode == 0 else 1
 ```
 
-#### B. `tests/ci/test_check_substrate_independence.py` (~80 LOC, 4 cases)
+#### B. `tests/scripts/test_check_substrate_independence.py` (~80 LOC, 4 cases)
 
 - Real-repo passes
 - Main exits zero on ok
@@ -79,7 +79,7 @@ print("substrate-independence: OK")
 
 ## Acceptance criteria
 
-- [ ] AC-G1: `ci/check_substrate_independence.py` exists, runnable, exits 0 with `status: ok` on clean substrate
+- [ ] AC-G1: `scripts/check_substrate_independence.py` exists, runnable, exits 0 with `status: ok` on clean substrate
 - [ ] AC-G2: Gate detects when substrate code attempts `import kanon_reference` (synthesised in test)
 - [ ] AC-T1: ≥4 tests passing
 - [ ] AC-X1..X8: standard gates green; full pytest no regression

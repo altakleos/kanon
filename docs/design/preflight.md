@@ -15,7 +15,7 @@ date: 2026-04-28
 > their preflight commands directly under `.kanon/config.yaml`'s
 > `preflight-stages:` block; aspect-contributed defaults survive only for
 > aspects that author them with concrete commands (e.g., kanon-deps depth-2's
-> push stage that runs `python ci/check_deps.py`). The pipeline + merge
+> push stage that runs `python scripts/check_deps.py`). The pipeline + merge
 > semantics described in §"Check resolution pipeline" / §"Merge semantics" /
 > §"CLI implementation" are still accurate. The historical body below is
 > preserved for traceability of how preflight was conceived.
@@ -91,7 +91,7 @@ preflight-stages:
     - run: mypy src/
       label: typecheck
   release:
-    - run: python ci/release-preflight.py --tag $TAG
+    - run: python scripts/release-preflight.py --tag $TAG
       label: release-preflight
 ```
 
@@ -151,7 +151,7 @@ config-schema:
 depth-2:
   preflight:
     push:
-      - run: python ci/check_security_patterns.py .
+      - run: python scripts/check_security_patterns.py .
         label: security-scan
 ```
 
@@ -162,7 +162,7 @@ depth-2:
 depth-2:
   preflight:
     release:
-      - run: python ci/release-preflight.py --tag $TAG
+      - run: python scripts/release-preflight.py --tag $TAG
         label: release-preflight
 ```
 

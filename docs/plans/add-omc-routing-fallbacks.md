@@ -26,7 +26,7 @@ Add `(else ...)` fallback directives to all 11 mappings that currently lack them
 | Independent second opinion | `critic` | (else request review from a second agent pass) |
 | Root-cause debugging | `debugger` + `tracer` | (else debug directly with systematic diagnosis) |
 | Test strategy / TDD | `test-engineer` | (else follow `test-discipline` and `ac-first-tdd` protocols) |
-| Security scan | `security-reviewer` | (else follow `secure-defaults` protocol + run `ci/check_security_patterns.py`) |
+| Security scan | `security-reviewer` | (else follow `secure-defaults` protocol + run `scripts/check_security_patterns.py`) |
 | Verifying "is this done?" | `verifier` | (else follow `completion-checklist` protocol) |
 | External docs / API lookup | `document-specialist` | (else search documentation directly) |
 | Git operations | `git-master` | (else use git CLI directly) |

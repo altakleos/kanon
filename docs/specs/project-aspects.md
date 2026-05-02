@@ -16,7 +16,7 @@ fixtures:
   - tests/test_cli.py
   - tests/test_aspect_provides.py
   - tests/test_scaffold_marker_hardening.py
-  - tests/ci/test_check_kit_consistency.py
+  - tests/scripts/test_check_kit_consistency.py
 invariant_coverage:
   INV-project-aspects-discovery-location:
     - tests/test_cli_aspect.py::test_project_aspect_lifecycle_list_info_add_remove
@@ -31,8 +31,8 @@ invariant_coverage:
     - tests/test_aspect_provides.py::test_classify_predicate_namespaced_aspect_name_unchanged
   INV-project-aspects-namespace-ownership:
     - tests/test_cli_aspect.py::test_project_aspect_kanon_namespace_in_consumer_dir_rejected
-    - tests/ci/test_check_kit_consistency.py::test_kit_aspect_with_project_prefix_rejected
-    - tests/ci/test_check_kit_consistency.py::test_kit_aspect_with_bare_name_rejected
+    - tests/scripts/test_check_kit_consistency.py::test_kit_aspect_with_project_prefix_rejected
+    - tests/scripts/test_check_kit_consistency.py::test_kit_aspect_with_bare_name_rejected
   INV-project-aspects-namespace-migration:
     - tests/test_cli_helpers.py::test_migrate_legacy_config_v1_to_v3_produces_namespaced_key
     - tests/test_cli_helpers.py::test_migrate_legacy_config_v3_is_idempotent_no_op
@@ -93,7 +93,7 @@ Future namespaces (`acme-<local>` for a hypothetical published third-party kit) 
 5. **Auto-migration on first upgrade.** A pre-namespace consumer config (`.kanon/config.yaml` v2 with bare aspect keys: `aspects: {sdd: {...}}`) auto-migrates to v3 with `kanon-` prefixed keys (`aspects: {kanon-sdd: {...}}`) on first `kanon upgrade` after this lands. AGENTS.md markers with bare aspect prefixes (`<!-- kanon:begin:sdd/plan-before-build -->`) similarly migrate to the namespaced form (`<!-- kanon:begin:kanon-sdd/plan-before-build -->`) via the existing `_rewrite_legacy_markers` pattern (`_scaffold.py:308`). Migration is one-way and emits `Migrated v2 (bare) → v3 (namespaced) aspect names.` Older kanon CLIs reading a v3 config produce undefined behaviour; this is the same migration discipline applied to the v1 → v2 transition (ADR-0012).
 
 <!-- INV-project-aspects-runtime-ownership-exclusivity -->
-6. **Runtime ownership exclusivity.** `_build_bundle` (`_scaffold.py:126`) raises a `ClickException` if any two aspects (kit or project, any combination) declare the same consumer-relative path under their `files:` or `protocols:` lists. This generalises the existing CI-only check (`ci/check_kit_consistency.py:218`) to runtime, because project-aspects can introduce collisions the kit's CI cannot see. The error names both aspects and the colliding path.
+6. **Runtime ownership exclusivity.** `_build_bundle` (`_scaffold.py:126`) raises a `ClickException` if any two aspects (kit or project, any combination) declare the same consumer-relative path under their `files:` or `protocols:` lists. This generalises the existing CI-only check (`scripts/check_kit_consistency.py:218`) to runtime, because project-aspects can introduce collisions the kit's CI cannot see. The error names both aspects and the colliding path.
 
 <!-- INV-project-aspects-trust-boundary-in-process -->
 7. **Validators run in-process.** A project-aspect's `manifest.yaml` may declare a `validators:` list of importable Python module paths (resolved relative to the project's working directory and `sys.path`). `kanon verify` imports each and calls a known entrypoint — `def check(target: Path, errors: list[str], warnings: list[str]) -> None`. Findings flow into the same JSON report the kit's structural checks populate. Project-validator code runs with the same privileges as the CLI; this trust boundary is documented and not sandboxed.

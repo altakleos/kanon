@@ -95,7 +95,7 @@ This is the v1 of a capability registry. The audit risk-register flagged it as c
 6. **`aspect info` surfaces `provides:`.** `kanon aspect info <name>` prints a `Provides: <list>` line (or `(none)`) after the existing `Requires:` line. The `Requires:` listing already shows the raw predicate strings, so capability-presence predicates appear there alongside depth predicates without extra rendering work.
 
 <!-- INV-aspect-provides-ci-validates-completeness -->
-7. **CI validation.** `ci/check_kit_consistency.py` hard-fails if any capability-presence predicate in any aspect's `requires:` references a capability that no aspect in the same kit provides. This catches typos and dangling references at maintainer build time, before the kit ships to consumers. Depth-predicate references to unknown aspect names are caught the same way.
+7. **CI validation.** `scripts/check_kit_consistency.py` hard-fails if any capability-presence predicate in any aspect's `requires:` references a capability that no aspect in the same kit provides. This catches typos and dangling references at maintainer build time, before the kit ships to consumers. Depth-predicate references to unknown aspect names are caught the same way.
 
 <!-- INV-aspect-provides-multiple-suppliers -->
 8. **Multiple suppliers permitted.** Two aspects may legitimately both declare the same capability in their `provides:`. Resolution uses set-union semantics; the consumer is satisfied as long as *at least one* supplier is enabled. This is what allows future aspects (e.g., `lean-sdd`) to substitute for `sdd` without breaking downstream capability-presence predicates.

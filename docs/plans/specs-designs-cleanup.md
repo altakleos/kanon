@@ -59,7 +59,7 @@ Bodies preserved per immutability discipline. Retirement is frontmatter-only.
 1. **Spec retirements first** (frontmatter-only edits to three specs). Each gets `status: superseded` + `superseded-by: 0048`. Bodies preserved.
 2. **Design amendment** (append `## Status under ADR-0048` section to `aspect-model.md` with predecessor commit SHA pointer).
 3. **README updates** if needed.
-4. **Run gates locally** (`kanon verify .`, `python ci/check_links.py`, `python ci/check_foundations.py`, `python ci/check_status_consistency.py`).
+4. **Run gates locally** (`kanon verify .`, `python scripts/check_links.py`, `python scripts/check_foundations.py`, `python scripts/check_status_consistency.py`).
 5. **Commit + push + PR.**
 
 No CHANGELOG entry. Designs and specs in retired state are kit-author-internal cleanup; the substrate identity (CHANGELOG-worthy event) was the foundations rewrite in PR #50.
@@ -72,15 +72,15 @@ No CHANGELOG entry. Designs and specs in retired state are kit-author-internal c
 - [ ] AC-D1: `docs/design/aspect-model.md` carries an appended `## Status under ADR-0048` section explaining the survives/superseded split, with predecessor commit SHA reference.
 - [ ] AC-D2: `docs/design/kit-bundle.md` is unchanged (already retired correctly).
 - [ ] AC-X1: `kanon verify .` returns `status: ok` (one pre-existing fidelity warning unrelated is acceptable).
-- [ ] AC-X2: `python ci/check_links.py` passes.
-- [ ] AC-X3: `python ci/check_foundations.py` passes.
-- [ ] AC-X4: `python ci/check_status_consistency.py` passes (or warns predictably; not a hard-fail check).
+- [ ] AC-X2: `python scripts/check_links.py` passes.
+- [ ] AC-X3: `python scripts/check_foundations.py` passes.
+- [ ] AC-X4: `python scripts/check_status_consistency.py` passes (or warns predictably; not a hard-fail check).
 - [ ] AC-X5: No source / spec body / aspect-manifest / protocol-prose / CI changes.
 - [ ] AC-X6: No CHANGELOG entry (kit-author internal cleanup).
 
 ## Risks / concerns
 
-- **Risk: `template-bundle.md` retirement may be challenged** if some still-active spec links to it. Mitigation: `ci/check_links.py` will catch broken inbound references; if the check fires, either fix the citing spec or hold the retirement.
+- **Risk: `template-bundle.md` retirement may be challenged** if some still-active spec links to it. Mitigation: `scripts/check_links.py` will catch broken inbound references; if the check fires, either fix the citing spec or hold the retirement.
 - **Risk: `check_status_consistency.py` may flag the retirements as drift.** Acceptable; the soft check is informational and these are deliberate frontmatter changes.
 - **Risk: appending to `aspect-model.md` body may be challenged on ADR-immutability grounds.** The current ADR-immutability gate applies to ADR bodies, not design docs. Per the same treatment we applied to `P-self-hosted-bootstrap` in PR #50, appending a `## Status under ADR-XXXX` section is the standard amendment pattern and does not violate immutability.
 

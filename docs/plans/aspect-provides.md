@@ -44,7 +44,7 @@ Implements `docs/specs/aspect-provides.md` (10 invariants). Adds a `provides:` f
 
 ### CI validation
 
-- [x] T8: Extend `ci/check_kit_consistency.py` with a new check that walks every aspect's `requires:` predicates, classifies each via the same logic as T3 (or imports `_classify_predicate` from `kanon.cli`), and hard-fails if a capability-presence predicate references a capability that no aspect provides. Depth-predicate references to unknown aspect names are checked the same way (existing manifest validation already covers this; verify it does and extend if not). → `ci/check_kit_consistency.py`
+- [x] T8: Extend `scripts/check_kit_consistency.py` with a new check that walks every aspect's `requires:` predicates, classifies each via the same logic as T3 (or imports `_classify_predicate` from `kanon.cli`), and hard-fails if a capability-presence predicate references a capability that no aspect provides. Depth-predicate references to unknown aspect names are checked the same way (existing manifest validation already covers this; verify it does and extend if not). → `scripts/check_kit_consistency.py`
 
 ### Tests
 
@@ -58,7 +58,7 @@ Implements `docs/specs/aspect-provides.md` (10 invariants). Adds a `provides:` f
     - **INV-5** *(was INV-coexists, now folded into INV-2)*: an aspect declaring `requires: ["sdd >= 1", "planning-discipline"]` succeeds when both forms are satisfied; fails clearly when one is unsatisfied; the error message indicates which form failed.
     - **INV-5 (removal)**: `kanon aspect remove` against an aspect whose capability is required by another enabled aspect errors with a single-line message.
     - **INV-6 (info)**: `kanon aspect info sdd` output includes `Provides: planning-discipline, spec-discipline`.
-    - **INV-7 (CI)**: `ci/check_kit_consistency.py` against a synthetic kit with a dangling capability-presence predicate exits non-zero with an error naming the missing capability.
+    - **INV-7 (CI)**: `scripts/check_kit_consistency.py` against a synthetic kit with a dangling capability-presence predicate exits non-zero with an error naming the missing capability.
     - **INV-8 (multiple suppliers)**: a proposed aspect-set with two suppliers of the same capability satisfies the predicate; removing one supplier still satisfies the predicate as long as the other is enabled.
     - **INV-9**: every shipped aspect's `provides:` matches the spec table (test reads `kit/manifest.yaml` and asserts each aspect's declared capability list).
     - **INV-10**: every existing-on-`main` `requires:` predicate (collected by reading the current manifest) classifies as a depth predicate and resolves identically before and after the parser change.
@@ -77,7 +77,7 @@ Implements `docs/specs/aspect-provides.md` (10 invariants). Adds a `provides:` f
 
 ### Self-host
 
-- [x] T15: Run `kanon verify .` against the repo. Confirm `status: ok` and that no fidelity warnings appear unrelated to this PR's changes. Run `python ci/check_kit_consistency.py` and confirm exit 0.
+- [x] T15: Run `kanon verify .` against the repo. Confirm `status: ok` and that no fidelity warnings appear unrelated to this PR's changes. Run `python scripts/check_kit_consistency.py` and confirm exit 0.
 
 - [x] T16: Refresh `.kanon/fidelity.lock` via `kanon fidelity update .` so the new `aspect-provides` spec is tracked.
 
@@ -86,7 +86,7 @@ Implements `docs/specs/aspect-provides.md` (10 invariants). Adds a `provides:` f
 - [x] AC1: `pytest` passes; full suite ≥ 90% coverage; new tests in T9/T10 all pass.
 - [x] AC2: `mypy src/kanon` clean.
 - [x] AC3: `ruff check src/ tests/ ci/` clean.
-- [x] AC4: `python ci/check_kit_consistency.py` returns exit 0 against the live kit.
+- [x] AC4: `python scripts/check_kit_consistency.py` returns exit 0 against the live kit.
 - [x] AC5: `kanon verify .` returns `status: ok`.
 - [x] AC6: `kanon aspect info sdd` output contains `Provides: planning-discipline, spec-discipline`.
 - [x] AC7: All 10 spec invariants have at least one entry in `invariant_coverage:` in the spec frontmatter (added before promoting status from `draft` to `accepted`).

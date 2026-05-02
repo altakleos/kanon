@@ -124,7 +124,7 @@ The `try/finally` is intentionally empty: on exception the sentinel must persist
 
 - [x] AC1: `pytest` — full suite passes (verified locally; 312 = 310 prior + 2 new in T8).
 - [x] AC2: `kanon verify .` — `status: ok`.
-- [x] AC3: `python ci/check_kit_consistency.py` — exit 0.
+- [x] AC3: `python scripts/check_kit_consistency.py` — exit 0.
 - [x] AC4: `ruff check` clean on changed files.
 - [x] AC5: `_set_aspect_depth` body is 51 lines; no inlined file-write loops, no inlined config mutation, no inlined AGENTS.md / kit.md rendering.
 - [x] AC6: Sentinel write at line 615 (once); `_apply_tier_up` / `_apply_tier_down` / `_rewrite_assembled_views` / `_commit_aspect_meta` all run *between* sentinel write and clear; `clear_sentinel` is only on success paths (noop-branch return and end of main path); a raise from any helper leaves the sentinel in place.

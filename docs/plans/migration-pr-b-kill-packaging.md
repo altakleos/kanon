@@ -20,8 +20,8 @@ This PR honors the "kill packaging/" rule by deleting the schema-of-record. The 
 
 In scope:
 - Delete `packaging/substrate/`, `packaging/reference/`, `packaging/kit/`, including their pyproject.toml + any other files under each.
-- Delete `ci/check_packaging_split.py` (no longer has a schema to validate).
-- Delete `tests/ci/test_check_packaging_split.py`.
+- Delete `scripts/check_packaging_split.py` (no longer has a schema to validate).
+- Delete `tests/scripts/test_check_packaging_split.py`.
 - Remove `check_packaging_split.py` invocation from `.github/workflows/checks.yml` (or wherever it's wired).
 - CHANGELOG entry noting the deletion and the deferral of the workspace rearchitecture.
 
@@ -32,8 +32,8 @@ Out of scope (deferred to future PRs):
 ## Acceptance criteria
 
 - AC1: `packaging/` directory no longer exists.
-- AC2: `ci/check_packaging_split.py` no longer exists.
-- AC3: `tests/ci/test_check_packaging_split.py` no longer exists.
+- AC2: `scripts/check_packaging_split.py` no longer exists.
+- AC3: `tests/scripts/test_check_packaging_split.py` no longer exists.
 - AC4: GitHub Actions workflow no longer invokes `check_packaging_split.py`.
 - AC5: Full pytest passes (one fewer test file; everything else unchanged).
 - AC6: 7 standalone gates pass (one fewer gate: `check_packaging_split` removed).
@@ -43,8 +43,8 @@ Out of scope (deferred to future PRs):
 ## Steps
 
 1. `git rm -rf packaging/`.
-2. `git rm ci/check_packaging_split.py`.
-3. `git rm tests/ci/test_check_packaging_split.py`.
+2. `git rm scripts/check_packaging_split.py`.
+3. `git rm tests/scripts/test_check_packaging_split.py`.
 4. Edit `.github/workflows/checks.yml` (or `.github/workflows/verify.yml`) to remove `check_packaging_split.py` step.
 5. Run gates + pytest.
 6. CHANGELOG entry.
@@ -53,7 +53,7 @@ Out of scope (deferred to future PRs):
 ## Verification
 
 - `test ! -d packaging && echo OK`
-- `test ! -f ci/check_packaging_split.py && echo OK`
+- `test ! -f scripts/check_packaging_split.py && echo OK`
 - `pytest --no-cov -q` → 977 passed (one fewer file's worth of tests; no new failures)
 - `kanon verify .` → ok
 - 7 gates → ok

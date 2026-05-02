@@ -20,7 +20,7 @@ This ordering matches ADR-0045's stipulation that each Phase A step gates on sub
 Land a single PR that:
 
 1. Authors three `pyproject.toml` files at `packaging/substrate/pyproject.toml`, `packaging/reference/pyproject.toml`, `packaging/kit/pyproject.toml`, each conforming to the canonical shapes in the ADR-0043 design.
-2. Authors a CI gate `ci/check_packaging_split.py` that validates each file's name, version, and core metadata against the canonical shapes.
+2. Authors a CI gate `scripts/check_packaging_split.py` that validates each file's name, version, and core metadata against the canonical shapes.
 3. Preserves the active build path: top-level `pyproject.toml` remains the canonical build input for v0.3.x; the `packaging/` files are skeletons activated incrementally by A.2 onward.
 4. Adds a CHANGELOG entry under `[Unreleased] § Added`.
 
@@ -137,7 +137,7 @@ packages = ["src/_kanon_kit_meta"]
 
 A two-line `packaging/kit/src/_kanon_kit_meta/__init__.py` (`""" kanon-kit meta-package — installs kanon-substrate + kanon-reference. """`) gives hatch something to package.
 
-#### D. CI gate `ci/check_packaging_split.py`
+#### D. CI gate `scripts/check_packaging_split.py`
 
 New file. Validates each of the three `packaging/*/pyproject.toml` files:
 
@@ -150,11 +150,11 @@ New file. Validates each of the three `packaging/*/pyproject.toml` files:
 - reference depends on `kanon-substrate==1.0.0a1`; kit depends on both
 - substrate's `[tool.hatch.build.targets.wheel].exclude` includes `"../../src/kanon/kit/aspects/**"`
 
-Mirrors the gate-shape of `ci/check_kit_consistency.py` and `ci/check_foundations.py`. Returns `{"errors": [...], "status": "ok"|"error"}` JSON.
+Mirrors the gate-shape of `scripts/check_kit_consistency.py` and `scripts/check_foundations.py`. Returns `{"errors": [...], "status": "ok"|"error"}` JSON.
 
 #### E. CI gate test
 
-New file `tests/ci/test_check_packaging_split.py`. Mirrors the test-shape of `tests/ci/test_check_kit_consistency.py`. Covers: (1) green path (current state passes); (2) each invariant fails when violated (parse-able tampering: missing field, wrong name, wrong version, missing exclude).
+New file `tests/scripts/test_check_packaging_split.py`. Mirrors the test-shape of `tests/scripts/test_check_kit_consistency.py`. Covers: (1) green path (current state passes); (2) each invariant fails when violated (parse-able tampering: missing field, wrong name, wrong version, missing exclude).
 
 #### F. Top-level pyproject.toml — UNCHANGED
 
@@ -183,9 +183,9 @@ A one-line addition in the README under "Installation" or near the existing kano
 
 1. Create `packaging/substrate/pyproject.toml`, `packaging/reference/pyproject.toml`, `packaging/kit/pyproject.toml` per the shapes above.
 2. Create the two-line sentinel module at `packaging/kit/src/_kanon_kit_meta/__init__.py`.
-3. Author `ci/check_packaging_split.py` with the validations above.
-4. Author `tests/ci/test_check_packaging_split.py` with green-path + each-invariant-fails tests.
-5. Run gates: `kanon verify .`, `python ci/check_links.py`, `python ci/check_foundations.py`, `python ci/check_kit_consistency.py`, `python ci/check_invariant_ids.py`, `python ci/check_packaging_split.py`, `pytest tests/ci/test_check_packaging_split.py`.
+3. Author `scripts/check_packaging_split.py` with the validations above.
+4. Author `tests/scripts/test_check_packaging_split.py` with green-path + each-invariant-fails tests.
+5. Run gates: `kanon verify .`, `python scripts/check_links.py`, `python scripts/check_foundations.py`, `python scripts/check_kit_consistency.py`, `python scripts/check_invariant_ids.py`, `python scripts/check_packaging_split.py`, `pytest tests/scripts/test_check_packaging_split.py`.
 6. Run full pytest to confirm no regression: `uv run --frozen pytest -q --no-cov`.
 7. Author CHANGELOG entry.
 8. Optional README pointer.
@@ -214,19 +214,19 @@ A one-line addition in the README under "Installation" or near the existing kano
 
 ### CI gate
 
-- [ ] AC-CI1: `ci/check_packaging_split.py` exists; runnable; returns `{"status":"ok"}` JSON on green path.
-- [ ] AC-CI2: `tests/ci/test_check_packaging_split.py` covers green path + each invariant failure (≥6 tests).
+- [ ] AC-CI1: `scripts/check_packaging_split.py` exists; runnable; returns `{"status":"ok"}` JSON on green path.
+- [ ] AC-CI2: `tests/scripts/test_check_packaging_split.py` covers green path + each invariant failure (≥6 tests).
 - [ ] AC-CI3: Test file follows the existing CI-test conftest shape (uses `load_ci_script` fixture).
 
 ### Cross-cutting
 
 - [ ] AC-X1: `CHANGELOG.md` `[Unreleased] § Added` gains a paragraph naming Phase A.1.
 - [ ] AC-X2: `kanon verify .` returns `status: ok`, zero warnings.
-- [ ] AC-X3: `python ci/check_links.py` passes.
-- [ ] AC-X4: `python ci/check_foundations.py` passes.
-- [ ] AC-X5: `python ci/check_kit_consistency.py` passes.
-- [ ] AC-X6: `python ci/check_invariant_ids.py` passes.
-- [ ] AC-X7: `python ci/check_packaging_split.py` passes (the new gate validates itself green).
+- [ ] AC-X3: `python scripts/check_links.py` passes.
+- [ ] AC-X4: `python scripts/check_foundations.py` passes.
+- [ ] AC-X5: `python scripts/check_kit_consistency.py` passes.
+- [ ] AC-X6: `python scripts/check_invariant_ids.py` passes.
+- [ ] AC-X7: `python scripts/check_packaging_split.py` passes (the new gate validates itself green).
 - [ ] AC-X8: `uv run --frozen pytest -q --no-cov` passes (no regression).
 - [ ] AC-X9: Top-level `pyproject.toml` is byte-identical to current `main` after this PR.
 - [ ] AC-X10: No `src/kanon/` content changed; no aspect content moved; no `_kit_root()` change; no source code change in any kanon module.
@@ -234,13 +234,13 @@ A one-line addition in the README under "Installation" or near the existing kano
 ## Risks / concerns
 
 - **Risk: someone tries `cd packaging/substrate && uv build` and is confused when the wheel doesn't run.** Mitigation: header comment on each pyproject file ("Phase A.1 skeleton — substrate wheel not runtime-functional until A.2 wires entry-point discovery"); README pointer.
-- **Risk: `ci/check_kit_consistency.py` flags the new `packaging/` directory as unexpected kit content.** Mitigation: inspect the gate's scope; if it walks the repo for any TOML at non-canonical paths, narrow it (or add `packaging/` to its allowlist). Verify locally; if it fires, this plan amends to address.
+- **Risk: `scripts/check_kit_consistency.py` flags the new `packaging/` directory as unexpected kit content.** Mitigation: inspect the gate's scope; if it walks the repo for any TOML at non-canonical paths, narrow it (or add `packaging/` to its allowlist). Verify locally; if it fires, this plan amends to address.
 - **Risk: hatch's TOML validator may reject `packages = []` in the reference pyproject.** Mitigation: if hatch errors on empty `packages`, use a placeholder `packages = ["packaging/reference/_placeholder"]` with a one-byte sentinel file; the new gate accepts either form.
 - **Risk: `kanon verify .` might walk `packaging/` and choke on an unexpected `pyproject.toml`.** Verify locally; the verify command should ignore paths outside its scope.
 - **Risk: pytest's coverage gate (`--cov-fail-under=90`) may dip from the new files.** Mitigation: ensure the new CI gate has tests covering all branches; verify coverage stays ≥90 with `uv run --frozen pytest --cov`.
 
 ## Documentation impact
 
-- **New files:** `packaging/substrate/pyproject.toml`, `packaging/reference/pyproject.toml`, `packaging/kit/pyproject.toml`, `packaging/kit/src/_kanon_kit_meta/__init__.py`, `ci/check_packaging_split.py`, `tests/ci/test_check_packaging_split.py`, `docs/plans/phase-a.1-distribution-split.md`.
+- **New files:** `packaging/substrate/pyproject.toml`, `packaging/reference/pyproject.toml`, `packaging/kit/pyproject.toml`, `packaging/kit/src/_kanon_kit_meta/__init__.py`, `scripts/check_packaging_split.py`, `tests/scripts/test_check_packaging_split.py`, `docs/plans/phase-a.1-distribution-split.md`.
 - **Touched files:** `CHANGELOG.md`. Optionally `README.md` (one-line pointer; soft scope).
 - **No changes to:** top-level `pyproject.toml`, any `src/kanon/` content, any `docs/specs/`, any `docs/design/`, any `docs/decisions/`, any `docs/foundations/`, any aspect manifests, any protocol prose.

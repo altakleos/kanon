@@ -132,7 +132,7 @@ Sequencing within Phase 0.4:
 6. **Update principles README** with tier reorganization.
 7. **Personas.** Amend the two surviving; retire the two; author `acme-publisher`.
 8. **Update personas README.**
-9. **Run gates locally.** `kanon verify .`, `python ci/check_links.py`, `python ci/check_foundations.py`.
+9. **Run gates locally.** `kanon verify .`, `python scripts/check_links.py`, `python scripts/check_foundations.py`.
 
 Order matters because the principles README depends on principle frontmatter being current; vision references principles by ID.
 
@@ -174,8 +174,8 @@ Order matters because the principles README depends on principle frontmatter bei
 ### Cross-cutting
 
 - [ ] AC-X1: `kanon verify .` returns `status: ok` (one pre-existing fidelity warning unrelated is acceptable).
-- [ ] AC-X2: `python ci/check_links.py` passes.
-- [ ] AC-X3: `python ci/check_foundations.py` passes.
+- [ ] AC-X2: `python scripts/check_links.py` passes.
+- [ ] AC-X3: `python scripts/check_foundations.py` passes.
 - [ ] AC-X4: No source / spec / aspect-manifest / protocol-prose changes.
 - [ ] AC-X5: CHANGELOG.md gains an `## [Unreleased]` entry summarizing the foundations rewrite (this IS user-visible — substrate identity changes).
 - [ ] AC-X6: Doc length: vision ≤ 300 lines; manifesto ≤ 200 lines; each new principle ≤ 100 lines; new persona ≤ 100 lines.

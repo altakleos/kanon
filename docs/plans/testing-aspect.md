@@ -16,7 +16,7 @@ Ship the `testing` aspect (depth 0–3) as the fourth kanon aspect, following th
 - [x] `src/kanon/kit/aspects/testing/` exists with manifest, agents-md (depth 0–3), sections, protocols, and files subdirectories.
 - [x] Top-level `manifest.yaml` registers the testing aspect (experimental, depth 0–3, default 1, requires: [], suggests: ["sdd >= 1"]).
 - [x] `kanon aspect add <target> testing` scaffolds protocol and AGENTS.md section at default depth.
-- [x] `kanon aspect set-depth <target> testing 3` scaffolds `ci/check_test_quality.py`.
+- [x] `kanon aspect set-depth <target> testing 3` scaffolds `scripts/check_test_quality.py`.
 - [x] Self-hosting: `.kanon/protocols/kanon-testing/` contains canonical protocol copies; testing enabled at depth 3 on this repo.
 - [x] Kit integrity tests pass for the new aspect.
 - [x] CLI tests cover add and depth-3 scaffolding.
@@ -27,7 +27,7 @@ Ship the `testing` aspect (depth 0–3) as the fourth kanon aspect, following th
 
 1. Author ADR-0021, update decision index.
 2. Update specs index with testing entry.
-3. Create aspect directory tree: manifest.yaml, agents-md/depth-{0..3}.md, sections/test-discipline.md, protocols/{test-discipline,ac-first-tdd}.md, files/ci/check_test_quality.py.
+3. Create aspect directory tree: manifest.yaml, agents-md/depth-{0..3}.md, sections/test-discipline.md, protocols/{test-discipline,ac-first-tdd}.md, files/scripts/check_test_quality.py.
 4. Register in top-level manifest.yaml.
 5. Copy protocols to `.kanon/protocols/kanon-testing/`.
 6. Enable testing at depth 3 on this repo.

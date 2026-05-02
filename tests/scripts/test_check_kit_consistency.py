@@ -1,4 +1,4 @@
-"""Tests for ci/check_kit_consistency.py against the real repo."""
+"""Tests for scripts/check_kit_consistency.py against the real repo."""
 
 from __future__ import annotations
 

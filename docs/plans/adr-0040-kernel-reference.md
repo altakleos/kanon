@@ -89,7 +89,7 @@ One paragraph under `## [Unreleased]` § Added (alongside the ADR-0039 paragraph
 2. **Design doc.** Author the entry-point shape, registry composition algorithm, independence invariant, and `_kit_root()` retirement walkthrough.
 3. **Spec amendments.** Aspects.md and project-aspects.md gain protocol-substrate clauses.
 4. **Indexes + CHANGELOG.**
-5. **Run gates locally.** `kanon verify .`, `python ci/check_links.py`, `python ci/check_foundations.py`, `python ci/check_invariant_ids.py`, `python ci/check_verified_by.py`.
+5. **Run gates locally.** `kanon verify .`, `python scripts/check_links.py`, `python scripts/check_foundations.py`, `python scripts/check_invariant_ids.py`, `python scripts/check_verified_by.py`.
 6. **Regenerate `.kanon/fidelity.lock`** if amended specs bump SHAs.
 
 ## Acceptance criteria
@@ -121,10 +121,10 @@ One paragraph under `## [Unreleased]` § Added (alongside the ADR-0039 paragraph
 ### Cross-cutting
 
 - [ ] AC-X4: `kanon verify .` returns `status: ok` (zero warnings; regenerate fidelity lock if needed).
-- [ ] AC-X5: `python ci/check_links.py` passes.
-- [ ] AC-X6: `python ci/check_foundations.py` passes.
-- [ ] AC-X7: `python ci/check_invariant_ids.py` passes (no new INVs).
-- [ ] AC-X8: `python ci/check_verified_by.py` passes (only pre-existing scaffold-v2 warnings acceptable).
+- [ ] AC-X5: `python scripts/check_links.py` passes.
+- [ ] AC-X6: `python scripts/check_foundations.py` passes.
+- [ ] AC-X7: `python scripts/check_invariant_ids.py` passes (no new INVs).
+- [ ] AC-X8: `python scripts/check_verified_by.py` passes (only pre-existing scaffold-v2 warnings acceptable).
 - [ ] AC-X9: No source / aspect-manifest / protocol-prose / CI changes.
 
 ## Risks / concerns

@@ -97,9 +97,9 @@ One paragraph under `## [Unreleased]` § Added (alongside ADR-0039 / ADR-0040 / 
 ### Cross-cutting
 
 - [ ] AC-X3: `kanon verify .` returns `status: ok`, zero warnings.
-- [ ] AC-X4: `python ci/check_links.py` passes.
-- [ ] AC-X5: `python ci/check_foundations.py` passes, zero warnings.
-- [ ] AC-X6: `python ci/check_invariant_ids.py` passes, zero warnings.
+- [ ] AC-X4: `python scripts/check_links.py` passes.
+- [ ] AC-X5: `python scripts/check_foundations.py` passes, zero warnings.
+- [ ] AC-X6: `python scripts/check_invariant_ids.py` passes, zero warnings.
 - [ ] AC-X7: No source / aspect-manifest / protocol-prose / CI / spec-body changes (only verification-contract.md amendment is a cross-reference, no INV body changes; only NEW spec content is none).
 
 ## Risks / concerns

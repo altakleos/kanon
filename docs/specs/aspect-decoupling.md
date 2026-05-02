@@ -11,11 +11,11 @@ stressed_by:
 fixtures:
   - tests/test_cli.py
   - tests/test_kit_integrity.py
-  - tests/ci/test_check_kit_consistency.py
+  - tests/scripts/test_check_kit_consistency.py
 invariant_coverage:
   INV-aspect-decoupling-no-literal-aspect-names:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/ci/test_check_kit_consistency.py::test_real_repo_passes
+    - tests/scripts/test_check_kit_consistency.py::test_real_repo_passes
   INV-aspect-decoupling-init-accepts-aspects:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_cli_aspect.py::test_init_with_aspects_flag
@@ -31,7 +31,7 @@ invariant_coverage:
     - tests/test_cli_aspect.py::test_aspect_remove_sdd_with_worktrees
   INV-aspect-decoupling-ci-manifest-driven:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/ci/test_check_kit_consistency.py::test_real_repo_passes
+    - tests/scripts/test_check_kit_consistency.py::test_real_repo_passes
   INV-aspect-decoupling-tier-placeholder-replaced:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
 ---

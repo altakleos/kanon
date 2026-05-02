@@ -18,7 +18,7 @@ as internal modules gated by aspect + depth.
 - **No staleness**: Validators update with `pip install --upgrade kanon-kit`
 - **No dependency leak**: pyyaml is kanon's dep, not the consumer's
 - **Configurable**: Strictness flows through `aspect set-config`
-- **No file ownership burden**: Consumer's `ci/` stays clean
+- **No file ownership burden**: Consumer's `scripts/` stays clean
 
 ## Acceptance Criteria
 
@@ -66,5 +66,5 @@ as internal modules gated by aspect + depth.
 ## Out of Scope
 
 - Config passthrough to validators (future: `aspect set-config` → validator config)
-- Standalone CI script wrappers (consumers who want `python ci/check_links.py` can write a 3-line shim)
+- Standalone CI script wrappers (consumers who want `python scripts/check_links.py` can write a 3-line shim)
 - Updating the reference `verify.yml` workflow

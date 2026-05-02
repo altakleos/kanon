@@ -77,7 +77,7 @@ Rewrite AGENTS.md assembly to produce the slim routing index.
   branch-hygiene, etc.) in the table.
 - [x] P3-T4: Remove marker-section logic from `_merge_agents_md()`
   (upgrade path).
-- [x] P3-T5: Update `ci/check_kit_consistency.py` to remove
+- [x] P3-T5: Update `scripts/check_kit_consistency.py` to remove
   section-file byte-equality checks.
 
 ## Phase 4: sdd de-privileging (INV-2, INV-10)

@@ -22,7 +22,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install build tool and runtime deps for ci/check_package_contents.py
+      - name: Install build tool and runtime deps for scripts/check_package_contents.py
         run: pip install build pyyaml
 
       - name: Build wheel and sdist
@@ -31,7 +31,7 @@ jobs:
       - name: Validate wheel contents against tag
         run: |
           WHEEL=$(ls dist/*.whl)
-          python ci/check_package_contents.py --wheel "$WHEEL" --tag "${{ github.ref_name }}"
+          python scripts/check_package_contents.py --wheel "$WHEEL" --tag "${{ github.ref_name }}"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7

@@ -1,4 +1,4 @@
-"""Tests for ci/check_process_gates.py.
+"""Tests for scripts/check_process_gates.py.
 
 Each test sets up a synthetic git repo in tmp_path with the necessary
 commits and files, then asserts the gate's verdict.
@@ -34,7 +34,7 @@ def _M(load_ci_script):
     return load_ci_script("check_process_gates.py")
 
 
-_SCRIPT_PATH = REPO_ROOT / "ci" / "check_process_gates.py"
+_SCRIPT_PATH = REPO_ROOT / "scripts" / "check_process_gates.py"
 
 
 # ---------------------------------------------------------------------------

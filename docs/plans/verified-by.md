@@ -7,7 +7,7 @@ Spec at `docs/specs/verified-by.md` has been approved.
 
 ## Tasks
 
-1. Create ci/check_verified_by.py validator
+1. Create scripts/check_verified_by.py validator
 2. Add invariant_coverage: to specs that have test coverage (non-fixtures_deferred specs)
 3. Wire warnings into kanon verify at depth ≥ 2
 4. Tests for the validator
@@ -15,6 +15,6 @@ Spec at `docs/specs/verified-by.md` has been approved.
 
 ## Success Criteria
 
-- ci/check_verified_by.py passes on this repo
+- scripts/check_verified_by.py passes on this repo
 - kanon verify passes
 - All tests pass, coverage above 90%

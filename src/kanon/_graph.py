@@ -164,7 +164,7 @@ def _split_frontmatter(text: str) -> tuple[dict[str, Any], str]:
 
     Returns an empty dict when the file lacks frontmatter or its YAML is
     malformed — graph load tolerates broken files (they simply contribute
-    no edges); ``ci/check_foundations.py`` is the validator that turns
+    no edges); ``scripts/check_foundations.py`` is the validator that turns
     malformed frontmatter into a CI error.
     """
     text = text.replace("\r\n", "\n")
@@ -465,7 +465,7 @@ def _spec_inv_ref_edges(spec_node: Node, spec_slugs: set[str]) -> list[Edge]:
     anchor definitions) implies a structural reference. Self-references
     are ignored. We use the longest known-spec-slug prefix to match;
     if no spec slug is the prefix, the reference is dropped silently
-    (it may be a typo — ``ci/check_invariant_ids.py`` validates that).
+    (it may be a typo — ``scripts/check_invariant_ids.py`` validates that).
     """
     try:
         body = spec_node.path.read_text(encoding="utf-8")

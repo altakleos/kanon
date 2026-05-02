@@ -31,8 +31,8 @@ In scope:
 - Update `src/kanon/_manifest.py:_load_aspects_from_entry_points` `_source` synthesis: `Path(kanon_reference.__file__).parent / "aspects" / slug.replace("-", "_")`.
 - Update `src/kanon/_manifest.py:_aspect_path` fallback similarly.
 - Update `tests/test_kanon_reference_manifests.py` `_KIT_ASPECTS` constant to point at `aspects/kanon_<slug>/`.
-- Update `ci/check_kit_consistency.py` `_aspect_root()` if it has hardcoded `data/` path.
-- Update `ci/check_packaging_split.py` if its entry-point validation expects the old target.
+- Update `scripts/check_kit_consistency.py` `_aspect_root()` if it has hardcoded `data/` path.
+- Update `scripts/check_packaging_split.py` if its entry-point validation expects the old target.
 - Update 7 manifest YAML header comments to cite new path (`src/kanon_reference/aspects/kanon_<slug>/files/` etc.).
 - Update 7 LOADER docstring path refs.
 - Recapture fidelity lock (.kanon/fidelity.lock).
@@ -40,7 +40,7 @@ In scope:
 
 Out of scope (deferred to subsequent migration PRs):
 - Killing `packaging/` (PR B).
-- Renaming `ci/` → `scripts/` (PR C).
+- Renaming `scripts/` → `scripts/` (PR C).
 - `docs/plans/` partition (PR D).
 - `src/kanon/` → `kernel/` (PR E).
 - Loosening `check_kit_consistency.py` byte-mirror clause (PR F).
@@ -55,7 +55,7 @@ Out of scope (deferred to subsequent migration PRs):
 - AC6: 8 standalone gates pass.
 - AC7: `tests/test_kanon_reference_manifests.py` equivalence tests still pass (LOADER's MANIFEST dict equals YAML's parsed content).
 - AC8: Self-host conformance: `.kanon/protocols/<aspect>/...` files still match their counterparts in `aspects/kanon_<slug>/protocols/...` (or `check_kit_consistency.py` updated to read from new path).
-- AC9: `python ci/check_substrate_independence.py` still passes.
+- AC9: `python scripts/check_substrate_independence.py` still passes.
 
 ## Steps
 
@@ -65,8 +65,8 @@ Out of scope (deferred to subsequent migration PRs):
 4. Update `pyproject.toml` + `packaging/reference/pyproject.toml` entry-points.
 5. Update `_manifest.py` (2 sites: `_load_aspects_from_entry_points` line ~531, `_aspect_path` line ~723).
 6. Update `tests/test_kanon_reference_manifests.py` `_KIT_ASPECTS`.
-7. Update `ci/check_kit_consistency.py` if needed.
-8. Update `ci/check_packaging_split.py` if needed.
+7. Update `scripts/check_kit_consistency.py` if needed.
+8. Update `scripts/check_packaging_split.py` if needed.
 9. Update 7 manifest YAML header comments + 7 LOADER docstring comments.
 10. Re-run `uv pip install -e .` so entry-points are re-registered with new targets.
 11. Run gates one at a time; fix issues.

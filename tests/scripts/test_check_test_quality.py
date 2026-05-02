@@ -1,4 +1,4 @@
-"""Tests for ci/check_test_quality.py."""
+"""Tests for scripts/check_test_quality.py."""
 
 from __future__ import annotations
 

@@ -44,14 +44,14 @@ The trust boundary for preflight commands is *write-access to `.kanon/config.yam
 
 ## Out of scope
 
-- Extending `ci/check_security_patterns.py` to honor an inline rationale annotation. Worth a follow-up plan once a second carve-out call site emerges.
+- Extending `scripts/check_security_patterns.py` to honor an inline rationale annotation. Worth a follow-up plan once a second carve-out call site emerges.
 - Refactor of `_preflight.py` to argv form. Rejected per Approach above.
 
 ## Addendum: process-gates regression fix (in-scope per user direction)
 
-While running the AC pytest suite, 7 tests in `tests/ci/test_check_process_gates.py` were failing locally. Root cause: `ci/check_process_gates.py:_diff_content` calls `git diff` without `--no-ext-diff`, so a developer-environment `diff.external` setting (e.g., `difft`, `delta`) strips the `+` markers the `_CLI_DECORATOR` regex scans for, producing silent false negatives. CI was unaffected because the GitHub Actions runner has no `diff.external` configured.
+While running the AC pytest suite, 7 tests in `tests/scripts/test_check_process_gates.py` were failing locally. Root cause: `scripts/check_process_gates.py:_diff_content` calls `git diff` without `--no-ext-diff`, so a developer-environment `diff.external` setting (e.g., `difft`, `delta`) strips the `+` markers the `_CLI_DECORATOR` regex scans for, producing silent false negatives. CI was unaffected because the GitHub Actions runner has no `diff.external` configured.
 
 Fix: add `--no-ext-diff` to the two `git diff` invocations in `_diff_content`. The other `_git` callers in the file use `--name-only` or `--format=`, neither of which is affected by `diff.external`.
 
-- [x] T9: `ci/check_process_gates.py:_diff_content` invokes `git diff --no-ext-diff`.
-- [x] T10: `pytest tests/ci/test_check_process_gates.py` — all 25 tests pass.
+- [x] T9: `scripts/check_process_gates.py:_diff_content` invokes `git diff --no-ext-diff`.
+- [x] T10: `pytest tests/scripts/test_check_process_gates.py` — all 25 tests pass.

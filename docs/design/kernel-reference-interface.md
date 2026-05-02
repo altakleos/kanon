@@ -163,7 +163,7 @@ This replaces every call site of `_kit_root() / aspect_relative_path`.
 Per ADR-0040 Decision §6: `kanon-substrate`'s test suite must pass with `kanon-reference` uninstalled.
 
 ```bash
-# ci/check_substrate_independence.py (Phase A authors)
+# scripts/check_substrate_independence.py (Phase A authors)
 #
 # 1. Create a clean venv.
 # 2. pip install -e ./kanon-substrate    (kernel only — no kanon-reference)
@@ -239,7 +239,7 @@ Phase A walks each call site explicitly. The pattern is consistent: every `_kit_
 | `_scaffold.py` | ~+40 / -30 | Replace `_kit_root()` references with registry lookups |
 | `_validators.py` (new helper module) | ~+30 | `validate_namespace_ownership()` |
 | New `pyproject.toml` for `kanon-reference` | ~+40 | Entry-point declarations for the seven aspects |
-| `ci/check_substrate_independence.py` | ~+60 | The CI gate above |
+| `scripts/check_substrate_independence.py` | ~+60 | The CI gate above |
 | Test extensions | ~+150 | New `test_aspect_registry.py`; refactor `test_e2e_lifecycle.py` and `test_kit_integrity.py` to use registry overlays |
 | Migration of `.kanon/kit.md` ownership | ~+10 | Move to `kanon-sdd` aspect or delete |
 

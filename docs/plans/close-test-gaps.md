@@ -40,7 +40,7 @@ Add missing tests for:
 
 Three new test files following the `test_check_kit_consistency.py` pattern.
 
-### 2a. `tests/ci/test_check_foundations.py`
+### 2a. `tests/scripts/test_check_foundations.py`
 
 | Test | What |
 |------|------|
@@ -49,7 +49,7 @@ Three new test files following the `test_check_kit_consistency.py` pattern.
 | `test_missing_foundation_ref` | Create spec referencing non-existent foundation slug, assert error |
 | `test_invalid_principle_kind` | Create principle with bad `kind:`, assert error |
 
-### 2b. `tests/ci/test_check_links.py`
+### 2b. `tests/scripts/test_check_links.py`
 
 | Test | What |
 |------|------|
@@ -59,7 +59,7 @@ Three new test files following the `test_check_kit_consistency.py` pattern.
 | `test_external_links_skipped` | Create md file with `https://` link, assert no error |
 | `test_code_block_links_skipped` | Create md file with link inside fenced code block, assert no error |
 
-### 2c. `tests/ci/test_check_package_contents.py`
+### 2c. `tests/scripts/test_check_package_contents.py`
 
 | Test | What |
 |------|------|

@@ -21,7 +21,7 @@ invariant_coverage:
   INV-template-bundle-tier3-canonical-with-repo:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_dev_process_byte_equal_to_canonical
-    - ci/check_kit_consistency.py
+    - scripts/check_kit_consistency.py
   INV-template-bundle-shims-are-pointers:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_cli.py::test_shims_are_pointers_not_duplicates
@@ -32,7 +32,7 @@ invariant_coverage:
     - tests/test_cli.py::test_init_rejects_existing_without_force
   INV-template-bundle-no-consumer-state-leaks:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - ci/check_package_contents.py
+    - scripts/check_package_contents.py
   INV-template-bundle-placeholders-replaced:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
 ---
@@ -53,7 +53,7 @@ Define the exact file tree written by `kanon init --tier <N>` for each of N ∈ 
 <!-- INV-template-bundle-strict-subset -->
 2. **Strict-subset invariant (tautological).** Every file scaffolded at tier-N is also scaffolded at tier-(N+1) because `_build_bundle(tier=N)` unions manifest entries for tiers 0..N. There is no independent authoring of tier-N content; `manifest.yaml` is the single source.
 <!-- INV-template-bundle-tier3-canonical-with-repo -->
-3. **Tier-3 canonical with repo.** Files in `src/kanon/kit/files/` and `src/kanon/kit/protocols/` that have a repo-root counterpart (e.g., `docs/sdd-method.md`, the `_template.md` files, the kit's own `.kanon/protocols/*.md`) are byte-identical to those counterparts. Enforced by `ci/check_kit_consistency.py` against a narrow whitelist.
+3. **Tier-3 canonical with repo.** Files in `src/kanon/kit/files/` and `src/kanon/kit/protocols/` that have a repo-root counterpart (e.g., `docs/sdd-method.md`, the `_template.md` files, the kit's own `.kanon/protocols/*.md`) are byte-identical to those counterparts. Enforced by `scripts/check_kit_consistency.py` against a narrow whitelist.
 <!-- INV-template-bundle-shims-are-pointers -->
 4. **Shims are pointers.** `CLAUDE.md` is always a single-line `See @AGENTS.md\n` file. Harness-specific shims (Cursor, Windsurf, etc.) are generated at `init` time from `kit/harnesses.yaml` and are also single-file pointers (with any frontmatter each harness requires).
 <!-- INV-template-bundle-html-comment-markers -->
@@ -61,7 +61,7 @@ Define the exact file tree written by `kanon init --tier <N>` for each of N ∈ 
 <!-- INV-template-bundle-config-and-kit-md-seed -->
 6. **`.kanon/config.yaml` and `.kanon/kit.md` seed.** Every tier writes `.kanon/config.yaml` with `{kit_version, tier, tier_set_at}` and `.kanon/kit.md` rendered from `kit/kit.md` with placeholder substitution. `init` errors out if `.kanon/` already exists and `--force` wasn't given.
 <!-- INV-template-bundle-no-consumer-state-leaks -->
-7. **No consumer state leaks into the wheel.** `ci/check_package_contents.py` hard-fails on any file under paths that look like consumer output (e.g., `.kanon/config.yaml`, `.kit/fidelity.lock`, test-only artifacts).
+7. **No consumer state leaks into the wheel.** `scripts/check_package_contents.py` hard-fails on any file under paths that look like consumer output (e.g., `.kanon/config.yaml`, `.kit/fidelity.lock`, test-only artifacts).
 <!-- INV-template-bundle-placeholders-replaced -->
 8. **Placeholders are replaced at init.** Files containing `${...}`-style placeholders (`string.Template` with safe substitution per Sensei's learner-id pattern) are rendered at `init` time against `{project_name, tier, kit_version, iso_timestamp}`.
 

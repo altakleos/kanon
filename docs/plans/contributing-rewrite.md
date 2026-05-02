@@ -37,7 +37,7 @@ The reshape orders sections **concept → context → location → action**, mir
 
 ### Out of scope
 
-- Changes to source under `src/`, `ci/`, `tests/`, `scripts/`.
+- Changes to source under `src/`, `scripts/`, `tests/`, `scripts/`.
 - New ADRs, specs, design docs.
 - Changes to existing design docs in `docs/design/` (cross-link only).
 - Changes to protocol prose under `.kanon/protocols/` or `src/kanon/kit/aspects/*/protocols/`.
@@ -48,7 +48,7 @@ The reshape orders sections **concept → context → location → action**, mir
 Three-agent panel produced intermediate artifacts in parallel; main agent synthesized:
 
 1. **Architect** (Opus, read-only) — produced section-by-section outline, reader-journey rationale, cross-link policy, what-not-to-include list.
-2. **Code-explorer** — produced the truth dump (verified `path:line` citations for the 7 aspects, `kanon init` 20-step call graph, `kanon verify` orchestration, all 13 `ci/check_*.py` scripts, CI workflow chain). Caught two factual errors in the original doc: `_check_pending_recovery` is NOT called from `init`; `release-preflight.py` is NOT in `checks.yml`.
+2. **Code-explorer** — produced the truth dump (verified `path:line` citations for the 7 aspects, `kanon init` 20-step call graph, `kanon verify` orchestration, all 13 `scripts/check_*.py` scripts, CI workflow chain). Caught two factual errors in the original doc: `_check_pending_recovery` is NOT called from `init`; `release-preflight.py` is NOT in `checks.yml`.
 3. **Designer** — produced 6 mermaid diagrams, syntax-checked.
 
 Synthesis lifted the architect's spine, embedded the designer's diagrams at specified anchors, used the explorer's citations for every factual claim.
@@ -59,10 +59,10 @@ Synthesis lifted the architect's spine, embedded the designer's diagrams at spec
 - [x] AC2: 6 mermaid code fences embedded at the specified section anchors.
 - [x] AC3: All 7 kit-shipped aspects listed in §2 with verbatim manifest data; 5-of-7 default-set fact called out.
 - [x] AC4: All 14 source modules + 6 validators in §4 module + validator tables.
-- [x] AC5: All 13 `ci/check_*.py` scripts + workflow chain in §6 gate matrix; release-only `check_package_contents.py` distinguished.
+- [x] AC5: All 13 `scripts/check_*.py` scripts + workflow chain in §6 gate matrix; release-only `check_package_contents.py` distinguished.
 - [x] AC6: Length ≤ 400 lines (final: 365).
 - [x] AC7: `kanon verify .` returns `status: ok` (one pre-existing fidelity warning unrelated to this change).
-- [x] AC8: `python ci/check_links.py` passes.
+- [x] AC8: `python scripts/check_links.py` passes.
 - [x] AC9: No CHANGELOG entry needed (docs-only).
 - [x] AC10: No source code, spec, ADR, or design-doc change.
 

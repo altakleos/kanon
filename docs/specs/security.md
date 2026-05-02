@@ -11,7 +11,7 @@ stressed_by:
 fixtures:
   - tests/test_cli.py
   - tests/test_kit_integrity.py
-  - tests/ci/test_check_security_patterns.py
+  - tests/scripts/test_check_security_patterns.py
 invariant_coverage:
   INV-security-depth-range:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
@@ -22,13 +22,13 @@ invariant_coverage:
   INV-security-agents-md-section:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
   INV-security-ci-validator:
-    - tests/ci/test_check_security_patterns.py::test_sql_interpolation_detected
+    - tests/scripts/test_check_security_patterns.py::test_sql_interpolation_detected
   INV-security-no-dependency:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_security_manifest_paths_resolve
   INV-security-language-agnostic:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/ci/test_check_security_patterns.py::test_clean_file_no_findings
+    - tests/scripts/test_check_security_patterns.py::test_clean_file_no_findings
   INV-security-non-destructive:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_cli_aspect.py::test_aspect_remove_leaves_files
@@ -65,7 +65,7 @@ The aspect is language-agnostic at all depths. The protocols describe *what* to 
 3. **AGENTS.md section.** At depth ≥ 1, the aspect contributes one marker-delimited section `security/secure-defaults` to AGENTS.md — a short prose summary of the core rules so an operating agent sees the security baseline on the boot chain.
 
 <!-- INV-security-ci-validator -->
-4. **CI validator (depth 2).** The aspect scaffolds `ci/check_security_patterns.py` — a language-agnostic pattern scanner that detects:
+4. **CI validator (depth 2).** The aspect scaffolds `scripts/check_security_patterns.py` — a language-agnostic pattern scanner that detects:
    - High-entropy strings in source that look like secrets (API keys, tokens, passwords).
    - SQL string concatenation or interpolation patterns.
    - Disabled TLS verification patterns (`verify=False`, `rejectUnauthorized`, `NODE_TLS_REJECT_UNAUTHORIZED`).

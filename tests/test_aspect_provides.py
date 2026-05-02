@@ -232,7 +232,7 @@ def test_ci_check_requires_resolution_passes_on_live_kit() -> None:
     """The kit's existing `requires:` predicates all resolve."""
     import importlib.util
 
-    spec_path = Path(__file__).resolve().parents[1] / "ci" / "check_kit_consistency.py"
+    spec_path = Path(__file__).resolve().parents[1] / "scripts" / "check_kit_consistency.py"
     spec_mod = importlib.util.spec_from_file_location("check_kit_consistency", spec_path)
     assert spec_mod is not None and spec_mod.loader is not None
     mod = importlib.util.module_from_spec(spec_mod)
@@ -251,7 +251,7 @@ def test_ci_check_requires_resolution_flags_dangling_capability(tmp_path: Path) 
     """
     import importlib.util
 
-    spec_path = Path(__file__).resolve().parents[1] / "ci" / "check_kit_consistency.py"
+    spec_path = Path(__file__).resolve().parents[1] / "scripts" / "check_kit_consistency.py"
     spec_mod = importlib.util.spec_from_file_location("check_kit_consistency", spec_path)
     assert spec_mod is not None and spec_mod.loader is not None
     mod = importlib.util.module_from_spec(spec_mod)

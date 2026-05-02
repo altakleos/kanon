@@ -13,7 +13,7 @@ Add a single, terse contributor-facing document that gives a new human contribut
 
 ## Motivation
 
-`AGENTS.md` is a router for LLM agents (per ADR-0034); it tells the runtime *what protocol fires when*. A new human contributor opening a PR needs the inverse: a map from intent ("change `kanon init` behaviour") to location ("`cli.py` + spec amendment + test in `test_cli.py`") to gates that will block the PR. The 14 ci/check_*.py + 6 in-process validators are opaque from outside; surfacing them in one table prevents the "why did my PR fail?" cycle.
+`AGENTS.md` is a router for LLM agents (per ADR-0034); it tells the runtime *what protocol fires when*. A new human contributor opening a PR needs the inverse: a map from intent ("change `kanon init` behaviour") to location ("`cli.py` + spec amendment + test in `test_cli.py`") to gates that will block the PR. The 14 scripts/check_*.py + 6 in-process validators are opaque from outside; surfacing them in one table prevents the "why did my PR fail?" cycle.
 
 This is also what the `onboarding-agent` persona (`docs/foundations/personas/onboarding-agent.md`) implies should exist — a persona without a corresponding entry document is a planning gap.
 
@@ -36,7 +36,7 @@ This is also what the `onboarding-agent` persona (`docs/foundations/personas/onb
 ### Out of scope
 
 - New ADRs, specs, or design docs.
-- Any source code changes under `src/`, `ci/`, `tests/`, `scripts/`.
+- Any source code changes under `src/`, `scripts/`, `tests/`, `scripts/`.
 - Changes to existing design docs in `docs/design/` (cross-link only).
 - Changes to protocol prose under `.kanon/protocols/` or `src/kanon/kit/aspects/*/protocols/`.
 - New CI checks. (A future plan can add a `check_contributor_doc_freshness.py` that fails when a new `src/kanon/*.py` lands without a row in the module map.)
@@ -46,18 +46,18 @@ This is also what the `onboarding-agent` persona (`docs/foundations/personas/onb
 
 - [ ] `docs/contributing.md` exists with the six sections above, ≤ 250 lines.
 - [ ] Module map table covers every file currently in `src/kanon/*.py` and `src/kanon/_validators/*.py`.
-- [ ] Gate matrix covers every script in `ci/check_*.py` and every workflow in `.github/workflows/*.yml`.
+- [ ] Gate matrix covers every script in `scripts/check_*.py` and every workflow in `.github/workflows/*.yml`.
 - [ ] Cross-links added to `README.md` and `AGENTS.md`; both link forms render correctly.
 - [ ] No emoji unless explicitly requested by the user.
 - [ ] No CHANGELOG entry needed (docs-only — per `AGENTS.md § Contribution Conventions`).
 - [ ] `kanon verify .` returns `status: ok` after the change.
-- [ ] No existing markdown link is broken (`ci/check_links.py` passes).
+- [ ] No existing markdown link is broken (`scripts/check_links.py` passes).
 
 ## Approach (sequencing)
 
 1. Author `docs/contributing.md` as the body of work.
 2. Add the two cross-links last (small, mechanical).
-3. Run `python ci/check_links.py` and `kanon verify .` from the worktree.
+3. Run `python scripts/check_links.py` and `kanon verify .` from the worktree.
 4. Commit with a Conventional-Commit message (`docs: add contributor architecture doc (plan: contributor-arch-doc)`).
 5. Push branch, open PR, link the plan.
 

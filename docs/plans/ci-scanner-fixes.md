@@ -13,8 +13,8 @@ Audit risks R5 and R9. Both scripts are kit-shipped (consumers receive them via 
 
 | Script | Repo path | Kit path |
 |---|---|---|
-| `check_deps.py` | `ci/check_deps.py` | `src/kanon/kit/aspects/deps/files/ci/check_deps.py` |
-| `check_test_quality.py` | `ci/check_test_quality.py` | `src/kanon/kit/aspects/testing/files/ci/check_test_quality.py` |
+| `check_deps.py` | `scripts/check_deps.py` | `src/kanon/kit/aspects/deps/files/scripts/check_deps.py` |
+| `check_test_quality.py` | `scripts/check_test_quality.py` | `src/kanon/kit/aspects/testing/files/scripts/check_test_quality.py` |
 
 Both bugs are false positives — they emit findings on benign input — and undermine the validators' credibility.
 
@@ -32,27 +32,27 @@ Fix: introduce the same skip-set in `check_test_quality.py` and apply it during 
 
 ## Tasks
 
-- [x] T1: In `check_deps.py:_check_pyproject_toml`, replaced the loose `[project]` state machine with one that flips `in_deps = True` only on lines matching `<name> = [` (covering `dependencies` and `[project.optional-dependencies]` group bodies). Mirrored in both copies (`ci/check_deps.py` and `src/kanon/kit/aspects/deps/files/ci/check_deps.py`); byte-equality preserved.
+- [x] T1: In `check_deps.py:_check_pyproject_toml`, replaced the loose `[project]` state machine with one that flips `in_deps = True` only on lines matching `<name> = [` (covering `dependencies` and `[project.optional-dependencies]` group bodies). Mirrored in both copies (`scripts/check_deps.py` and `src/kanon/kit/aspects/deps/files/scripts/check_deps.py`); byte-equality preserved.
 
 - [x] T2: In `check_test_quality.py`, added `_SKIP_DIRS = {".git", "node_modules", ".venv", "__pycache__", "dist", "build"}` and filtered `_find_test_files` by `any(part in _SKIP_DIRS for part in p.relative_to(root).parts)`. Mirrored in both copies.
 
-- [x] T3: Added `test_pyproject_requires_python_alone_is_not_a_dependency` and `test_pyproject_requires_python_skipped_alongside_dependencies` to `tests/ci/test_check_deps.py`.
+- [x] T3: Added `test_pyproject_requires_python_alone_is_not_a_dependency` and `test_pyproject_requires_python_skipped_alongside_dependencies` to `tests/scripts/test_check_deps.py`.
 
 - [x] T4: Added `test_pyproject_dependency_array_still_scanned` and `test_pyproject_optional_dependencies_block_scanned`. Used exotic `">=1.0"` entries because the existing `_PYPROJECT_UNPINNED` regex requires the operator to immediately follow the opening quote — the realistic `"name>=1.0"` form does not match the regex (a separate pre-existing limitation, out of scope for this plan).
 
-- [x] T5: Added `test_skip_dirs_excludes_venv_and_friends` to `tests/ci/test_check_test_quality.py` — verifies `_find_test_files` skips `.venv/` and `node_modules/` while still picking up `tests/test_real.py`.
+- [x] T5: Added `test_skip_dirs_excludes_venv_and_friends` to `tests/scripts/test_check_test_quality.py` — verifies `_find_test_files` skips `.venv/` and `node_modules/` while still picking up `tests/test_real.py`.
 
-- [x] T6: `python ci/check_kit_consistency.py` returns exit 0; `diff` between repo and kit copies is empty for both files.
+- [x] T6: `python scripts/check_kit_consistency.py` returns exit 0; `diff` between repo and kit copies is empty for both files.
 
 - [x] T7: `CHANGELOG.md` `## [Unreleased] / ### Fixed` carries two entries covering both fixes.
 
 ## Acceptance Criteria
 
-- [x] AC1: `python ci/check_deps.py` against the repo emits zero findings (was 1: false positive on `requires-python = ">=3.10"`).
-- [x] AC2: `python ci/check_test_quality.py` against the repo emits zero `.venv/`-related warnings (was 11).
-- [x] AC3: `python ci/check_kit_consistency.py` returns exit 0; both kit/repo copies are byte-identical.
+- [x] AC1: `python scripts/check_deps.py` against the repo emits zero findings (was 1: false positive on `requires-python = ">=3.10"`).
+- [x] AC2: `python scripts/check_test_quality.py` against the repo emits zero `.venv/`-related warnings (was 11).
+- [x] AC3: `python scripts/check_kit_consistency.py` returns exit 0; both kit/repo copies are byte-identical.
 - [x] AC4: `pytest` passes — new regression tests (T3–T5) pass alongside the 305 prior tests.
-- [x] AC5: `ruff check` clean on changed files. (Three pre-existing SIM117 errors in `tests/ci/test_release_preflight.py` are unrelated.)
+- [x] AC5: `ruff check` clean on changed files. (Three pre-existing SIM117 errors in `tests/scripts/test_release_preflight.py` are unrelated.)
 
 ## Documentation Impact
 

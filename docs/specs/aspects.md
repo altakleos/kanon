@@ -36,7 +36,7 @@ invariant_coverage:
     - tests/test_protocols.py::test_protocol_byte_equals_repo_canonical
     - tests/test_cli.py::test_protocols_index_marker_present_tier1_plus
   INV-aspects-cross-aspect-ownership-exclusive:
-    - ci/check_kit_consistency.py
+    - scripts/check_kit_consistency.py
   INV-aspects-non-destructive-add-remove:
     - tests/test_cli_aspect.py::test_aspect_add
     - tests/test_cli_aspect.py::test_aspect_remove
@@ -74,7 +74,7 @@ The model's primary user is an LLM-driven repo — often a solo developer runnin
 5. **Namespaced discovery.** Protocol files live under `.kanon/protocols/<aspect>/<name>.md` in consumer repos and `src/kanon_reference/aspects/kanon_<aspect>/protocols/<name>.md` in the kit. AGENTS.md section markers gain an aspect prefix: `<!-- kanon:begin:<aspect>/<section> -->` / `<!-- kanon:end:<aspect>/<section> -->`. The `protocols-index` marker block renders a single unified table grouped by aspect. Existing flat-namespace protocols (`tier-up-advisor.md`, `verify-triage.md`, `spec-review.md`) migrate under `sdd/` in the v0.2 cut.
 
 <!-- INV-aspects-cross-aspect-ownership-exclusive -->
-6. **Cross-aspect file ownership is exclusive.** No two aspects may scaffold the same file path. `ci/check_kit_consistency.py` fails on conflict. Files outside every aspect's claim are consumer-authored and never touched by `init`, `upgrade`, `aspect add`, or `aspect remove`.
+6. **Cross-aspect file ownership is exclusive.** No two aspects may scaffold the same file path. `scripts/check_kit_consistency.py` fails on conflict. Files outside every aspect's claim are consumer-authored and never touched by `init`, `upgrade`, `aspect add`, or `aspect remove`.
 
 <!-- INV-aspects-non-destructive-add-remove -->
 7. **Non-destructive add/remove.** `kanon aspect add <name>` is idempotent and additive — it scaffolds missing files and AGENTS.md sections without touching existing ones (ADR-0008 tier-up pattern, generalised). `kanon aspect remove <name>` deletes the aspect's AGENTS.md marker block and its `.kanon/config.yaml` entry, leaves its scaffolded files on disk, and reports them as "beyond required" (ADR-0008 tier-down pattern, generalised).

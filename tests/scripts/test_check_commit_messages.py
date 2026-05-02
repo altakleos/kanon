@@ -1,4 +1,4 @@
-"""Tests for ci/check_commit_messages.py.
+"""Tests for scripts/check_commit_messages.py.
 
 Each test creates a synthetic git repo in tmp_path with crafted commits,
 then asserts the linter's verdict.
@@ -18,7 +18,7 @@ def _M(load_ci_script):
     return load_ci_script("check_commit_messages.py")
 
 
-_SCRIPT_PATH = REPO_ROOT / "ci" / "check_commit_messages.py"
+_SCRIPT_PATH = REPO_ROOT / "scripts" / "check_commit_messages.py"
 
 
 def _init_repo(tmp_path: Path) -> Path:

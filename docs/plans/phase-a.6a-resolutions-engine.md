@@ -68,7 +68,7 @@ Plus integration: full-cycle test (build a synthetic contract + resolution, repl
 - **`_composition.py`** — A.6c.
 - **Aspect content move** — separate sub-plan.
 - **`_kit_root()` retirement in `_scaffold.py`** — separate sub-plan.
-- **`ci/check_substrate_independence.py` gate** — separate sub-plan.
+- **`scripts/check_substrate_independence.py` gate** — separate sub-plan.
 - **Spec / design / ADR / principle changes** — none.
 
 ## Approach

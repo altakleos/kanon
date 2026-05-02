@@ -65,7 +65,7 @@ This is the textbook trailer use-case (factual correction; no semantic change to
 2. **Edit CHANGELOG.md** (line 11 — single-paragraph correction).
 3. **Edit `docs/plans/foundations-rewrite.md`** (3 references).
 4. **Edit `docs/plans/specs-designs-cleanup.md`** (1 reference).
-5. **Run gates locally:** `kanon verify .`, `python ci/check_links.py`, `python ci/check_foundations.py`, `python ci/check_adr_immutability.py`. The last MUST pass with the `Allow-ADR-edit:` trailer in the commit message.
+5. **Run gates locally:** `kanon verify .`, `python scripts/check_links.py`, `python scripts/check_foundations.py`, `python scripts/check_adr_immutability.py`. The last MUST pass with the `Allow-ADR-edit:` trailer in the commit message.
 6. **Commit with the immutability trailer** in the commit message body.
 7. **Push, open PR.**
 
@@ -74,10 +74,10 @@ This is the textbook trailer use-case (factual correction; no semantic change to
 - [ ] AC-1: Zero remaining `0040.5` references anywhere in `docs/` or `CHANGELOG.md` after the change. Verifiable by `grep -rn "0040\.5" docs/ CHANGELOG.md` returning empty.
 - [ ] AC-2: ADR-0048 body says `(0039–0045)` instead of `(0039–0044, plus 0040.5 kernel/reference runtime interface)`.
 - [ ] AC-3: Commit message contains the `Allow-ADR-edit: 0048 — ...` trailer with non-empty reason.
-- [ ] AC-4: `python ci/check_adr_immutability.py` passes (the trailer authorises the body edit).
+- [ ] AC-4: `python scripts/check_adr_immutability.py` passes (the trailer authorises the body edit).
 - [ ] AC-5: `kanon verify .` returns `status: ok` (zero warnings; regenerate fidelity lock if ADR-0048 SHA changes — though body-edit-only changes likely don't bump the fidelity-tracked spec SHAs).
-- [ ] AC-6: `python ci/check_links.py` passes.
-- [ ] AC-7: `python ci/check_foundations.py` passes.
+- [ ] AC-6: `python scripts/check_links.py` passes.
+- [ ] AC-7: `python scripts/check_foundations.py` passes.
 - [ ] AC-8: No source / spec / aspect-manifest / protocol-prose / design-doc / foundations-doc changes (only ADR-0048 + CHANGELOG + 2 plans).
 - [ ] AC-9: No new CHANGELOG `[Unreleased]` entry; only correction of the existing PR-#50 paragraph.
 

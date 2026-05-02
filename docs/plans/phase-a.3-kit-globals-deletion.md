@@ -47,7 +47,7 @@ A.3 deletes both fields and the `.kanon/kit.md` artifact entirely.
 - `src/kanon/_scaffold.py:411-416` — `_render_kit_md()` reads template
 - `src/kanon/cli.py:866-869` — atomic-writes kit.md during init
 - `src/kanon/_cli_aspect.py:94, 152` — re-renders kit.md on aspect changes
-- `ci/check_kit_consistency.py:148-160` — `_check_kit_md_exists()` gate
+- `scripts/check_kit_consistency.py:148-160` — `_check_kit_md_exists()` gate
 
 ## Goal
 
@@ -55,7 +55,7 @@ Single PR that:
 
 1. Deletes `defaults:` from `src/kanon/kit/manifest.yaml` + all 3 substrate consumers.
 2. Deletes `files:` from `src/kanon/kit/manifest.yaml` + all 3 substrate consumers.
-3. Deletes `kit.md`: template (`src/kanon/kit/kit.md`), consumer artifact (`.kanon/kit.md`), `_scaffold.py:_render_kit_md()`, atomic writes in `cli.py` + `_cli_aspect.py`, gate check in `ci/check_kit_consistency.py`.
+3. Deletes `kit.md`: template (`src/kanon/kit/kit.md`), consumer artifact (`.kanon/kit.md`), `_scaffold.py:_render_kit_md()`, atomic writes in `cli.py` + `_cli_aspect.py`, gate check in `scripts/check_kit_consistency.py`.
 4. Updates substrate tests that depended on these.
 5. Recaptures `.kanon/fidelity.lock` after kit YAML changes.
 6. CHANGELOG entry under `[Unreleased] § Removed`.
@@ -87,8 +87,8 @@ If any CLI surface used `defaults:` to drive `kanon init` behaviour (e.g., `--pr
 - Delete `src/kanon/kit/kit.md` (template).
 - Delete `src/kanon/_scaffold.py:_render_kit_md()` and the `_kit_root() / "kit.md"` read at `:411-416`.
 - Delete kit.md atomic-writes in `src/kanon/cli.py:866-869` and `src/kanon/_cli_aspect.py:94, 152`.
-- Delete `ci/check_kit_consistency.py:_check_kit_md_exists()` and remove its call from `run_checks()`.
-- Delete `tests/ci/test_check_kit_consistency.py::test_missing_kit_md_detected` and `::test_kit_md_bad_heading_detected` (testing removed code).
+- Delete `scripts/check_kit_consistency.py:_check_kit_md_exists()` and remove its call from `run_checks()`.
+- Delete `tests/scripts/test_check_kit_consistency.py::test_missing_kit_md_detected` and `::test_kit_md_bad_heading_detected` (testing removed code).
 
 #### E. Consumer-side artifact in kanon repo
 
@@ -114,7 +114,7 @@ Paragraph under `[Unreleased] § Removed` naming Phase A.3 and the canonical seq
 ### Out of scope
 
 - **Aspect content move** (`src/kanon/kit/aspects/<X>/` → `src/kanon_reference/aspects/<X>/data/`) — defer until a dedicated sub-plan; nine `_kit_root()` call sites in `_scaffold.py` retire when content moves.
-- **Substrate-independence CI gate** (`ci/check_substrate_independence.py` per ADR-0044) — deferred again; greening it requires the test-overlay refactor that depends on content move.
+- **Substrate-independence CI gate** (`scripts/check_substrate_independence.py` per ADR-0044) — deferred again; greening it requires the test-overlay refactor that depends on content move.
 - **`_detect.py` deletion** — A.4 territory.
 - **Bare-name CLI sugar deprecation** — A.5.
 - **Kit YAML's `aspects:` block deletion** — could ship now (dead since A.2.2) but bundling with content-move keeps surface area cohesive; defer.
@@ -150,8 +150,8 @@ Paragraph under `[Unreleased] § Removed` naming Phase A.3 and the canonical seq
 
 ### Gate
 
-- [ ] AC-G1: `ci/check_kit_consistency.py:_check_kit_md_exists()` deleted; not called from `run_checks()`.
-- [ ] AC-G2: `tests/ci/test_check_kit_consistency.py::test_missing_kit_md_detected` and `::test_kit_md_bad_heading_detected` deleted.
+- [ ] AC-G1: `scripts/check_kit_consistency.py:_check_kit_md_exists()` deleted; not called from `run_checks()`.
+- [ ] AC-G2: `tests/scripts/test_check_kit_consistency.py::test_missing_kit_md_detected` and `::test_kit_md_bad_heading_detected` deleted.
 
 ### Fidelity
 
@@ -169,11 +169,11 @@ Paragraph under `[Unreleased] § Removed` naming Phase A.3 and the canonical seq
 ### Cross-cutting
 
 - [ ] AC-X2: `kanon verify .` returns `status: ok`, zero warnings.
-- [ ] AC-X3: `python ci/check_links.py` passes.
-- [ ] AC-X4: `python ci/check_foundations.py` passes.
-- [ ] AC-X5: `python ci/check_kit_consistency.py` passes (after `_check_kit_md_exists` deletion).
-- [ ] AC-X6: `python ci/check_invariant_ids.py` passes.
-- [ ] AC-X7: `python ci/check_packaging_split.py` passes.
+- [ ] AC-X3: `python scripts/check_links.py` passes.
+- [ ] AC-X4: `python scripts/check_foundations.py` passes.
+- [ ] AC-X5: `python scripts/check_kit_consistency.py` passes (after `_check_kit_md_exists` deletion).
+- [ ] AC-X6: `python scripts/check_invariant_ids.py` passes.
+- [ ] AC-X7: `python scripts/check_packaging_split.py` passes.
 - [ ] AC-X8: No `src/kanon_reference/` change (out of scope).
 - [ ] AC-X9: No `src/kanon/kit/aspects/` content moved (out of scope; defer to content-move sub-plan).
 
@@ -187,7 +187,7 @@ Paragraph under `[Unreleased] § Removed` naming Phase A.3 and the canonical seq
 
 ## Documentation impact
 
-- **Touched files:** `src/kanon/kit/manifest.yaml` (delete 2 blocks); `src/kanon/cli.py` (3 sites); `src/kanon/_scaffold.py` (~3 sites + delete `_render_kit_md`); `src/kanon/_manifest.py` (2 sites); `src/kanon/_cli_aspect.py` (2 sites); `ci/check_kit_consistency.py` (delete `_check_kit_md_exists`); `tests/ci/test_check_kit_consistency.py` (delete 2 tests); `tests/test_cli.py`, `tests/test_cli_helpers.py`, `tests/test_kit_integrity.py`, `tests/test_cli_verify.py` (audit + update); `.kanon/fidelity.lock`; `CHANGELOG.md`.
+- **Touched files:** `src/kanon/kit/manifest.yaml` (delete 2 blocks); `src/kanon/cli.py` (3 sites); `src/kanon/_scaffold.py` (~3 sites + delete `_render_kit_md`); `src/kanon/_manifest.py` (2 sites); `src/kanon/_cli_aspect.py` (2 sites); `scripts/check_kit_consistency.py` (delete `_check_kit_md_exists`); `tests/scripts/test_check_kit_consistency.py` (delete 2 tests); `tests/test_cli.py`, `tests/test_cli_helpers.py`, `tests/test_kit_integrity.py`, `tests/test_cli_verify.py` (audit + update); `.kanon/fidelity.lock`; `CHANGELOG.md`.
 - **Deleted files:** `src/kanon/kit/kit.md`; `.kanon/kit.md`.
 - **New files:** `docs/plans/phase-a.3-kit-globals-deletion.md`.
 - **No changes to:** specs, designs, ADRs, foundations, principles, protocol prose, `src/kanon_reference/`, aspect manifests, top-level `pyproject.toml`.

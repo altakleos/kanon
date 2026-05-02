@@ -175,10 +175,10 @@ The substrate has no `kanon recipes apply` verb. Application is a copy + commit;
 
 ## Cadence policy — release-workflow CI gate algorithm
 
-Phase A's `ci/check_release_cadence.py` (or analogous) enforces `INV-release-cadence-breaking-not-in-kernel`:
+Phase A's `scripts/check_release_cadence.py` (or analogous) enforces `INV-release-cadence-breaking-not-in-kernel`:
 
 ```python
-# ci/check_release_cadence.py (Phase A)
+# scripts/check_release_cadence.py (Phase A)
 #
 # Fails if a `kanon-substrate` kernel release commit also touches
 # dialect-grammar files (which would breach INV-release-cadence-breaking-not-in-kernel).
@@ -286,7 +286,7 @@ def migrate_v3_to_v4(target: Path) -> MigrationReport:
 | `kanon-kit/pyproject.toml` | ~+20 | New file (meta-alias) |
 | `kanon-reference/recipes/reference-default.yaml` | ~+30 | First recipe; opts into seven aspects at default depths |
 | `_migration_v3_to_v4.py` | ~+100 | Migration script (deprecated-on-arrival) |
-| `ci/check_release_cadence.py` | ~+80 | Cadence-gate CI script |
+| `scripts/check_release_cadence.py` | ~+80 | Cadence-gate CI script |
 | Release workflows (`.github/workflows/release.yml` rewrite) | ~+150 | Three publish jobs (substrate, reference, meta-alias) |
 | Tests | ~+200 | Recipe-shape validation; cadence-gate tests; migration-script tests |
 

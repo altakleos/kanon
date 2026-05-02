@@ -42,5 +42,5 @@ Out of scope (intentional):
 
 - `grep -r "src/kanon/kit/aspects" docs/contributing.md` → 0
 - `kanon verify .` → ok
-- `python ci/check_links.py`, `check_foundations`, `check_kit_consistency`, `check_invariant_ids`, `check_packaging_split`, `check_verified_by`, `check_substrate_independence` → ok
+- `python scripts/check_links.py`, `check_foundations`, `check_kit_consistency`, `check_invariant_ids`, `check_packaging_split`, `check_verified_by`, `check_substrate_independence` → ok
 - `pytest --no-cov -q` → all passing

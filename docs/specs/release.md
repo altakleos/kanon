@@ -55,7 +55,7 @@ The primary user is a solo developer with LLM agents who wants a repeatable, aud
 
 <!-- INV-release-reference-automation-snippets -->
 4. **Reference automation snippets** (per ADR-0013, depth-2 only). The aspect scaffolds:
-   - `ci/release-preflight.py` — a standalone validation script that checks: version in `__init__.py` matches tag, CHANGELOG has an entry for the version, tests pass, lint clean, `kanon verify` passes. Exit 0 or 1.
+   - `scripts/release-preflight.py` — a standalone validation script that checks: version in `__init__.py` matches tag, CHANGELOG has an entry for the version, tests pass, lint clean, `kanon verify` passes. Exit 0 or 1.
    - `.github/workflows/release.yml` — a reference GitHub Actions workflow for build + validate + publish via trusted publishing.
    
    These are copy-in templates the consumer adapts to their needs. Byte-equality is **not** enforced after scaffolding — consumers are expected to customize CI workflows and validation scripts for their project's specific needs.

@@ -146,13 +146,13 @@ In-process kit validators in [`src/kanon/_validators/`](../src/kanon/_validators
 | [`link_check.py`](../src/kanon/_validators/link_check.py) | `kanon-sdd` | 2 | Flag broken relative markdown links under `docs/` |
 | [`adr_immutability.py`](../src/kanon/_validators/adr_immutability.py) | `kanon-sdd` | 2 | Flag body changes to accepted ADRs in HEAD commit |
 | [`spec_design_parity.py`](../src/kanon/_validators/spec_design_parity.py) | `kanon-sdd` | 3 | Warn on accepted specs without companion design doc |
-| [`test_import_check.py`](../src/kanon/_validators/test_import_check.py) | `kanon-testing` | 2 | Flag `tests/ci/test_*.py` referencing missing CI scripts |
+| [`test_import_check.py`](../src/kanon/_validators/test_import_check.py) | `kanon-testing` | 2 | Flag `tests/scripts/test_*.py` referencing missing CI scripts |
 
 Other trees, one sentence each:
 
 - [`src/kanon_reference/aspects/`](../src/kanon_reference/aspects/) — the seven reference aspects' data (manifests, protocols, files); one directory per aspect (`kanon-<local>/`). Plus substrate-level files at [`src/kanon/kit/`](../src/kanon/kit/) (`manifest.yaml`, `agents-md-base.md`, `harnesses.yaml`).
-- [`tests/`](../tests/) — 950+ tests; `test_e2e_*.py` deselected by default (`e2e` marker); `tests/ci/test_check_*.py` covers the CI scripts.
-- [`ci/`](../ci/) — standalone substrate-internal validators. (Per Phase A.8, the substrate no longer scaffolds CI scripts into consumer repos.)
+- [`tests/`](../tests/) — 950+ tests; `test_e2e_*.py` deselected by default (`e2e` marker); `tests/scripts/test_check_*.py` covers the CI scripts.
+- [`scripts/`](../scripts/) — standalone substrate-internal validators. (Per Phase A.8, the substrate no longer scaffolds CI scripts into consumer repos.)
 - [`docs/decisions/`](decisions/) — 39 ADRs; index in [`README.md`](decisions/README.md), category-tagged.
 - [`docs/specs/`](specs/) — 33 specs; invariants carry `INV-*` anchors with `verified-by:` mappings.
 - [`docs/plans/`](.) — execution plans; one per non-trivial change, named by slug.
@@ -167,7 +167,7 @@ First: which aspect (if any) does this belong to? Then: do I need a spec, a plan
 | New protocol that gates agent behaviour | `src/kanon_reference/aspects/kanon_<local>/protocols/<name>.md` + sub-manifest entry | Plan |
 | Edit existing protocol prose | `src/kanon_reference/aspects/kanon_<local>/protocols/<name>.md` + recapture fidelity fixtures per [`fidelity-discipline`](../.kanon/protocols/kanon-fidelity/fidelity-discipline.md) | Plan |
 | New aspect | New dir `src/kanon_reference/aspects/kanon-<local>/` + LOADER stub at `src/kanon_reference/aspects/kanon_<local>.py` + entry-point in [`pyproject.toml`](../pyproject.toml) `[project.entry-points."kanon.aspects"]` + spec | **Spec** + ADR + plan |
-| Add a CI check | `ci/check_<name>.py` + wire into [`.github/workflows/checks.yml`](../.github/workflows/checks.yml) + test in `tests/ci/` | Plan |
+| Add a CI check | `scripts/check_<name>.py` + wire into [`.github/workflows/checks.yml`](../.github/workflows/checks.yml) + test in `tests/scripts/` | Plan |
 | Add an in-process kit validator | `src/kanon/_validators/<name>.py` + register in target aspect's `manifest.yaml` `validators:` | Plan |
 | Bundle file change (template, scaffolded README) | `src/kanon_reference/aspects/kanon_<local>/files/...` or `src/kanon/kit/<file>` (substrate-level) | Plan |
 | Bug fix (single function, single test) | Direct fix; no plan iff truly trivial per `plan-before-build` § 1 | Trivial path: no plan |
@@ -178,7 +178,7 @@ First: which aspect (if any) does this belong to? Then: do I need a spec, a plan
 Three layers fire when you push:
 
 1. **CI workflow chain.** [`verify.yml`](../.github/workflows/verify.yml) (on push/PR) and [`release.yml`](../.github/workflows/release.yml) (on `v*` tag) both `workflow_call` into the reusable [`checks.yml`](../.github/workflows/checks.yml).
-2. **`ci/check_*.py` scripts** (one process per check). 13 scripts; 4 are soft (warn but don't block).
+2. **`scripts/check_*.py` scripts** (one process per check). 13 scripts; 4 are soft (warn but don't block).
 3. **In-process kit validators** wired by aspect manifests, run by `kanon verify .`.
 
 ```mermaid
@@ -203,22 +203,22 @@ The full gate matrix:
 | `pytest -v` | Hard | All non-e2e tests pass on py3.10–3.13 | `make test` |
 | `ruff check src/ tests/ ci/` | Hard | Lint clean | `make lint` |
 | `mypy src/kanon` | Hard | `--strict` type check | `make typecheck` |
-| `ci/check_foundations.py` | Hard | Principles + personas frontmatter; no orphans | `python ci/check_foundations.py` |
-| `ci/check_links.py` | Hard | Every relative markdown link resolves | `python ci/check_links.py` |
-| `ci/check_kit_consistency.py` | Hard | Bundle byte-equality + manifest validity | `python ci/check_kit_consistency.py` |
-| `ci/check_adr_immutability.py` | Hard | Accepted ADR bodies unchanged unless `Allow-ADR-edit:` trailer ([ADR-0032](decisions/0032-adr-immutability-gate.md)) | Append a `Historical Note` instead |
-| `ci/check_process_gates.py` | Hard | Plan-before-build + spec-before-design honoured by the diff | Write the missing plan/spec |
-| `ci/check_test_quality.py` | Hard | No empty test files, no zero-test-function files | Add a real assertion |
-| `ci/check_verified_by.py` | Hard | Spec invariants reference real tests | Add `verified-by:` in spec frontmatter |
-| `ci/check_invariant_ids.py` | Hard | `INV-*` anchors unique and resolved | Renumber or fix the dangling reference |
-| `ci/check_security_patterns.py` | Soft (warn) | No `shell=True`, `eval`, hardcoded creds without `# nosec` | Fix or annotate per [ADR-0036](decisions/0036-secure-defaults-config-trust-carveout.md) |
-| `ci/check_deps.py` | Soft (warn) | No unpinned or duplicate-purpose deps | Pin or justify |
-| `ci/check_status_consistency.py` | Soft (warn) | ADR/spec/plan status frontmatter is coherent | Fix the status |
-| `ci/check_commit_messages.py` | Soft (script always exits 0) | Conventional Commits prefix on each commit | Reword via interactive rebase |
-| `ci/check_package_contents.py` | Hard (release-only) | Wheel matches source-of-truth + version concordance with tag | `python ci/check_package_contents.py --wheel <path> --tag <tag>` |
+| `scripts/check_foundations.py` | Hard | Principles + personas frontmatter; no orphans | `python scripts/check_foundations.py` |
+| `scripts/check_links.py` | Hard | Every relative markdown link resolves | `python scripts/check_links.py` |
+| `scripts/check_kit_consistency.py` | Hard | Bundle byte-equality + manifest validity | `python scripts/check_kit_consistency.py` |
+| `scripts/check_adr_immutability.py` | Hard | Accepted ADR bodies unchanged unless `Allow-ADR-edit:` trailer ([ADR-0032](decisions/0032-adr-immutability-gate.md)) | Append a `Historical Note` instead |
+| `scripts/check_process_gates.py` | Hard | Plan-before-build + spec-before-design honoured by the diff | Write the missing plan/spec |
+| `scripts/check_test_quality.py` | Hard | No empty test files, no zero-test-function files | Add a real assertion |
+| `scripts/check_verified_by.py` | Hard | Spec invariants reference real tests | Add `verified-by:` in spec frontmatter |
+| `scripts/check_invariant_ids.py` | Hard | `INV-*` anchors unique and resolved | Renumber or fix the dangling reference |
+| `scripts/check_security_patterns.py` | Soft (warn) | No `shell=True`, `eval`, hardcoded creds without `# nosec` | Fix or annotate per [ADR-0036](decisions/0036-secure-defaults-config-trust-carveout.md) |
+| `scripts/check_deps.py` | Soft (warn) | No unpinned or duplicate-purpose deps | Pin or justify |
+| `scripts/check_status_consistency.py` | Soft (warn) | ADR/spec/plan status frontmatter is coherent | Fix the status |
+| `scripts/check_commit_messages.py` | Soft (script always exits 0) | Conventional Commits prefix on each commit | Reword via interactive rebase |
+| `scripts/check_package_contents.py` | Hard (release-only) | Wheel matches source-of-truth + version concordance with tag | `python scripts/check_package_contents.py --wheel <path> --tag <tag>` |
 | `kanon verify .` | Hard | Self-hosting structural + validator + fidelity checks pass | Read [`verify-triage`](../.kanon/protocols/kanon-sdd/verify-triage.md) |
 
-A typical local pre-push: `make check && python ci/check_links.py && python ci/check_kit_consistency.py && kanon verify .`
+A typical local pre-push: `make check && python scripts/check_links.py && python scripts/check_kit_consistency.py && kanon verify .`
 
 Soft gates surface as warnings in the workflow log but do not block the PR. If a soft gate is firing on something you can't fix immediately, add a justification in the PR description rather than ignoring it.
 
@@ -235,7 +235,7 @@ $EDITOR docs/plans/<slug>.md
 
 # 3. Edit, then run gates locally
 make check
-python ci/check_links.py
+python scripts/check_links.py
 kanon verify .
 
 # 4. Commit (Conventional Commits; reference plan slug)
@@ -259,7 +259,7 @@ Changelog: append every user-visible change to `## [Unreleased]` in [`CHANGELOG.
 
 These are non-negotiable contracts. CI catches most but not all of them.
 
-1. **Modify accepted ADR bodies.** Append a `## Historical Note` instead, or use the `Allow-ADR-edit: NNNN — <reason>` commit trailer. Carve-out: [ADR-0032](decisions/0032-adr-immutability-gate.md); enforced by `ci/check_adr_immutability.py`.
+1. **Modify accepted ADR bodies.** Append a `## Historical Note` instead, or use the `Allow-ADR-edit: NNNN — <reason>` commit trailer. Carve-out: [ADR-0032](decisions/0032-adr-immutability-gate.md); enforced by `scripts/check_adr_immutability.py`.
 2. **Weaken a fidelity assertion to make a fixture pass.** Fix the prose, fix the agent's prompt, or remove the assertion deliberately with a note. See [`fidelity-discipline`](../.kanon/protocols/kanon-fidelity/fidelity-discipline.md) § 3.
 3. **Bypass `_atomic.py` for kit-managed files.** Use `atomic_write_text()` and the `.pending` sentinel pattern. The crash-consistency contract is non-negotiable. See [ADR-0024](decisions/0024-crash-consistent-atomicity.md).
 4. **Add `subprocess.run(..., shell=True)` without an `# nosec — see ADR-0036` annotation and a same-repo trust-boundary justification.** Carve-out grammar: [`secure-defaults`](../.kanon/protocols/kanon-security/secure-defaults.md) § Injection.
