@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Changed
+
+- **Doc path audit**: `docs/contributing.md` updated to reference `src/kanon_reference/data/<aspect>/` (the new canonical aspect-data location after the substrate-content-move sub-plan) instead of the legacy `src/kanon/kit/aspects/<aspect>/`. 6 references updated covering the architecture overview, the module-tree section, and the "where does my change go?" decision matrix. Also updated: ci/ description (Phase A.8 retired scaffolded consumer-side scripts); new-aspect row now includes the LOADER stub at `src/kanon_reference/aspects/kanon_<local>.py` + the `pyproject.toml` entry-point declaration. ADRs and plan files retain historical paths (they describe state at acceptance time per ADR-immutability and plan-as-historical-record convention).
+
 ### Added
 
 - **`kanon-dialect:` pin enforced at manifest load + added to all 7 reference manifests** (per [ADR-0041](docs/decisions/0041-realization-shape-dialect-grammar.md), per plan [`wire-dialect-pin`](docs/plans/wire-dialect-pin.md), per INV-dialect-grammar-pin-required). Phase A.6b's `validate_dialect_pin()` now runs as part of `_load_aspects_from_entry_points()` for every entry-point-loaded aspect; aspects without a valid pin (or with an unsupported pin) raise `click.ClickException` at substrate startup. All 7 reference aspects (kanon-deps, kanon-fidelity, kanon-release, kanon-sdd, kanon-security, kanon-testing, kanon-worktrees) now declare `kanon-dialect: "2026-05-01"` as the first field in both LOADER MANIFEST literals (`src/kanon_reference/aspects/kanon_<slug>.py`) and YAML manifests (`src/kanon_reference/data/<slug>/manifest.yaml`). Equivalence test continues passing — both sources mirror the new field.
