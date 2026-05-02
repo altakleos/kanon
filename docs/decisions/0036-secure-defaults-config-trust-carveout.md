@@ -32,5 +32,5 @@ Refactor `_preflight.py:96` to argv form via `shlex.split`. Rejected — silentl
 
 - [`src/kanon/_preflight.py:96`](../../src/kanon/_preflight.py) — first lived call site.
 - [`src/kanon_reference/aspects/kanon_security/protocols/secure-defaults.md`](../../src/kanon_reference/aspects/kanon_security/protocols/secure-defaults.md) — protocol carrying the carve-out.
-- [`docs/plans/preflight-shell-trust-boundary.md`](../plans/preflight-shell-trust-boundary.md) — implementing plan.
+- [`docs/plans/preflight-shell-trust-boundary.md`](../plans/archive/preflight-shell-trust-boundary.md) — implementing plan.
 - [`docs/specs/preflight.md`](../specs/preflight.md) — preflight spec.

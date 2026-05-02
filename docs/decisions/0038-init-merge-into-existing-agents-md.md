@@ -35,6 +35,6 @@ Refuse `init` when `AGENTS.md` exists without `--force`. Rejected — friction t
 ## References
 
 - [`docs/specs/cli.md`](../specs/cli.md) — INV-cli-init-agents-md-merge.
-- [`docs/plans/init-agents-md-merge.md`](../plans/init-agents-md-merge.md) — implementing plan.
+- [`docs/plans/init-agents-md-merge.md`](../plans/archive/init-agents-md-merge.md) — implementing plan.
 - [ADR-0003](0003-agents-md-canonical-root.md) — `AGENTS.md` is the canonical agent boot doc.
 - [ADR-0010](0010-protocol-layer.md), [ADR-0034](0034-routing-index-agents-md.md) — enforcement-proximity principle.

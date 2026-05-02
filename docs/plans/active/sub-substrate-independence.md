@@ -9,7 +9,7 @@ design: docs/design/kernel-reference-interface.md
 
 ## Context
 
-Per [ADR-0044 substrate-self-conformance](../decisions/0044-substrate-self-conformance.md): `kanon-substrate` MUST run without `kanon-reference`. This is the substrate's foundational invariant — it's how we prove kanon is a substrate, not a kit. The gate is publicly-readable; `acme-` publishers can replicate against their own bundles per ADR-0044's invariants.
+Per [ADR-0044 substrate-self-conformance](../../decisions/0044-substrate-self-conformance.md): `kanon-substrate` MUST run without `kanon-reference`. This is the substrate's foundational invariant — it's how we prove kanon is a substrate, not a kit. The gate is publicly-readable; `acme-` publishers can replicate against their own bundles per ADR-0044's invariants.
 
 **Today's reality:** `kanon-substrate` and `kanon-reference` ship together as one `kanon-kit` wheel from the top-level pyproject. The packaging split (per ADR-0043) is documented but not built. So the substrate-independence gate can't yet verify a separately-installed `kanon-substrate` wheel.
 

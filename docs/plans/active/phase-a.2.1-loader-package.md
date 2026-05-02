@@ -9,7 +9,7 @@ design: docs/design/kernel-reference-interface.md
 
 ## Why split A.2 in two
 
-[ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md) ratifies the kernel/reference runtime interface; the design at [`docs/design/kernel-reference-interface.md`](../design/kernel-reference-interface.md) sizes Phase A.2 at ~+450 LOC source / -80 LOC source / +150 LOC tests across ~12 files. That's too large for one review-friendly PR. Splitting at the natural seam between *additive* and *substractive* work:
+[ADR-0040](../../decisions/0040-kernel-reference-runtime-interface.md) ratifies the kernel/reference runtime interface; the design at [`docs/design/kernel-reference-interface.md`](../../design/kernel-reference-interface.md) sizes Phase A.2 at ~+450 LOC source / -80 LOC source / +150 LOC tests across ~12 files. That's too large for one review-friendly PR. Splitting at the natural seam between *additive* and *substractive* work:
 
 - **A.2.1 (this plan):** Author the `kanon_reference` Python package, the seven LOADER (`MANIFEST`) stubs, and uncomment the entry-points block in `packaging/reference/pyproject.toml`. Pure addition. The substrate's runtime is unchanged. `_kit_root()` still loads from `src/kanon/kit/aspects/`. Self-host trivially stays green.
 - **A.2.2 (next plan):** Substrate `_load_aspect_registry()` rewrite, `_kit_root()` retirement (11 call sites in `_manifest.py` + `_scaffold.py`), namespace-ownership validator, and `scripts/check_substrate_independence.py` gate. Substractive + risky.
@@ -29,7 +29,7 @@ Phase A.1 (PR #61) shipped the three skeleton `pyproject.toml` files. `packaging
 
 But `kanon_reference` doesn't exist as a Python package yet. Phase A.2.1 authors it.
 
-Per the design ([`docs/design/kernel-reference-interface.md`](../design/kernel-reference-interface.md) §"Resolver shape"):
+Per the design ([`docs/design/kernel-reference-interface.md`](../../design/kernel-reference-interface.md) §"Resolver shape"):
 
 > The entry-point value resolves to either:
 > 1. A module attribute named `MANIFEST` containing the parsed manifest dict (most common).

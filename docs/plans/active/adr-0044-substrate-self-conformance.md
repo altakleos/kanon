@@ -2,7 +2,7 @@
 status: draft
 slug: adr-0044-substrate-self-conformance
 date: 2026-05-01
-design: "No new design surface — Phase A authors `scripts/check_substrate_independence.py` per ADR-0040's design doc; this ADR ratifies the discipline (the gate is part of substrate's permanent CI). The design lives in [`docs/design/kernel-reference-interface.md`](../design/kernel-reference-interface.md)."
+design: "No new design surface — Phase A authors `scripts/check_substrate_independence.py` per ADR-0040's design doc; this ADR ratifies the discipline (the gate is part of substrate's permanent CI). The design lives in [`docs/design/kernel-reference-interface.md`](../../design/kernel-reference-interface.md)."
 ---
 
 # Plan: Phase 0 — ADR-0044 substrate self-conformance discipline
@@ -27,7 +27,7 @@ Land a single self-contained PR that:
 
 1. **Authors ADR-0044** ratifying substrate self-conformance as a discipline (independence invariant + self-host probe + public-CI-signal).
 2. **Authors `docs/specs/substrate-self-conformance.md`** as a new spec carrying invariants for substrate-independence, self-host-probe, and CI-gate visibility.
-3. **No new design.** Phase A's gate algorithm lives in [`docs/design/kernel-reference-interface.md`](../design/kernel-reference-interface.md) (ratified per ADR-0040); this ADR cites it.
+3. **No new design.** Phase A's gate algorithm lives in [`docs/design/kernel-reference-interface.md`](../../design/kernel-reference-interface.md) (ratified per ADR-0040); this ADR cites it.
 4. **No source / aspect-manifest / protocol-prose / CI changes.** Phase A authors the actual `scripts/check_substrate_independence.py`; this PR is documentation only.
 
 ## Scope

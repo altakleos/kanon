@@ -9,7 +9,7 @@ design: "No new design surface — ADR-0045 ratified the canonical Phase 0.5 seq
 
 ## Context
 
-Per [ADR-0045](../decisions/0045-de-opinionation-transition.md), Phase 0.5 ships **before any Phase A deletion** and rewrites the kanon repo's `.kanon/config.yaml` to opt-in form via the publisher recipe (per ADR-0043). After Phase 0.5 lands, the kanon repo opts in to reference aspects exactly as any external consumer would; the kit-shape `defaults:` / `_detect.py` / kit-global `files:` machinery is still present in code but no longer load-bearing for the kanon repo's self-host.
+Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md), Phase 0.5 ships **before any Phase A deletion** and rewrites the kanon repo's `.kanon/config.yaml` to opt-in form via the publisher recipe (per ADR-0043). After Phase 0.5 lands, the kanon repo opts in to reference aspects exactly as any external consumer would; the kit-shape `defaults:` / `_detect.py` / kit-global `files:` machinery is still present in code but no longer load-bearing for the kanon repo's self-host.
 
 Today's `.kanon/config.yaml` (v3 schema):
 - Already declares all seven aspects explicitly (so `defaults:` is already a no-op for self-host)
@@ -22,7 +22,7 @@ Phase 0.5's job is to **forward-compatibly augment** the config with v4 fields w
 
 Land a single self-contained PR that:
 
-1. **Authors the kanon repo's recipe file** at `.kanon/recipes/reference-default.yaml`. Schema per [`docs/design/distribution-boundary.md`](../design/distribution-boundary.md). Lists the seven reference aspects at the same depths the current config declares.
+1. **Authors the kanon repo's recipe file** at `.kanon/recipes/reference-default.yaml`. Schema per [`docs/design/distribution-boundary.md`](../../design/distribution-boundary.md). Lists the seven reference aspects at the same depths the current config declares.
 2. **Augments `.kanon/config.yaml`** with v4 fields (`schema-version`, `kanon-dialect`, `provenance`) while preserving existing v3 fields (`kit_version`, `aspects:`, `preflight-stages:`). The current kit reads only v3 fields and ignores v4; `kanon verify .` stays green.
 3. **No source / aspect-manifest / protocol-prose / CI / new-spec / new-design / new-ADR changes.** Phase 0.5 is config + recipe data only.
 
@@ -32,7 +32,7 @@ Land a single self-contained PR that:
 
 #### A. Recipe file — `.kanon/recipes/reference-default.yaml`
 
-New file. Schema per [`docs/design/distribution-boundary.md`](../design/distribution-boundary.md) Recipe YAML schema section. Concrete content lists the seven reference aspects at the depths the kanon repo currently has:
+New file. Schema per [`docs/design/distribution-boundary.md`](../../design/distribution-boundary.md) Recipe YAML schema section. Concrete content lists the seven reference aspects at the depths the kanon repo currently has:
 
 ```yaml
 schema-version: 1

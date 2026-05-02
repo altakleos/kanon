@@ -9,7 +9,7 @@ design: docs/design/kernel-reference-interface.md
 
 ## Context
 
-Per [ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md), [ADR-0044](../decisions/0044-substrate-self-conformance.md), [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md). The substrate-independence invariant requires `kanon-substrate` to ship NO aspect data; aspects must travel with `kanon_reference`. Today, the seven kanon-* aspects' protocols / files / sections / agents-md still live at `src/kanon/kit/aspects/<X>/`. This plan moves them under `src/kanon_reference/data/<X>/`.
+Per [ADR-0040](../../decisions/0040-kernel-reference-runtime-interface.md), [ADR-0044](../../decisions/0044-substrate-self-conformance.md), [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md). The substrate-independence invariant requires `kanon-substrate` to ship NO aspect data; aspects must travel with `kanon_reference`. Today, the seven kanon-* aspects' protocols / files / sections / agents-md still live at `src/kanon/kit/aspects/<X>/`. This plan moves them under `src/kanon_reference/data/<X>/`.
 
 The LOADER MANIFEST modules (`src/kanon_reference/aspects/kanon_<X>.py`) stay where they are — they hold the dict literals that mirror the YAML manifests. The DATA (protocols/.md, files/..., etc.) moves.
 

@@ -9,7 +9,7 @@ design: docs/design/distribution-boundary.md
 
 ## Context
 
-Per [ADR-0045](../decisions/0045-de-opinionation-transition.md) §Decision step 9, per [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md). The substrate's clean-break commitment means there is no backward compatibility shim path; the migration script is the one-time tool that handles the kanon repo's (and any historical v0.3 consumer's) transition from kit-shape to substrate-shape `.kanon/config.yaml`.
+Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 9, per [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md). The substrate's clean-break commitment means there is no backward compatibility shim path; the migration script is the one-time tool that handles the kanon repo's (and any historical v0.3 consumer's) transition from kit-shape to substrate-shape `.kanon/config.yaml`.
 
 **Deprecated-on-arrival:** the script ships with an explicit deprecation comment and a "this will be removed before v1.0" warning to the user. It exists to handle the historical migration; it is not a long-term API.
 

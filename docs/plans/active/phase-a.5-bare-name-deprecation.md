@@ -9,7 +9,7 @@ design: docs/design/distribution-boundary.md
 
 ## Context
 
-Per [ADR-0045](../decisions/0045-de-opinionation-transition.md) §Decision step 5: "Bare-name CLI sugar deprecated". Per [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) (de-opinionation, publisher-symmetry): the CLI's bare-name shorthand (`sdd` → `kanon-sdd`) implies that `kanon-` is a privileged namespace at the CLI surface. For protocol-substrate symmetry, this asymmetry violates `P-publisher-symmetry`: an `acme-fintech` aspect has no equivalent shorthand, so the convenience favours the reference publisher.
+Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 5: "Bare-name CLI sugar deprecated". Per [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md) (de-opinionation, publisher-symmetry): the CLI's bare-name shorthand (`sdd` → `kanon-sdd`) implies that `kanon-` is a privileged namespace at the CLI surface. For protocol-substrate symmetry, this asymmetry violates `P-publisher-symmetry`: an `acme-fintech` aspect has no equivalent shorthand, so the convenience favours the reference publisher.
 
 A.5 deprecates the sugar (warns when a bare name is used at a CLI surface) but does not delete it — that's a future cleanup once consumers and tests have migrated.
 

@@ -29,4 +29,4 @@ Auto-recovery for every sentinel by serializing each command's full ops-manifest
 - [ADR-0024](0024-crash-consistent-atomicity.md) — crash-consistent atomicity (this ADR amends §Consequences).
 - [ADR-0027](0027-graph-rename-ops-manifest.md) — ops-manifest extension that makes `graph-rename` recoverable.
 - [`docs/specs/spec-graph-rename.md`](../specs/spec-graph-rename.md) — INV-3 (atomicity + ops-manifest replay) is what the wiring closes.
-- [`docs/plans/review-followups-batch-1.md`](../plans/review-followups-batch-1.md) — the batch this ratifies.
+- [`docs/plans/review-followups-batch-1.md`](../plans/archive/review-followups-batch-1.md) — the batch this ratifies.

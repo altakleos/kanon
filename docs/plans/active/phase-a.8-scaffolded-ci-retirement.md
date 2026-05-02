@@ -9,7 +9,7 @@ design: docs/design/distribution-boundary.md
 
 ## Context
 
-Per [ADR-0045](../decisions/0045-de-opinionation-transition.md) §Decision step 8 / [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) de-opinionation. The substrate currently scaffolds CI scripts into consumer repos via four aspects' `files:` lists at depth-N:
+Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 8 / [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md) de-opinionation. The substrate currently scaffolds CI scripts into consumer repos via four aspects' `files:` lists at depth-N:
 
 - `kanon-deps` depth-2: `scripts/check_deps.py`
 - `kanon-security` depth-2: `scripts/check_security_patterns.py`

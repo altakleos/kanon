@@ -9,7 +9,7 @@ design: docs/design/dialect-grammar.md
 
 ## Context
 
-Per [ADR-0041](../decisions/0041-realization-shape-dialect-grammar.md) §Decision 3 and design [`docs/design/dialect-grammar.md`](../design/dialect-grammar.md) §"Composition resolution algorithm". When multiple contracts target the same `surface:`, the kernel orders them via topological sort over `before:` / `after:` edges. `replaces:` substitutes one contract for another. Cycles fail loudly with explicit cycle-path reporting.
+Per [ADR-0041](../../decisions/0041-realization-shape-dialect-grammar.md) §Decision 3 and design [`docs/design/dialect-grammar.md`](../../design/dialect-grammar.md) §"Composition resolution algorithm". When multiple contracts target the same `surface:`, the kernel orders them via topological sort over `before:` / `after:` edges. `replaces:` substitutes one contract for another. Cycles fail loudly with explicit cycle-path reporting.
 
 A.6d authors the algebra. **Wiring into substrate runtime** (composition at replay time) deferred — coupled with the absence of real contracts.
 
