@@ -1,10 +1,10 @@
 ---
 status: done
 touches:
-  - ci/check_security_patterns.py
-  - src/kanon/kit/aspects/kanon-security/files/ci/check_security_patterns.py
-  - ci/check_test_quality.py
-  - src/kanon/kit/aspects/kanon-testing/files/ci/check_test_quality.py
+  - scripts/check_security_patterns.py
+  - src/kanon/kit/aspects/kanon-security/files/scripts/check_security_patterns.py
+  - scripts/check_test_quality.py
+  - src/kanon/kit/aspects/kanon-testing/files/scripts/check_test_quality.py
   - .github/workflows/release.yml
 ---
 
@@ -27,5 +27,5 @@ touches:
 2. `check_test_quality.py` does not flag
    `src/kanon/_validators/test_import_check.py`.
 3. `release.yml` runs the same CI scripts as `verify.yml`.
-4. `ci/check_kit_consistency.py` passes (byte-equality).
+4. `scripts/check_kit_consistency.py` passes (byte-equality).
 5. All existing tests pass.

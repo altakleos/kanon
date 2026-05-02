@@ -89,9 +89,9 @@ This is recorded in ADR-0024.
 - [x] AC5: `kanon verify .` passes
 - [x] AC6: `pytest` passes with no regressions
 - [x] AC7: `ruff check` and `mypy` pass
-- [x] AC8: `ci/check_kit_consistency.py` passes
-- [x] AC9: `ci/check_invariant_ids.py` passes
-- [x] AC10: `ci/check_verified_by.py` passes with no warnings for cli.md
+- [x] AC8: `scripts/check_kit_consistency.py` passes
+- [x] AC9: `scripts/check_invariant_ids.py` passes
+- [x] AC10: `scripts/check_verified_by.py` passes with no warnings for cli.md
 
 ## Closure notes
 

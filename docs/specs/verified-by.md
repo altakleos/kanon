@@ -9,24 +9,24 @@ stressed_by:
   - platform-team
   - solo-with-agents
 fixtures:
-  - tests/ci/test_check_verified_by.py
+  - tests/scripts/test_check_verified_by.py
   - tests/test_cli.py
 invariant_coverage:
   INV-verified-by-frontmatter-mapping:
-    - tests/ci/test_check_verified_by.py::test_real_repo_passes
+    - tests/scripts/test_check_verified_by.py::test_real_repo_passes
   INV-verified-by-target-syntax:
-    - tests/ci/test_check_verified_by.py::test_unresolved_target_detected
+    - tests/scripts/test_check_verified_by.py::test_unresolved_target_detected
   INV-verified-by-resolution:
-    - tests/ci/test_check_verified_by.py::test_unresolved_target_detected
+    - tests/scripts/test_check_verified_by.py::test_unresolved_target_detected
   INV-verified-by-completeness:
-    - tests/ci/test_check_verified_by.py::test_missing_coverage_detected
+    - tests/scripts/test_check_verified_by.py::test_missing_coverage_detected
   INV-verified-by-stale-entries:
-    - tests/ci/test_check_verified_by.py::test_stale_entry_detected
+    - tests/scripts/test_check_verified_by.py::test_stale_entry_detected
   INV-verified-by-many-to-many:
-    - tests/ci/test_check_verified_by.py::test_real_repo_passes
+    - tests/scripts/test_check_verified_by.py::test_real_repo_passes
   INV-verified-by-validator:
-    - tests/ci/test_check_verified_by.py::test_real_repo_passes
-    - tests/ci/test_check_verified_by.py::test_main_exits_zero_on_ok
+    - tests/scripts/test_check_verified_by.py::test_real_repo_passes
+    - tests/scripts/test_check_verified_by.py::test_main_exits_zero_on_ok
   INV-verified-by-verify-integration:
     - tests/test_cli.py::test_init_verify_returns_ok
 ---
@@ -47,7 +47,7 @@ This spec depends on `invariant-ids` (stable anchors must exist before traceabil
      INV-aspects-aspect-identity:
        - tests/test_kit_integrity.py::test_kit_root_has_expected_top_level_entries
      INV-aspects-cross-aspect-ownership-exclusive:
-       - ci/check_kit_consistency.py
+       - scripts/check_kit_consistency.py
    ```
    Keys are `INV-*` anchor IDs that must exist in the spec's own `## Invariants` section. Values are lists of verification targets.
 
@@ -75,7 +75,7 @@ This spec depends on `invariant-ids` (stable anchors must exist before traceabil
 6. **Many-to-many.** One invariant may list multiple targets. One target may appear under multiple invariants across different specs. The mapping is explicit — no inference.
 
 <!-- INV-verified-by-validator -->
-7. **Validator.** A CI script `ci/check_verified_by.py` (standalone, following the `check_invariant_ids.py` pattern) performs all checks from invariants 1–6. It outputs a JSON report with `{errors: [...], warnings: [...], status: "ok"|"fail"}`. It is also wired into `kanon verify` at SDD depth ≥ 2 as warnings (not hard errors in the initial release).
+7. **Validator.** A CI script `scripts/check_verified_by.py` (standalone, following the `check_invariant_ids.py` pattern) performs all checks from invariants 1–6. It outputs a JSON report with `{errors: [...], warnings: [...], status: "ok"|"fail"}`. It is also wired into `kanon verify` at SDD depth ≥ 2 as warnings (not hard errors in the initial release).
 
 <!-- INV-verified-by-verify-integration -->
 8. **`kanon verify` integration.** At SDD depth ≥ 2, `kanon verify` warns on specs missing `invariant_coverage:` (when `fixtures_deferred` is absent). At SDD depth ≥ 3, it additionally warns on incomplete coverage (invariants without targets). Neither is a hard error in the initial release — the CI script is the enforcement point.

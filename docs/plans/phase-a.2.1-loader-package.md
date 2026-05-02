@@ -12,7 +12,7 @@ design: docs/design/kernel-reference-interface.md
 [ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md) ratifies the kernel/reference runtime interface; the design at [`docs/design/kernel-reference-interface.md`](../design/kernel-reference-interface.md) sizes Phase A.2 at ~+450 LOC source / -80 LOC source / +150 LOC tests across ~12 files. That's too large for one review-friendly PR. Splitting at the natural seam between *additive* and *substractive* work:
 
 - **A.2.1 (this plan):** Author the `kanon_reference` Python package, the seven LOADER (`MANIFEST`) stubs, and uncomment the entry-points block in `packaging/reference/pyproject.toml`. Pure addition. The substrate's runtime is unchanged. `_kit_root()` still loads from `src/kanon/kit/aspects/`. Self-host trivially stays green.
-- **A.2.2 (next plan):** Substrate `_load_aspect_registry()` rewrite, `_kit_root()` retirement (11 call sites in `_manifest.py` + `_scaffold.py`), namespace-ownership validator, and `ci/check_substrate_independence.py` gate. Substractive + risky.
+- **A.2.2 (next plan):** Substrate `_load_aspect_registry()` rewrite, `_kit_root()` retirement (11 call sites in `_manifest.py` + `_scaffold.py`), namespace-ownership validator, and `scripts/check_substrate_independence.py` gate. Substractive + risky.
 
 This plan covers A.2.1 only.
 
@@ -105,11 +105,11 @@ Two changes:
 
 Remove `packaging/reference/src/_kanon_reference_placeholder/__init__.py` and the parent directory tree (no longer needed).
 
-#### D. Update `ci/check_packaging_split.py`
+#### D. Update `scripts/check_packaging_split.py`
 
 Phase A.1's gate didn't validate the entry-points block (it was commented out). A.2.1's gate now validates it IS present and references the seven canonical aspect IDs pointing at `kanon_reference.aspects.kanon_X:MANIFEST`. Adds one new check function `_check_reference_entry_points`.
 
-#### E. Update `tests/ci/test_check_packaging_split.py`
+#### E. Update `tests/scripts/test_check_packaging_split.py`
 
 Mirror the gate change: green-path test still passes; new synthetic-failure tests cover (a) missing entry-points block, (b) wrong entry-point target.
 
@@ -122,7 +122,7 @@ For each of the seven aspects, assert the LOADER `MANIFEST` dict is structurally
 - **Substrate runtime change.** No `_load_aspect_registry()`, no `_kit_root()` retirement — A.2.2.
 - **Aspect content move.** YAML manifests stay at `src/kanon/kit/aspects/<X>/manifest.yaml`; the LOADER stubs duplicate-but-don't-replace. A.3 deletes the YAMLs.
 - **Namespace-ownership validator.** A.2.2.
-- **`ci/check_substrate_independence.py`.** A.2.2.
+- **`scripts/check_substrate_independence.py`.** A.2.2.
 - **Top-level `pyproject.toml` swing.** Later in Phase A.
 - **No new ADR / spec / design / principle changes.**
 
@@ -133,8 +133,8 @@ For each of the seven aspects, assert the LOADER `MANIFEST` dict is structurally
 3. Author `kanon_reference/__init__.py` and `kanon_reference/aspects/__init__.py` (one-line docstrings each).
 4. Update `packaging/reference/pyproject.toml`: uncomment entry-points; rename `:LOADER` → `:MANIFEST`; swap placeholder package for real `kanon_reference`.
 5. Delete `packaging/reference/src/_kanon_reference_placeholder/`.
-6. Update `ci/check_packaging_split.py` to validate the now-active entry-points block.
-7. Update `tests/ci/test_check_packaging_split.py` accordingly.
+6. Update `scripts/check_packaging_split.py` to validate the now-active entry-points block.
+7. Update `tests/scripts/test_check_packaging_split.py` accordingly.
 8. Author `tests/test_kanon_reference_manifests.py` with the YAML-vs-MANIFEST equivalence test (parametrized over the seven aspects).
 9. Run all gates + full pytest.
 10. CHANGELOG entry under `[Unreleased] § Added`.
@@ -158,19 +158,19 @@ For each of the seven aspects, assert the LOADER `MANIFEST` dict is structurally
 
 ### CI gate
 
-- [ ] AC-CI1: `ci/check_packaging_split.py` gains a `_check_reference_entry_points` function that validates the seven entry-points are present and target `kanon_reference.aspects.kanon_<id>:MANIFEST`.
-- [ ] AC-CI2: `tests/ci/test_check_packaging_split.py` covers green path + missing-entry-points failure + wrong-entry-point-target failure.
+- [ ] AC-CI1: `scripts/check_packaging_split.py` gains a `_check_reference_entry_points` function that validates the seven entry-points are present and target `kanon_reference.aspects.kanon_<id>:MANIFEST`.
+- [ ] AC-CI2: `tests/scripts/test_check_packaging_split.py` covers green path + missing-entry-points failure + wrong-entry-point-target failure.
 - [ ] AC-CI3: New test `tests/test_kanon_reference_manifests.py` parametrized over the seven aspects asserts MANIFEST ≡ YAML (semantic equivalence).
 
 ### Cross-cutting
 
 - [ ] AC-X1: `CHANGELOG.md` `[Unreleased] § Added` gains a paragraph naming Phase A.2.1.
 - [ ] AC-X2: `kanon verify .` returns `status: ok`, zero warnings.
-- [ ] AC-X3: `python ci/check_links.py` passes.
-- [ ] AC-X4: `python ci/check_foundations.py` passes.
-- [ ] AC-X5: `python ci/check_kit_consistency.py` passes.
-- [ ] AC-X6: `python ci/check_invariant_ids.py` passes.
-- [ ] AC-X7: `python ci/check_packaging_split.py` passes.
+- [ ] AC-X3: `python scripts/check_links.py` passes.
+- [ ] AC-X4: `python scripts/check_foundations.py` passes.
+- [ ] AC-X5: `python scripts/check_kit_consistency.py` passes.
+- [ ] AC-X6: `python scripts/check_invariant_ids.py` passes.
+- [ ] AC-X7: `python scripts/check_packaging_split.py` passes.
 - [ ] AC-X8: `pytest tests/test_kanon_reference_manifests.py --no-cov` → 7 passed.
 - [ ] AC-X9: Full pytest: ≥841 passed (was 834 + 7 new manifest-equivalence + new gate-failure tests), 0 failed.
 - [ ] AC-X10: No `src/kanon/` content changed (kernel and YAML manifests untouched). No aspect content moved. No `_kit_root()` change.
@@ -187,6 +187,6 @@ For each of the seven aspects, assert the LOADER `MANIFEST` dict is structurally
 ## Documentation impact
 
 - **New files:** `src/kanon_reference/__init__.py`, `src/kanon_reference/aspects/__init__.py`, seven `src/kanon_reference/aspects/kanon_*.py`, `tests/test_kanon_reference_manifests.py`, `docs/plans/phase-a.2.1-loader-package.md`.
-- **Touched files:** `packaging/reference/pyproject.toml`, `ci/check_packaging_split.py`, `tests/ci/test_check_packaging_split.py`, `CHANGELOG.md`.
+- **Touched files:** `packaging/reference/pyproject.toml`, `scripts/check_packaging_split.py`, `tests/scripts/test_check_packaging_split.py`, `CHANGELOG.md`.
 - **Deleted files:** `packaging/reference/src/_kanon_reference_placeholder/__init__.py` (and parent dirs).
 - **No changes to:** `src/kanon/` (kernel + YAML manifests untouched), specs, designs, ADRs, foundations, protocol prose, top-level pyproject.

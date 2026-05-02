@@ -7,7 +7,7 @@ design: "Follows existing CI workflow pattern in verify.yml"
 
 ## Problem
 
-7 of 13 CI scripts in `ci/` are not invoked by any GitHub Actions workflow.
+7 of 13 CI scripts in `scripts/` are not invoked by any GitHub Actions workflow.
 AGENTS.md and aspect body sections claim these scripts are active enforcement —
 contributors believe they're enforced; they aren't.
 
@@ -19,12 +19,12 @@ Append these steps after the existing `check_commit_messages` step:
 
 | Script | Step name | Invocation | Fail mode |
 |--------|-----------|------------|-----------|
-| `check_test_quality.py` | Check test quality | `python ci/check_test_quality.py` | hard-fail |
-| `check_security_patterns.py` | Check security patterns (warnings) | `python ci/check_security_patterns.py` | warn-only (no `--strict`) |
-| `check_deps.py` | Check dependency hygiene (warnings) | `python ci/check_deps.py` | warn-only |
-| `check_status_consistency.py` | Check status consistency (warnings) | `python ci/check_status_consistency.py` | warn-only |
-| `check_verified_by.py` | Check spec invariant coverage | `python ci/check_verified_by.py` | hard-fail |
-| `check_invariant_ids.py` | Check invariant IDs | `python ci/check_invariant_ids.py` | hard-fail |
+| `check_test_quality.py` | Check test quality | `python scripts/check_test_quality.py` | hard-fail |
+| `check_security_patterns.py` | Check security patterns (warnings) | `python scripts/check_security_patterns.py` | warn-only (no `--strict`) |
+| `check_deps.py` | Check dependency hygiene (warnings) | `python scripts/check_deps.py` | warn-only |
+| `check_status_consistency.py` | Check status consistency (warnings) | `python scripts/check_status_consistency.py` | warn-only |
+| `check_verified_by.py` | Check spec invariant coverage | `python scripts/check_verified_by.py` | hard-fail |
+| `check_invariant_ids.py` | Check invariant IDs | `python scripts/check_invariant_ids.py` | hard-fail |
 
 Notes:
 - `check_security_patterns.py` runs without `--strict` — matching its documented

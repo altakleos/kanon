@@ -109,7 +109,7 @@ One paragraph under `## [Unreleased]` § Changed (this is user-visible substrate
 
 1. **Author `.kanon/recipes/reference-default.yaml`** with the schema from ADR-0043's design.
 2. **Augment `.kanon/config.yaml`** by prepending v4 fields and a clear comment marking the boundary between v4-additions and v3-preserved fields.
-3. **Run gates locally**: `kanon verify .`, `python ci/check_links.py`, `python ci/check_foundations.py`, `python ci/check_kit_consistency.py`, etc.
+3. **Run gates locally**: `kanon verify .`, `python scripts/check_links.py`, `python scripts/check_foundations.py`, `python scripts/check_kit_consistency.py`, etc.
 4. **Author CHANGELOG entry** under `[Unreleased] § Changed`.
 5. **Regenerate fidelity lock** if any spec SHAs bump (unlikely; we're touching consumer-side artifacts only).
 
@@ -133,10 +133,10 @@ One paragraph under `## [Unreleased]` § Changed (this is user-visible substrate
 ### Cross-cutting
 
 - [ ] AC-X2: `kanon verify .` returns `status: ok`, zero warnings (the current kit ignores v4 fields).
-- [ ] AC-X3: `python ci/check_links.py` passes.
-- [ ] AC-X4: `python ci/check_foundations.py` passes, zero warnings.
-- [ ] AC-X5: `python ci/check_kit_consistency.py` passes (no new kit-side files added; this gate is unaffected).
-- [ ] AC-X6: `python ci/check_invariant_ids.py` passes.
+- [ ] AC-X3: `python scripts/check_links.py` passes.
+- [ ] AC-X4: `python scripts/check_foundations.py` passes, zero warnings.
+- [ ] AC-X5: `python scripts/check_kit_consistency.py` passes (no new kit-side files added; this gate is unaffected).
+- [ ] AC-X6: `python scripts/check_invariant_ids.py` passes.
 - [ ] AC-X7: No source / aspect-manifest / protocol-prose / CI / new-spec / new-design / new-ADR / new-principle changes.
 
 ## Risks / concerns

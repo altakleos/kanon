@@ -101,7 +101,7 @@ Paragraph under `[Unreleased] § Removed`.
 
 - **Aspect content move** (`src/kanon/kit/aspects/` → `src/kanon_reference/aspects/`) — dedicated sub-plan.
 - **`_kit_root()` retirement in `_scaffold.py`** — blocks on content move.
-- **`ci/check_substrate_independence.py` gate** — blocks on content move.
+- **`scripts/check_substrate_independence.py` gate** — blocks on content move.
 - **Bare-name CLI sugar deprecation** — A.5.
 - **`_emit_init_hints` grow_hints section** — separate concern; A.5+ may revisit.
 - **Kit YAML's `aspects:` block deletion** — bundle with content-move.
@@ -167,7 +167,7 @@ Paragraph under `[Unreleased] § Removed`.
 
 - **Risk: tests that assert "Detected project tools: pytest" in stderr break.** Mitigation: audit during implementation; delete those assertions.
 - **Risk: tests that assert "Preflight readiness" in stderr break.** Same mitigation.
-- **Risk: real users' release-preflight scripts depended on `${test_cmd}` substitution.** The kanon repo's `.kanon/config.yaml` declares `test_cmd: .venv/bin/python -m pytest --no-cov -q` — release-preflight may interpolate this. Audit `ci/release-preflight.py`. If it reads `aspects.kanon-testing.config.test_cmd`, that becomes a hardcode in the script (or moves to a new location).
+- **Risk: real users' release-preflight scripts depended on `${test_cmd}` substitution.** The kanon repo's `.kanon/config.yaml` declares `test_cmd: .venv/bin/python -m pytest --no-cov -q` — release-preflight may interpolate this. Audit `scripts/release-preflight.py`. If it reads `aspects.kanon-testing.config.test_cmd`, that becomes a hardcode in the script (or moves to a new location).
 - **Risk: `kanon fidelity update .` regenerate may fail if the kanon-testing config-schema removal cascades through fixtures.** Mitigation: run regen interactively; if it fails, narrow the scope of cleanup.
 - **Risk: backward-compat for v0.3.x consumers.** Per ADR-0045 there is no backward-compat. The migration script (A.9) handles the kanon repo's own transition.
 

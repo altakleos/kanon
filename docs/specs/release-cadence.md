@@ -7,7 +7,7 @@ realizes:
   - P-protocol-not-product
 stressed_by:
   - acme-publisher
-fixtures_deferred: "Phase A authors the release-cadence CI gate (`ci/check_release_cadence.py` or analogous), the wheel-split release workflows, and the migration script. The release-cadence invariants below are the contract; tests land in the implementation PR."
+fixtures_deferred: "Phase A authors the release-cadence CI gate (`scripts/check_release_cadence.py` or analogous), the wheel-split release workflows, and the migration script. The release-cadence invariants below are the contract; tests land in the implementation PR."
 ---
 # Spec: Release cadence — kernel-reference-dialect cadence separation
 

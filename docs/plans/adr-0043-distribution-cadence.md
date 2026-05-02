@@ -134,9 +134,9 @@ One paragraph under `## [Unreleased]` § Added summarizing ADR-0043's three comm
 ### Cross-cutting
 
 - [ ] AC-X5: `kanon verify .` → `status: ok`, zero warnings.
-- [ ] AC-X6: `python ci/check_links.py` → ok.
-- [ ] AC-X7: `python ci/check_foundations.py` → ok.
-- [ ] AC-X8: `python ci/check_invariant_ids.py` → ok.
+- [ ] AC-X6: `python scripts/check_links.py` → ok.
+- [ ] AC-X7: `python scripts/check_foundations.py` → ok.
+- [ ] AC-X8: `python scripts/check_invariant_ids.py` → ok.
 - [ ] AC-X9: No source / aspect-manifest / protocol-prose / CI changes.
 
 ## Risks / concerns

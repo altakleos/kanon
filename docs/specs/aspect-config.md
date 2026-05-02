@@ -81,7 +81,7 @@ The shape of `aspects.<name>.config` in the on-disk schema is unchanged; only th
 
 ## Rationale
 
-**Why YAML-scalar parsing.** The `testing` aspect already stores `coverage_floor: 80` as an integer in its consumer config; if `set-config coverage_floor=80` stored the string `"80"` instead, the existing config-aware code in `ci/check_test_quality.py` would break or need a parallel string-handling path. YAML-scalar parsing makes the CLI's storage match the format an author would have hand-written. The narrow rejection of list / mapping syntax is a forcing function — anyone needing structured config can hand-edit YAML, but the common case (scalars) is safe and ergonomic.
+**Why YAML-scalar parsing.** The `testing` aspect already stores `coverage_floor: 80` as an integer in its consumer config; if `set-config coverage_floor=80` stored the string `"80"` instead, the existing config-aware code in `scripts/check_test_quality.py` would break or need a parallel string-handling path. YAML-scalar parsing makes the CLI's storage match the format an author would have hand-written. The narrow rejection of list / mapping syntax is a forcing function — anyone needing structured config can hand-edit YAML, but the common case (scalars) is safe and ergonomic.
 
 **Why a schema is optional.** Mandating a schema would block experimental aspects from shipping without one. Optional-but-validated lets aspect authors add a schema only when the aspect's config has stabilized. The schema's job is not to prevent every misuse — it's to catch typos and type mistakes that would otherwise sit silently in `config.yaml` until something downstream blew up.
 

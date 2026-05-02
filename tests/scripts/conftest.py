@@ -1,6 +1,6 @@
 """Shared fixtures for CI script tests.
 
-CI scripts live in ``ci/`` and are standalone Python files (not part of the
+CI scripts live in ``scripts/`` and are standalone Python files (not part of the
 pip package), so they must be loaded via importlib.
 """
 
@@ -20,7 +20,7 @@ REPO_ROOT: Path = Path(__file__).resolve().parents[2]
 
 def _load_ci_script(name: str) -> ModuleType:
     """Load a CI script by filename and return it as a module."""
-    script = REPO_ROOT / "ci" / name
+    script = REPO_ROOT / "scripts" / name
     assert script.is_file(), f"CI script not found: {script}"
     module_name = script.stem.replace("-", "_")
     spec = importlib.util.spec_from_file_location(module_name, script)

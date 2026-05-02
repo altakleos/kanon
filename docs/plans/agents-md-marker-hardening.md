@@ -23,7 +23,7 @@ The fix preserves all current behaviour for well-formed input (the kit's own AGE
 - [x] T2: `_replace_section`, `_remove_section`, `_merge_agents_md`, and `_rewrite_legacy_markers` in `src/kanon/_scaffold.py` now call `_find_section_pair` / `_iter_markers`. `_insert_section` left unchanged — it constructs new content rather than parsing existing markers. Substitutions are line-aligned.
 - [x] T3: `_replace_section` runs from the end of the begin-marker line to the start of the end-marker line. Round-trip property verified by `test_assembled_agents_md_is_merge_fixed_point` and `test_repo_agents_md_round_trips`.
 - [x] T4: `check_agents_md_markers` in `src/kanon/_verify.py` now uses `_find_section_pair` for presence and `_iter_markers` for the balance count.
-- [x] T5: `ci/check_kit_consistency.py` imports `_iter_markers` from `kanon._manifest` (with a `sys.path.insert` so the script remains runnable from a fresh clone). The local `_SECTION_RE` literal is gone.
+- [x] T5: `scripts/check_kit_consistency.py` imports `_iter_markers` from `kanon._manifest` (with a `sys.path.insert` so the script remains runnable from a fresh clone). The local `_SECTION_RE` literal is gone.
 - [x] T6: `tests/test_scaffold_marker_hardening.py` covers all five sub-cases plus inline-prefix and balance-counter checks. 8 tests, all passing.
 - [x] T7: `test_repo_agents_md_round_trips` asserts the repo's own AGENTS.md is a fixed point of `merge(existing, assemble(...))`. Passes.
 - [x] T8: `CHANGELOG.md` `## [Unreleased] / ### Fixed` carries the entry.
@@ -33,8 +33,8 @@ The fix preserves all current behaviour for well-formed input (the kit's own AGE
 - [x] AC1: `pytest` passes — 313 passed, 5 deselected (e2e), 93.03% coverage.
 - [x] AC2: `tests/test_scaffold_marker_hardening.py::test_quoted_marker_in_backtick_fence_is_ignored` (and 7 sibling cases) pass. (Renamed from `test_quoted_marker_in_fenced_block_is_ignored` to be specific about delimiter; tilde-fence has its own test.)
 - [x] AC3: `uv run kanon verify .` against the worktree returns `status: ok` (warnings are stale-fidelity-lock entries, unrelated to this change).
-- [x] AC4: `python ci/check_kit_consistency.py` returns exit 0.
-- [x] AC5: Marker primitives live solely in `kanon._manifest`; `_scaffold.py`, `_verify.py`, and `ci/check_kit_consistency.py` import them. No regex literals duplicated across the three.
+- [x] AC4: `python scripts/check_kit_consistency.py` returns exit 0.
+- [x] AC5: Marker primitives live solely in `kanon._manifest`; `_scaffold.py`, `_verify.py`, and `scripts/check_kit_consistency.py` import them. No regex literals duplicated across the three.
 
 ## Documentation Impact
 

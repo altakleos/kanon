@@ -41,7 +41,7 @@ The layer exists because some operations are judgment-shaped, not algorithm-shap
 ## Invariants
 
 <!-- INV-protocols-location -->
-1. **Location is `.kanon/protocols/` in consumer repos** and `src/kanon/kit/protocols/` in the kit source. Every file in the consumer path has a byte-identical mirror in the kit source, enforced by `ci/check_kit_consistency.py`.
+1. **Location is `.kanon/protocols/` in consumer repos** and `src/kanon/kit/protocols/` in the kit source. Every file in the consumer path has a byte-identical mirror in the kit source, enforced by `scripts/check_kit_consistency.py`.
 <!-- INV-protocols-frontmatter-schema -->
 2. **Frontmatter schema.** Every protocol file has YAML frontmatter with four required keys:
    - `status`: one of `draft | accepted | deferred | provisional | superseded`.
@@ -63,7 +63,7 @@ The layer exists because some operations are judgment-shaped, not algorithm-shap
 
 Byte-equality (INV-protocols-byte-equality) enforces that the protocol text the agent reads in a consumer repo matches what the kit authored. Without it, a consumer's protocol could silently drift from the documented behavior, and a fresh agent session would execute unknowable steps. This mirrors the same enforcement applied to `docs/sdd-method.md` and `_template.md` files (per `template-bundle.md` INV-template-bundle-tier3-canonical-with-repo, carried forward into `kit-bundle.md`).
 
-The `tier-min` frontmatter field (INV-protocols-frontmatter-schema) is not just documentation — `ci/check_kit_consistency.py` cross-checks it against `manifest.yaml`, catching drift where a protocol is moved between tiers in the manifest but the frontmatter is forgotten.
+The `tier-min` frontmatter field (INV-protocols-frontmatter-schema) is not just documentation — `scripts/check_kit_consistency.py` cross-checks it against `manifest.yaml`, catching drift where a protocol is moved between tiers in the manifest but the frontmatter is forgotten.
 
 The `protocols-index` marker block (INV-protocols-discoverability) is the discovery mechanism. A fresh LLM session reading `AGENTS.md` sees the catalog inline and can invoke protocols without knowing the directory structure.
 

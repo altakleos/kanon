@@ -71,7 +71,7 @@ This spec was extracted from the broader `spec-graph-tooling.md` umbrella when t
 4. **A deferred spec is itself never reported as an orphan.** Deferred specs (`status: deferred`) are roadmap entries by design — no plan `serves:` them yet because work hasn't started. They are excluded from the orphan-spec list. They reappear as orphan candidates only after promotion to `draft` if no plan picks them up.
 
 <!-- INV-spec-graph-orphans-exempt-frontmatter -->
-5. **Explicit opt-out via `orphan-exempt:`.** A node may declare `orphan-exempt: true` in its frontmatter to opt out of the orphan check. This is intended for principles that govern agent conduct rather than any specific feature (e.g., `P-prose-is-code` may not be `realizes:`d by any spec but is core to the kit's identity). The exemption MUST include an `orphan-exempt-reason:` field with a one-sentence rationale; both fields are validated by the existing CI machinery (extension to `ci/check_foundations.py`).
+5. **Explicit opt-out via `orphan-exempt:`.** A node may declare `orphan-exempt: true` in its frontmatter to opt out of the orphan check. This is intended for principles that govern agent conduct rather than any specific feature (e.g., `P-prose-is-code` may not be `realizes:`d by any spec but is core to the kit's identity). The exemption MUST include an `orphan-exempt-reason:` field with a one-sentence rationale; both fields are validated by the existing CI machinery (extension to `scripts/check_foundations.py`).
 
 <!-- INV-spec-graph-orphans-no-thresholds -->
 6. **No "warn after N releases / fail after M" thresholds.** The umbrella spec floated configurable thresholds; this spec drops them. Orphan detection is a report; the consumer decides what to do with the report. Future evolution can add CI-failure semantics if a real consumer demand emerges.
@@ -113,6 +113,6 @@ This spec was extracted from the broader `spec-graph-tooling.md` umbrella when t
 
 ## Decisions
 
-- The `orphan-exempt:` and `orphan-exempt-reason:` frontmatter fields are validated by extending `ci/check_foundations.py` (the existing principle/persona validator). No new ADR — frontmatter-field additions are routine.
+- The `orphan-exempt:` and `orphan-exempt-reason:` frontmatter fields are validated by extending `scripts/check_foundations.py` (the existing principle/persona validator). No new ADR — frontmatter-field additions are routine.
 - This spec depends on `spec-graph-rename.md` for the `_graph.py` primitive (INV-8). They are intended to ship in the same release.
 - Pattern instantiation under ADR-0026 (capability registry) for the capability-orphan rule.

@@ -1,4 +1,4 @@
-"""Tests for ci/release-preflight.py."""
+"""Tests for scripts/release-preflight.py."""
 from __future__ import annotations
 
 import json

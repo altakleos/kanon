@@ -42,61 +42,61 @@ jobs:
         run: pytest -v
 
       - name: Lint with ruff
-        run: ruff check src/ tests/ ci/
+        run: ruff check src/ tests/ scripts/
 
       - name: Type check with mypy
         run: mypy src/kanon
 
       - name: Check foundations layer
-        run: python ci/check_foundations.py
+        run: python scripts/check_foundations.py
 
       - name: Check markdown links
-        run: python ci/check_links.py
+        run: python scripts/check_links.py
 
       - name: Check kit consistency
-        run: python ci/check_kit_consistency.py
+        run: python scripts/check_kit_consistency.py
 
       - name: Check ADR immutability (per ADR-0032)
         run: |
           if [ "${{ inputs.is-pr }}" = "true" ]; then
-            python ci/check_adr_immutability.py --base-ref "origin/${{ github.base_ref }}"
+            python scripts/check_adr_immutability.py --base-ref "origin/${{ github.base_ref }}"
           else
-            python ci/check_adr_immutability.py
+            python scripts/check_adr_immutability.py
           fi
 
       - name: Check process gates (plan-before-build, spec-before-design)
         run: |
           if [ "${{ inputs.is-pr }}" = "true" ]; then
-            python ci/check_process_gates.py --base-ref "origin/${{ github.base_ref }}"
+            python scripts/check_process_gates.py --base-ref "origin/${{ github.base_ref }}"
           else
-            python ci/check_process_gates.py
+            python scripts/check_process_gates.py
           fi
 
       - name: Check commit messages (soft — warnings only)
         run: |
           if [ "${{ inputs.is-pr }}" = "true" ]; then
-            python ci/check_commit_messages.py --base-ref "origin/${{ github.base_ref }}"
+            python scripts/check_commit_messages.py --base-ref "origin/${{ github.base_ref }}"
           else
-            python ci/check_commit_messages.py
+            python scripts/check_commit_messages.py
           fi
 
       - name: Check test quality
-        run: python ci/check_test_quality.py
+        run: python scripts/check_test_quality.py
 
       - name: Check spec invariant coverage
-        run: python ci/check_verified_by.py
+        run: python scripts/check_verified_by.py
 
       - name: Check invariant IDs
-        run: python ci/check_invariant_ids.py
+        run: python scripts/check_invariant_ids.py
 
       - name: Check security patterns (warnings)
-        run: python ci/check_security_patterns.py
+        run: python scripts/check_security_patterns.py
         continue-on-error: true
 
       - name: Check dependency hygiene (warnings)
-        run: python ci/check_deps.py
+        run: python scripts/check_deps.py
         continue-on-error: true
 
       - name: Check status consistency (warnings)
-        run: python ci/check_status_consistency.py
+        run: python scripts/check_status_consistency.py
         continue-on-error: true

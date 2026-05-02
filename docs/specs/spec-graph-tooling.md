@@ -31,7 +31,7 @@ Sensei has experienced manual rename pain. A principle rename today means `grep 
 
 ## Sketched invariants
 
-1. `kanon graph rename <old-slug> <new-slug>` does one atomic filesystem transaction: every file that cites the slug (in frontmatter or prose) is updated, the change is atomic, and `ci/check_foundations.py` passes after.
+1. `kanon graph rename <old-slug> <new-slug>` does one atomic filesystem transaction: every file that cites the slug (in frontmatter or prose) is updated, the change is atomic, and `scripts/check_foundations.py` passes after.
 2. `kanon graph orphans` emits a report: principles without any inbound `realizes:`/`serves:` references, specs without any inbound plan `serves:`, etc. Configurable thresholds (warn after N releases, fail after M).
 3. `kanon graph diff <old-sha> <new-sha>` shows invariant-level changes — bullet-by-bullet additions/removals in each spec's Invariants section — not prose-level changes.
 4. Integration with the fidelity-lock (above) so a spec-graph change can update the lock mechanically.

@@ -64,14 +64,14 @@ Implements `docs/specs/aspect-config.md` (10 invariants). Adds two CLI write pat
 
 ### Self-host
 
-- [x] T14: Run `kanon aspect set-config . testing coverage_floor=80` against the repo to populate the field via the new path (replacing whatever is there). Verify `kanon verify .` returns ok and `ci/check_kit_consistency.py` returns exit 0 (kit consistency unaffected).
+- [x] T14: Run `kanon aspect set-config . testing coverage_floor=80` against the repo to populate the field via the new path (replacing whatever is there). Verify `kanon verify .` returns ok and `scripts/check_kit_consistency.py` returns exit 0 (kit consistency unaffected).
 
 ## Acceptance Criteria
 
 - [x] AC1: `pytest` passes; full suite ≥ 90% coverage; new tests in T8/T9 all pass.
 - [x] AC2: `mypy src/kanon` clean.
 - [x] AC3: `ruff check src/ tests/ ci/` clean.
-- [x] AC4: `python ci/check_kit_consistency.py` returns exit 0.
+- [x] AC4: `python scripts/check_kit_consistency.py` returns exit 0.
 - [x] AC5: `kanon verify .` returns `status: ok` against the repo.
 - [x] AC6: `kanon aspect set-config . testing coverage_floor=80` succeeds and `.kanon/config.yaml` shows `aspects.testing.config.coverage_floor: 80` (int, not string).
 - [x] AC7: `kanon aspect info testing` output contains a `Config keys:` block listing `coverage_floor` with type `integer`.

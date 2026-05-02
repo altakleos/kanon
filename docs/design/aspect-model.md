@@ -220,7 +220,7 @@ AGENTS.md assembly walks enabled aspects in stable order (sorted by aspect name)
 
 The block is wrapped once in `<!-- kanon:begin:protocols-index --> … <!-- kanon:end:protocols-index -->` (unprefixed).
 
-## Enforcement (`ci/check_kit_consistency.py`)
+## Enforcement (`scripts/check_kit_consistency.py`)
 
 New invariants:
 

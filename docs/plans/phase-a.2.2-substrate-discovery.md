@@ -158,7 +158,7 @@ These are inside `_aspect_path()` for kit aspects. Today: `_kit_root() / entry["
 
 ### Out of scope
 
-- **`ci/check_substrate_independence.py` gate** — see "Decision points" below.
+- **`scripts/check_substrate_independence.py` gate** — see "Decision points" below.
 - **`_kit_root()` call sites in `_scaffold.py`** (lines 28, 181, 245, 416, 443) — A.3 territory; they read aspect-data files (templates, agents-md fragments) that still live at `src/kanon/kit/aspects/<X>/`. Retiring them requires the content move.
 - **Deleting `src/kanon/kit/manifest.yaml`'s `aspects:` block** — A.3 territory.
 - **Deleting `defaults:` / `files:` from kit YAML** — A.3 territory.
@@ -167,7 +167,7 @@ These are inside `_aspect_path()` for kit aspects. Today: `_kit_root() / entry["
 
 ## Decision points
 
-### Why defer `ci/check_substrate_independence.py` to a separate sub-plan
+### Why defer `scripts/check_substrate_independence.py` to a separate sub-plan
 
 Per ADR-0040 §6, the gate asserts the substrate's test suite passes with `kanon_reference` uninstalled. Today this gate would fail catastrophically:
 
@@ -215,11 +215,11 @@ Audit during implementation; the failure mode is loud (KeyError); not silent bre
 
 - [ ] AC-X1: `CHANGELOG.md` `[Unreleased] § Added` gains a paragraph naming Phase A.2.2.
 - [ ] AC-X2: `kanon verify .` returns `status: ok`, zero warnings.
-- [ ] AC-X3: `python ci/check_links.py` passes.
-- [ ] AC-X4: `python ci/check_foundations.py` passes.
-- [ ] AC-X5: `python ci/check_kit_consistency.py` passes (or: noted change with explicit allowlist if the kit YAML's `aspects:` is no longer the registry).
-- [ ] AC-X6: `python ci/check_invariant_ids.py` passes.
-- [ ] AC-X7: `python ci/check_packaging_split.py` passes.
+- [ ] AC-X3: `python scripts/check_links.py` passes.
+- [ ] AC-X4: `python scripts/check_foundations.py` passes.
+- [ ] AC-X5: `python scripts/check_kit_consistency.py` passes (or: noted change with explicit allowlist if the kit YAML's `aspects:` is no longer the registry).
+- [ ] AC-X6: `python scripts/check_invariant_ids.py` passes.
+- [ ] AC-X7: `python scripts/check_packaging_split.py` passes.
 
 ## Risks / concerns
 

@@ -33,7 +33,7 @@ This plan delivers both `orphans` (read-only report) and `rename` (atomic mutato
 
 - [x] T5: Implement `_cmd_graph_orphans(filter_namespace, output_format)` — consumes `build_graph`; computes orphans per orphans-spec INV-2 (no inbound edges per namespace); applies `orphan-exempt:` filtering per INV-5; emits text or JSON per INV-7 → `src/kanon/cli.py`. (depends: T4)
 - [x] T6: Wire `kanon graph orphans` Click subcommand with `--type` and `--format` options; group `kanon graph` parent command (rename will be sibling) → `src/kanon/cli.py`. (depends: T5)
-- [x] T7: Extend `ci/check_foundations.py` to validate `orphan-exempt:` requires `orphan-exempt-reason:` (orphans-spec INV-5) → `ci/check_foundations.py`. (depends: T6)
+- [x] T7: Extend `scripts/check_foundations.py` to validate `orphan-exempt:` requires `orphan-exempt-reason:` (orphans-spec INV-5) → `scripts/check_foundations.py`. (depends: T6)
 - [x] T8: Tests: `kanon graph orphans` empty-graph, single-orphan, exempt node, JSON shape, `--type` filter, malformed-graph exits non-zero → `tests/cli/test_graph_orphans.py`. (depends: T7)
 
 ### Phase 3 — `kanon graph rename`

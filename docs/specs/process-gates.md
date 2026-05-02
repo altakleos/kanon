@@ -3,30 +3,30 @@ status: accepted
 design: "Follows ADR-0032"
 date: 2026-04-27
 fixtures:
-  - tests/ci/test_check_process_gates.py
+  - tests/scripts/test_check_process_gates.py
 invariant_coverage:
   INV-process-gates-plan-co-presence:
-    - tests/ci/test_check_process_gates.py::test_src_change_with_plan_status_done
-    - tests/ci/test_check_process_gates.py::test_src_change_with_plan_status_in_progress
-    - tests/ci/test_check_process_gates.py::test_src_change_with_no_plan_fails
+    - tests/scripts/test_check_process_gates.py::test_src_change_with_plan_status_done
+    - tests/scripts/test_check_process_gates.py::test_src_change_with_plan_status_in_progress
+    - tests/scripts/test_check_process_gates.py::test_src_change_with_no_plan_fails
   INV-process-gates-spec-co-presence:
-    - tests/ci/test_check_process_gates.py::test_new_cli_command_with_spec_accepted
-    - tests/ci/test_check_process_gates.py::test_new_cli_command_with_no_spec_fails
+    - tests/scripts/test_check_process_gates.py::test_new_cli_command_with_spec_accepted
+    - tests/scripts/test_check_process_gates.py::test_new_cli_command_with_no_spec_fails
   INV-process-gates-trivial-override:
-    - tests/ci/test_check_process_gates.py::test_src_change_with_trivial_trailer_exempts_plan
-    - tests/ci/test_check_process_gates.py::test_new_cli_command_with_trivial_but_no_spec_still_fails
+    - tests/scripts/test_check_process_gates.py::test_src_change_with_trivial_trailer_exempts_plan
+    - tests/scripts/test_check_process_gates.py::test_new_cli_command_with_trivial_but_no_spec_still_fails
   INV-process-gates-reference-semantics:
-    - tests/ci/test_check_process_gates.py::test_plan_referenced_via_commit_message
-    - tests/ci/test_check_process_gates.py::test_spec_referenced_via_commit_message
+    - tests/scripts/test_check_process_gates.py::test_plan_referenced_via_commit_message
+    - tests/scripts/test_check_process_gates.py::test_spec_referenced_via_commit_message
   INV-process-gates-git-aware:
-    - tests/ci/test_check_process_gates.py::test_pr_mode_with_base_ref
-    - tests/ci/test_check_process_gates.py::test_pr_mode_catches_violation
+    - tests/scripts/test_check_process_gates.py::test_pr_mode_with_base_ref
+    - tests/scripts/test_check_process_gates.py::test_pr_mode_catches_violation
   INV-process-gates-standalone:
-    - tests/ci/test_check_process_gates.py::test_no_kanon_imports
+    - tests/scripts/test_check_process_gates.py::test_no_kanon_imports
   INV-process-gates-json-report:
-    - tests/ci/test_check_process_gates.py::test_json_report_structure
+    - tests/scripts/test_check_process_gates.py::test_json_report_structure
   INV-process-gates-docs-only-exempt:
-    - tests/ci/test_check_process_gates.py::test_docs_only_change_is_ok
+    - tests/scripts/test_check_process_gates.py::test_docs_only_change_is_ok
 ---
 
 # Spec: Process-Gate CI Enforcement
@@ -52,7 +52,7 @@ The script does not enforce *ordering* (plan came before code) — CI sees the f
 4. **Reference semantics.** "Include or reference" means either: (a) the plan/spec file appears in the PR's diff (added or modified), or (b) a commit message in the PR contains `Plan: docs/plans/<slug>.md` or `Spec: docs/specs/<slug>.md` and that file exists in the repo at HEAD with the required status.
 
 <!-- INV-process-gates-git-aware -->
-5. **Git-aware operation.** The script operates in two modes: PR mode (`--base-ref REF`, compares `REF..HEAD`) and push mode (default, HEAD commit only). Follows the precedent set by `ci/check_adr_immutability.py`.
+5. **Git-aware operation.** The script operates in two modes: PR mode (`--base-ref REF`, compares `REF..HEAD`) and push mode (default, HEAD commit only). Follows the precedent set by `scripts/check_adr_immutability.py`.
 
 <!-- INV-process-gates-standalone -->
 6. **Standalone.** The script has zero imports from `kanon.*`. It is a standalone Python script runnable with only the standard library and git on PATH.
@@ -61,7 +61,7 @@ The script does not enforce *ordering* (plan came before code) — CI sees the f
 7. **JSON report.** Output is a JSON object to stdout with `status` (`ok`, `warn`, `fail`), `errors` (list of strings), and `warnings` (list of strings). Exit 0 for ok/warn, exit 1 for fail.
 
 <!-- INV-process-gates-docs-only-exempt -->
-8. **Docs-only exempt.** If the PR's diff touches only files under `docs/`, `*.md`, `.kanon/`, or `ci/` (no `src/` changes), both checks are skipped and the script reports `ok`.
+8. **Docs-only exempt.** If the PR's diff touches only files under `docs/`, `*.md`, `.kanon/`, or `scripts/` (no `src/` changes), both checks are skipped and the script reports `ok`.
 
 ## Rationale
 
@@ -80,5 +80,5 @@ The script does not enforce *ordering* (plan came before code) — CI sees the f
 
 ## Decisions
 
-- Follows the git-aware CI script pattern established by [ADR-0032](../decisions/0032-adr-immutability-gate.md) and `ci/check_adr_immutability.py`.
+- Follows the git-aware CI script pattern established by [ADR-0032](../decisions/0032-adr-immutability-gate.md) and `scripts/check_adr_immutability.py`.
 - Commit trailer pattern (`Trivial-change:`) mirrors `Allow-ADR-edit:` from the same ADR.

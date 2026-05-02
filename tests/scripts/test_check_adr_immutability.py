@@ -1,4 +1,4 @@
-"""Tests for ci/check_adr_immutability.py.
+"""Tests for scripts/check_adr_immutability.py.
 
 Each test sets up a synthetic git repo in tmp_path with one or more ADR
 files, makes commits that exercise a specific edit pattern, and asserts

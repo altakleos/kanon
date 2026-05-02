@@ -12,7 +12,7 @@ Author ADR-0049 codifying the panel-resolved repository layout for the `kanon` m
 
 ## Background
 
-A 7-panelist 3-round redesign panel (synthesis at `/tmp/kanon-panel/`) produced unanimous-or-near-unanimous resolution on six convergent themes (kill `packaging/`, per-aspect bundle collapse, drop `src/` for substrate, `docs/plans/active+archive`, `ci/` → `scripts/`, hard substrate-vs-data physical boundary) plus three binary decisions (D1: `.kanon/` committed; D2: semantic top-level naming; D3: `aspects/` directory name). The panel's resolution lacks a normative artifact in the repo. ADR-0049 supplies it so the eventual migration PRs (the panel's 6-PR sequence) cite a ratified decision rather than re-litigating each PR.
+A 7-panelist 3-round redesign panel (synthesis at `/tmp/kanon-panel/`) produced unanimous-or-near-unanimous resolution on six convergent themes (kill `packaging/`, per-aspect bundle collapse, drop `src/` for substrate, `docs/plans/active+archive`, `scripts/` → `scripts/`, hard substrate-vs-data physical boundary) plus three binary decisions (D1: `.kanon/` committed; D2: semantic top-level naming; D3: `aspects/` directory name). The panel's resolution lacks a normative artifact in the repo. ADR-0049 supplies it so the eventual migration PRs (the panel's 6-PR sequence) cite a ratified decision rather than re-litigating each PR.
 
 ## Scope
 
@@ -51,8 +51,8 @@ Out of scope (deferred):
 ## Verification
 
 - `kanon verify .` → ok
-- `python ci/check_links.py` → ok (ADR cross-links resolve)
-- `python ci/check_adr_immutability.py` → ok (draft ADRs aren't subject to immutability gate)
+- `python scripts/check_links.py` → ok (ADR cross-links resolve)
+- `python scripts/check_adr_immutability.py` → ok (draft ADRs aren't subject to immutability gate)
 - `pytest --no-cov -q` → 978 passed (no change)
 
 ## Out of scope, deferred

@@ -9,13 +9,13 @@ Spec: `docs/specs/process-gates.md` (accepted).
 
 ## Deliverables
 
-1. `ci/check_process_gates.py` — standalone git-aware CI script
+1. `scripts/check_process_gates.py` — standalone git-aware CI script
 2. `.github/workflows/verify.yml` update — add the new check step
-3. `tests/ci/test_check_process_gates.py` — unit tests
+3. `tests/scripts/test_check_process_gates.py` — unit tests
 
 ## Implementation Approach
 
-Follow `ci/check_adr_immutability.py` as the structural template:
+Follow `scripts/check_adr_immutability.py` as the structural template:
 - `_git()` helper for subprocess calls
 - `--base-ref` for PR mode, HEAD-only for push mode
 - `main(argv=None) -> int` for testability

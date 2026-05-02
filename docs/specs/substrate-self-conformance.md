@@ -8,7 +8,7 @@ realizes:
   - P-publisher-symmetry
 stressed_by:
   - acme-publisher
-fixtures_deferred: "Phase A authors `ci/check_substrate_independence.py` (per ADR-0040 design) and the kanon-repo self-host CI integration. The substrate-self-conformance invariants below are the contract; tests and gates land in the implementation PR."
+fixtures_deferred: "Phase A authors `scripts/check_substrate_independence.py` (per ADR-0040 design) and the kanon-repo self-host CI integration. The substrate-self-conformance invariants below are the contract; tests and gates land in the implementation PR."
 ---
 # Spec: Substrate self-conformance — independence + self-host + public CI signal
 
@@ -36,7 +36,7 @@ Per [ADR-0044](../decisions/0044-substrate-self-conformance.md), this spec carri
 3. **Self-host opt-in is recipe-mediated.** The kanon repo's `.kanon/config.yaml` declares aspects via a publisher recipe with `provenance:` recording attribution (per [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) self-host commitment and [ADR-0043](../decisions/0043-distribution-boundary-and-cadence.md) recipe artifact). No kernel-side carve-out treats the kanon repo specially; it opts in like any other consumer.
 
 <!-- INV-substrate-self-conformance-gate-public -->
-4. **Independence gate is publicly-readable.** The substrate's CI workflow runs `ci/check_substrate_independence.py` (per [ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md) design) on every PR and merge-to-main. Workflow logs are public; results visible to anyone reading the substrate's repo. Closed-source CI is a violation.
+4. **Independence gate is publicly-readable.** The substrate's CI workflow runs `scripts/check_substrate_independence.py` (per [ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md) design) on every PR and merge-to-main. Workflow logs are public; results visible to anyone reading the substrate's repo. Closed-source CI is a violation.
 
 <!-- INV-substrate-self-conformance-replicable -->
 5. **Independence gate is replicable.** The gate's algorithm is documented sufficient that any publisher (including `acme-` authors) can run it against their own bundles and claim substrate-conformance. Independence is not a private property of `kanon-substrate`; it's a published technique.

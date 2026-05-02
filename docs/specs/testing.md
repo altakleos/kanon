@@ -12,7 +12,7 @@ stressed_by:
 fixtures:
   - tests/test_cli.py
   - tests/test_kit_integrity.py
-  - tests/ci/test_check_test_quality.py
+  - tests/scripts/test_check_test_quality.py
 invariant_coverage:
   INV-testing-depth-range:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
@@ -29,13 +29,13 @@ invariant_coverage:
     - tests/test_cli_aspect.py::test_aspect_add_testing
   INV-testing-ci-validator:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/ci/test_check_test_quality.py::test_trivial_pass_body_detected
+    - tests/scripts/test_check_test_quality.py::test_trivial_pass_body_detected
   INV-testing-no-dependency:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_testing_manifest_paths_resolve
   INV-testing-language-agnostic:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
-    - tests/ci/test_check_test_quality.py::test_find_test_files_patterns
+    - tests/scripts/test_check_test_quality.py::test_find_test_files_patterns
   INV-testing-stability:
     - tests/test_scaffold_marker_hardening.py::test_repo_agents_md_round_trips
     - tests/test_kit_integrity.py::test_kit_testing_aspect_dir_exists
@@ -81,7 +81,7 @@ The aspect is language-agnostic at all depths. The protocols describe *when* and
 5. **Coverage floor in config.** The coverage floor is declared in `.kanon/config.yaml` under `aspects.testing.config.coverage_floor` as an integer (percentage). Default is 80 if the key is absent. The protocol references this value. Enforcement is prose-based at depths 1–2 (the agent reads the value and maintains coverage). At depth 3, the CI validator checks it mechanically.
 
 <!-- INV-testing-ci-validator -->
-6. **CI validator (depth 3).** The aspect scaffolds `ci/check_test_quality.py` — a language-agnostic CI script that detects test anti-patterns:
+6. **CI validator (depth 3).** The aspect scaffolds `scripts/check_test_quality.py` — a language-agnostic CI script that detects test anti-patterns:
    - Tests with no assertions (empty test bodies, `assert True`, `pass`-only).
    - Tests where assertions target only mock return values (best-effort pattern-based detection — language-specific mock frameworks may not be recognized).
    - Test files with zero test functions.

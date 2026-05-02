@@ -73,11 +73,11 @@ Land a single PR that:
 - [ ] AC-F4: `tests/test_verify_validators.py::test_fidelity_capability_lookup_failure_warns` passes.
 - [ ] AC-X1: Full pytest suite — 834 passed (was 830 + 4 fixed), 0 failed (was 4).
 - [ ] AC-X2: `kanon verify .` returns `status: ok`.
-- [ ] AC-X3: `python ci/check_links.py` passes.
-- [ ] AC-X4: `python ci/check_foundations.py` passes.
-- [ ] AC-X5: `python ci/check_kit_consistency.py` passes.
-- [ ] AC-X6: `python ci/check_invariant_ids.py` passes.
-- [ ] AC-X7: `python ci/check_packaging_split.py` passes.
+- [ ] AC-X3: `python scripts/check_links.py` passes.
+- [ ] AC-X4: `python scripts/check_foundations.py` passes.
+- [ ] AC-X5: `python scripts/check_kit_consistency.py` passes.
+- [ ] AC-X6: `python scripts/check_invariant_ids.py` passes.
+- [ ] AC-X7: `python scripts/check_packaging_split.py` passes.
 - [ ] AC-X8: `CHANGELOG.md` `[Unreleased] § Fixed` gains a paragraph naming the regression.
 - [ ] AC-X9: Only `src/kanon/_verify.py`, `CHANGELOG.md`, and the plan file change.
 

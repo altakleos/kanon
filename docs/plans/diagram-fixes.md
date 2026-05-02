@@ -48,7 +48,7 @@ The 6 mermaid diagrams in `docs/contributing.md` (PR #48) are too low-level — 
 - [x] Every section that had a diagram still has a clear conceptual diagram, and the surrounding prose still reads cleanly.
 - [x] Doc length stays ≤ 400 lines (was 365).
 - [x] `kanon verify .` returns `status: ok`.
-- [x] `python ci/check_links.py` passes.
+- [x] `python scripts/check_links.py` passes.
 - [x] No CHANGELOG entry needed (docs-only).
 
 ## Verification

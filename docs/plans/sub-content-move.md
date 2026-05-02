@@ -48,7 +48,7 @@ Read manifest YAMLs from new location.
 ### Out of scope
 
 - 9 remaining `_kit_root()` retirements in `_scaffold.py` — separate sub-plan
-- `ci/check_substrate_independence.py` gate — separate sub-plan
+- `scripts/check_substrate_independence.py` gate — separate sub-plan
 - Deleting `_kit_root()` entirely — happens with retirements sub-plan
 
 ## Acceptance criteria

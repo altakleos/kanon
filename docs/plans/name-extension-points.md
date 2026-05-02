@@ -50,7 +50,7 @@ establishes the naming convention. No change needed.
 
 1. Line 5 names the `<project>-implementation.md` convention.
 2. Both copies are byte-identical.
-3. `python ci/check_kit_consistency.py` passes.
+3. `python scripts/check_kit_consistency.py` passes.
 4. `kanon verify .` passes.
 5. No other files modified.
 6. The change is project-agnostic — no kanon-brand terms introduced.

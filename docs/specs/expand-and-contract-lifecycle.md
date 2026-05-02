@@ -21,7 +21,7 @@ The kit has no named lifecycle for breaking spec changes. When an invariant must
 2. **Expand phase.** The new invariant is added to the spec with `status: expanding` (a new per-invariant status, distinct from spec-level status). The old invariant remains marked `deprecating: true` with a deadline.
 3. **Migrate phase.** Downstream consumers update to satisfy the new invariant. The kit provides a query: `kanon consumers-of <spec>` lists dependents.
 4. **Contract phase.** After the deadline, the old invariant is removed. `kanon verify` fails on any consumer still depending on the removed invariant.
-5. **Validator support.** `ci/check_foundations.py` learns to respect `expanding`/`deprecating` invariants.
+5. **Validator support.** `scripts/check_foundations.py` learns to respect `expanding`/`deprecating` invariants.
 
 ## Out of Scope in v0.1 and v0.2
 

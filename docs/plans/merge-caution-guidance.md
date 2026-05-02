@@ -57,6 +57,6 @@ Add a 4th bullet to Section 5 of the worktree-lifecycle protocol:
    new merge-caution bullet).
 2. Both copies (`.kanon/protocols/` and `src/kanon/kit/aspects/`) are
    byte-identical.
-3. `python ci/check_kit_consistency.py` passes.
+3. `python scripts/check_kit_consistency.py` passes.
 4. `kanon verify .` passes.
 5. No other files are modified.

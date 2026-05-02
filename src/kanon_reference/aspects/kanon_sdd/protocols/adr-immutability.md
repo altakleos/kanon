@@ -44,7 +44,7 @@ The trailer is the audit log. It travels with the commit forever, visible in `gi
 
 Consumers pick what fits their team's discipline maturity:
 
-- **CI gate.** Copy a script analogous to the kit's `ci/check_adr_immutability.py` (kanon's source repo ships it kit-internal; it is **not** scaffolded by any aspect — copy the file if you want it). Wire into your test workflow with two modes: PR mode runs `--base-ref origin/main` against the PR's commits; push mode (default) runs only against `HEAD`. Hard-fails the CI run on any unannotated body change to an accepted ADR.
+- **CI gate.** Copy a script analogous to the kit's `scripts/check_adr_immutability.py` (kanon's source repo ships it kit-internal; it is **not** scaffolded by any aspect — copy the file if you want it). Wire into your test workflow with two modes: PR mode runs `--base-ref origin/main` against the PR's commits; push mode (default) runs only against `HEAD`. Hard-fails the CI run on any unannotated body change to an accepted ADR.
 - **Pre-commit hook.** Run the same script in `.git/hooks/pre-commit` to catch violations before they reach the remote. Cheaper than CI; misses force-pushed commits.
 - **Manual review checklist.** Add the rule to your pull-request template ("Body edits to accepted ADRs require either a superseder or an `Allow-ADR-edit:` trailer"). Cheapest; relies on reviewer discipline.
 

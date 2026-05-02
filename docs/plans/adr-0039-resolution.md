@@ -108,7 +108,7 @@ One paragraph under `## [Unreleased]` summarizing ADR-0039's substrate-level com
 3. **Design third.** Author `docs/design/resolutions-engine.md` with the worked YAML example and replay algorithm.
 4. **Verification-contract amendment.** Add `INV-11` and a one-paragraph rationale citing ADR-0039.
 5. **Index + CHANGELOG.**
-6. **Run gates locally.** `kanon verify .`, `python ci/check_links.py`, `python ci/check_foundations.py`, `python ci/check_invariant_ids.py`, `python ci/check_verified_by.py`.
+6. **Run gates locally.** `kanon verify .`, `python scripts/check_links.py`, `python scripts/check_foundations.py`, `python scripts/check_invariant_ids.py`, `python scripts/check_verified_by.py`.
 7. **Regenerate `.kanon/fidelity.lock`** if the verification-contract spec's frontmatter changes.
 
 ## Acceptance criteria
@@ -129,12 +129,12 @@ One paragraph under `## [Unreleased]` summarizing ADR-0039's substrate-level com
 
 - [ ] AC-S1: `docs/specs/resolutions.md` exists with `status: accepted`, frontmatter `realizes:` and `stressed_by:` lists, and at least six `INV-resolutions-*` anchors.
 - [ ] AC-S2: Each INV has a falsifiable statement (a Phase A test could plausibly verify it).
-- [ ] AC-S3: `verified-by:` mappings deferred to Phase A (when fixtures exist); `fixtures_deferred: true` declared in frontmatter to satisfy `ci/check_verified_by.py`.
+- [ ] AC-S3: `verified-by:` mappings deferred to Phase A (when fixtures exist); `fixtures_deferred: true` declared in frontmatter to satisfy `scripts/check_verified_by.py`.
 
 ### Verification-contract amendment
 
 - [ ] AC-V1: New `INV-11` added to `docs/specs/verification-contract.md` with the exit-zero scope-boundary wording. Predecessor body preserved by appending only — no in-place edits to existing INVs.
-- [ ] AC-V2: `ci/check_invariant_ids.py` passes.
+- [ ] AC-V2: `scripts/check_invariant_ids.py` passes.
 
 ### Indexes + CHANGELOG
 
@@ -146,10 +146,10 @@ One paragraph under `## [Unreleased]` summarizing ADR-0039's substrate-level com
 ### Cross-cutting
 
 - [ ] AC-X5: `kanon verify .` returns `status: ok` (zero warnings; regenerate fidelity lock if frontmatter changes bump SHAs).
-- [ ] AC-X6: `python ci/check_links.py` passes.
-- [ ] AC-X7: `python ci/check_foundations.py` passes.
-- [ ] AC-X8: `python ci/check_invariant_ids.py` passes.
-- [ ] AC-X9: `python ci/check_verified_by.py` passes (with `fixtures_deferred: true` declared).
+- [ ] AC-X6: `python scripts/check_links.py` passes.
+- [ ] AC-X7: `python scripts/check_foundations.py` passes.
+- [ ] AC-X8: `python scripts/check_invariant_ids.py` passes.
+- [ ] AC-X9: `python scripts/check_verified_by.py` passes (with `fixtures_deferred: true` declared).
 - [ ] AC-X10: No source / aspect-manifest / protocol-prose / CI changes.
 
 ## Risks / concerns

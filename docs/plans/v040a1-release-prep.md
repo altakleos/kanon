@@ -16,7 +16,7 @@ Clear all P0/P1 findings from the v0.3.1a2 → HEAD review so a clean `v0.4.0a1`
 
 ADR-0045 de-opinionation transition is complete in code (41 commits, 12k LOC) but ships:
 - A reproducible test failure (`test_subprocess_emits_ok_sentinel`) that the CI workflow must have skipped or pytest collection drift hid.
-- A wheel-build gate (`ci/check_package_contents.py`) that requires a file the kit no longer produces (`kanon/kit/kit.md`, retired in Phase A.3).
+- A wheel-build gate (`scripts/check_package_contents.py`) that requires a file the kit no longer produces (`kanon/kit/kit.md`, retired in Phase A.3).
 - An ADR-0042 commitment ("canonical wording on `kanon verify --help`") the substrate doesn't honour.
 - Forward-version mishandling in `kanon migrate` (silent corruption on `schema-version: 5`).
 - README still describing v0.3 kit framing.
@@ -46,7 +46,7 @@ Out of scope, permanently:
 ## Acceptance criteria
 
 - AC1: Full pytest suite passes (`956 passed, 5 deselected` or similar — no failures).
-- AC2: `python ci/check_package_contents.py --wheel <built-wheel> --tag v0.4.0a1` exits 0 against a freshly built wheel.
+- AC2: `python scripts/check_package_contents.py --wheel <built-wheel> --tag v0.4.0a1` exits 0 against a freshly built wheel.
 - AC3: `kanon verify --help` output contains the canonical ADR-0042 §1 wording (positive claim + 4 MUST-NOTs) verbatim or by direct citation.
 - AC4: `kanon migrate --target <dir-with-schema-version-5>` exits non-zero with a `schema-version` ClickException; does not write a hybrid file.
 - AC5: `kanon init <fresh-dir>` produces `.kanon/config.yaml` containing `schema-version: 4` and `kanon-dialect: "2026-05-01"` keys.
@@ -63,8 +63,8 @@ Out of scope, permanently:
 
 Single-file fix; should land first so subsequent PRs run against a green baseline.
 
-1. Fix `tests/ci/test_check_substrate_independence.py:34` — replace `from ci import check_substrate_independence` with the `load_ci_script` fixture pattern that the file's other 3 tests use.
-2. Run `pytest tests/ci/test_check_substrate_independence.py -v` — must show 4 passed.
+1. Fix `tests/scripts/test_check_substrate_independence.py:34` — replace `from ci import check_substrate_independence` with the `load_ci_script` fixture pattern that the file's other 3 tests use.
+2. Run `pytest tests/scripts/test_check_substrate_independence.py -v` — must show 4 passed.
 3. Run full pytest — must show same passes count as before the fix plus 1.
 4. Commit + push + PR + merge.
 
@@ -72,13 +72,13 @@ Single-file fix; should land first so subsequent PRs run against a green baselin
 
 These three are tightly coupled — the version bump is meaningless if the wheel gate blocks the tag, and the ADR-0042 wiring is required for the v0.4.0a1 release per ADR-0042's own Consequences §Substrate-side.
 
-1. `ci/check_package_contents.py:49` — remove `"kanon/kit/kit.md",` from `_CORE_REQUIRED_FILES`. Add gate-test (`tests/ci/test_check_package_contents.py`) asserting kit.md is NOT required.
+1. `scripts/check_package_contents.py:49` — remove `"kanon/kit/kit.md",` from `_CORE_REQUIRED_FILES`. Add gate-test (`tests/scripts/test_check_package_contents.py`) asserting kit.md is NOT required.
 2. `src/kanon/__init__.py` — bump `__version__` to `"0.4.0a1"`.
 3. `.kanon/config.yaml` — bump `kit_version` to `0.4.0a1`.
 4. `CHANGELOG.md` — rename `## [Unreleased]` to `## [0.4.0a1] — 2026-05-02`; insert fresh empty `## [Unreleased]` above.
 5. `src/kanon/cli.py` — `verify` command docstring updated to embed canonical ADR-0042 §1 wording (positive claim + 4 MUST-NOTs). Add a constant `_ADR_0042_VERIFY_SCOPE` so the same text can be re-used in `_verify.py` error messages and `kanon contracts validate` reports.
 6. New test `tests/test_cli.py::test_verify_help_carries_adr_0042_wording` asserting `kanon verify --help` output contains the immutable phrases.
-7. Build wheel: `uv build --wheel`. Run `.venv/bin/python ci/check_package_contents.py --wheel dist/kanon_kit-0.4.0a1-py3-none-any.whl --tag v0.4.0a1` — must exit 0.
+7. Build wheel: `uv build --wheel`. Run `.venv/bin/python scripts/check_package_contents.py --wheel dist/kanon_kit-0.4.0a1-py3-none-any.whl --tag v0.4.0a1` — must exit 0.
 8. Commit + push + PR + merge.
 
 ### PR 3 — runtime-correctness (the 4 functional bugs)
@@ -108,7 +108,7 @@ These three are tightly coupled — the version bump is meaningless if the wheel
 
 Per-PR: 8 gates green + full pytest passes.
 
-Pre-tag: `uv build --wheel`, then `python ci/check_package_contents.py --wheel <built> --tag v0.4.0a1` → exit 0; `python ci/check_substrate_independence.py` → exit 0; `kanon verify .` against the kanon repo itself → exit 0.
+Pre-tag: `uv build --wheel`, then `python scripts/check_package_contents.py --wheel <built> --tag v0.4.0a1` → exit 0; `python scripts/check_substrate_independence.py` → exit 0; `kanon verify .` against the kanon repo itself → exit 0.
 
 ## Out of scope, deferred to `v040a1-followup`
 
