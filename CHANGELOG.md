@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- **ADR-0049 (draft) — Monorepo layout for the protocol substrate** (per plan [`adr-0049-monorepo-layout`](docs/plans/adr-0049-monorepo-layout.md)). Codifies a 7-panelist 3-round redesign panel's resolution into 6 convergent structural rules + 3 binary decisions for the kanon repo's filesystem layout. Highlights: (1) one `pyproject.toml` per distribution, co-located with source — kill `packaging/`; (2) per-aspect bundles (`aspects/kanon-<slug>/{loader.py,manifest.yaml,protocols/,...}`) replacing the current `aspects/<slug>.py` + `data/<slug>/` split; (3) `docs/plans/active/` + `archive/` partition; (4) `ci/` → `scripts/` as a proper Python package; (5) hard substrate-vs-data physical boundary; (6) committed `.kanon/` (D1 vote 5–2), semantic top-level naming `kernel/`+`aspects/` (D2 vote 6–1), `aspects/` directory name (D3 vote 5–2). The ADR ratifies the destination shape; six follow-up PRs implement the migration low-cost-first per the panel's empirical cost-ranking. Status: **draft** — user reviews then promotes to `accepted` (or revises) via separate commit. Panel deliberation materials at `/tmp/kanon-panel/` (ephemeral, not committed). Implements the filesystem-layer expression of ADR-0043 (distribution-boundary), ADR-0044 (substrate-self-conformance), and ADR-0048 (protocol-substrate commitment); supersedes nothing.
+
 ## [0.4.0a3] — 2026-05-02
 
 P2 sweep from the v0.3.1a2..HEAD re-review (critic agent `aca79d08a9e3bc30b`, 2026-05-02). Both findings are non-blocking but worth fixing before tagging — addressed per plan `v040a3-p2-fixes`.
