@@ -9,7 +9,7 @@ design: docs/design/distribution-boundary.md
 
 ## Context
 
-Per [ADR-0045](../decisions/0045-de-opinionation-transition.md) §Decision step 3: "Kit-global `files:` + `defaults:` deleted; `.kanon/kit.md` migrated/deleted". Per [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) (de-opinionation): the substrate has no opinion about which aspects a consumer should enable nor what files it should ship at the kit-global level. Consumers opt in explicitly via `aspects:` in `.kanon/config.yaml` or via publisher recipes (per [ADR-0043](../decisions/0043-distribution-boundary-and-cadence.md)).
+Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 3: "Kit-global `files:` + `defaults:` deleted; `.kanon/kit.md` migrated/deleted". Per [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md) (de-opinionation): the substrate has no opinion about which aspects a consumer should enable nor what files it should ship at the kit-global level. Consumers opt in explicitly via `aspects:` in `.kanon/config.yaml` or via publisher recipes (per [ADR-0043](../../decisions/0043-distribution-boundary-and-cadence.md)).
 
 Today's `src/kanon/kit/manifest.yaml` declares two kit-globals that violate de-opinionation:
 
@@ -183,7 +183,7 @@ Paragraph under `[Unreleased] § Removed` naming Phase A.3 and the canonical seq
 - **Risk: many test files reference `kit.md`.** Mitigation: audit each (8 in test_cli.py, 5 in test_cli_helpers.py, 4 in test_kit_integrity.py); for each reference, either remove the test (if it tests removed kit.md mechanics) or adapt it (if it just incidentally mentions kit.md).
 - **Risk: byte-equality fixtures in fidelity.lock cite kit.md.** Mitigation: `kanon fidelity update .` regenerates; verify post-regen that no entry references the deleted file.
 - **Risk: AGENTS.md scaffolding referenced kit.md.** Verify scaffolded AGENTS.md doesn't have a "see `.kanon/kit.md`" pointer that's now dead. Update template if it does.
-- **Risk: `--profile solo` / `--profile team` / `--profile all` / `--profile max` semantics change.** Per [ADR-0037](../decisions/0037-profile-rename-and-max.md) those profiles are user-visible. If `defaults:` deletion changes their behaviour, ADR-0037 is implicitly amended; document in CHANGELOG explicitly.
+- **Risk: `--profile solo` / `--profile team` / `--profile all` / `--profile max` semantics change.** Per [ADR-0037](../../decisions/0037-profile-rename-and-max.md) those profiles are user-visible. If `defaults:` deletion changes their behaviour, ADR-0037 is implicitly amended; document in CHANGELOG explicitly.
 
 ## Documentation impact
 

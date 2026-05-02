@@ -9,7 +9,7 @@ design: docs/design/resolutions-engine.md
 
 ## Why split A.6 into three sub-plans
 
-[ADR-0045](../decisions/0045-de-opinionation-transition.md) §Decision step 6 names three new modules: `_resolutions.py`, `_dialects.py`, `_composition.py`. Per their respective designs ([`docs/design/resolutions-engine.md`](../design/resolutions-engine.md) and [`docs/design/dialect-grammar.md`](../design/dialect-grammar.md)) the combined footprint is ~+1,500 LOC source / +900 LOC tests across ~10 files. Splitting at the natural seam between the three modules:
+[ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 6 names three new modules: `_resolutions.py`, `_dialects.py`, `_composition.py`. Per their respective designs ([`docs/design/resolutions-engine.md`](../../design/resolutions-engine.md) and [`docs/design/dialect-grammar.md`](../../design/dialect-grammar.md)) the combined footprint is ~+1,500 LOC source / +900 LOC tests across ~10 files. Splitting at the natural seam between the three modules:
 
 - **A.6a (this plan):** `_resolutions.py` engine + synthetic tests. ~280 LOC source / ~600 LOC tests. Standalone module; no integration points changed.
 - **A.6b (next plan):** `_dialects.py` + dialect-grammar enforcement. ~250 LOC source / ~150 LOC tests.
@@ -19,7 +19,7 @@ This plan covers A.6a only.
 
 ## Context
 
-Phase 0 ratified [ADR-0039](../decisions/0039-contract-resolution-model.md): the substrate's runtime-binding model. Prose contracts → agent-resolved YAML → kernel replays mechanically. Six invariants in [`docs/specs/resolutions.md`](../specs/resolutions.md). Companion design at [`docs/design/resolutions-engine.md`](../design/resolutions-engine.md) specifies the engine end-to-end.
+Phase 0 ratified [ADR-0039](../../decisions/0039-contract-resolution-model.md): the substrate's runtime-binding model. Prose contracts → agent-resolved YAML → kernel replays mechanically. Six invariants in [`docs/specs/resolutions.md`](../../specs/resolutions.md). Companion design at [`docs/design/resolutions-engine.md`](../../design/resolutions-engine.md) specifies the engine end-to-end.
 
 A.6a authors the engine module per that design. **No real consumer exists yet** — no contract-bearing aspects ship `realization-shape:` frontmatter; the kanon repo has no `.kanon/resolutions.yaml`. The engine is therefore tested entirely via synthetic fixtures. This is intentional: the engine is the substrate's foundational primitive, and a publisher can't demonstrate it until A.6a lands.
 

@@ -9,13 +9,13 @@ design: docs/design/dialect-grammar.md
 
 ## Why split A.6 into four sub-plans
 
-Recap from A.6b's plan: A.6 is split into A.6a (resolutions engine, shipped #68), A.6b (dialect grammar, shipped #69), A.6c (this plan), A.6d (composition algebra). Each is a focused module per the design at [`docs/design/dialect-grammar.md`](../design/dialect-grammar.md).
+Recap from A.6b's plan: A.6 is split into A.6a (resolutions engine, shipped #68), A.6b (dialect grammar, shipped #69), A.6c (this plan), A.6d (composition algebra). Each is a focused module per the design at [`docs/design/dialect-grammar.md`](../../design/dialect-grammar.md).
 
 ## Context
 
-[ADR-0041](../decisions/0041-realization-shape-dialect-grammar.md) §Decision 1 ratified the `realization-shape:` per-contract frontmatter: a contract declares which verbs, evidence-kinds, and stages a valid resolution may cite. The substrate validates resolutions against the contract's declared shape at replay time.
+[ADR-0041](../../decisions/0041-realization-shape-dialect-grammar.md) §Decision 1 ratified the `realization-shape:` per-contract frontmatter: a contract declares which verbs, evidence-kinds, and stages a valid resolution may cite. The substrate validates resolutions against the contract's declared shape at replay time.
 
-Per design [`docs/design/dialect-grammar.md`](../design/dialect-grammar.md) §"Realization-shape: concrete schema":
+Per design [`docs/design/dialect-grammar.md`](../../design/dialect-grammar.md) §"Realization-shape: concrete schema":
 
 ```yaml
 realization-shape:

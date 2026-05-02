@@ -9,7 +9,7 @@ design: docs/design/dialect-grammar.md
 
 ## Why split A.6 into four sub-plans
 
-Re-examining the design at [`docs/design/dialect-grammar.md`](../design/dialect-grammar.md), the implementation footprint names FOUR new modules: `_dialects.py` (~60 LOC), `_realization_shape.py` (~120 LOC), `_composition.py` (~150 LOC), plus extensions to `_manifest.py`, `_resolutions.py`, and `cli.py`. Combined with A.6a's `_resolutions.py`, the total Phase A.6 work is ~+800 LOC source + ~+250 LOC tests across ~15 files. Splitting at module boundaries:
+Re-examining the design at [`docs/design/dialect-grammar.md`](../../design/dialect-grammar.md), the implementation footprint names FOUR new modules: `_dialects.py` (~60 LOC), `_realization_shape.py` (~120 LOC), `_composition.py` (~150 LOC), plus extensions to `_manifest.py`, `_resolutions.py`, and `cli.py`. Combined with A.6a's `_resolutions.py`, the total Phase A.6 work is ~+800 LOC source + ~+250 LOC tests across ~15 files. Splitting at module boundaries:
 
 - **A.6a (shipped, PR #68):** `_resolutions.py` — engine, replay, canonicalization
 - **A.6b (this plan):** `_dialects.py` — supported-dialect registry + pin validation
@@ -20,9 +20,9 @@ This plan covers A.6b only. It is the smallest of the four — a single focused 
 
 ## Context
 
-Phase 0 ratified [ADR-0041](../decisions/0041-realization-shape-dialect-grammar.md): the substrate's contract grammar — what *shape* aspect manifests and contracts must conform to. Three coupled commitments: realization-shape, dialect grammar, composition algebra. A.6b implements **just the dialect-grammar enforcement**: a supported-dialect registry the substrate ships and a `validate_dialect_pin()` function that the substrate's load path will invoke (in a later sub-plan) when reading aspect manifests.
+Phase 0 ratified [ADR-0041](../../decisions/0041-realization-shape-dialect-grammar.md): the substrate's contract grammar — what *shape* aspect manifests and contracts must conform to. Three coupled commitments: realization-shape, dialect grammar, composition algebra. A.6b implements **just the dialect-grammar enforcement**: a supported-dialect registry the substrate ships and a `validate_dialect_pin()` function that the substrate's load path will invoke (in a later sub-plan) when reading aspect manifests.
 
-Per design [`docs/design/dialect-grammar.md`](../design/dialect-grammar.md) §"Substrate-side dialect registry":
+Per design [`docs/design/dialect-grammar.md`](../../design/dialect-grammar.md) §"Substrate-side dialect registry":
 
 ```python
 SUPPORTED_DIALECTS = ["2026-05-01"]
@@ -65,7 +65,7 @@ def validate_dialect_pin(
     """
 ```
 
-Per the design, the dialect-pin format follows INV-dialect-grammar-pin-required + INV-dialect-grammar-version-format from [`docs/specs/dialect-grammar.md`](../specs/dialect-grammar.md). The format is `YYYY-MM-DD`; A.6b validates that the value is in `SUPPORTED_DIALECTS` (an exact-match check; ADR-0041 ratifies date-stamped pinning, not range-matching).
+Per the design, the dialect-pin format follows INV-dialect-grammar-pin-required + INV-dialect-grammar-version-format from [`docs/specs/dialect-grammar.md`](../../specs/dialect-grammar.md). The format is `YYYY-MM-DD`; A.6b validates that the value is in `SUPPORTED_DIALECTS` (an exact-match check; ADR-0041 ratifies date-stamped pinning, not range-matching).
 
 #### B. `tests/test_dialects.py` (~120 LOC, ~10 cases)
 

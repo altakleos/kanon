@@ -9,7 +9,7 @@ design: docs/design/distribution-boundary.md
 
 ## Context
 
-Per [ADR-0045](../decisions/0045-de-opinionation-transition.md) §Decision step 4: "`_detect.py` deleted; testing-aspect runtime config-schema removed". Per [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) (de-opinionation): the substrate has no opinion about which build tools a consumer uses (pytest vs unittest vs npm test) nor about which config keys an aspect's user-config block should contain. Auto-detection of pytest/ruff/mypy/npm and the substrate-side reading of `${test_cmd}` / `${lint_cmd}` / `${typecheck_cmd}` / `${format_cmd}` from the kanon-testing aspect's config block both violate de-opinionation.
+Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 4: "`_detect.py` deleted; testing-aspect runtime config-schema removed". Per [ADR-0048](../../decisions/0048-kanon-as-protocol-substrate.md) (de-opinionation): the substrate has no opinion about which build tools a consumer uses (pytest vs unittest vs npm test) nor about which config keys an aspect's user-config block should contain. Auto-detection of pytest/ruff/mypy/npm and the substrate-side reading of `${test_cmd}` / `${lint_cmd}` / `${typecheck_cmd}` / `${format_cmd}` from the kanon-testing aspect's config block both violate de-opinionation.
 
 ## Substrate consumers
 

@@ -12,7 +12,7 @@ design: docs/design/kernel-reference-interface.md
 
 Phase A.2.1 (PR #63) authored the `kanon_reference` Python package with seven LOADER `MANIFEST` stubs. The entry-points block in `packaging/reference/pyproject.toml` is active. **But the substrate's runtime doesn't yet read them.** `_load_top_manifest()` still walks `_kit_root() / manifest.yaml`; `_aspect_path()` still walks `_kit_root() / <aspect-relative-path>`.
 
-Phase A.2.2 wires the substrate to discover aspects via `importlib.metadata.entry_points(group="kanon.aspects")` per ADR-0040 / [`docs/design/kernel-reference-interface.md`](../design/kernel-reference-interface.md).
+Phase A.2.2 wires the substrate to discover aspects via `importlib.metadata.entry_points(group="kanon.aspects")` per ADR-0040 / [`docs/design/kernel-reference-interface.md`](../../design/kernel-reference-interface.md).
 
 ### Important shape gap discovered during planning
 

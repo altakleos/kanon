@@ -9,7 +9,7 @@ design: docs/design/resolutions-engine.md
 
 ## Context
 
-Per [ADR-0045](../decisions/0045-de-opinionation-transition.md) §Decision step 7. The substrate's user surface for the contract-resolution + dialect-grammar + composition machinery (Phase A.6a/b/c/d). Per the resolutions design and dialect-grammar design.
+Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 7. The substrate's user surface for the contract-resolution + dialect-grammar + composition machinery (Phase A.6a/b/c/d). Per the resolutions design and dialect-grammar design.
 
 CLI verbs to add:
 

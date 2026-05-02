@@ -78,61 +78,61 @@ Batching related commits on one branch is fine: a spec commit + its design doc c
 
 | Plan | Feature | Status |
 |---|---|---|
-| [v0.1-bootstrap](v0.1-bootstrap.md) | Initial kit bootstrap through v0.1.0a1 release | done |
-| [v0.1-kit-refactor-and-protocols](v0.1-kit-refactor-and-protocols.md) | Kit bundle refactor + three protocols | done |
-| [v0.2-aspect-model](v0.2-aspect-model.md) | Aspects subsume tiers; SDD becomes the first aspect | done |
-| [v0.2-invariant-alignment](v0.2-invariant-alignment.md) | Invariant alignment — verify, upgrade, POSIX-only | done |
-| [aspect-decoupling](aspect-decoupling.md) | Aspect decoupling — remove sdd as structurally privileged | done |
-| [worktrees-aspect](worktrees-aspect.md) | Worktrees aspect implementation | done |
-| [release-aspect](release-aspect.md) | Release aspect implementation | done |
-| [testing-aspect](testing-aspect.md) | Testing aspect implementation | done |
-| [security-aspect](security-aspect.md) | Security aspect implementation | done |
-| [deps-aspect](deps-aspect.md) | Deps aspect implementation | done |
-| [fidelity-lock](fidelity-lock.md) | Fidelity lock — spec-SHA drift detection | done |
-| [invariant-ids](invariant-ids.md) | Invariant IDs — stable anchors for spec invariants | done |
-| [verified-by](verified-by.md) | Verified-by — invariant-to-test traceability | done |
-| [close-test-gaps](close-test-gaps.md) | Close test coverage gaps | done |
-| [cli-spec-realignment](cli-spec-realignment.md) | CLI spec realignment + crash-recovery sentinel (ADR-0024) | done |
-| [agents-md-marker-hardening](agents-md-marker-hardening.md) | Line-anchored, fenced-block-aware AGENTS.md marker matching | done |
-| [ci-scanner-fixes](ci-scanner-fixes.md) | CI scanner false-positive fixes (`check_deps`, `check_test_quality`) | done |
-| [aspect-depth-refactor](aspect-depth-refactor.md) | Refactor `_set_aspect_depth` into named helpers | done |
-| [aspect-config](aspect-config.md) | `kanon aspect set-config` and `aspect add --config` | done |
-| [aspect-provides](aspect-provides.md) | `provides:` capability registry + generalised `requires:` | done |
-| [project-aspects](project-aspects.md) | Project-defined aspects — namespace grammar, loader, migration, validator extension | done |
-| [fidelity-and-immutability](fidelity-and-immutability.md) | v0.3 fidelity track + ADR-immutability gate | done |
-| [spec-graph-mvp](spec-graph-mvp.md) | Spec-graph MVP — `kanon graph orphans` + `kanon graph rename` | done |
-| [review-followups-batch-1](review-followups-batch-1.md) | Recovery model, coverage-floor prose, vocabulary, capability docs | done |
-| [principles-clarification](principles-clarification.md) | Clarify kit-shipped principles don't propagate to consumers | done |
-| [add-omc-routing-fallbacks](add-omc-routing-fallbacks.md) | Add missing OMC agent routing fallbacks | done |
-| [process-gates-ci](process-gates-ci.md) | Process-gate CI enforcement for plan-before-build and spec-before-design | done |
-| [index-consistency-validator](index-consistency-validator.md) | Index consistency validator for duplicate README entries | done |
-| [test-import-validator](test-import-validator.md) | Test-import validator for orphaned CI test references | done |
-| [broaden-spec-gate](broaden-spec-gate.md) | Broaden spec gate to catch all Click registration patterns | done |
-| [close-fidelity-coverage-gaps](close-fidelity-coverage-gaps.md) | Close `_fidelity.py` coverage gaps (74 → 90%+) | done |
-| [close-validator-coverage-gaps](close-validator-coverage-gaps.md) | Close validator coverage gaps | done |
-| [merge-caution-guidance](merge-caution-guidance.md) | Add merge-caution guidance to worktree-lifecycle | done |
-| [name-extension-points](name-extension-points.md) | Name the extension-point convention in sdd-method.md | done |
-| [phase1-sensei-upstreams](phase1-sensei-upstreams.md) | Upstream sensei worktree hardening + process prose | done |
-| [phase2-kit-validators](phase2-kit-validators.md) | Kit-aspect validators via `kanon verify` | done |
-| [plan-src-separation](plan-src-separation.md) | Enforce plan/src commit separation | done |
-| [task-playbook](task-playbook.md) | Restructure agent routing as a capability-neutral Task Playbook | done |
-| [track-a-doc-fixes](track-a-doc-fixes.md) | Track A documentation/config fixes | done |
-| [track-c-dx](track-c-dx.md) | Reduce agent context overhead (Track C) | done |
-| [wire-ci-scripts](wire-ci-scripts.md) | Wire unwired CI scripts into GitHub Actions workflows | done |
-| [scaffold-v2](scaffold-v2.md) | Thin kernel, routing-index AGENTS.md, three file categories | done |
-| [harness-filtering](harness-filtering.md) | `--harness` flag for init shim filtering | done |
-| [ci-fixes](ci-fixes.md) | CI scanner false-positive fixes | done |
-| [upgrade-shims](upgrade-shims.md) | Add shim re-rendering to upgrade command | done |
-| [fix-upgrade-config-preservation](fix-upgrade-config-preservation.md) | Fix upgrade config preservation for aspect config, timestamps, root keys | done |
-| [tier-uniform-raise](tier-uniform-raise.md) | Tier as uniform aspect-depth raise (ADR-0035) | done |
-| [preflight](preflight.md) | Implement `kanon preflight` command | done |
-| [delivery-guidance-base-layer](delivery-guidance-base-layer.md) | Delivery guidance in the base AGENTS.md layer | done |
-| [error-handling-hardening](error-handling-hardening.md) | Error handling hardening across the CLI | done |
-| [path-containment-checks](path-containment-checks.md) | Path containment checks for target/source operations | done |
-| [kanon-banner](kanon-banner.md) | `kanon` brand banner across init, upgrade, and AGENTS.md | done |
-| [preflight-shell-trust-boundary](preflight-shell-trust-boundary.md) | Secure-defaults carve-out for `_preflight.py` shell=True | done |
-| [profile-rename](profile-rename.md) | Rename `--profile full` → `all`, add `max` profile (ADR-0037) | done |
-| [init-agents-md-merge](init-agents-md-merge.md) | `kanon init` merges into existing AGENTS.md (ADR-0038) | done |
+| [v0.1-bootstrap](archive/v0.1-bootstrap.md) | Initial kit bootstrap through v0.1.0a1 release | done |
+| [v0.1-kit-refactor-and-protocols](archive/v0.1-kit-refactor-and-protocols.md) | Kit bundle refactor + three protocols | done |
+| [v0.2-aspect-model](archive/v0.2-aspect-model.md) | Aspects subsume tiers; SDD becomes the first aspect | done |
+| [v0.2-invariant-alignment](archive/v0.2-invariant-alignment.md) | Invariant alignment — verify, upgrade, POSIX-only | done |
+| [aspect-decoupling](archive/aspect-decoupling.md) | Aspect decoupling — remove sdd as structurally privileged | done |
+| [worktrees-aspect](archive/worktrees-aspect.md) | Worktrees aspect implementation | done |
+| [release-aspect](archive/release-aspect.md) | Release aspect implementation | done |
+| [testing-aspect](archive/testing-aspect.md) | Testing aspect implementation | done |
+| [security-aspect](archive/security-aspect.md) | Security aspect implementation | done |
+| [deps-aspect](archive/deps-aspect.md) | Deps aspect implementation | done |
+| [fidelity-lock](archive/fidelity-lock.md) | Fidelity lock — spec-SHA drift detection | done |
+| [invariant-ids](archive/invariant-ids.md) | Invariant IDs — stable anchors for spec invariants | done |
+| [verified-by](archive/verified-by.md) | Verified-by — invariant-to-test traceability | done |
+| [close-test-gaps](archive/close-test-gaps.md) | Close test coverage gaps | done |
+| [cli-spec-realignment](archive/cli-spec-realignment.md) | CLI spec realignment + crash-recovery sentinel (ADR-0024) | done |
+| [agents-md-marker-hardening](archive/agents-md-marker-hardening.md) | Line-anchored, fenced-block-aware AGENTS.md marker matching | done |
+| [ci-scanner-fixes](archive/ci-scanner-fixes.md) | CI scanner false-positive fixes (`check_deps`, `check_test_quality`) | done |
+| [aspect-depth-refactor](archive/aspect-depth-refactor.md) | Refactor `_set_aspect_depth` into named helpers | done |
+| [aspect-config](archive/aspect-config.md) | `kanon aspect set-config` and `aspect add --config` | done |
+| [aspect-provides](archive/aspect-provides.md) | `provides:` capability registry + generalised `requires:` | done |
+| [project-aspects](archive/project-aspects.md) | Project-defined aspects — namespace grammar, loader, migration, validator extension | done |
+| [fidelity-and-immutability](archive/fidelity-and-immutability.md) | v0.3 fidelity track + ADR-immutability gate | done |
+| [spec-graph-mvp](archive/spec-graph-mvp.md) | Spec-graph MVP — `kanon graph orphans` + `kanon graph rename` | done |
+| [review-followups-batch-1](archive/review-followups-batch-1.md) | Recovery model, coverage-floor prose, vocabulary, capability docs | done |
+| [principles-clarification](archive/principles-clarification.md) | Clarify kit-shipped principles don't propagate to consumers | done |
+| [add-omc-routing-fallbacks](archive/add-omc-routing-fallbacks.md) | Add missing OMC agent routing fallbacks | done |
+| [process-gates-ci](archive/process-gates-ci.md) | Process-gate CI enforcement for plan-before-build and spec-before-design | done |
+| [index-consistency-validator](archive/index-consistency-validator.md) | Index consistency validator for duplicate README entries | done |
+| [test-import-validator](archive/test-import-validator.md) | Test-import validator for orphaned CI test references | done |
+| [broaden-spec-gate](archive/broaden-spec-gate.md) | Broaden spec gate to catch all Click registration patterns | done |
+| [close-fidelity-coverage-gaps](archive/close-fidelity-coverage-gaps.md) | Close `_fidelity.py` coverage gaps (74 → 90%+) | done |
+| [close-validator-coverage-gaps](archive/close-validator-coverage-gaps.md) | Close validator coverage gaps | done |
+| [merge-caution-guidance](archive/merge-caution-guidance.md) | Add merge-caution guidance to worktree-lifecycle | done |
+| [name-extension-points](archive/name-extension-points.md) | Name the extension-point convention in sdd-method.md | done |
+| [phase1-sensei-upstreams](archive/phase1-sensei-upstreams.md) | Upstream sensei worktree hardening + process prose | done |
+| [phase2-kit-validators](archive/phase2-kit-validators.md) | Kit-aspect validators via `kanon verify` | done |
+| [plan-src-separation](archive/plan-src-separation.md) | Enforce plan/src commit separation | done |
+| [task-playbook](archive/task-playbook.md) | Restructure agent routing as a capability-neutral Task Playbook | done |
+| [track-a-doc-fixes](archive/track-a-doc-fixes.md) | Track A documentation/config fixes | done |
+| [track-c-dx](archive/track-c-dx.md) | Reduce agent context overhead (Track C) | done |
+| [wire-ci-scripts](archive/wire-ci-scripts.md) | Wire unwired CI scripts into GitHub Actions workflows | done |
+| [scaffold-v2](archive/scaffold-v2.md) | Thin kernel, routing-index AGENTS.md, three file categories | done |
+| [harness-filtering](archive/harness-filtering.md) | `--harness` flag for init shim filtering | done |
+| [ci-fixes](archive/ci-fixes.md) | CI scanner false-positive fixes | done |
+| [upgrade-shims](archive/upgrade-shims.md) | Add shim re-rendering to upgrade command | done |
+| [fix-upgrade-config-preservation](archive/fix-upgrade-config-preservation.md) | Fix upgrade config preservation for aspect config, timestamps, root keys | done |
+| [tier-uniform-raise](archive/tier-uniform-raise.md) | Tier as uniform aspect-depth raise (ADR-0035) | done |
+| [preflight](archive/preflight.md) | Implement `kanon preflight` command | done |
+| [delivery-guidance-base-layer](archive/delivery-guidance-base-layer.md) | Delivery guidance in the base AGENTS.md layer | done |
+| [error-handling-hardening](archive/error-handling-hardening.md) | Error handling hardening across the CLI | done |
+| [path-containment-checks](archive/path-containment-checks.md) | Path containment checks for target/source operations | done |
+| [kanon-banner](archive/kanon-banner.md) | `kanon` brand banner across init, upgrade, and AGENTS.md | done |
+| [preflight-shell-trust-boundary](archive/preflight-shell-trust-boundary.md) | Secure-defaults carve-out for `_preflight.py` shell=True | done |
+| [profile-rename](archive/profile-rename.md) | Rename `--profile full` → `all`, add `max` profile (ADR-0037) | done |
+| [init-agents-md-merge](archive/init-agents-md-merge.md) | `kanon init` merges into existing AGENTS.md (ADR-0038) | done |
 
 ## Roadmap
 

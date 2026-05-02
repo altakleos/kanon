@@ -15,7 +15,9 @@ def check(target: Path, errors: list[str], warnings: list[str]) -> None:
     if not plans_dir.is_dir():
         return
     unchecked_re = re.compile(r"^- \[ \]", re.MULTILINE)
-    for p in sorted(plans_dir.glob("*.md")):
+    # Per ADR-0049 PR D: plans partitioned into active/ + archive/.
+    # rglob recurses into subdirs while preserving root-level scan.
+    for p in sorted(plans_dir.rglob("*.md")):
         if p.name.startswith("_") or p.name in ("README.md", "roadmap.md"):
             continue
         text = p.read_text(encoding="utf-8")

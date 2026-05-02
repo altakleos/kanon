@@ -74,7 +74,7 @@ A pre-namespace consumer config (v2: `aspects: {sdd: {...}}`) auto-migrates to v
 - **Trust boundary for project-validators is in-process and documented.** Consumers who do not trust their own project-aspect's validator code should not declare it.
 - **The kit's own consumer state (`.kanon/config.yaml`, `AGENTS.md`, `.kanon/protocols/`) migrates in Phase 1.** Self-hosting (P-self-hosted-bootstrap) requires the kit to apply the migration to itself before declaring the implementation complete.
 - **Third-party aspect publishing (the `acme-` namespace) remains deferred** per ADR-0012 §Alternatives #5. This ADR reserves the namespace shape; a future ADR would define publishing.
-- **Plan size.** Implementation is [`docs/plans/project-aspects.md`](../plans/project-aspects.md) (PR #25): 36 tasks across 5 phases, intended to land as 5 sequential PRs.
+- **Plan size.** Implementation is [`docs/plans/project-aspects.md`](../plans/archive/project-aspects.md) (PR #25): 36 tasks across 5 phases, intended to land as 5 sequential PRs.
 
 ## Config Impact
 
@@ -98,7 +98,7 @@ Auto-migration from v2 on first `kanon upgrade` after this ADR's implementation 
 ## References
 
 - [`docs/specs/project-aspects.md`](../specs/project-aspects.md) — invariants this ADR ratifies.
-- [`docs/plans/project-aspects.md`](../plans/project-aspects.md) — implementation plan.
+- [`docs/plans/project-aspects.md`](../plans/archive/project-aspects.md) — implementation plan.
 - [ADR-0012](0012-aspect-model.md) — aspect model (the model this ADR extends).
 - [ADR-0024](0024-crash-consistent-atomicity.md) — crash-consistent atomicity (the migration is wrapped in the existing sentinel discipline).
 - [ADR-0026](0026-aspect-provides-and-generalised-requires.md) — `provides:` capability registry (insulates `requires:` from aspect-rename brittleness; this ADR's namespace grammar adds a complementary insulation at the aspect-identity layer).
