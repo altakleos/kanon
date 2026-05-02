@@ -7,10 +7,7 @@ docs/design/dialect-grammar.md §"Composition resolution algorithm".
 
 from __future__ import annotations
 
-import pytest
-
 from kanon._composition import (
-    CompositionError,
     ContractRef,
     compose,
 )

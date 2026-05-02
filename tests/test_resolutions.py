@@ -13,7 +13,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pytest
 import yaml
 
 from kanon._resolutions import (
@@ -24,7 +23,6 @@ from kanon._resolutions import (
     replay,
     stale_check,
 )
-
 
 # --- Helpers ---
 
@@ -302,7 +300,7 @@ def test_replay_deterministic(tmp_path: Path) -> None:
     r2 = replay(target, registry=registry)
     assert r1.errors == r2.errors
     assert len(r1.executions) == len(r2.executions)
-    for e1, e2 in zip(r1.executions, r2.executions):
+    for e1, e2 in zip(r1.executions, r2.executions, strict=True):
         assert e1.invocation == e2.invocation
         assert e1.label == e2.label
 

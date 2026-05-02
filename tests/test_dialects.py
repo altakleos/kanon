@@ -17,7 +17,6 @@ from kanon._dialects import (
     validate_dialect_pin,
 )
 
-
 # --- Module-level constants ---
 
 

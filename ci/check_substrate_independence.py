@@ -26,7 +26,6 @@ import subprocess
 import sys
 from typing import Any
 
-
 # The script that runs in the masked sub-process. Kept as a module-level
 # constant so tests can introspect / monkeypatch it.
 _SUBPROCESS_SCRIPT = '''

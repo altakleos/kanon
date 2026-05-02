@@ -13,11 +13,9 @@ import pytest
 from kanon._realization_shape import (
     V1_DIALECT_VERBS,
     RealizationShape,
-    ShapeValidationError,
     parse_realization_shape,
     validate_resolution_against_shape,
 )
-
 
 _V1 = "2026-05-01"
 
@@ -30,7 +28,7 @@ def test_v1_dialect_verbs_contains_canonical_nine() -> None:
         "lint", "test", "typecheck", "format",
         "scan", "audit", "sign", "publish", "report",
     }
-    assert V1_DIALECT_VERBS == expected
+    assert expected == V1_DIALECT_VERBS
 
 
 # --- Parser: success path ---

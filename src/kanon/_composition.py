@@ -92,7 +92,7 @@ def _resolve_replaces(
                     code="composition-cycle",
                     surface=surface,
                     detail=(
-                        f"replaces cycle: "
+                        "replaces cycle: "
                         + " --replaces--> ".join(cycle)
                     ),
                 )

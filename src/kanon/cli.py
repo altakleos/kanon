@@ -52,21 +52,20 @@ from kanon._manifest import (
     _aspect_config_schema,
     _aspect_depth_range,
     _aspect_provides,
-    _kit_root,
     _load_aspect_manifest,
     _load_aspect_registry,
-    _load_top_manifest,
     _load_yaml,
     _normalise_aspect_name,
     _now_iso,
-    _render_placeholder,
 )
 from kanon._scaffold import (
+    _DEFAULT_V4_EXTRAS,
     _aspects_with_meta,
     _assemble_agents_md,
     _build_bundle,
     _config_aspects,
     _detect_harnesses,
+    _extras_from_config,
     _merge_agents_md,
     _migrate_flat_protocols,
     _migrate_legacy_config,
@@ -75,8 +74,6 @@ from kanon._scaffold import (
     _write_config,
     _write_tree_atomically,
 )
-from kanon._scaffold import _DEFAULT_V4_EXTRAS, _extras_from_config
-
 
 # Per ADR-0042 §1: the canonical exit-zero wording for `kanon verify`. Immutable
 # under ADR-0032; surfaced verbatim on `kanon verify --help` and cited in

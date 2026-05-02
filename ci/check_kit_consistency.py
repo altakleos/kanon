@@ -275,7 +275,6 @@ def _check_agents_md_markers(errors: list[str]) -> None:
         return
     aspect_names = set(top["aspects"])
     for name in aspect_names:
-        entry = top["aspects"][name]
         root = _aspect_root(name, top)
         if root is None:
             continue

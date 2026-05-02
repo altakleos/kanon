@@ -34,7 +34,6 @@ from typing import Any
 import click
 import yaml
 
-
 _SCHEMA_VERSION = 1
 _VALID_INVOCATION_FORMS = frozenset({"shell", "argv"})
 _DEFAULT_DIALECT = "2026-05-01"
