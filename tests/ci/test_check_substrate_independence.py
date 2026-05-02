@@ -31,9 +31,6 @@ def test_main_exits_zero_on_ok(csi, capsys: pytest.CaptureFixture[str]) -> None:
 
 def test_subprocess_emits_ok_sentinel() -> None:
     """The sub-process script must print 'substrate-independence: OK'."""
-    from ci import check_substrate_independence  # noqa: F401
-
-    # Re-run the sub-process script directly to verify its output.
     repo_root = Path(__file__).resolve().parents[2]
     script_path = repo_root / "ci" / "check_substrate_independence.py"
     spec_text = script_path.read_text(encoding="utf-8")
