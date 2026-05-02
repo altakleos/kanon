@@ -1080,5 +1080,241 @@ def graph_rename(
     click.echo(f"Renamed {old_slug} -> {new_slug} ({report['files']} file(s) updated).")
 
 
+# --- Phase A.7: resolutions + contracts CLI verbs ---
+
+
+@main.group()
+def resolutions() -> None:
+    """Resolutions management — replay, stale-check, explain (per ADR-0039)."""
+
+
+@resolutions.command("check")
+@click.option(
+    "--target",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=Path("."),
+    help="Project root containing .kanon/resolutions.yaml.",
+)
+def resolutions_check(target: Path) -> None:
+    """Pin-check phase only — report staleness without executing realizations.
+
+    Per ADR-0039 INV-resolutions-stale-fails. Cheap; suitable for IDE
+    integration and the development loop before invoking `kanon preflight`.
+    """
+    from kanon._resolutions import stale_check
+
+    target = target.resolve()
+    report = stale_check(target)
+    out: dict[str, Any] = {
+        "target": str(target),
+        "errors": [
+            {
+                k: v
+                for k, v in {
+                    "code": e.code,
+                    "contract": e.contract,
+                    "path": e.path,
+                    "reason": e.reason,
+                }.items()
+                if v is not None
+            }
+            for e in report.errors
+        ],
+        "status": "ok" if report.ok else "fail",
+    }
+    click.echo(json.dumps(out, indent=2))
+    if not report.ok:
+        sys.exit(1)
+
+
+@resolutions.command("explain")
+@click.argument("contract_id")
+@click.option(
+    "--target",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=Path("."),
+)
+def resolutions_explain(contract_id: str, target: Path) -> None:
+    """Phase A.7 stub: contract registry not yet populated.
+
+    The full implementation (per ADR-0039 design's `kanon resolutions explain`
+    verb) requires an aspect to ship `realization-shape:` frontmatter on at
+    least one contract; no aspect ships contracts today. This stub surfaces
+    the verb in the CLI and reports its deferral.
+    """
+    click.echo(
+        json.dumps(
+            {
+                "contract": contract_id,
+                "target": str(target.resolve()),
+                "status": "deferred",
+                "reason": (
+                    "Phase A.7 stub: contract registry not yet populated. "
+                    "Wiring lands when an aspect ships a realization-shape contract."
+                ),
+            },
+            indent=2,
+        )
+    )
+
+
+@main.group()
+def contracts() -> None:
+    """Contract bundle management — validate (per ADR-0041)."""
+
+
+@contracts.command("validate")
+@click.argument(
+    "bundle_path",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+)
+def contracts_validate(bundle_path: Path) -> None:
+    """Pre-flight a publisher's bundle: dialect, realization-shapes, composition.
+
+    Per ADR-0041 design `docs/design/dialect-grammar.md` §"The
+    `kanon contracts validate <bundle-path>` walk". Exits 1 on errors.
+    """
+    import yaml
+
+    from kanon._composition import ContractRef, compose
+    from kanon._dialects import validate_dialect_pin
+    from kanon._realization_shape import parse_realization_shape
+
+    bundle_path = bundle_path.resolve()
+    manifest_path = bundle_path / "manifest.yaml"
+    errors: list[dict[str, Any]] = []
+    warnings: list[dict[str, Any]] = []
+
+    if not manifest_path.is_file():
+        errors.append(
+            {"code": "missing-manifest", "detail": f"no manifest.yaml at {bundle_path}"}
+        )
+        click.echo(
+            json.dumps(
+                {
+                    "bundle": str(bundle_path),
+                    "errors": errors,
+                    "warnings": warnings,
+                    "status": "fail",
+                },
+                indent=2,
+            )
+        )
+        sys.exit(1)
+
+    manifest = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    dialect_pin = manifest.get("kanon-dialect") if isinstance(manifest, dict) else None
+    try:
+        validate_dialect_pin(dialect_pin, source=str(manifest_path))
+    except click.ClickException as exc:
+        errors.append({"code": "dialect-invalid", "detail": exc.message})
+
+    contract_refs: list[ContractRef] = []
+    if isinstance(manifest, dict):
+        for c in manifest.get("contracts") or []:
+            if not isinstance(c, dict):
+                errors.append(
+                    {"code": "invalid-contract-entry", "detail": str(c)}
+                )
+                continue
+            cid = c.get("contract-id")
+            if "realization-shape" not in c:
+                errors.append(
+                    {
+                        "code": "missing-realization-shape",
+                        "contract": cid,
+                    }
+                )
+            elif dialect_pin in ("2026-05-01",):
+                try:
+                    parse_realization_shape(
+                        c["realization-shape"], dialect=dialect_pin, source=cid
+                    )
+                except click.ClickException as exc:
+                    errors.append(
+                        {
+                            "code": "invalid-realization-shape",
+                            "contract": cid,
+                            "detail": exc.message,
+                        }
+                    )
+            if isinstance(cid, str) and isinstance(c.get("surface"), str):
+                contract_refs.append(
+                    ContractRef(
+                        contract_id=cid,
+                        surface=c["surface"],
+                        before=tuple(c.get("before") or ()),
+                        after=tuple(c.get("after") or ()),
+                        replaces=tuple(c.get("replaces") or ()),
+                    )
+                )
+    surfaces = {c.surface for c in contract_refs}
+    for surface in sorted(surfaces):
+        _ordering, findings = compose(contract_refs, surface=surface)
+        for f in findings:
+            entry = {"code": f.code, "surface": f.surface, "detail": f.detail}
+            if f.code == "composition-cycle":
+                errors.append(entry)
+            else:
+                warnings.append(entry)
+
+    out = {
+        "bundle": str(bundle_path),
+        "dialect": dialect_pin,
+        "contracts": [c.contract_id for c in contract_refs],
+        "errors": errors,
+        "warnings": warnings,
+        "status": "ok" if not errors else "fail",
+    }
+    click.echo(json.dumps(out, indent=2))
+    if errors:
+        sys.exit(1)
+
+
+@main.command("resolve")
+@click.option(
+    "--target",
+    type=click.Path(file_okay=False, path_type=Path),
+    default=Path("."),
+)
+@click.option(
+    "--contracts",
+    "contracts_arg",
+    default=None,
+    help="Comma-separated contract IDs to resolve (default: all enabled).",
+)
+def resolve_cmd(target: Path, contracts_arg: str | None) -> None:
+    """Phase A.7 stub: harness integration not yet wired.
+
+    Per ADR-0039 design's `kanon resolve` verb: invoke the consumer's installed
+    LLM harness, present it the contract prose, and accept the YAML response.
+    Real harness integration lands when the substrate's harness adapter API is
+    designed (a future ADR). This stub surfaces the verb and emits the
+    structured prompt skeleton a future harness adapter will receive.
+    """
+    target = target.resolve()
+    requested = (
+        [c.strip() for c in contracts_arg.split(",") if c.strip()]
+        if contracts_arg
+        else []
+    )
+    click.echo(
+        json.dumps(
+            {
+                "target": str(target),
+                "contracts_requested": requested or "all-enabled",
+                "status": "deferred",
+                "reason": (
+                    "Phase A.7 stub: harness integration not yet wired. "
+                    "A future ADR designs the harness-adapter API for invoking "
+                    "the consumer's LLM (Claude Code, Cursor, etc.) with "
+                    "contract prose and accepting the YAML resolution output."
+                ),
+            },
+            indent=2,
+        )
+    )
+
+
 if __name__ == "__main__":
     main()
