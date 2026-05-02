@@ -19,7 +19,10 @@ Checks:
    ``[project.scripts] kanon = "kanon.cli:main"``; the wheel build excludes
    ``../../src/kanon/kit/aspects/**``.
 3. **Reference shape.** ``[project].name == "kanon-reference"``;
-   ``version == "1.0.0a1"``; depends on ``kanon-substrate==1.0.0a1``.
+   ``version == "1.0.0a1"``; depends on ``kanon-substrate==1.0.0a1``;
+   ``[project.entry-points."kanon.aspects"]`` declares the seven canonical
+   aspect IDs each pointing at ``kanon_reference.aspects.kanon_<id>:MANIFEST``
+   (Phase A.2.1).
 4. **Kit-meta shape.** ``[project].name == "kanon-kit"``;
    ``version == "1.0.0a1"``; depends on both ``kanon-substrate==1.0.0a1``
    and ``kanon-reference==1.0.0a1``.
@@ -47,6 +50,16 @@ _SUBSTRATE_PIN = "kanon-substrate==1.0.0a1"
 _REFERENCE_PIN = "kanon-reference==1.0.0a1"
 _SUBSTRATE_EXCLUDE = "../../src/kanon/kit/aspects/**"
 _SUBSTRATE_DEPS_REQUIRED = ("click>=8.1", "pyyaml>=6.0")
+
+_REFERENCE_ASPECT_IDS = (
+    "kanon-deps",
+    "kanon-fidelity",
+    "kanon-release",
+    "kanon-sdd",
+    "kanon-security",
+    "kanon-testing",
+    "kanon-worktrees",
+)
 
 
 def _load_toml(rel_path: str, errors: list[str]) -> dict[str, Any] | None:
@@ -127,6 +140,36 @@ def _check_reference(errors: list[str]) -> None:
             f"packaging/reference/pyproject.toml: [project].dependencies "
             f"must pin {_SUBSTRATE_PIN!r} (got {deps!r})"
         )
+    _check_reference_entry_points(data, errors)
+
+
+def _check_reference_entry_points(data: dict[str, Any], errors: list[str]) -> None:
+    """Phase A.2.1: validate the active ``kanon.aspects`` entry-points block.
+
+    Each of the seven canonical aspect IDs must resolve to
+    ``kanon_reference.aspects.kanon_<id>:MANIFEST``.
+    """
+    entry_points = (
+        data.get("project", {}).get("entry-points", {}).get("kanon.aspects") or {}
+    )
+    for aspect_id in _REFERENCE_ASPECT_IDS:
+        expected_target = (
+            f"kanon_reference.aspects.{aspect_id.replace('-', '_')}:MANIFEST"
+        )
+        actual = entry_points.get(aspect_id)
+        if actual is None:
+            errors.append(
+                f"packaging/reference/pyproject.toml: "
+                f"[project.entry-points.\"kanon.aspects\"] missing entry "
+                f"{aspect_id!r}"
+            )
+            continue
+        if actual != expected_target:
+            errors.append(
+                f"packaging/reference/pyproject.toml: "
+                f"[project.entry-points.\"kanon.aspects\"].{aspect_id} must be "
+                f"{expected_target!r} (got {actual!r})"
+            )
 
 
 def _check_kit_meta(errors: list[str]) -> None:

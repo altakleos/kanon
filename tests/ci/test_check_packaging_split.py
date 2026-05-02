@@ -53,7 +53,15 @@ def _seed_packaging(tmp_path: Path) -> Path:
         'name = "kanon-reference"\n'
         'version = "1.0.0a1"\n'
         'requires-python = ">=3.10"\n'
-        'dependencies = ["kanon-substrate==1.0.0a1"]\n',
+        'dependencies = ["kanon-substrate==1.0.0a1"]\n'
+        '[project.entry-points."kanon.aspects"]\n'
+        'kanon-deps = "kanon_reference.aspects.kanon_deps:MANIFEST"\n'
+        'kanon-fidelity = "kanon_reference.aspects.kanon_fidelity:MANIFEST"\n'
+        'kanon-release = "kanon_reference.aspects.kanon_release:MANIFEST"\n'
+        'kanon-sdd = "kanon_reference.aspects.kanon_sdd:MANIFEST"\n'
+        'kanon-security = "kanon_reference.aspects.kanon_security:MANIFEST"\n'
+        'kanon-testing = "kanon_reference.aspects.kanon_testing:MANIFEST"\n'
+        'kanon-worktrees = "kanon_reference.aspects.kanon_worktrees:MANIFEST"\n',
         encoding="utf-8",
     )
     (pkg / "kit" / "pyproject.toml").write_text(
@@ -244,6 +252,56 @@ def test_kit_meta_missing_pins_detected(
     errors = cps.run_checks()
     assert any("must pin 'kanon-substrate==1.0.0a1'" in e for e in errors)
     assert any("must pin 'kanon-reference==1.0.0a1'" in e for e in errors)
+
+
+def test_reference_missing_entry_points_block_detected(
+    cps, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Phase A.2.1: reference must declare the seven entry-points."""
+    pkg = _seed_packaging(tmp_path)
+    (pkg / "reference" / "pyproject.toml").write_text(
+        '[project]\n'
+        'name = "kanon-reference"\n'
+        'version = "1.0.0a1"\n'
+        'requires-python = ">=3.10"\n'
+        'dependencies = ["kanon-substrate==1.0.0a1"]\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cps, "_PACKAGING", pkg)
+
+    errors = cps.run_checks()
+    assert any(
+        "missing entry 'kanon-sdd'" in e for e in errors
+    ), f"expected missing-entry error, got {errors}"
+
+
+def test_reference_wrong_entry_point_target_detected(
+    cps, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Phase A.2.1: each entry-point must target kanon_reference.aspects.kanon_<id>:MANIFEST."""
+    pkg = _seed_packaging(tmp_path)
+    (pkg / "reference" / "pyproject.toml").write_text(
+        '[project]\n'
+        'name = "kanon-reference"\n'
+        'version = "1.0.0a1"\n'
+        'requires-python = ">=3.10"\n'
+        'dependencies = ["kanon-substrate==1.0.0a1"]\n'
+        '[project.entry-points."kanon.aspects"]\n'
+        'kanon-deps = "wrong.target:LOADER"\n'
+        'kanon-fidelity = "kanon_reference.aspects.kanon_fidelity:MANIFEST"\n'
+        'kanon-release = "kanon_reference.aspects.kanon_release:MANIFEST"\n'
+        'kanon-sdd = "kanon_reference.aspects.kanon_sdd:MANIFEST"\n'
+        'kanon-security = "kanon_reference.aspects.kanon_security:MANIFEST"\n'
+        'kanon-testing = "kanon_reference.aspects.kanon_testing:MANIFEST"\n'
+        'kanon-worktrees = "kanon_reference.aspects.kanon_worktrees:MANIFEST"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(cps, "_PACKAGING", pkg)
+
+    errors = cps.run_checks()
+    assert any(
+        "kanon-deps" in e and "wrong.target:LOADER" in e for e in errors
+    ), f"expected wrong-target error, got {errors}"
 
 
 def test_kit_meta_wrong_name_detected(
