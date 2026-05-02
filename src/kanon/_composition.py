@@ -87,9 +87,13 @@ def _resolve_replaces(
     for node in sorted(by_id):
         cycle = dfs(node, [])
         if cycle is not None:
+            # Per docs/specs/dialect-grammar.md INV 6: replaces-graph cycles
+            # surface as `code: replacement-cycle`. Distinct from the
+            # before/after composition cycle below (`code: composition-cycle`)
+            # so publishers can pattern-match the two failure modes.
             findings.append(
                 CompositionError(
-                    code="composition-cycle",
+                    code="replacement-cycle",
                     surface=surface,
                     detail=(
                         "replaces cycle: "

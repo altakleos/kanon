@@ -1237,7 +1237,12 @@ def contracts_validate(bundle_path: Path) -> None:
     try:
         validate_dialect_pin(dialect_pin, source=str(manifest_path))
     except click.ClickException as exc:
-        errors.append({"code": "dialect-invalid", "detail": exc.message})
+        # DialectPinError carries spec-aligned `code` (missing-dialect-pin
+        # | unknown-dialect) per docs/specs/dialect-grammar.md INV 1-2.
+        # Fallback to "dialect-invalid" preserves backward-compat for any
+        # plain ClickException raised by future code paths.
+        code = getattr(exc, "code", "dialect-invalid")
+        errors.append({"code": code, "detail": exc.message})
 
     contract_refs: list[ContractRef] = []
     if isinstance(manifest, dict):
@@ -1261,9 +1266,12 @@ def contracts_validate(bundle_path: Path) -> None:
                         c["realization-shape"], dialect=dialect_pin, source=cid
                     )
                 except click.ClickException as exc:
+                    # ShapeParseError carries spec-aligned `code:
+                    # invalid-realization-shape`. Fallback preserves backcompat.
+                    code = getattr(exc, "code", "invalid-realization-shape")
                     errors.append(
                         {
-                            "code": "invalid-realization-shape",
+                            "code": code,
                             "contract": cid,
                             "detail": exc.message,
                         }
@@ -1279,11 +1287,14 @@ def contracts_validate(bundle_path: Path) -> None:
                     )
                 )
     surfaces = {c.surface for c in contract_refs}
+    # Per docs/specs/dialect-grammar.md INV 5-6: composition-cycle and
+    # replacement-cycle are both hard errors; ambiguous-composition is a warn.
+    _CYCLE_ERROR_CODES = {"composition-cycle", "replacement-cycle"}
     for surface in sorted(surfaces):
         _ordering, findings = compose(contract_refs, surface=surface)
         for f in findings:
             entry = {"code": f.code, "surface": f.surface, "detail": f.detail}
-            if f.code == "composition-cycle":
+            if f.code in _CYCLE_ERROR_CODES:
                 errors.append(entry)
             else:
                 warnings.append(entry)

@@ -481,10 +481,15 @@ def test_replay_contract_with_shape_invalid_verb_surfaces(tmp_path: Path) -> Non
     )
     _write_resolutions(target, {"synthetic-aspect/preflight": entry})
     report = replay(target, registry=registry)
+    # Per docs/specs/dialect-grammar.md INV 4: shape mismatches surface as
+    # `code: shape-violation`. The diagnostic kind (invalid-verb) is in `reason`.
     assert any(
-        e.code == "invalid-verb" and e.contract == "synthetic-aspect/preflight"
+        e.code == "shape-violation"
+        and e.contract == "synthetic-aspect/preflight"
+        and e.reason
+        and e.reason.startswith("invalid-verb:")
         for e in report.errors
-    ), f"expected invalid-verb finding, got: {report.errors}"
+    ), f"expected shape-violation/invalid-verb finding, got: {report.errors}"
 
 
 def test_replay_contract_with_shape_invalid_evidence_kind_surfaces(tmp_path: Path) -> None:
@@ -502,8 +507,11 @@ def test_replay_contract_with_shape_invalid_evidence_kind_surfaces(tmp_path: Pat
     _write_resolutions(target, {"synthetic-aspect/preflight": entry})
     report = replay(target, registry=registry)
     assert any(
-        e.code == "invalid-evidence-kind" for e in report.errors
-    ), f"expected invalid-evidence-kind finding, got: {report.errors}"
+        e.code == "shape-violation"
+        and e.reason
+        and e.reason.startswith("invalid-evidence-kind:")
+        for e in report.errors
+    ), f"expected shape-violation/invalid-evidence-kind finding, got: {report.errors}"
 
 
 def test_replay_contract_with_malformed_shape_surfaces(tmp_path: Path) -> None:

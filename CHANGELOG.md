@@ -6,29 +6,40 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
-### Fixed
-
-- **Plan v040a1-release-prep PR 3 — runtime-correctness bug-fix batch**:
-  - `kanon migrate` now refuses to run against a future-version config (`schema-version: 5+`) instead of silently injecting v4 fields beneath the future-version header. Migrating forward from a future schema requires a newer `kanon-substrate`; the verb now says so.
-  - `kanon init` now writes `schema-version: 4` and `kanon-dialect: "2026-05-01"` into the new project's `.kanon/config.yaml` so fresh installs are not born requiring `kanon migrate`. The v4 commitment is honored from the first write, not deferred.
-  - **Config-mutating verbs preserve v4 fields and any other publisher-added top-level keys**: `kanon aspect remove` and `kanon aspect add/set-config/set-depth` (`_commit_aspect_meta`) now pass `extra=_extras_from_config(config)` to `_write_config` so `schema-version`, `kanon-dialect`, `provenance`, `preflight-stages`, etc. round-trip across writes. Without this the v4 commitment was silently stripped on the first mutation after `kanon init`.
-  - `_resolutions._validate_shape_against_contract` now wraps the `read_text(encoding="utf-8")` in a `try/except (UnicodeDecodeError, OSError)` and surfaces a structured `code: invalid-contract-encoding` ReplayError instead of crashing the CLI with an uncaught `UnicodeDecodeError`. Honors ADR-0041's "findings accumulate" intent.
-  - `_manifest._aspect_path` no longer silently falls back to `_kit_root() / aspects/<slug>` (a dead path post-Phase-A.7) when `kanon_reference` is uninstalled. For `kanon-*` slugs without an `_source` and without `kanon_reference` available, raises `click.ClickException` pointing the user at `kanon-kit` or `kanon-reference` install. ADR-0044 substrate-independence is honored: failure modes are explicit, not stale-data.
-  - 5 new tests cover each fix; new helper `kanon._scaffold._extras_from_config()` + constant `_DEFAULT_V4_EXTRAS` centralize the config-key-preservation pattern.
-  - **CI green collateral** discovered while watching PR-3's manual-merge gate:
-    - `ci/check_packaging_split.py`: added `import tomli as tomllib` fallback for Python 3.10 (tomllib is stdlib only on 3.11+; `requires-python = ">=3.10"` so 3.10 hit `ModuleNotFoundError: No module named 'tomllib'` on every run prior to this fix).
-    - `.github/workflows/verify.yml` e2e job: added `--no-cov` to `pytest -m e2e` invocation. e2e selection covers a tiny slice of the codebase by design; the 90% global coverage gate enforced against e2e-only collection always failed.
-    - These two failures had been masked by `gh pr merge --auto` merging despite red CI on prior PRs (no required-checks branch protection); PR 3 had to be merged manually, which exposed the broken state.
-
 ## [0.4.0a1] — 2026-05-02
 
-The "kit → protocol substrate" pivot. ADR-0045 de-opinionation transition (Phase 0 + Phase 0.5 + 9 Phase A steps + 3 deferred sub-plans) lands in one release. See ADR-0048 for the framing change. v0.3.x consumers cannot upgrade in place — use `kanon migrate v0.3 → v0.4` (deprecated-on-arrival; will be removed before v1.0).
+The "kit → protocol substrate" pivot. ADR-0045 de-opinionation transition (Phase 0 + Phase 0.5 + 9 Phase A steps + 3 deferred sub-plans + 4 release-prep PRs from plan `v040a1-release-prep`) lands in one release. See ADR-0048 for the framing change. v0.3.x consumers cannot upgrade in place — use `kanon migrate v0.3 → v0.4` (deprecated-on-arrival; will be removed before v1.0).
 
-### Release-prep changes (plan v040a1-release-prep, PR 2 of 4)
+### Release-prep changes (plan v040a1-release-prep, PRs 2-4 of 4)
+
+#### PR 2 (release gates + version bump + ADR-0042 wiring)
 
 - **Version bump**: `kanon-kit` 0.3.1a2 → 0.4.0a1. Self-host `.kanon/config.yaml` `kit_version` updated to match.
 - **Wheel-shape gate fix**: `ci/check_package_contents.py` no longer requires `kanon/kit/kit.md` — that file was retired in Phase A.3. Without this fix, the v0.4.0a1 release-preflight against the built wheel would have hard-blocked the tag.
 - **ADR-0042 wiring**: `kanon verify --help` now embeds the canonical exit-zero wording (positive claim + 4 MUST-NOTs) per ADR-0042 §1 immutability. New `_ADR_0042_VERIFY_SCOPE` module-level constant is the single source of truth; passed to Click's `help=` parameter and surfaced in `_emit_verify_report` failure mode for direct citation. Test `tests/test_cli_verify.py::test_verify_help_carries_adr_0042_wording` asserts the canonical phrases appear verbatim.
+
+#### PR 3 (runtime-correctness bug-fix batch)
+
+- `kanon migrate` now refuses to run against a future-version config (`schema-version: 5+`) instead of silently injecting v4 fields beneath the future-version header.
+- `kanon init` now writes `schema-version: 4` and `kanon-dialect: "2026-05-01"` into the new project's `.kanon/config.yaml` so fresh installs are not born requiring `kanon migrate`.
+- **Config-mutating verbs preserve v4 fields and any other publisher-added top-level keys**: `kanon aspect remove` and `kanon aspect add/set-config/set-depth` (`_commit_aspect_meta`) now pass `extra=_extras_from_config(config)` to `_write_config` so `schema-version`, `kanon-dialect`, `provenance`, etc. round-trip across writes.
+- `_resolutions._validate_shape_against_contract` now wraps `read_text(encoding="utf-8")` in `try/except (UnicodeDecodeError, OSError)` and surfaces a structured `code: invalid-contract-encoding` ReplayError instead of crashing the CLI.
+- `_manifest._aspect_path` no longer silently falls back to a dead `_kit_root() / aspects/<slug>` path when `kanon_reference` is uninstalled. For `kanon-*` slugs without an `_source` and without `kanon_reference` available, raises `click.ClickException` pointing the user at `kanon-kit` or `kanon-reference` install. ADR-0044 substrate-independence is honored.
+- New helper `kanon._scaffold._extras_from_config()` + constant `_DEFAULT_V4_EXTRAS` centralize the config-key-preservation pattern. 5 new tests cover each fix.
+- **CI green collateral**: tomllib py3.10 fallback in `ci/check_packaging_split.py`; `--no-cov` added to e2e job in `.github/workflows/verify.yml`; `ci/check_process_gates.py` extends `_PLAN_VALID_STATUSES` to include `approved` (matching the convention used by 21 of 23 active plans).
+
+#### PR 4 (spec/impl error-code reconciliation + README rewrite for v0.4 framing)
+
+- **Spec/impl error-code reconciliation** (per `docs/specs/dialect-grammar.md` "Structured error codes — normative emitter map" added in this PR). The impl now emits the codes the spec promises — publishers writing tooling against the spec see the same codes the substrate raises.
+  - `kanon._dialects.DialectPinError` (new, subclasses `click.ClickException`): typed exception carrying `code: missing-dialect-pin` (INV 1) or `code: unknown-dialect` (INV 2). `validate_dialect_pin` raises this instead of plain `ClickException`.
+  - `kanon._realization_shape.ShapeParseError` (new, subclasses `click.ClickException`): typed exception carrying `code: invalid-realization-shape`. `parse_realization_shape` raises this for malformed shape, unsupported dialect, or verbs outside the dialect's enumeration.
+  - `kanon._realization_shape.ShapeValidationError`: `code` field is now always `"shape-violation"` (INV 4); the impl-specific kind moved to a new `subcode: str | None` field ∈ `{invalid-verb, invalid-evidence-kind, invalid-stage, unknown-key}`.
+  - `kanon._composition.CompositionError`: `replaces:` cycles now emit `code: replacement-cycle` (INV 6), distinct from before/after `composition-cycle` (INV 5). `kanon contracts validate` surfaces both as errors.
+  - `kanon._resolutions.ReplayError` from shape findings: `code: shape-violation` (was the old per-finding code); `subcode` is prepended into `reason` for diagnostic granularity.
+  - `cli.py:contracts_validate` reads `exc.code` from the typed exceptions instead of hardcoding `dialect-invalid`/`invalid-realization-shape`. Backward-compat fallback preserved.
+  - `docs/specs/dialect-grammar.md` gains a normative "Structured error codes — normative emitter map" table mapping each spec-promised code to its emitting symbol. Spec/impl parity tests in `tests/test_dialects.py`, `tests/test_realization_shape.py`, `tests/test_composition.py` lock the contract.
+- **README rewrite for v0.4 protocol-substrate framing** (per ADR-0048). First-impression surface now describes kanon as a protocol substrate, not a kit. Quickstart uses `--profile solo` and `kanon-<local>` aspect names. Bare-name shorthand (`sdd`, `worktrees`) removed from all examples. New file `tests/test_readme.py` (3 tests) prevents future drift back to v0.3 vocabulary on the first 80 lines.
+- **`ci/check_process_gates.py`** (PR 3 collateral re-stated for completeness): extends `_PLAN_VALID_STATUSES` to include `approved`, aligning with the convention used by 21 of 23 active plans and with `kanon-sdd/plan-before-build.md` prose vocabulary ("approve/approved").
 
 ### Changed
 

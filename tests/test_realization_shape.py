@@ -167,8 +167,13 @@ def test_validator_invalid_verb_surfaces() -> None:
         shape=shape,
         contract="kanon-x/preflight",
     )
+    # Per docs/specs/dialect-grammar.md INV 4: every shape mismatch uses the
+    # spec-aligned `code: shape-violation`. The impl-specific kind survives
+    # in `subcode` for diagnostic granularity.
     assert any(
-        f.code == "invalid-verb" and f.contract == "kanon-x/preflight"
+        f.code == "shape-violation"
+        and f.subcode == "invalid-verb"
+        and f.contract == "kanon-x/preflight"
         for f in findings
     )
 
@@ -184,7 +189,10 @@ def test_validator_invalid_evidence_kind_surfaces() -> None:
         evidence=[{"path": "x", "sha": "y", "kind": "build-script"}],
         shape=shape,
     )
-    assert any(f.code == "invalid-evidence-kind" for f in findings)
+    assert any(
+        f.code == "shape-violation" and f.subcode == "invalid-evidence-kind"
+        for f in findings
+    )
 
 
 def test_validator_invalid_stage_surfaces() -> None:
@@ -198,7 +206,10 @@ def test_validator_invalid_stage_surfaces() -> None:
         evidence=[],
         shape=shape,
     )
-    assert any(f.code == "invalid-stage" for f in findings)
+    assert any(
+        f.code == "shape-violation" and f.subcode == "invalid-stage"
+        for f in findings
+    )
 
 
 def test_validator_accumulates_findings_no_early_exit() -> None:
@@ -216,10 +227,13 @@ def test_validator_accumulates_findings_no_early_exit() -> None:
         evidence=[{"path": "x", "sha": "y", "kind": "build-script"}],  # invalid kind
         shape=shape,
     )
-    codes = {f.code for f in findings}
-    assert "invalid-verb" in codes
-    assert "invalid-stage" in codes
-    assert "invalid-evidence-kind" in codes
+    # Every finding carries the spec-aligned `code: shape-violation`. The
+    # diagnostic subcodes accumulate independently so consumers see them all.
+    assert {f.code for f in findings} == {"shape-violation"}
+    subcodes = {f.subcode for f in findings}
+    assert "invalid-verb" in subcodes
+    assert "invalid-stage" in subcodes
+    assert "invalid-evidence-kind" in subcodes
 
 
 def test_validator_unknown_key_surfaces_when_additional_properties_false() -> None:
@@ -236,7 +250,9 @@ def test_validator_unknown_key_surfaces_when_additional_properties_false() -> No
         evidence=[],
         shape=shape,
     )
-    assert any(f.code == "unknown-key" for f in findings)
+    assert any(
+        f.code == "shape-violation" and f.subcode == "unknown-key" for f in findings
+    )
 
 
 def test_validator_unknown_key_silent_when_additional_properties_true() -> None:
@@ -269,3 +285,39 @@ def test_validator_evidence_without_kind_field_passes() -> None:
         shape=shape,
     )
     assert findings == []
+
+
+# --- Spec/impl parity per docs/specs/dialect-grammar.md "Structured error
+# codes — normative emitter map".
+
+
+def test_shape_parse_error_carries_spec_code() -> None:
+    """Malformed shape → typed ShapeParseError with spec-aligned `code`."""
+    import pytest as _pt
+
+    from kanon._realization_shape import ShapeParseError, parse_realization_shape
+
+    with _pt.raises(ShapeParseError) as exc_info:
+        parse_realization_shape(
+            {"verbs": "not-a-list"}, dialect="2026-05-01"
+        )
+    assert exc_info.value.code == "invalid-realization-shape"
+
+
+def test_shape_parse_error_subclasses_click_exception() -> None:
+    """Backward-compat: ShapeParseError still catchable as click.ClickException."""
+    import click
+
+    from kanon._realization_shape import ShapeParseError
+
+    assert issubclass(ShapeParseError, click.ClickException)
+
+
+def test_shape_validation_error_default_code_is_shape_violation() -> None:
+    """Per spec INV 4: every shape mismatch's `code` field is `shape-violation`."""
+    from kanon._realization_shape import ShapeValidationError
+
+    err = ShapeValidationError(subcode="invalid-verb", contract="x", detail="y")
+    assert err.code == "shape-violation"
+    assert err.subcode == "invalid-verb"
+

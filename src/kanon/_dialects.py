@@ -38,6 +38,25 @@ SUPPORTED_DIALECTS: tuple[str, ...] = ("2026-05-01",)
 DEPRECATION_WARNING_BEFORE: tuple[str, ...] = ()
 
 
+class DialectPinError(click.ClickException):
+    """Typed dialect-pin validation failure.
+
+    Carries the spec-aligned ``code`` field per docs/specs/dialect-grammar.md
+    invariants 1-2: ``missing-dialect-pin`` (INV-dialect-grammar-pin-required)
+    or ``unknown-dialect`` (INV-dialect-grammar-version-format). Callers
+    (the CLI verb `kanon contracts validate`, the entry-point loader in
+    `_load_aspects_from_entry_points`) read ``exc.code`` to surface the
+    spec's structured code in their JSON output instead of inventing one.
+
+    Subclassing click.ClickException preserves backward compatibility with
+    existing `except click.ClickException` callers.
+    """
+
+    def __init__(self, message: str, *, code: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+
 def validate_dialect_pin(
     manifest_dialect: str | None,
     *,
@@ -45,10 +64,13 @@ def validate_dialect_pin(
 ) -> None:
     """Validate a manifest's ``kanon-dialect:`` pin.
 
-    Raises :class:`click.ClickException` for:
+    Raises :class:`DialectPinError` (a :class:`click.ClickException` subclass)
+    carrying spec-aligned ``code`` for:
 
-    - Missing pin (``None`` or empty string) — INV-dialect-grammar-pin-required.
-    - Unknown pin (not in :data:`SUPPORTED_DIALECTS`) — INV-dialect-grammar-version-format.
+    - Missing pin (``None`` or empty string) — ``code: missing-dialect-pin``
+      (per INV-dialect-grammar-pin-required, docs/specs/dialect-grammar.md).
+    - Unknown pin (not in :data:`SUPPORTED_DIALECTS`) — ``code: unknown-dialect``
+      (per INV-dialect-grammar-version-format, docs/specs/dialect-grammar.md).
 
     Emits a stderr deprecation warning when the pin matches a dialect listed in
     :data:`DEPRECATION_WARNING_BEFORE` (substrate still honours, but consumer
@@ -59,16 +81,18 @@ def validate_dialect_pin(
     """
     prefix = f"{source}: " if source else ""
     if manifest_dialect is None or manifest_dialect == "":
-        raise click.ClickException(
+        raise DialectPinError(
             f"{prefix}missing required `kanon-dialect:` pin "
             f"(per INV-dialect-grammar-pin-required); "
-            f"add `kanon-dialect: {SUPPORTED_DIALECTS[-1]}` to the manifest."
+            f"add `kanon-dialect: {SUPPORTED_DIALECTS[-1]}` to the manifest.",
+            code="missing-dialect-pin",
         )
     if manifest_dialect not in SUPPORTED_DIALECTS:
-        raise click.ClickException(
+        raise DialectPinError(
             f"{prefix}unsupported `kanon-dialect:` pin {manifest_dialect!r} "
             f"(per INV-dialect-grammar-version-format); "
-            f"this substrate supports {list(SUPPORTED_DIALECTS)!r}."
+            f"this substrate supports {list(SUPPORTED_DIALECTS)!r}.",
+            code="unknown-dialect",
         )
     if manifest_dialect in DEPRECATION_WARNING_BEFORE:
         sys.stderr.write(

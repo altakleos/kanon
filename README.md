@@ -1,10 +1,10 @@
 # kanon
 
-**Portable, self-hosting development-discipline kit for LLM-agent-driven repos.**
+**A protocol substrate for spec-driven discipline in LLM-agent-driven repos.**
 
 ```bash
 uv tool install kanon-kit
-kanon init ~/myproject --tier 1
+kanon init ~/myproject --profile solo
 cd ~/myproject           # open with any LLM coding agent
 ```
 
@@ -12,11 +12,11 @@ cd ~/myproject           # open with any LLM coding agent
 
 ---
 
-`kanon` packages development disciplines — starting with Spec-Driven Development and worktree isolation — as a pip-installable kit. Drop it into any repo, point your LLM agent at the scaffolded `AGENTS.md`, and the agent becomes a process-disciplined contributor: plans before building, specs before designing, worktrees for parallel work, verification as a first-class layer.
+`kanon` is a **protocol substrate** ([ADR-0048](docs/decisions/0048-kanon-as-protocol-substrate.md)) — a small kernel (`kanon-substrate`) plus a separately distributed reference set of opt-in disciplines (`kanon-reference`) that publishers and consumers compose. Drop it into any repo, point your LLM agent at the scaffolded `AGENTS.md`, and the agent becomes a process-disciplined contributor: plans before building, specs before designing, worktrees for parallel work, verification as a first-class layer.
 
-The kit is **aspect-oriented** — disciplines are packaged as opt-in *aspects*, each with its own depth dial. Enable only what you need; grow without ceremony you don't need yet.
+The substrate is **publisher-symmetric**: kit-shipped (`kanon-`), consumer-defined (`project-`), and third-party (`acme-`) aspects all flow through identical code paths. The substrate makes no claim about which disciplines are "right" — it only enforces the grammar by which any publisher's disciplines are authored, composed, and verified.
 
-The kit is **self-hosting** — this repo is itself a `kanon` project running `sdd` at depth 3 and `worktrees` at depth 2. The scaffolded bundle and this repo's own `docs/` share source of truth, enforced by CI.
+The substrate is **self-hosting** — this repo opts into the seven reference aspects via the same publisher recipe (`.kanon/recipes/reference-default.yaml`) any external consumer would use, and passes `kanon verify .` against itself on every commit ([ADR-0044](docs/decisions/0044-substrate-self-conformance.md)).
 
 ## Quickstart
 
@@ -24,16 +24,17 @@ The kit is **self-hosting** — this repo is itself a `kanon` project running `s
 # Install
 uv tool install kanon-kit          # or: pipx install kanon-kit
 
-# Scaffold a new project (every default aspect at depth 1, ADR-0035)
-kanon init ~/myproject --tier 1
+# Scaffold a new project — pick a profile that matches your team shape
+kanon init ~/myproject --profile solo     # or: --profile team / --profile max
+                                           # or: --aspects kanon-sdd:1,kanon-worktrees:1
 
 # Add shell helpers for worktree isolation (worktrees 1 → 2)
-kanon aspect set-depth ~/myproject worktrees 2
+kanon aspect set-depth ~/myproject kanon-worktrees 2
 
 # Grow SDD depth as the project matures
-kanon aspect set-depth ~/myproject sdd 2
+kanon aspect set-depth ~/myproject kanon-sdd 2
 
-# Keep the kit up to date
+# Keep the substrate up to date
 uv tool upgrade kanon-kit          # or: pipx upgrade kanon-kit
 kanon upgrade ~/myproject
 
@@ -41,38 +42,32 @@ kanon upgrade ~/myproject
 kanon verify ~/myproject
 ```
 
-## Aspects
+## Reference aspects
 
-Disciplines are packaged as *aspects* — opt-in bundles of prose rules, protocols, AGENTS.md sections, and scaffolded files.
+The seven reference aspects ship via `kanon-reference` (and re-exported by `kanon-kit`); each is opt-in and individually depth-dialed.
 
 | Aspect | Depth range | Stability | What it provides |
 |--------|-------------|-----------|------------------|
-| `sdd` | 0–3 | stable | Spec-Driven Development: plans, specs, design docs, foundations, verification |
-| `worktrees` | 0–2 | experimental | Worktree isolation: prose guidance (depth 1) + shell helpers (depth 2) |
-| `release` | 0–2 | experimental | Disciplined release publishing: protocol (depth 1) + preflight script + reference workflow (depth 2) |
-| `testing` | 0–3 | experimental | Test discipline + AC-first TDD: protocols (depth 1–2) + automated quality enforcement (depth 3) |
-| `security` | 0–2 | experimental | Secure-by-default protocols (depth 1) + CI pattern scanner for common anti-patterns (depth 2) |
-| `deps` | 0–2 | experimental | Dependency hygiene protocol (depth 1) + CI scanner for unpinned versions and duplicate-purpose packages (depth 2) |
-| `fidelity` | 0–1 | experimental | Behavioural-conformance verification: lexical assertions over committed agent transcripts (depth 1) |
+| `kanon-sdd` | 0–3 | stable | Spec-Driven Development: plans, specs, design docs, foundations, verification |
+| `kanon-worktrees` | 0–2 | experimental | Worktree isolation: prose guidance (depth 1) + shell helpers (depth 2) |
+| `kanon-release` | 0–2 | experimental | Disciplined release publishing: protocol (depth 1) + preflight/publishing protocols (depth 2) |
+| `kanon-testing` | 0–3 | experimental | Test discipline + AC-first TDD: protocols (depth 1–2) + invariants (depth 3) |
+| `kanon-security` | 0–2 | experimental | Secure-by-default protocols (depth 1–2) |
+| `kanon-deps` | 0–2 | experimental | Dependency hygiene protocol (depth 1–2) |
+| `kanon-fidelity` | 0–1 | experimental | Behavioural-conformance verification: lexical assertions over committed agent transcripts (depth 1) |
 
-The canonical name of each kit-shipped aspect carries a `kanon-` source-namespace prefix (e.g., `kanon-sdd`, `kanon-worktrees`); bare names at every CLI input surface sugar to the `kanon-` namespace, so existing invocations like `kanon aspect set-depth . sdd 2` continue to work. See [ADR-0028](docs/decisions/0028-project-aspects.md) and [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md).
+Aspect names are namespaced by source publisher (`kanon-`, `project-`, `acme-`); bare-name shorthand at the CLI input surface (`sdd` → `kanon-sdd`, etc.) is **deprecated** in v0.4 — it privileges the kit namespace and breaks publisher symmetry. New scripts and documentation should use the full `kanon-<local>` form.
 
-### Project-defined aspects
+### Project-defined and third-party aspects
 
-Consumers may declare their own aspects under `.kanon/aspects/project-<local>/manifest.yaml`. The CLI discovers them transparently — they participate in `aspect list --target`, `aspect info <name> --target`, `aspect add`, `aspect remove`, `aspect set-depth`, `aspect set-config`, and `verify` alongside kit-shipped aspects.
+Consumers may declare their own aspects under `.kanon/aspects/project-<local>/manifest.yaml` (loaded via filesystem; see [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md)). Third-party publishers register their aspects via the `kanon.aspects` Python entry-point group ([ADR-0040](docs/decisions/0040-kernel-reference-runtime-interface.md)). All three namespaces verify under identical rules — see [ADR-0042](docs/decisions/0042-verification-scope-of-exit-zero.md) for `kanon verify` exit-zero semantics.
 
-A project-aspect's manifest mirrors the shape of a kit-side sub-manifest: registry fields (`stability`, `depth-range`, `default-depth`, optional `requires`/`provides`/`suggests`) and per-depth `depth-N: {files, protocols, sections}` entries in the same file. Optionally, a project-aspect may declare `validators: [<dotted.module.path>, ...]` — `kanon verify` imports each module in-process and invokes its `check(target, errors, warnings) -> None` entrypoint, with findings flowing into the same JSON report the kit's structural checks populate.
+The two filesystem source namespaces are **strictly source-bounded**:
 
-The two source namespaces are **strictly source-bounded**:
-
-- `kanon-<local>` — kit-shipped, loaded from the installed pip kit.
+- `kanon-<local>` — reference-shipped, loaded from the installed `kanon-reference` distribution via entry-points.
 - `project-<local>` — consumer-defined, loaded from `.kanon/aspects/`.
 
-A `kanon-` directory under `.kanon/aspects/` is rejected at load with a single-line error; bare names sugar to `kanon-` only (project-aspects must always be referenced by their full `project-<local>` name). Cross-source path collisions (a project-aspect declaring the same `files/` path as a kit-aspect) raise a `ClickException` at scaffold time.
-
-Capability substitutability is source-neutral: a `project-<local>`'s `provides:` capability can satisfy a kit-aspect's 1-token `requires:` predicate.
-
-Per [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md) and [ADR-0028](docs/decisions/0028-project-aspects.md). Third-party aspect publishing via pip (the `acme-` namespace) remains deferred per ADR-0012; project-aspects ride along with the consumer's own git history.
+A `kanon-` directory under `.kanon/aspects/` is rejected at load. Cross-source path collisions raise a `ClickException` at scaffold time. Capability substitutability is source-neutral: a `project-<local>`'s `provides:` capability can satisfy a kit-aspect's 1-token `requires:` predicate.
 
 ### SDD depths
 
@@ -83,11 +78,9 @@ Per [`docs/specs/project-aspects.md`](docs/specs/project-aspects.md) and [ADR-00
 | 2 | Team work with user-facing promises | + `docs/specs/` |
 | 3 | Platform projects, multi-team | + `docs/design/`, `docs/foundations/` |
 
-The legacy `kanon tier set` command is preserved as sugar for a uniform depth raise across all default aspects, capped at each aspect's maximum (ADR-0035).
-
 ## Supported agent harnesses
 
-AGENTS.md is the canonical single source of truth. `kanon init` writes tool-specific shims pointing at it, so the same rules apply across:
+`AGENTS.md` is the canonical single source of truth. `kanon init` writes tool-specific shims pointing at it, so the same rules apply across:
 
 - Claude Code (`CLAUDE.md`)
 - Cursor (`.cursor/rules/kanon.mdc`)
@@ -103,11 +96,15 @@ New harness support: add an entry to `harnesses.yaml`; no Python change required
 ## Documentation
 
 - [Vision](docs/foundations/vision.md) — what kanon is and is not
+- [De-opinionation manifesto](docs/foundations/de-opinionation.md) — why v0.4 is a protocol substrate, not a kit
 - [Aspect model](docs/design/aspect-model.md) — how aspects and depths work
-- [Aspects spec](docs/specs/aspects.md) — the aspects contract
-- [ADR-0012](docs/decisions/0012-aspect-model.md) — decision record for the aspect model
+- [Dialect grammar spec](docs/specs/dialect-grammar.md) — realization-shape, dialect versioning, composition
+- [Distribution + cadence spec](docs/specs/release-cadence.md) — kernel/reference split, release pacing
+- [Substrate self-conformance spec](docs/specs/substrate-self-conformance.md) — independence + self-host invariants
+- [Resolutions spec](docs/specs/resolutions.md) — runtime-binding model
+- [ADR-0048](docs/decisions/0048-kanon-as-protocol-substrate.md) — the protocol-substrate commitment
 - [Development process](docs/sdd-method.md) — the SDD method
-- [ADR index](docs/decisions/README.md) — the kit's own decisions
+- [ADR index](docs/decisions/README.md) — the substrate's own decisions
 - [Roadmap](docs/plans/roadmap.md) — capabilities deferred to later releases
 - [AGENTS.md](AGENTS.md) — contributor boot document
 
@@ -125,9 +122,9 @@ python -m venv .venv
 Run tests:
 
 ```bash
-.venv/bin/pytest              # fast tests (~1.5s)
-.venv/bin/pytest -m e2e       # installed-package E2E tests (~7s)
-.venv/bin/pytest -m ''        # everything
+.venv/bin/pytest                    # fast tests
+.venv/bin/pytest -m e2e --no-cov    # installed-package E2E tests
+.venv/bin/pytest -m ''              # everything (deselected included)
 ```
 
 New contributor? Start with [`docs/contributing.md`](docs/contributing.md) — module map, gate matrix, and a "where does my change go?" decision flow.
@@ -140,7 +137,7 @@ See [ADR-0036](docs/decisions/0036-secure-defaults-config-trust-carveout.md) for
 
 ## Status
 
-**Early alpha (v0.3.1a2).** The kit ships seven aspects (`sdd` at depth 0–3; `worktrees`, `release`, `security`, `deps` at depth 0–2; `testing` at depth 0–3; `fidelity` at depth 0–1), the aspect model with a `provides:` capability registry, cross-harness shims, and self-hosting assertions. See [the roadmap](docs/plans/roadmap.md) for what's coming.
+**Early alpha (v0.4.0a1).** The "kit → protocol substrate" pivot ([ADR-0045](docs/decisions/0045-de-opinionation-transition.md), [ADR-0048](docs/decisions/0048-kanon-as-protocol-substrate.md)) lands here: kernel-reference split skeleton, entry-point discovery for aspects, dialect grammar with realization-shape + composition algebra, resolutions replay engine, substrate-independence CI gate, deprecated-on-arrival `kanon migrate v0.3 → v0.4`. v0.3.x consumers cannot upgrade in place; use `kanon migrate` once. See [the roadmap](docs/plans/roadmap.md) for what's coming.
 
 ## License
 

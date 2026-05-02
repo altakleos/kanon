@@ -51,15 +51,39 @@ class RealizationShape:
     additional_properties: bool = False
 
 
+class ShapeParseError(click.ClickException):
+    """Typed realization-shape parse failure.
+
+    Carries the spec-aligned ``code`` field per docs/specs/dialect-grammar.md
+    INV 3 (``code: missing-realization-shape`` for absent declarations) and
+    the impl-specific ``code: invalid-realization-shape`` for shape blocks
+    that are present but malformed (missing required keys, wrong types,
+    unsupported dialect, verbs outside the dialect enumeration).
+
+    Subclassing click.ClickException preserves backward compatibility with
+    existing `except click.ClickException` callers.
+    """
+
+    def __init__(self, message: str, *, code: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+
 @dataclass
 class ShapeValidationError:
     """One finding from validate_resolution_against_shape.
 
-    ``code`` is one of: ``invalid-verb``, ``invalid-evidence-kind``,
-    ``invalid-stage``, ``unknown-key``.
+    Per docs/specs/dialect-grammar.md INV 4 ("Mismatches are
+    `code: shape-violation` findings, never silent"), the spec-aligned
+    public-facing ``code`` is always ``shape-violation``. The impl-specific
+    diagnostic refinement (the kind of mismatch — which verb, which evidence
+    kind, etc.) lives in ``subcode`` ∈ ``{invalid-verb, invalid-evidence-kind,
+    invalid-stage, unknown-key}``. Tooling that pattern-matches on the spec's
+    code reads ``code``; richer diagnostics read ``subcode``.
     """
 
-    code: str
+    code: str = "shape-violation"
+    subcode: str | None = None
     contract: str | None = None
     detail: str | None = None
 
@@ -72,59 +96,71 @@ def parse_realization_shape(
 ) -> RealizationShape:
     """Parse a contract's ``realization-shape:`` frontmatter block.
 
-    Raises :class:`click.ClickException` for missing/malformed shape or for
-    verbs not in the dialect's verb enumeration.
+    Raises :class:`ShapeParseError` (a :class:`click.ClickException` subclass)
+    with ``code: invalid-realization-shape`` for missing/malformed shape, an
+    unsupported dialect, or verbs not in the dialect's verb enumeration.
+    Spec INV 3's ``missing-realization-shape`` code is surfaced upstream by
+    callers that detect the absence of a `realization-shape:` block before
+    calling this function (e.g., ``cli.py:contracts_validate``).
 
     *source* is an optional human-readable label (contract id, file path)
     prepended to error messages for diagnostics.
     """
     prefix = f"{source}: " if source else ""
     if dialect not in _DIALECT_VERB_REGISTRY:
-        raise click.ClickException(
+        raise ShapeParseError(
             f"{prefix}realization-shape: unsupported dialect {dialect!r}; "
-            f"supported: {sorted(_DIALECT_VERB_REGISTRY)!r}."
+            f"supported: {sorted(_DIALECT_VERB_REGISTRY)!r}.",
+            code="invalid-realization-shape",
         )
     if not isinstance(raw, dict):
-        raise click.ClickException(
+        raise ShapeParseError(
             f"{prefix}realization-shape must be a mapping "
-            f"(got {type(raw).__name__})."
+            f"(got {type(raw).__name__}).",
+            code="invalid-realization-shape",
         )
     for required_key in ("verbs", "evidence-kinds", "stages"):
         if required_key not in raw:
-            raise click.ClickException(
-                f"{prefix}realization-shape missing required key {required_key!r}."
+            raise ShapeParseError(
+                f"{prefix}realization-shape missing required key {required_key!r}.",
+                code="invalid-realization-shape",
             )
     verbs_raw = raw["verbs"]
     if not isinstance(verbs_raw, list):
-        raise click.ClickException(
+        raise ShapeParseError(
             f"{prefix}realization-shape.verbs must be a list "
-            f"(got {type(verbs_raw).__name__})."
+            f"(got {type(verbs_raw).__name__}).",
+            code="invalid-realization-shape",
         )
     dialect_verbs = _DIALECT_VERB_REGISTRY[dialect]
     invalid_verbs = [v for v in verbs_raw if v not in dialect_verbs]
     if invalid_verbs:
-        raise click.ClickException(
+        raise ShapeParseError(
             f"{prefix}realization-shape.verbs contains verb(s) not in "
             f"dialect {dialect!r}: {invalid_verbs!r}; "
-            f"valid verbs: {sorted(dialect_verbs)!r}."
+            f"valid verbs: {sorted(dialect_verbs)!r}.",
+            code="invalid-realization-shape",
         )
     evidence_kinds_raw = raw["evidence-kinds"]
     if not isinstance(evidence_kinds_raw, list):
-        raise click.ClickException(
+        raise ShapeParseError(
             f"{prefix}realization-shape.evidence-kinds must be a list "
-            f"(got {type(evidence_kinds_raw).__name__})."
+            f"(got {type(evidence_kinds_raw).__name__}).",
+            code="invalid-realization-shape",
         )
     stages_raw = raw["stages"]
     if not isinstance(stages_raw, list):
-        raise click.ClickException(
+        raise ShapeParseError(
             f"{prefix}realization-shape.stages must be a list "
-            f"(got {type(stages_raw).__name__})."
+            f"(got {type(stages_raw).__name__}).",
+            code="invalid-realization-shape",
         )
     additional_properties_raw = raw.get("additional-properties", False)
     if not isinstance(additional_properties_raw, bool):
-        raise click.ClickException(
+        raise ShapeParseError(
             f"{prefix}realization-shape.additional-properties must be a bool "
-            f"(got {type(additional_properties_raw).__name__})."
+            f"(got {type(additional_properties_raw).__name__}).",
+            code="invalid-realization-shape",
         )
     return RealizationShape(
         verbs=frozenset(verbs_raw),
@@ -149,14 +185,14 @@ def validate_resolution_against_shape(
     violation in one pass.
     """
     findings: list[ShapeValidationError] = []
-    # Validate each invocation's verb (carried in `label` per design example;
-    # also accept `verb` if present for forward-compat with future dialect
-    # additions). Validate any `stage` field against shape.stages.
+    # Per spec INV 4: every shape mismatch is `code: shape-violation`. The
+    # historical impl-specific labels (invalid-verb, invalid-evidence-kind,
+    # invalid-stage, unknown-key) survive as `subcode` for diagnostics.
     for inv in realized_by or []:
         if not isinstance(inv, dict):
             findings.append(
                 ShapeValidationError(
-                    code="unknown-key",
+                    subcode="unknown-key",
                     contract=contract,
                     detail=(
                         f"realized-by entry must be a mapping "
@@ -169,7 +205,7 @@ def validate_resolution_against_shape(
         if verb is not None and verb not in shape.verbs:
             findings.append(
                 ShapeValidationError(
-                    code="invalid-verb",
+                    subcode="invalid-verb",
                     contract=contract,
                     detail=(
                         f"realized-by verb {verb!r} not in shape.verbs "
@@ -181,7 +217,7 @@ def validate_resolution_against_shape(
         if stage is not None and shape.stages and stage not in shape.stages:
             findings.append(
                 ShapeValidationError(
-                    code="invalid-stage",
+                    subcode="invalid-stage",
                     contract=contract,
                     detail=(
                         f"realized-by stage {stage!r} not in shape.stages "
@@ -195,7 +231,7 @@ def validate_resolution_against_shape(
             if unknown:
                 findings.append(
                     ShapeValidationError(
-                        code="unknown-key",
+                        subcode="unknown-key",
                         contract=contract,
                         detail=(
                             f"realized-by entry has unknown key(s) "
@@ -216,7 +252,7 @@ def validate_resolution_against_shape(
         ):
             findings.append(
                 ShapeValidationError(
-                    code="invalid-evidence-kind",
+                    subcode="invalid-evidence-kind",
                     contract=contract,
                     detail=(
                         f"evidence kind {kind!r} not in shape.evidence-kinds "

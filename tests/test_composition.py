@@ -141,11 +141,13 @@ def test_replaces_chain() -> None:
 
 
 def test_replaces_cycle_detected() -> None:
+    """Per docs/specs/dialect-grammar.md INV 6: replaces-graph cycle surfaces
+    as `code: replacement-cycle`, distinct from before/after composition cycles."""
     a = ContractRef("a", "s", replaces=("b",))
     b = ContractRef("b", "s", replaces=("a",))
     ordering, findings = compose([a, b], surface="s")
     assert ordering == []
-    cycle_errs = [f for f in findings if f.code == "composition-cycle"]
+    cycle_errs = [f for f in findings if f.code == "replacement-cycle"]
     assert len(cycle_errs) == 1
     assert "replaces" in cycle_errs[0].detail
 
@@ -170,3 +172,37 @@ def test_stable_ordering_across_runs() -> None:
     ordering1, _ = compose(contracts, surface="s")
     ordering2, _ = compose(contracts, surface="s")
     assert _ids(ordering1) == _ids(ordering2) == ["a", "b", "c"]
+
+
+# --- Spec/impl parity per docs/specs/dialect-grammar.md INV 5-6: composition
+# distinguishes replaces-graph cycles (`replacement-cycle`) from before/after
+# cycles (`composition-cycle`).
+
+
+def test_before_after_cycle_uses_composition_cycle_code() -> None:
+    """before/after cycle → spec-aligned `code: composition-cycle` (INV 5)."""
+    a = ContractRef("a", "s", before=("b",))
+    b = ContractRef("b", "s", before=("a",))
+    ordering, findings = compose([a, b], surface="s")
+    assert ordering == []
+    assert any(
+        f.code == "composition-cycle" and "before" in (f.detail or "")
+        for f in findings
+    ), f"expected composition-cycle, got: {findings}"
+
+
+def test_replaces_cycle_uses_replacement_cycle_code() -> None:
+    """replaces-graph cycle → spec-aligned `code: replacement-cycle` (INV 6).
+
+    Distinct from before/after cycles so publishers can pattern-match the
+    two failure modes independently.
+    """
+    a = ContractRef("a", "s", replaces=("b",))
+    b = ContractRef("b", "s", replaces=("a",))
+    _, findings = compose([a, b], surface="s")
+    assert any(
+        f.code == "replacement-cycle" and "replaces" in (f.detail or "")
+        for f in findings
+    ), f"expected replacement-cycle, got: {findings}"
+    assert not any(f.code == "composition-cycle" for f in findings)
+
