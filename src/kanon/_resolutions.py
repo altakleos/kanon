@@ -31,11 +31,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import click
 import yaml
 
 
 _SCHEMA_VERSION = 1
 _VALID_INVOCATION_FORMS = frozenset({"shell", "argv"})
+_DEFAULT_DIALECT = "2026-05-01"
 
 
 # --- Data classes ---
@@ -330,6 +332,73 @@ def _execute_realizations(
         )
 
 
+def _parse_contract_frontmatter(text: str) -> dict[str, Any]:
+    """Extract YAML frontmatter from a contract markdown file.
+
+    Returns ``{}`` when no frontmatter fence is present.
+    """
+    if not text.startswith("---\n"):
+        return {}
+    end = text.find("\n---\n", 4)
+    if end < 0:
+        return {}
+    try:
+        data = yaml.safe_load(text[4:end])
+    except yaml.YAMLError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _validate_shape_against_contract(
+    contract_id: str,
+    contract_path: Path,
+    entry: dict[str, Any],
+    errors: list[ReplayError],
+) -> None:
+    """Validate a resolution against its contract's `realization-shape:` block.
+
+    Skip-when-absent: contracts without `realization-shape:` in their frontmatter
+    are exempt from shape validation. Per INV-dialect-grammar-shape-validates-
+    resolutions, contracts that DO declare the block get validated.
+    """
+    from kanon._realization_shape import (
+        parse_realization_shape,
+        validate_resolution_against_shape,
+    )
+
+    text = contract_path.read_text(encoding="utf-8")
+    frontmatter = _parse_contract_frontmatter(text)
+    raw_shape = frontmatter.get("realization-shape")
+    if raw_shape is None:
+        return  # skip-when-absent
+
+    dialect = frontmatter.get("kanon-dialect", _DEFAULT_DIALECT)
+    try:
+        shape = parse_realization_shape(
+            raw_shape, dialect=dialect, source=contract_id
+        )
+    except click.ClickException as exc:
+        errors.append(
+            ReplayError(
+                code="invalid-realization-shape",
+                contract=contract_id,
+                reason=exc.message,
+            )
+        )
+        return
+
+    findings = validate_resolution_against_shape(
+        realized_by=entry.get("realized-by") or [],
+        evidence=entry.get("evidence") or [],
+        shape=shape,
+        contract=contract_id,
+    )
+    for f in findings:
+        errors.append(
+            ReplayError(code=f.code, contract=f.contract, reason=f.detail)
+        )
+
+
 def _replay_inner(
     target: Path,
     registry: dict[str, Any] | None,
@@ -366,6 +435,13 @@ def _replay_inner(
             str(contract_id), entry, target, registry, report.errors
         ):
             continue  # Pin drift: skip realizations for this contract.
+        # Shape validation (per INV-dialect-grammar-shape-validates-resolutions).
+        # Skip-when-absent: contracts without realization-shape: are exempt.
+        contract_path = _locate_contract(str(contract_id), registry)
+        if contract_path is not None:
+            _validate_shape_against_contract(
+                str(contract_id), contract_path, entry, report.errors
+            )
         if execute:
             _execute_realizations(
                 str(contract_id), entry, target, report.executions, report.errors

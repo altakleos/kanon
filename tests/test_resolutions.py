@@ -412,3 +412,120 @@ def test_replay_report_ok_property() -> None:
 def test_execution_record_default_executed_false() -> None:
     rec = ExecutionRecord(contract="x/y", label="z", invocation="i", invocation_form="shell")
     assert rec.executed is False
+
+
+# --- Realization-shape wiring (per INV-dialect-grammar-shape-validates-resolutions) ---
+
+
+def _write_contract_with_shape(
+    contract_path: Path,
+    *,
+    verbs: list[str],
+    evidence_kinds: list[str],
+    stages: list[str] | None = None,
+    additional_properties: bool = False,
+) -> None:
+    """Overwrite a contract file with frontmatter declaring realization-shape."""
+    fm = {
+        "contract-id": "synthetic-aspect/preflight",
+        "kanon-dialect": "2026-05-01",
+        "realization-shape": {
+            "verbs": verbs,
+            "evidence-kinds": evidence_kinds,
+            "stages": stages or [],
+            "additional-properties": additional_properties,
+        },
+    }
+    contract_path.write_text(
+        "---\n" + yaml.safe_dump(fm, sort_keys=False) + "---\n\n# Preflight contract\n",
+        encoding="utf-8",
+    )
+
+
+def test_replay_contract_without_shape_skips_validation(tmp_path: Path) -> None:
+    """Skip-when-absent: contracts without realization-shape: produce no findings."""
+    target, registry = _build_synthetic_target(tmp_path)
+    contract = Path(registry["aspects"]["synthetic-aspect"]["_source"]) / "contracts" / "preflight.md"
+    pyproject = target / "pyproject.toml"
+    entry = _make_entry(contract, [("pyproject.toml", pyproject.read_bytes(), "x")])
+    _write_resolutions(target, {"synthetic-aspect/preflight": entry})
+    report = replay(target, registry=registry)
+    assert report.ok, f"expected clean (no shape declared), got: {report.errors}"
+
+
+def test_replay_contract_with_shape_clean_resolution(tmp_path: Path) -> None:
+    target, registry = _build_synthetic_target(tmp_path)
+    contract = Path(registry["aspects"]["synthetic-aspect"]["_source"]) / "contracts" / "preflight.md"
+    _write_contract_with_shape(contract, verbs=["lint"], evidence_kinds=["config-file"])
+    pyproject = target / "pyproject.toml"
+    entry = _make_entry(
+        contract,
+        [("pyproject.toml", pyproject.read_bytes(), "x")],
+        realized_by=[{"label": "lint", "invocation": "ruff check .", "invocation-form": "shell"}],
+    )
+    # Update entry's evidence to include kind: matching shape.
+    entry["evidence"][0]["kind"] = "config-file"
+    entry["meta-checksum"] = _sha(canonicalize_entry(entry))
+    _write_resolutions(target, {"synthetic-aspect/preflight": entry})
+    report = replay(target, registry=registry)
+    assert report.ok, f"expected clean shape match, got: {report.errors}"
+
+
+def test_replay_contract_with_shape_invalid_verb_surfaces(tmp_path: Path) -> None:
+    target, registry = _build_synthetic_target(tmp_path)
+    contract = Path(registry["aspects"]["synthetic-aspect"]["_source"]) / "contracts" / "preflight.md"
+    _write_contract_with_shape(contract, verbs=["lint"], evidence_kinds=[])
+    pyproject = target / "pyproject.toml"
+    entry = _make_entry(
+        contract,
+        [("pyproject.toml", pyproject.read_bytes(), "x")],
+        realized_by=[{"label": "test", "invocation": "pytest", "invocation-form": "shell"}],
+    )
+    _write_resolutions(target, {"synthetic-aspect/preflight": entry})
+    report = replay(target, registry=registry)
+    assert any(
+        e.code == "invalid-verb" and e.contract == "synthetic-aspect/preflight"
+        for e in report.errors
+    ), f"expected invalid-verb finding, got: {report.errors}"
+
+
+def test_replay_contract_with_shape_invalid_evidence_kind_surfaces(tmp_path: Path) -> None:
+    target, registry = _build_synthetic_target(tmp_path)
+    contract = Path(registry["aspects"]["synthetic-aspect"]["_source"]) / "contracts" / "preflight.md"
+    _write_contract_with_shape(contract, verbs=["lint"], evidence_kinds=["config-file"])
+    pyproject = target / "pyproject.toml"
+    entry = _make_entry(
+        contract,
+        [("pyproject.toml", pyproject.read_bytes(), "x")],
+        realized_by=[{"label": "lint", "invocation": "ruff check .", "invocation-form": "shell"}],
+    )
+    entry["evidence"][0]["kind"] = "build-script"  # not in shape's evidence-kinds
+    entry["meta-checksum"] = _sha(canonicalize_entry(entry))
+    _write_resolutions(target, {"synthetic-aspect/preflight": entry})
+    report = replay(target, registry=registry)
+    assert any(
+        e.code == "invalid-evidence-kind" for e in report.errors
+    ), f"expected invalid-evidence-kind finding, got: {report.errors}"
+
+
+def test_replay_contract_with_malformed_shape_surfaces(tmp_path: Path) -> None:
+    target, registry = _build_synthetic_target(tmp_path)
+    contract = Path(registry["aspects"]["synthetic-aspect"]["_source"]) / "contracts" / "preflight.md"
+    # Malformed shape: verbs is not a list.
+    contract.write_text(
+        "---\n"
+        "contract-id: synthetic-aspect/preflight\n"
+        "realization-shape:\n"
+        "  verbs: 'not a list'\n"
+        "  evidence-kinds: []\n"
+        "  stages: []\n"
+        "---\n\n# Preflight contract\n",
+        encoding="utf-8",
+    )
+    pyproject = target / "pyproject.toml"
+    entry = _make_entry(contract, [("pyproject.toml", pyproject.read_bytes(), "x")])
+    _write_resolutions(target, {"synthetic-aspect/preflight": entry})
+    report = replay(target, registry=registry)
+    assert any(
+        e.code == "invalid-realization-shape" for e in report.errors
+    ), f"expected invalid-realization-shape finding, got: {report.errors}"
