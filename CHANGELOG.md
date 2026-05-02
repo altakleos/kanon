@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Plan v040a1-release-prep PR 3 — runtime-correctness bug-fix batch**:
+  - `kanon migrate` now refuses to run against a future-version config (`schema-version: 5+`) instead of silently injecting v4 fields beneath the future-version header. Migrating forward from a future schema requires a newer `kanon-substrate`; the verb now says so.
+  - `kanon init` now writes `schema-version: 4` and `kanon-dialect: "2026-05-01"` into the new project's `.kanon/config.yaml` so fresh installs are not born requiring `kanon migrate`. The v4 commitment is honored from the first write, not deferred.
+  - **Config-mutating verbs preserve v4 fields and any other publisher-added top-level keys**: `kanon aspect remove` and `kanon aspect add/set-config/set-depth` (`_commit_aspect_meta`) now pass `extra=_extras_from_config(config)` to `_write_config` so `schema-version`, `kanon-dialect`, `provenance`, `preflight-stages`, etc. round-trip across writes. Without this the v4 commitment was silently stripped on the first mutation after `kanon init`.
+  - `_resolutions._validate_shape_against_contract` now wraps the `read_text(encoding="utf-8")` in a `try/except (UnicodeDecodeError, OSError)` and surfaces a structured `code: invalid-contract-encoding` ReplayError instead of crashing the CLI with an uncaught `UnicodeDecodeError`. Honors ADR-0041's "findings accumulate" intent.
+  - `_manifest._aspect_path` no longer silently falls back to `_kit_root() / aspects/<slug>` (a dead path post-Phase-A.7) when `kanon_reference` is uninstalled. For `kanon-*` slugs without an `_source` and without `kanon_reference` available, raises `click.ClickException` pointing the user at `kanon-kit` or `kanon-reference` install. ADR-0044 substrate-independence is honored: failure modes are explicit, not stale-data.
+  - 5 new tests cover each fix; new helper `kanon._scaffold._extras_from_config()` + constant `_DEFAULT_V4_EXTRAS` centralize the config-key-preservation pattern.
+
 ## [0.4.0a1] — 2026-05-02
 
 The "kit → protocol substrate" pivot. ADR-0045 de-opinionation transition (Phase 0 + Phase 0.5 + 9 Phase A steps + 3 deferred sub-plans) lands in one release. See ADR-0048 for the framing change. v0.3.x consumers cannot upgrade in place — use `kanon migrate v0.3 → v0.4` (deprecated-on-arrival; will be removed before v1.0).

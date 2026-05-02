@@ -123,3 +123,33 @@ def test_migrate_idempotent(tmp_path: Path) -> None:
     assert r2.exit_code == 0
     parsed = json.loads(r2.output)
     assert parsed["status"] == "noop"
+
+
+def test_migrate_rejects_future_schema_version(tmp_path: Path) -> None:
+    """A v5+ config is from a future kanon. migrate must refuse loudly rather
+    than silently mangling the file (e.g., adding v4 fields beneath a v5
+    schema header — a hybrid that no reader understands)."""
+    config_dir = tmp_path / ".kanon"
+    config_dir.mkdir()
+    (config_dir / "config.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "schema-version": 5,
+                "kanon-dialect": "2027-01-01",
+                "kit_version": "0.5.0",
+                "aspects": {},
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    runner = CliRunner()
+    result = runner.invoke(main, ["migrate", "--target", str(tmp_path)])
+    assert result.exit_code != 0, result.output
+    assert "Unknown schema-version: 5" in result.output
+    # File MUST NOT have been mutated.
+    parsed = yaml.safe_load((config_dir / "config.yaml").read_text(encoding="utf-8"))
+    assert parsed["schema-version"] == 5
+    assert parsed["kanon-dialect"] == "2027-01-01"
+    # Critically: no v4-shape `provenance:` injection happened.
+    assert "provenance" not in parsed

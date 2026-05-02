@@ -49,6 +49,28 @@ def _read_config(target: Path) -> dict[str, Any]:
     return _migrate_legacy_config(data)
 
 
+# Per ADR-0045 Phase 0.5 + ADR-0041: every kanon-managed config carries a
+# schema-version + dialect pin. New configs (kanon init) get these by default;
+# config-mutating verbs (kanon aspect add/remove/set-config/set-depth, upgrade)
+# preserve them across writes via _extras_from_config below.
+_DEFAULT_V4_EXTRAS: dict[str, Any] = {
+    "schema-version": 4,
+    "kanon-dialect": "2026-05-01",
+}
+
+_CANONICAL_CONFIG_KEYS: frozenset[str] = frozenset({"kit_version", "aspects"})
+
+
+def _extras_from_config(config: dict[str, Any]) -> dict[str, Any]:
+    """Return non-canonical top-level config keys for round-trip preservation.
+
+    Used by config-mutating verbs to round-trip schema-version, kanon-dialect,
+    provenance, preflight-stages, and any other publisher-added top-level keys
+    through _write_config without clobbering them.
+    """
+    return {k: v for k, v in config.items() if k not in _CANONICAL_CONFIG_KEYS}
+
+
 # Legacy v1 (tier:) and v2 (bare aspects:) → v3 (namespaced aspects:) migration.
 # v1: `tier: N` (kanon < 0.2)
 # v2: `aspects: {sdd: {...}, worktrees: {...}}` (kanon 0.2.x; bare aspect names)

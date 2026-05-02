@@ -366,7 +366,21 @@ def _validate_shape_against_contract(
         validate_resolution_against_shape,
     )
 
-    text = contract_path.read_text(encoding="utf-8")
+    # Per ADR-0041 + design/dialect-grammar: shape-validation findings accumulate
+    # rather than crashing the replay. A non-UTF-8 or unreadable contract file
+    # is a structured finding, not an uncaught exception that bubbles to the
+    # CLI as a stack trace.
+    try:
+        text = contract_path.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, OSError) as exc:
+        errors.append(
+            ReplayError(
+                code="invalid-contract-encoding",
+                contract=contract_id,
+                reason=f"contract file at {contract_path} is not readable as UTF-8: {exc}",
+            )
+        )
+        return
     frontmatter = _parse_contract_frontmatter(text)
     raw_shape = frontmatter.get("realization-shape")
     if raw_shape is None:

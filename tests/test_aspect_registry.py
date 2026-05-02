@@ -237,3 +237,35 @@ def test_unified_registry_includes_project_aspects(tmp_path: Path) -> None:
     registry = _load_aspect_registry(target)
     assert "project-myown" in registry["aspects"]
     assert "kanon-sdd" in registry["aspects"]  # kit aspects still present
+
+
+# --- Plan v040a1-release-prep PR 3: _aspect_path() must fail loudly when ---
+# --- kanon_reference is absent for kanon-* aspects. Per ADR-0044, the     ---
+# --- substrate must NOT silently fall back to a dead legacy path.         ---
+
+
+def test_aspect_path_fails_loudly_without_kanon_reference(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """When kanon_reference cannot be imported AND the entry lacks _source
+    (e.g., a synthesized fallback path), _aspect_path() for a kanon-* slug
+    MUST raise a helpful click.ClickException pointing the user at install
+    options — NOT silently return Path('src/kanon/kit/aspects/<slug>') which
+    no longer exists post-Phase-A.7."""
+    import sys
+
+    from kanon import _manifest as m
+
+    # Force the entry to lack _source so the synthesis fallback runs.
+    monkeypatch.setattr(m, "_aspect_entry", lambda a: {"path": "aspects/kanon-sdd"})
+    # Mask kanon_reference so `import kanon_reference` raises ImportError.
+    monkeypatch.setitem(sys.modules, "kanon_reference", None)
+
+    with pytest.raises(click.ClickException) as exc_info:
+        m._aspect_path("kanon-sdd")
+
+    msg = exc_info.value.message
+    assert "kanon_reference is not installed" in msg
+    assert "ADR-0044" in msg
+    assert "kanon-kit" in msg or "kanon-reference" in msg
+

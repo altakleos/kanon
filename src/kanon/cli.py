@@ -75,6 +75,7 @@ from kanon._scaffold import (
     _write_config,
     _write_tree_atomically,
 )
+from kanon._scaffold import _DEFAULT_V4_EXTRAS, _extras_from_config
 
 
 # Per ADR-0042 §1: the canonical exit-zero wording for `kanon verify`. Immutable
@@ -322,7 +323,7 @@ def init(
     # explicitly (e.g., via `kanon aspect set-config`).
     aspects_meta = _aspects_with_meta(aspects_to_enable)
 
-    _write_config(target, __version__, aspects_meta)
+    _write_config(target, __version__, aspects_meta, extra=_DEFAULT_V4_EXTRAS)
     clear_sentinel(target / ".kanon")
 
     aspect_summary = ", ".join(f"{a}={d}" for a, d in sorted(aspects_to_enable.items()))
@@ -863,7 +864,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
         if merged != existing:
             atomic_write_text(agents_path, merged)
 
-    _write_config(target, kit_version, aspects_meta)
+    _write_config(target, kit_version, aspects_meta, extra=_extras_from_config(config))
     clear_sentinel(target / ".kanon")
 
     # List aspect-specific files left on disk
@@ -1410,7 +1411,8 @@ def migrate(target: Path, dry_run: bool) -> None:
 
     changes: list[str] = []
 
-    if config.get("schema-version") == 4:
+    schema_version = config.get("schema-version")
+    if schema_version == 4:
         click.echo(
             json.dumps(
                 {
@@ -1423,6 +1425,17 @@ def migrate(target: Path, dry_run: bool) -> None:
             )
         )
         return
+
+    # Forward-version guard: a v5+ config is from a future kanon and this
+    # migrate verb does not know how to forward-port. Refuse loudly rather
+    # than silently mangling the file (e.g., adding v4 fields beneath a v5
+    # schema header — a hybrid that no reader understands).
+    if isinstance(schema_version, int) and schema_version > 4:
+        raise click.ClickException(
+            f"Unknown schema-version: {schema_version}. This kanon only knows how "
+            f"to migrate v3 → v4. To migrate forward from v{schema_version}, install "
+            f"a newer kanon-substrate."
+        )
 
     # v3 → v4 augmentation: prepend v4 fields.
     if "schema-version" not in config:

@@ -1204,3 +1204,50 @@ def test_banner_in_agents_md_marker_block(tmp_path: Path) -> None:
     assert begin_pos < banner_pos < end_pos, (
         "banner must sit between begin/end markers"
     )
+
+
+# --- Plan v040a1-release-prep PR 3: kanon init writes v4-shape configs;
+# config-mutating verbs preserve v4 fields across writes.
+
+
+def test_init_writes_v4_config_fields(tmp_path: Path) -> None:
+    """Per plan v040a1-release-prep PR 3: kanon init MUST produce a v4-shape
+    config (schema-version: 4 + kanon-dialect pin) so fresh installs are not
+    born requiring `kanon migrate`."""
+    runner = CliRunner()
+    target = tmp_path / "fresh"
+    result = runner.invoke(main, ["init", str(target), "--profile", "solo"])
+    assert result.exit_code == 0, result.output
+
+    config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text(encoding="utf-8"))
+    assert config["schema-version"] == 4, "init MUST stamp schema-version: 4"
+    assert config["kanon-dialect"] == "2026-05-01", (
+        "init MUST stamp the v1 dialect pin"
+    )
+
+
+def test_aspect_remove_preserves_v4_fields(tmp_path: Path) -> None:
+    """Per plan v040a1-release-prep PR 3: config-mutating verbs MUST round-trip
+    schema-version, kanon-dialect, and any other publisher-added top-level keys.
+    Without this, mutation silently strips the v4 commitment authored at init."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    runner.invoke(main, ["init", str(target), "--profile", "solo"])
+    # Add an extra top-level key (simulates a publisher-added field — the kit
+    # ignores unknown keys but they must round-trip across writes).
+    config_path = target / ".kanon" / "config.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["custom-publisher-field"] = {"opaque": "value"}
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    # Trigger a mutation. solo profile enables kanon-sdd; remove it.
+    r = runner.invoke(main, ["aspect", "remove", str(target), "kanon-sdd"])
+    assert r.exit_code == 0, r.output
+
+    after = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    assert after["schema-version"] == 4, "schema-version must survive mutation"
+    assert after["kanon-dialect"] == "2026-05-01", "kanon-dialect must survive mutation"
+    assert after["custom-publisher-field"] == {"opaque": "value"}, (
+        "publisher-added top-level keys must round-trip"
+    )
+
