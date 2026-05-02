@@ -126,3 +126,14 @@ def test_version_mismatch(tmp_path: Path) -> None:
     )
     rc, report = mod.check_wheel(whl, _TAG, changelog_path=changelog)
     assert rc == 3
+
+
+# --- Phase A.3: kit-globals deletion. kit.md was retired and is no longer ---
+# --- in the wheel; the gate must not require it. ---
+
+
+def test_kit_md_not_in_core_required_files() -> None:
+    """Per Phase A.3 (kit-globals deletion), kanon/kit/kit.md was retired.
+    The wheel-shape gate must not require it — otherwise the v0.4.0a1
+    release-preflight against the built wheel will hard-block the tag."""
+    assert "kanon/kit/kit.md" not in mod._CORE_REQUIRED_FILES

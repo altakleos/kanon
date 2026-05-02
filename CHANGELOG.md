@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.4.0a1] — 2026-05-02
+
+The "kit → protocol substrate" pivot. ADR-0045 de-opinionation transition (Phase 0 + Phase 0.5 + 9 Phase A steps + 3 deferred sub-plans) lands in one release. See ADR-0048 for the framing change. v0.3.x consumers cannot upgrade in place — use `kanon migrate v0.3 → v0.4` (deprecated-on-arrival; will be removed before v1.0).
+
+### Release-prep changes (plan v040a1-release-prep, PR 2 of 4)
+
+- **Version bump**: `kanon-kit` 0.3.1a2 → 0.4.0a1. Self-host `.kanon/config.yaml` `kit_version` updated to match.
+- **Wheel-shape gate fix**: `ci/check_package_contents.py` no longer requires `kanon/kit/kit.md` — that file was retired in Phase A.3. Without this fix, the v0.4.0a1 release-preflight against the built wheel would have hard-blocked the tag.
+- **ADR-0042 wiring**: `kanon verify --help` now embeds the canonical exit-zero wording (positive claim + 4 MUST-NOTs) per ADR-0042 §1 immutability. New `_ADR_0042_VERIFY_SCOPE` module-level constant is the single source of truth; passed to Click's `help=` parameter and surfaced in `_emit_verify_report` failure mode for direct citation. Test `tests/test_cli_verify.py::test_verify_help_carries_adr_0042_wording` asserts the canonical phrases appear verbatim.
+
 ### Changed
 
 - **Doc path audit**: `docs/contributing.md` updated to reference `src/kanon_reference/data/<aspect>/` (the new canonical aspect-data location after the substrate-content-move sub-plan) instead of the legacy `src/kanon/kit/aspects/<aspect>/`. 6 references updated covering the architecture overview, the module-tree section, and the "where does my change go?" decision matrix. Also updated: ci/ description (Phase A.8 retired scaffolded consumer-side scripts); new-aspect row now includes the LOADER stub at `src/kanon_reference/aspects/kanon_<local>.py` + the `pyproject.toml` entry-point declaration. ADRs and plan files retain historical paths (they describe state at acceptance time per ADR-immutability and plan-as-historical-record convention).

@@ -77,6 +77,31 @@ from kanon._scaffold import (
 )
 
 
+# Per ADR-0042 §1: the canonical exit-zero wording for `kanon verify`. Immutable
+# under ADR-0032; surfaced verbatim on `kanon verify --help` and cited in
+# verify-failure error messages. acme- publishers cite this constant by ID
+# when documenting what their bundles claim about consumer conformance.
+_ADR_0042_VERIFY_SCOPE = (
+    "Verify TARGET conforms to its declared aspects.\n"
+    "\n"
+    "Per ADR-0042: `kanon verify` exit-0 means: the consumer repo conforms to the\n"
+    "structural and behavioural contracts expressed in the discipline aspects the\n"
+    "consumer has explicitly enabled, at the depths the consumer has declared.\n"
+    "\n"
+    "It MUST NOT be interpreted as — and the substrate MUST NOT represent it as:\n"
+    "\n"
+    "- a signal that the consumer's repository follows good engineering practices\n"
+    "  beyond what the enabled aspects define;\n"
+    "- a correctness or quality endorsement of any prose, protocol, or code in\n"
+    "  the consumer's tree;\n"
+    "- a guarantee that the consumer's declared agent will comply with the\n"
+    "  enabled protocols at runtime — exit-0 is a static structural check, not a\n"
+    "  runtime behavioural guarantee;\n"
+    "- confirmation that resolution-replay invocations are semantically correct\n"
+    "  realizations of their contracts."
+)
+
+
 @click.group()
 @click.version_option(__version__, prog_name="kanon")
 def main() -> None:
@@ -395,10 +420,9 @@ def upgrade(target: Path, quiet_arg: bool) -> None:
         click.echo(f"Upgraded kanon project at {target}: {old_version} → {__version__}")
 
 
-@main.command()
+@main.command(help=_ADR_0042_VERIFY_SCOPE)
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def verify(target: Path) -> None:
-    """Verify TARGET conforms to its declared aspects."""
     from kanon._verify import (
         check_agents_md_markers,
         check_aspects_known,
@@ -552,6 +576,14 @@ def _emit_verify_report(
                 click.echo(f"    - {w}", err=True)
     else:
         click.echo(f"FAIL — {len(errors)} error(s) at {target}.", err=True)
+        # Per ADR-0042 §1: surface the exit-zero scope at failure time so
+        # consumers reading the error message see the canonical claim about
+        # what verify does (and does not) certify.
+        click.echo(
+            "  Note: exit-zero certifies conformance to enabled aspects only — "
+            "see ADR-0042 for the full claim.",
+            err=True,
+        )
 
 
 @main.command("release")

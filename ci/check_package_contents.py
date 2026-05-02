@@ -41,12 +41,15 @@ from typing import Any
 import yaml
 
 # Core files that must always be present regardless of aspects.
+# Per Phase A.3 (kit-globals deletion): kanon/kit/kit.md was retired and is
+# no longer in the wheel. Per Phase A.7 (substrate-content-move): aspect data
+# now lives at kanon_reference/data/<slug>/, but the substrate-level
+# kanon/kit/manifest.yaml + harnesses.yaml stay.
 _CORE_REQUIRED_FILES: tuple[str, ...] = (
     "kanon/__init__.py",
     "kanon/cli.py",
     "kanon/_atomic.py",
     "kanon/kit/manifest.yaml",
-    "kanon/kit/kit.md",
     "kanon/kit/harnesses.yaml",
 )
 
