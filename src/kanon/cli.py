@@ -98,26 +98,12 @@ def _emit_init_hints(
     aspects_meta: dict[str, dict[str, Any]],
     aspects_to_enable: dict[str, int],
 ) -> None:
-    """Print preflight readiness and grow-when-ready hints to stderr."""
-    testing_cfg = aspects_meta.get("kanon-testing", {}).get("config", {})
-    _pf_checks = [
-        ("lint", testing_cfg.get("lint_cmd", "")),
-        ("tests", testing_cfg.get("test_cmd", "")),
-        ("typecheck", testing_cfg.get("typecheck_cmd", "")),
-        ("format", testing_cfg.get("format_cmd", "")),
-    ]
-    armed = [(n, c) for n, c in _pf_checks if c]
-    unarmed = [n for n, c in _pf_checks if not c]
-    if armed:
-        click.echo("\n  Preflight readiness:")
-        for name, cmd in armed:
-            click.echo(f"    \u2713 {name:10s} \u2192 {cmd}")
-        for name in unarmed:
-            click.echo(
-                f"    \u2717 {name:10s} \u2192 not configured  "
-                f"(kanon aspect set-config . testing {name}_cmd=\"...\")"
-            )
+    """Print grow-when-ready hints to stderr.
 
+    Phase A.4 (per ADR-0048 de-opinionation): the "Preflight readiness" section
+    that read kanon-testing's runtime config-schema (test_cmd / lint_cmd /
+    typecheck_cmd / format_cmd) was retired along with the schema itself.
+    """
     grow_hints: list[str] = []
     if "kanon-sdd" in aspects_to_enable and aspects_to_enable["kanon-sdd"] < 2:
         grow_hints.append("    kanon aspect set-depth . sdd 2     # add specs")
@@ -306,20 +292,10 @@ def init(
     _write_tree_atomically(target, bundle, force=force)
     atomic_write_text(target / "AGENTS.md", agents_md_content)
 
-    # Auto-detect project type and pre-fill testing config.
+    # Phase A.4 (per ADR-0048 de-opinionation): _detect.py auto-detection
+    # of pytest/ruff/mypy/npm-test was retired. Consumers configure aspects
+    # explicitly (e.g., via `kanon aspect set-config`).
     aspects_meta = _aspects_with_meta(aspects_to_enable)
-    if "kanon-testing" in aspects_meta:
-        from kanon._detect import detect_tool_config
-        detected_tools = detect_tool_config(target)
-        if detected_tools:
-            existing_config: dict[str, Any] = aspects_meta["kanon-testing"].get("config", {})
-            for key, val in detected_tools.items():
-                existing_config.setdefault(key, val)
-            aspects_meta["kanon-testing"]["config"] = existing_config
-            click.echo(
-                f"  Detected project tools: {', '.join(detected_tools.keys())}",
-                err=True,
-            )
 
     _write_config(target, __version__, aspects_meta)
     clear_sentinel(target / ".kanon")

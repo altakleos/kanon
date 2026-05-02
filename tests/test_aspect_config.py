@@ -144,42 +144,12 @@ def test_parse_config_pair_rejects_bad_keys(raw: str) -> None:
 # --- INV-aspect-config-schema-validation (unknown keys, type mismatch) ---
 
 
-def test_set_config_rejects_unknown_key_against_schema(tmp_path: Path) -> None:
-    runner = CliRunner()
-    target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1", "testing:3")
-
-    result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "kanon-testing", "unknown_key=1"]
-    )
-    assert result.exit_code != 0
-    assert "Unknown config key 'unknown_key'" in result.output
-
-
-def test_set_config_rejects_type_mismatch_against_schema(tmp_path: Path) -> None:
-    runner = CliRunner()
-    target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1", "testing:3")
-
-    result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=hello"]
-    )
-    assert result.exit_code != 0
-    assert "Invalid type for config key 'coverage_floor'" in result.output
-    assert "expected integer" in result.output
-
-
-def test_set_config_rejects_bool_for_integer_schema(tmp_path: Path) -> None:
-    """`bool` is a subtype of `int` in Python; the validator must still reject it."""
-    runner = CliRunner()
-    target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1", "testing:3")
-
-    result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=true"]
-    )
-    assert result.exit_code != 0
-    assert "expected integer" in result.output
+# Phase A.4: 3 schema-validation tests (test_set_config_rejects_unknown_key_against_schema,
+# test_set_config_rejects_type_mismatch_against_schema, test_set_config_rejects_bool_for_integer_schema)
+# retired — they exercised the generic config-schema validator against kanon-testing's
+# (now-deleted) config-schema. The validation mechanism in `_aspect_config_schema` /
+# set-config remains; future coverage can be added via a project-aspect or `acme-`
+# publisher fixture that declares its own schema.
 
 
 # --- INV-aspect-config-schema-optional ---
@@ -271,13 +241,9 @@ def test_set_config_persists_sentinel_on_mid_write_failure(tmp_path: Path) -> No
 # --- INV-aspect-config-info-surfaces-schema ---
 
 
-def test_aspect_info_renders_schema_when_declared() -> None:
-    runner = CliRunner()
-    result = runner.invoke(main, ["aspect", "info", "kanon-testing"])
-    assert result.exit_code == 0, result.output
-    assert "Config keys:" in result.output
-    assert "coverage_floor" in result.output
-    assert "integer" in result.output
+# Phase A.4: test_aspect_info_renders_schema_when_declared retired — kanon-testing's
+# config-schema deleted. The `aspect info` rendering mechanism survives and renders
+# `Config keys:` for any aspect that does declare a schema.
 
 
 def test_aspect_info_omits_config_block_when_no_schema() -> None:
@@ -306,24 +272,8 @@ def test_set_config_errors_when_aspect_not_enabled(tmp_path: Path) -> None:
 # --- T9: testing aspect's config-schema round-trips against on-disk YAML ---
 
 
-def test_testing_config_schema_round_trips() -> None:
-    """`_aspect_config_schema('kanon-testing')` returns the same shape that's on disk."""
-    import kanon
-    from kanon._manifest import _aspect_config_schema
-
-    loaded = _aspect_config_schema("kanon-testing")
-    assert loaded is not None, "testing aspect should declare a config-schema"
-
-    manifest_path = (
-        Path(kanon.__file__).parent
-        / "kit" / "aspects" / "kanon-testing" / "manifest.yaml"
-    )
-    on_disk = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    assert loaded == on_disk["config-schema"]
-    # Spot-check the contract documented in the spec.
-    assert loaded["coverage_floor"]["type"] == "integer"
-    assert loaded["coverage_floor"]["default"] == 80
-    assert "description" in loaded["coverage_floor"]
+# Phase A.4: test_testing_config_schema_round_trips retired — kanon-testing's
+# config-schema deleted from both LOADER MANIFEST and YAML; round-trip is moot.
 
 
 # --- _manifest.py coverage: _discover_project_aspects error paths ---

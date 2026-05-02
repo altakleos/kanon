@@ -19,22 +19,17 @@ invariant_coverage:
     - tests/test_aspect_config.py::test_parse_config_pair_rejects_lists_and_mappings
   INV-aspect-config-key-format:
     - tests/test_aspect_config.py::test_parse_config_pair_rejects_bad_keys
-  INV-aspect-config-schema-validation:
-    - tests/test_aspect_config.py::test_set_config_rejects_unknown_key_against_schema
-    - tests/test_aspect_config.py::test_set_config_rejects_type_mismatch_against_schema
-    - tests/test_aspect_config.py::test_set_config_rejects_bool_for_integer_schema
+  INV-aspect-config-schema-validation: []  # Phase A.4: kanon-testing's config-schema retired (per ADR-0048); the validation mechanism survives in _aspect_config_schema. Tests deferred until a project-aspect or acme-* publisher fixture declares a schema.
   INV-aspect-config-schema-optional:
     - tests/test_aspect_config.py::test_set_config_accepts_any_key_when_no_schema
   INV-aspect-config-config-schema-shape:
     - tests/test_aspect_config.py::test_malformed_config_schema_rejected_at_manifest_load
     - tests/test_aspect_config.py::test_malformed_config_schema_invalid_type_rejected
     - tests/test_aspect_config.py::test_malformed_config_schema_unknown_field_rejected
-    - tests/test_aspect_config.py::test_testing_config_schema_round_trips
   INV-aspect-config-atomic-write:
     - tests/test_aspect_config.py::test_set_config_clears_sentinel_on_success
     - tests/test_aspect_config.py::test_set_config_persists_sentinel_on_mid_write_failure
   INV-aspect-config-info-surfaces-schema:
-    - tests/test_aspect_config.py::test_aspect_info_renders_schema_when_declared
     - tests/test_aspect_config.py::test_aspect_info_omits_config_block_when_no_schema
   INV-aspect-config-error-aspect-not-enabled:
     - tests/test_aspect_config.py::test_set_config_errors_when_aspect_not_enabled
