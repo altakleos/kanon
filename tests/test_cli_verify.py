@@ -451,3 +451,34 @@ def test_pending_recovery_warning_falls_back_for_unknown_op(tmp_path: Path) -> N
     (target / ".kanon" / ".pending").write_text("future-op\n", encoding="utf-8")
     result = runner.invoke(main, ["verify", str(target)])
     assert "Re-run 'kanon future-op'" in result.output
+
+
+# --- ADR-0042: canonical exit-zero wording on verify --help (immutable per ADR-0032). ---
+
+
+def test_verify_help_carries_adr_0042_wording() -> None:
+    """`kanon verify --help` MUST surface the canonical exit-zero claim
+    (positive claim + 4 MUST-NOTs) verbatim per ADR-0042 §1. The wording is
+    immutable post-acceptance; this test fails fast if any phrase drifts."""
+    runner = CliRunner()
+    result = runner.invoke(main, ["verify", "--help"])
+    assert result.exit_code == 0, result.output
+
+    # Click's help formatter reflows whitespace; we collapse to compare phrases.
+    flat = " ".join(result.output.split())
+
+    # ADR citation is present.
+    assert "ADR-0042" in flat
+
+    # The positive claim.
+    assert "exit-0 means" in flat
+    assert "structural and behavioural contracts" in flat
+    assert "discipline aspects the consumer has explicitly enabled" in flat
+    assert "depths the consumer has declared" in flat
+
+    # The four MUST-NOT phrases.
+    assert "MUST NOT" in flat
+    assert "good engineering practices" in flat
+    assert "correctness or quality endorsement" in flat
+    assert "runtime behavioural guarantee" in flat
+    assert "semantically correct" in flat
