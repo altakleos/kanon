@@ -5,6 +5,21 @@ date: 2026-04-28
 ---
 # Design: `kanon preflight` — staged local validation
 
+> **Phase A.4 supersession note** (2026-05-02, plan v040a1-followup): The
+> `${test_cmd}` / `${lint_cmd}` / `${typecheck_cmd}` / `${format_cmd}` config-
+> schema placeholders described in §"Aspect contributions" and §"Empty command
+> handling" below were retired in Phase A.4 (PR #66) per ADR-0048 de-opinionation
+> — the substrate no longer ships kanon-testing's `config-schema:` block, and
+> the kanon-testing aspect's depth-1 `preflight:` block (which referenced these
+> placeholders) was deleted with them. Today's preflight model: consumers wire
+> their preflight commands directly under `.kanon/config.yaml`'s
+> `preflight-stages:` block; aspect-contributed defaults survive only for
+> aspects that author them with concrete commands (e.g., kanon-deps depth-2's
+> push stage that runs `python ci/check_deps.py`). The pipeline + merge
+> semantics described in §"Check resolution pipeline" / §"Merge semantics" /
+> §"CLI implementation" are still accurate. The historical body below is
+> preserved for traceability of how preflight was conceived.
+
 ## Context
 
 `kanon verify` is structural-only (INV-9). Consumers need a single

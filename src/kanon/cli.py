@@ -129,13 +129,17 @@ def _emit_init_hints(
     """
     grow_hints: list[str] = []
     if "kanon-sdd" in aspects_to_enable and aspects_to_enable["kanon-sdd"] < 2:
-        grow_hints.append("    kanon aspect set-depth . sdd 2     # add specs")
+        # Per ADR-0045 Phase A.5: use canonical kanon-<local> names; the bare-name
+        # shorthand (`sdd`, `worktrees`, etc.) is deprecated and emits a stderr
+        # warning when used. Init hints recommending bare names would ironically
+        # walk users into the very warning the deprecation surfaces.
+        grow_hints.append("    kanon aspect set-depth . kanon-sdd 2     # add specs")
     if "kanon-testing" not in aspects_to_enable:
-        grow_hints.append("    kanon aspect add . testing          # add test discipline")
+        grow_hints.append("    kanon aspect add . kanon-testing         # add test discipline")
     if "kanon-security" not in aspects_to_enable:
-        grow_hints.append("    kanon aspect add . security         # add secure-by-default protocols")
+        grow_hints.append("    kanon aspect add . kanon-security        # add secure-by-default protocols")
     if "kanon-worktrees" not in aspects_to_enable:
-        grow_hints.append("    kanon aspect add . worktrees        # add worktree isolation")
+        grow_hints.append("    kanon aspect add . kanon-worktrees       # add worktree isolation")
     grow_hints.append("    kanon verify .                      # check project health")
     grow_section = "\n".join(grow_hints)
 

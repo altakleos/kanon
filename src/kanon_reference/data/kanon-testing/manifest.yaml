@@ -3,9 +3,9 @@ kanon-dialect: "2026-05-01"
 #
 # Depth 0: opt-out. Depth 1: test discipline. Depth 2: AC-first + TDD. Depth 3: automated enforcement.
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.
-# Paths under `files:` are relative to src/kanon/kit/aspects/testing/files/.
-# Paths under `protocols:` are relative to src/kanon/kit/aspects/testing/protocols/.
-# Names under `sections:` resolve to src/kanon/kit/aspects/testing/sections/<name>.md,
+# Paths under `files:` are relative to src/kanon_reference/data/kanon-testing/files/.
+# Paths under `protocols:` are relative to src/kanon_reference/data/kanon-testing/protocols/.
+# Names under `sections:` resolve to src/kanon_reference/data/kanon-testing/sections/<name>.md,
 # except the unprefixed `protocols-index` which is rendered dynamically by the CLI
 # as the cross-aspect unified catalog.
 #
