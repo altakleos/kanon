@@ -21,7 +21,7 @@ Checks:
 3. **Reference shape.** ``[project].name == "kanon-reference"``;
    ``version == "1.0.0a1"``; depends on ``kanon-substrate==1.0.0a1``;
    ``[project.entry-points."kanon.aspects"]`` declares the seven canonical
-   aspect IDs each pointing at ``kanon_reference.aspects.kanon_<id>:MANIFEST``
+   aspect IDs each pointing at ``kanon_reference.aspects.kanon_<id>.loader:MANIFEST``
    (Phase A.2.1).
 4. **Kit-meta shape.** ``[project].name == "kanon-kit"``;
    ``version == "1.0.0a1"``; depends on both ``kanon-substrate==1.0.0a1``
@@ -153,14 +153,16 @@ def _check_reference_entry_points(data: dict[str, Any], errors: list[str]) -> No
     """Phase A.2.1: validate the active ``kanon.aspects`` entry-points block.
 
     Each of the seven canonical aspect IDs must resolve to
-    ``kanon_reference.aspects.kanon_<id>:MANIFEST``.
+    ``kanon_reference.aspects.kanon_<id>.loader:MANIFEST``.
     """
     entry_points = (
         data.get("project", {}).get("entry-points", {}).get("kanon.aspects") or {}
     )
     for aspect_id in _REFERENCE_ASPECT_IDS:
+        # Per ADR-0049 Migration PR A: bundle collapse — loader is now a
+        # submodule under the bundle directory.
         expected_target = (
-            f"kanon_reference.aspects.{aspect_id.replace('-', '_')}:MANIFEST"
+            f"kanon_reference.aspects.{aspect_id.replace('-', '_')}.loader:MANIFEST"
         )
         actual = entry_points.get(aspect_id)
         if actual is None:

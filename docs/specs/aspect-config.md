@@ -62,7 +62,7 @@ The shape of `aspects.<name>.config` in the on-disk schema is unchanged; only th
 4. **Key format.** A `<key>` matches the regex `^[a-z][a-z0-9_-]*$` (lowercase, starts with letter, dashes and underscores allowed). Anything else is rejected with a single-line actionable error naming the offending key.
 
 <!-- INV-aspect-config-schema-validation -->
-5. **Schema validation against `config-schema:`.** When an aspect's sub-manifest declares a `config-schema:` mapping under `src/kanon_reference/data/<name>/manifest.yaml`, every key set via `set-config` or `--config` must appear in the schema, and the parsed YAML-scalar value must satisfy the schema's declared type. Unknown keys are rejected; type mismatches are rejected. Each rejection is a single-line error naming the key, the expected type (when applicable), and the offending value.
+5. **Schema validation against `config-schema:`.** When an aspect's sub-manifest declares a `config-schema:` mapping under `src/kanon_reference/aspects/kanon_<name>/manifest.yaml`, every key set via `set-config` or `--config` must appear in the schema, and the parsed YAML-scalar value must satisfy the schema's declared type. Unknown keys are rejected; type mismatches are rejected. Each rejection is a single-line error naming the key, the expected type (when applicable), and the offending value.
 
 <!-- INV-aspect-config-schema-optional -->
 6. **Schema is optional.** When an aspect's sub-manifest does *not* declare `config-schema:`, any well-formed `<key>=<value>` is accepted. Removing or relaxing a schema is non-destructive — existing keys in consumer `config.yaml` files are preserved verbatim.
@@ -85,7 +85,7 @@ The shape of `aspects.<name>.config` in the on-disk schema is unchanged; only th
 
 **Why a schema is optional.** Mandating a schema would block experimental aspects from shipping without one. Optional-but-validated lets aspect authors add a schema only when the aspect's config has stabilized. The schema's job is not to prevent every misuse — it's to catch typos and type mistakes that would otherwise sit silently in `config.yaml` until something downstream blew up.
 
-**Why the schema lives in the sub-manifest.** Aspects already own their per-depth manifests under `src/kanon_reference/data/<name>/manifest.yaml`. Adding a top-level `config-schema:` key keeps all aspect-author surface in one file. Verifying it costs one extra YAML parse during `_load_aspect_manifest` (already cached).
+**Why the schema lives in the sub-manifest.** Aspects already own their per-depth manifests under `src/kanon_reference/aspects/kanon_<name>/manifest.yaml`. Adding a top-level `config-schema:` key keeps all aspect-author surface in one file. Verifying it costs one extra YAML parse during `_load_aspect_manifest` (already cached).
 
 **Why `aspect set-config` is one key per call.** Multi-key `set-config <name> a=1 b=2 c=3` would either need shell-quoting gymnastics or a separate file-input mode. Single-key calls compose cleanly in shell scripts and agent transcripts. The `--config` repeatability on `aspect add` covers the bulk-set case.
 

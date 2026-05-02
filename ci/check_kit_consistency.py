@@ -76,15 +76,21 @@ def _load_top_manifest() -> tuple[dict[str, Any], str | None]:
 def _aspect_root(aspect: str, top: dict[str, Any]) -> Path | None:
     """Resolve an aspect's on-disk root directory.
 
-    Per substrate-content-move sub-plan: kanon-* aspect data lives under
-    src/kanon_reference/data/<slug>/. Falls back to legacy kit/ location.
+    Per ADR-0049 Migration PR A (bundle collapse): kanon-* aspect bundles
+    live under src/kanon_reference/aspects/kanon_<slug>/ (with underscore
+    in the dir name for Python import compatibility, while the aspect
+    SLUG remains kanon-<slug>). Falls back to the prior data/ layout, then
+    the legacy kit/ location.
     """
     entry = top["aspects"].get(aspect)
     if not entry:
         return None
-    kref_root = _REPO_ROOT / "src" / "kanon_reference" / "data" / aspect
-    if kref_root.is_dir():
-        return kref_root
+    bundle_root = _REPO_ROOT / "src" / "kanon_reference" / "aspects" / aspect.replace("-", "_")
+    if bundle_root.is_dir():
+        return bundle_root
+    kref_data_root = _REPO_ROOT / "src" / "kanon_reference" / "data" / aspect
+    if kref_data_root.is_dir():
+        return kref_data_root
     kit_root = _KIT / entry["path"]
     if kit_root.is_dir():
         return kit_root

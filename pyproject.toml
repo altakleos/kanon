@@ -35,13 +35,13 @@ kanon = "kanon.cli:main"
 # `kanon.aspects` per ADR-0040. The seven kanon-* aspects are shipped by
 # src/kanon_reference/ (Phase A.2.1). Mirror of packaging/reference/pyproject.toml.
 [project.entry-points."kanon.aspects"]
-kanon-deps = "kanon_reference.aspects.kanon_deps:MANIFEST"
-kanon-fidelity = "kanon_reference.aspects.kanon_fidelity:MANIFEST"
-kanon-release = "kanon_reference.aspects.kanon_release:MANIFEST"
-kanon-sdd = "kanon_reference.aspects.kanon_sdd:MANIFEST"
-kanon-security = "kanon_reference.aspects.kanon_security:MANIFEST"
-kanon-testing = "kanon_reference.aspects.kanon_testing:MANIFEST"
-kanon-worktrees = "kanon_reference.aspects.kanon_worktrees:MANIFEST"
+kanon-deps = "kanon_reference.aspects.kanon_deps.loader:MANIFEST"
+kanon-fidelity = "kanon_reference.aspects.kanon_fidelity.loader:MANIFEST"
+kanon-release = "kanon_reference.aspects.kanon_release.loader:MANIFEST"
+kanon-sdd = "kanon_reference.aspects.kanon_sdd.loader:MANIFEST"
+kanon-security = "kanon_reference.aspects.kanon_security.loader:MANIFEST"
+kanon-testing = "kanon_reference.aspects.kanon_testing.loader:MANIFEST"
+kanon-worktrees = "kanon_reference.aspects.kanon_worktrees.loader:MANIFEST"
 
 [tool.hatch.version]
 path = "src/kanon/__init__.py"

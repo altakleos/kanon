@@ -9,7 +9,7 @@ implements: docs/specs/aspects.md
 
 `docs/specs/aspects.md` defines *what* an aspect is and what the model guarantees. This design doc specifies *how* the kit's source layout, manifest shape, AGENTS.md rendering, CLI construction flow, and consistency enforcement change to realise that spec.
 
-The v0.1 kit (post-ADR-0011) has one implicit aspect (SDD) with tier membership in a single top-level `manifest.yaml`. This refactor promotes aspects to first-class citizens: each aspect owns a directory under `src/kanon_reference/data/<name>/` with its own sub-manifest; the top-level manifest becomes an aspect registry.
+The v0.1 kit (post-ADR-0011) has one implicit aspect (SDD) with tier membership in a single top-level `manifest.yaml`. This refactor promotes aspects to first-class citizens: each aspect owns a directory under `src/kanon_reference/aspects/kanon_<name>/` with its own sub-manifest; the top-level manifest becomes an aspect registry.
 
 Two shaping goals:
 
@@ -54,7 +54,7 @@ Compared to v0.1, this registry carries no per-tier content lists — those move
 ### Per-aspect sub-manifest shape
 
 ```yaml
-# src/kanon_reference/data/sdd/manifest.yaml
+# src/kanon_reference/aspects/kanon_sdd/manifest.yaml
 depth-0:
   files: [CLAUDE.md]
   protocols: []

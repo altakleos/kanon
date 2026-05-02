@@ -32,7 +32,7 @@ Three properties define the kit ([vision.md](foundations/vision.md)):
 - **Aspect-oriented.** Disciplines are opt-in *aspects* with depth dials. Enable only what you need; grow without ceremony you don't need yet.
 - **Self-hosting.** This repo is itself a kanon project at `kanon-sdd:3` + `kanon-worktrees:2` + others. `src/kanon/kit/` (the bundle the kit ships) and `docs/` (the kit's own SDD artifacts) share source-of-truth, CI-enforced. *If you can't use the kit to develop the kit, the kit isn't good enough.*
 
-That self-hosting twist is the most surprising thing about the codebase: **the same code that templates consumer repos templates this repo**. `src/kanon_reference/data/<aspect>/` and `docs/` + `.kanon/` look duplicative until you realize the former is the source-of-truth and the latter is an instance of it.
+That self-hosting twist is the most surprising thing about the codebase: **the same code that templates consumer repos templates this repo**. `src/kanon_reference/aspects/kanon_<local>/` and `docs/` + `.kanon/` look duplicative until you realize the former is the source-of-truth and the latter is an instance of it.
 
 For more: [`README.md`](../README.md) (install + quickstart), [`docs/foundations/vision.md`](foundations/vision.md) (the long form), [`docs/foundations/principles/README.md`](foundations/principles/README.md) (the *why*).
 
@@ -150,7 +150,7 @@ In-process kit validators in [`src/kanon/_validators/`](../src/kanon/_validators
 
 Other trees, one sentence each:
 
-- [`src/kanon_reference/data/`](../src/kanon_reference/data/) — the seven reference aspects' data (manifests, protocols, files); one directory per aspect (`kanon-<local>/`). Plus substrate-level files at [`src/kanon/kit/`](../src/kanon/kit/) (`manifest.yaml`, `agents-md-base.md`, `harnesses.yaml`).
+- [`src/kanon_reference/aspects/`](../src/kanon_reference/aspects/) — the seven reference aspects' data (manifests, protocols, files); one directory per aspect (`kanon-<local>/`). Plus substrate-level files at [`src/kanon/kit/`](../src/kanon/kit/) (`manifest.yaml`, `agents-md-base.md`, `harnesses.yaml`).
 - [`tests/`](../tests/) — 950+ tests; `test_e2e_*.py` deselected by default (`e2e` marker); `tests/ci/test_check_*.py` covers the CI scripts.
 - [`ci/`](../ci/) — standalone substrate-internal validators. (Per Phase A.8, the substrate no longer scaffolds CI scripts into consumer repos.)
 - [`docs/decisions/`](decisions/) — 39 ADRs; index in [`README.md`](decisions/README.md), category-tagged.
@@ -164,12 +164,12 @@ First: which aspect (if any) does this belong to? Then: do I need a spec, a plan
 | If your change is… | It belongs in… | Spec / plan needed? |
 |---|---|---|
 | New CLI command, flag, or subcommand | [`src/kanon/cli.py`](../src/kanon/cli.py) + spec amendment in [`docs/specs/cli.md`](specs/cli.md) | **Spec** + plan |
-| New protocol that gates agent behaviour | `src/kanon_reference/data/<aspect>/protocols/<name>.md` + sub-manifest entry | Plan |
-| Edit existing protocol prose | `src/kanon_reference/data/<aspect>/protocols/<name>.md` + recapture fidelity fixtures per [`fidelity-discipline`](../.kanon/protocols/kanon-fidelity/fidelity-discipline.md) | Plan |
-| New aspect | New dir `src/kanon_reference/data/kanon-<local>/` + LOADER stub at `src/kanon_reference/aspects/kanon_<local>.py` + entry-point in [`pyproject.toml`](../pyproject.toml) `[project.entry-points."kanon.aspects"]` + spec | **Spec** + ADR + plan |
+| New protocol that gates agent behaviour | `src/kanon_reference/aspects/kanon_<local>/protocols/<name>.md` + sub-manifest entry | Plan |
+| Edit existing protocol prose | `src/kanon_reference/aspects/kanon_<local>/protocols/<name>.md` + recapture fidelity fixtures per [`fidelity-discipline`](../.kanon/protocols/kanon-fidelity/fidelity-discipline.md) | Plan |
+| New aspect | New dir `src/kanon_reference/aspects/kanon-<local>/` + LOADER stub at `src/kanon_reference/aspects/kanon_<local>.py` + entry-point in [`pyproject.toml`](../pyproject.toml) `[project.entry-points."kanon.aspects"]` + spec | **Spec** + ADR + plan |
 | Add a CI check | `ci/check_<name>.py` + wire into [`.github/workflows/checks.yml`](../.github/workflows/checks.yml) + test in `tests/ci/` | Plan |
 | Add an in-process kit validator | `src/kanon/_validators/<name>.py` + register in target aspect's `manifest.yaml` `validators:` | Plan |
-| Bundle file change (template, scaffolded README) | `src/kanon_reference/data/<aspect>/files/...` or `src/kanon/kit/<file>` (substrate-level) | Plan |
+| Bundle file change (template, scaffolded README) | `src/kanon_reference/aspects/kanon_<local>/files/...` or `src/kanon/kit/<file>` (substrate-level) | Plan |
 | Bug fix (single function, single test) | Direct fix; no plan iff truly trivial per `plan-before-build` § 1 | Trivial path: no plan |
 | New ADR | `docs/decisions/NNNN-<slug>.md` + entry in [`docs/decisions/README.md`](decisions/README.md) | No plan; the ADR *is* the artifact |
 

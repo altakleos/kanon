@@ -3,9 +3,9 @@ kanon-dialect: "2026-05-01"
 #
 # Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + CI validator.
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N.
-# Paths under `files:` are relative to src/kanon_reference/data/kanon-deps/files/.
-# Paths under `protocols:` are relative to src/kanon_reference/data/kanon-deps/protocols/.
-# Names under `sections:` resolve to src/kanon_reference/data/kanon-deps/sections/<name>.md,
+# Paths under `files:` are relative to src/kanon_reference/aspects/kanon_deps/files/.
+# Paths under `protocols:` are relative to src/kanon_reference/aspects/kanon_deps/protocols/.
+# Names under `sections:` resolve to src/kanon_reference/aspects/kanon_deps/sections/<name>.md,
 # except the unprefixed `protocols-index` which is rendered dynamically by the CLI
 # as the cross-aspect unified catalog.
 #
