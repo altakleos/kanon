@@ -18,7 +18,10 @@ _TAG = "v1.0.0"
 _VERSION = "1.0.0"
 
 # Read the real manifests so synthetic wheels match the actual kit shape.
+# Per substrate-content-move sub-plan: kanon-* aspect data moved to
+# src/kanon_reference/data/<slug>/. Top manifest stays at kit/.
 _KIT = _REPO_ROOT / "src" / "kanon" / "kit"
+_REF_DATA = _REPO_ROOT / "src" / "kanon_reference" / "data"
 _TOP_MANIFEST_TEXT = (_KIT / "manifest.yaml").read_text(encoding="utf-8")
 _TOP_MANIFEST = yaml.safe_load(_TOP_MANIFEST_TEXT)
 
@@ -41,10 +44,11 @@ def _build_wheel(tmp_path: Path, *, extra_files: dict[str, str] | None = None,
         else:
             files[f] = ""
 
-    # Aspect files derived from manifests (same logic the script uses)
+    # Aspect files derived from manifests (same logic the script uses).
+    # Per substrate-content-move: aspect data at kanon_reference/data/<slug>/.
     for _name, entry in _TOP_MANIFEST["aspects"].items():
-        aspect_base = "kanon/kit/" + entry["path"]
-        sub_path = _KIT / entry["path"] / "manifest.yaml"
+        aspect_base = f"kanon_reference/data/{_name}"
+        sub_path = _REF_DATA / _name / "manifest.yaml"
         sub_text = sub_path.read_text(encoding="utf-8")
         sub = yaml.safe_load(sub_text)
 

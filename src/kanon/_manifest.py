@@ -521,7 +521,24 @@ def _load_aspect_registry(target: Path | None = None) -> dict[str, Any]:
     kit_aspects: dict[str, dict[str, Any]] = {}
     for name, entry in top["aspects"].items():
         e = dict(entry)
-        e["_source"] = str(_kit_root() / e["path"])
+        # Per substrate-content-move sub-plan: kanon-* aspect data lives at
+        # src/kanon_reference/data/<slug>/ (per ADR-0044 substrate-independence;
+        # substrate ships zero aspect data). Other slugs (acme-*) come from the
+        # entry-point publisher's distribution root via importlib.metadata.
+        if name.startswith(f"{_KANON_NAMESPACE}-"):
+            try:
+                import kanon_reference
+
+                e["_source"] = str(
+                    Path(kanon_reference.__file__).parent / "data" / name
+                )
+            except ImportError:
+                # kanon_reference not installed — fall back to legacy kit
+                # location for transitional consumers (will be empty after
+                # content move; substrate-independence gate enforces).
+                e["_source"] = str(_kit_root() / e["path"])
+        else:
+            e["_source"] = str(_kit_root() / e["path"])
         kit_aspects[name] = e
     if target is None:
         _set_project_aspects_overlay(None)
@@ -675,15 +692,26 @@ def _aspect_path(aspect: str) -> Path:
     """Return the on-disk directory holding *aspect*'s sub-manifest, files, etc.
 
     Project-aspect entries (set by :func:`_discover_project_aspects`) carry an
-    absolute ``_source``; kit-aspect entries carry only ``path`` (relative to
-    ``_kit_root()``). The fallback path keeps kit-only behaviour intact when
-    no overlay is active.
+    absolute ``_source``; kit-aspect entries set ``_source`` via
+    :func:`_load_aspect_registry`. When neither is available (callers that
+    look up via :func:`_aspect_entry` without first calling the registry),
+    the fallback synthesizes the path: per substrate-content-move sub-plan,
+    kanon-* aspects' data lives at src/kanon_reference/data/<slug>/ (per
+    ADR-0044 substrate-independence). Other slugs fall back to
+    ``_kit_root() / entry["path"]``.
     """
     entry = _aspect_entry(aspect)
     if entry is None:
         raise click.ClickException(f"Unknown aspect: {aspect!r}.")
     if "_source" in entry:
         return Path(entry["_source"])
+    if aspect.startswith(f"{_KANON_NAMESPACE}-"):
+        try:
+            import kanon_reference
+
+            return Path(kanon_reference.__file__).parent / "data" / aspect
+        except ImportError:
+            pass
     return _kit_root() / str(entry["path"])
 
 

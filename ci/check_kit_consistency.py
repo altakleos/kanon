@@ -73,13 +73,34 @@ def _load_top_manifest() -> tuple[dict[str, Any], str | None]:
     return data, None
 
 
+def _aspect_root(aspect: str, top: dict[str, Any]) -> Path | None:
+    """Resolve an aspect's on-disk root directory.
+
+    Per substrate-content-move sub-plan: kanon-* aspect data lives under
+    src/kanon_reference/data/<slug>/. Falls back to legacy kit/ location.
+    """
+    entry = top["aspects"].get(aspect)
+    if not entry:
+        return None
+    kref_root = _REPO_ROOT / "src" / "kanon_reference" / "data" / aspect
+    if kref_root.is_dir():
+        return kref_root
+    kit_root = _KIT / entry["path"]
+    if kit_root.is_dir():
+        return kit_root
+    return None
+
+
 def _load_aspect_manifest(
     aspect: str, top: dict[str, Any]
 ) -> tuple[dict[str, Any], str | None]:
     entry = top["aspects"].get(aspect)
     if not entry:
         return {}, f"unknown aspect: {aspect}"
-    sub_path = _KIT / entry["path"] / "manifest.yaml"
+    root = _aspect_root(aspect, top)
+    if root is None:
+        return {}, f"missing aspect dir for {aspect}"
+    sub_path = root / "manifest.yaml"
     if not sub_path.is_file():
         return {}, f"missing aspect sub-manifest: {sub_path.relative_to(_REPO_ROOT)}"
     try:
@@ -108,7 +129,7 @@ def _check_byte_equality(errors: list[str]) -> None:
         for entry in sub.get("byte-equality", []) or []:
             kit_rel = entry["kit"]
             repo_rel = entry["repo"]
-            aspect_path = _KIT / top["aspects"][aspect]["path"] / "files" / kit_rel
+            aspect_path = _aspect_root(aspect, top) / "files" / kit_rel  # type: ignore[operator]
             repo_path = _REPO_ROOT / repo_rel
             if not aspect_path.is_file():
                 errors.append(f"missing kit file: {aspect_path.relative_to(_REPO_ROOT)}")
@@ -123,7 +144,9 @@ def _check_byte_equality(errors: list[str]) -> None:
                 )
     # Per-aspect protocols byte-equality
     for aspect in top["aspects"]:
-        aspect_root = _KIT / top["aspects"][aspect]["path"]
+        aspect_root = _aspect_root(aspect, top)
+        if aspect_root is None:
+            continue
         protocols_dir = aspect_root / "protocols"
         repo_protocols_dir = _REPO_ROOT / ".kanon" / "protocols" / aspect
         if not protocols_dir.is_dir():
@@ -182,11 +205,14 @@ def _check_registry_and_manifests(errors: list[str]) -> None:
                 f"manifest.yaml: aspects.{name}.depth-range must be [min, max]"
             )
             continue
-        aspect_root = _KIT / entry["path"]
-        if not aspect_root.is_dir():
+        # Per substrate-content-move sub-plan: kanon-* aspect data lives
+        # under src/kanon_reference/data/<slug>/ (per ADR-0044 substrate-
+        # independence). Check both locations; either suffices.
+        aspect_root = _aspect_root(name, top)
+        if aspect_root is None:
             errors.append(
                 f"manifest.yaml: aspects.{name}.path: {entry['path']} "
-                f"does not exist under kit/"
+                f"does not exist under kit/ nor src/kanon_reference/data/"
             )
             continue
         sub, err2 = _load_aspect_manifest(name, top)
@@ -250,7 +276,10 @@ def _check_agents_md_markers(errors: list[str]) -> None:
     aspect_names = set(top["aspects"])
     for name in aspect_names:
         entry = top["aspects"][name]
-        agents_md_dir = _KIT / entry["path"] / "agents-md"
+        root = _aspect_root(name, top)
+        if root is None:
+            continue
+        agents_md_dir = root / "agents-md"
         if not agents_md_dir.is_dir():
             continue
         for agents_md in sorted(agents_md_dir.glob("depth-*.md")):

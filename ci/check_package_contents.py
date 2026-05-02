@@ -111,7 +111,9 @@ def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list
     for name, entry in top["aspects"].items():
         if not isinstance(entry, dict):
             continue
-        aspect_base = "kanon/kit/" + entry.get("path", f"aspects/{name}")
+        # Per substrate-content-move sub-plan: kanon-* aspect data lives at
+        # kanon_reference/data/<slug>/ in the wheel (was: kanon/kit/aspects/<slug>/).
+        aspect_base = f"kanon_reference/data/{name}"
         required_files.append(f"{aspect_base}/manifest.yaml")
         required_dirs.append(f"{aspect_base}/")
         # Load sub-manifest to get depth-specific files, protocols, sections
