@@ -6,8 +6,11 @@ YAML manifests with no side effects except caching.
 
 from __future__ import annotations
 
+import importlib.metadata
+import os
 import re
 import string
+import warnings
 from collections.abc import Iterator
 from datetime import datetime, timezone
 from functools import cache, lru_cache
@@ -196,45 +199,150 @@ def _validate_provides_field(path: Path, name: str, provides: Any) -> None:
             )
 
 
-@lru_cache(maxsize=1)
-def _load_top_manifest() -> dict[str, Any]:
-    """Load the aspect registry at src/kanon/kit/manifest.yaml."""
-    path = _kit_root() / "manifest.yaml"
-    if not path.is_file():
-        raise click.ClickException(f"kit manifest missing: {path}")
-    data: dict[str, Any] = _load_yaml(path)
-    aspects = data.get("aspects")
-    if not isinstance(aspects, dict) or not aspects:
-        raise click.ClickException(f"{path}: missing or empty 'aspects' mapping.")
-    for name, entry in aspects.items():
-        # Kit-side aspect names must use the `kanon-` namespace per ADR-0028.
-        # Project-side aspects (Phase 3) live under `.kanon/aspects/project-*/`
-        # and are validated by `_discover_project_aspects`, not here.
-        if not isinstance(name, str) or not name.startswith(f"{_KANON_NAMESPACE}-") \
-                or not _ASPECT_NAME_RE.match(name):
+def _validate_namespace_ownership(slug: str, dist: Any) -> None:
+    """Per ADR-0040 §5: an entry-point may only register aspect slugs in its
+    distribution's namespace.
+
+    - ``kanon-*`` slugs require dist name ``kanon-reference`` or ``kanon-kit``
+      (the latter is transitional while the top-level pyproject ships both).
+    - ``project-*`` slugs are forbidden via entry-points; project-aspects live
+      under ``<target>/.kanon/aspects/`` per ADR-0028.
+    - ``acme-*`` and unknown namespaces emit a warning (no hard fail until the
+      grammar is fully ratified).
+    """
+    if not _ASPECT_NAME_RE.match(slug):
+        # Bare names and unknown namespaces — warn rather than fail.
+        warnings.warn(
+            f"entry-point aspect slug {slug!r} does not match canonical grammar "
+            f"`kanon-<local>` or `project-<local>`; loading anyway.",
+            stacklevel=3,
+        )
+        return
+    namespace, _ = _split_aspect_name(slug)
+    dist_name = dist.metadata["name"] if dist is not None else None
+    if namespace == _KANON_NAMESPACE:
+        if dist_name not in ("kanon-reference", "kanon-kit"):
             raise click.ClickException(
-                f"{path}: aspects.{name!r}: kit-side aspect names must match "
-                f"`^kanon-[a-z][a-z0-9-]*$` (ADR-0028 namespace ownership)."
+                f"entry-point {slug!r} uses 'kanon-' namespace but is registered "
+                f"by distribution {dist_name!r}, not 'kanon-reference' (ADR-0040)."
             )
-        if not isinstance(entry, dict):
-            raise click.ClickException(f"{path}: aspects.{name} must be a mapping.")
-        for field in ("path", "stability", "depth-range", "default-depth"):
+    elif namespace == _PROJECT_NAMESPACE:
+        raise click.ClickException(
+            f"entry-point {slug!r} uses 'project-' namespace; project-aspects "
+            f"must be declared in <target>/.kanon/aspects/, not via entry-points "
+            f"(ADR-0028, ADR-0040)."
+        )
+
+
+def _load_aspects_from_entry_points() -> dict[str, dict[str, Any]]:
+    """Read the seven (or more) aspects registered under group ``kanon.aspects``.
+
+    Each MANIFEST is expected to be a dict containing the registry fields
+    (``stability``, ``depth-range``, ``default-depth``, ``description``,
+    ``requires``, ``provides``, optional ``suggests``) plus the content fields
+    from the per-aspect sub-manifest (``files``, ``depth-N``, etc.).
+
+    The substrate synthesizes a ``path`` field for transitional callers
+    (``_scaffold.py`` reads ``entry["path"]``); after Phase A.3 moves aspect
+    data under each publisher, the synthesized ``path`` is removed.
+
+    Test overlay: when ``KANON_TEST_OVERLAY_PATH`` is set, the loader skips
+    real entry-points and returns aspects discovered under the overlay path
+    (used by tests to inject synthetic aspects without touching pip install).
+    """
+    overlay_path = os.environ.get("KANON_TEST_OVERLAY_PATH")
+    if overlay_path:
+        return _load_overlay_aspects(Path(overlay_path))
+
+    aspects: dict[str, dict[str, Any]] = {}
+    for ep in importlib.metadata.entry_points(group="kanon.aspects"):
+        _validate_namespace_ownership(ep.name, ep.dist)
+        try:
+            manifest = ep.load()
+        except Exception as exc:
+            raise click.ClickException(
+                f"entry-point {ep.name!r}: failed to load MANIFEST — {exc}"
+            ) from exc
+        if not isinstance(manifest, dict):
+            raise click.ClickException(
+                f"entry-point {ep.name!r}: MANIFEST must be a dict "
+                f"(got {type(manifest).__name__})."
+            )
+        entry = dict(manifest)
+        # Synthesized backward-compat `path` field — A.3 retires this when
+        # aspect data moves under the publisher's filesystem location.
+        if "path" not in entry and ep.name.startswith(f"{_KANON_NAMESPACE}-"):
+            entry["path"] = f"aspects/{ep.name}"
+        # Validate required registry fields surface from the LOADER MANIFEST.
+        for field in ("stability", "depth-range", "default-depth"):
             if field not in entry:
                 raise click.ClickException(
-                    f"{path}: aspects.{name}: missing required field {field!r}."
+                    f"entry-point {ep.name!r}: MANIFEST missing required "
+                    f"registry field {field!r}."
                 )
         if entry["stability"] not in {"experimental", "stable", "deprecated"}:
             raise click.ClickException(
-                f"{path}: aspects.{name}: invalid stability {entry['stability']!r}."
+                f"entry-point {ep.name!r}: invalid stability "
+                f"{entry['stability']!r}."
             )
         rng = entry["depth-range"]
         if not (isinstance(rng, list) and len(rng) == 2):
             raise click.ClickException(
-                f"{path}: aspects.{name}.depth-range must be [min, max]."
+                f"entry-point {ep.name!r}: depth-range must be [min, max]."
             )
         if "provides" in entry:
-            _validate_provides_field(path, name, entry["provides"])
-    return data
+            _validate_provides_field(
+                Path(f"<entry-point {ep.name}>"), ep.name, entry["provides"]
+            )
+        if ep.name in aspects:
+            raise click.ClickException(
+                f"entry-point {ep.name!r}: duplicate registration."
+            )
+        aspects[ep.name] = entry
+    return aspects
+
+
+def _load_overlay_aspects(overlay_root: Path) -> dict[str, dict[str, Any]]:
+    """Read aspects from a test-overlay directory.
+
+    Each subdirectory of *overlay_root* whose name matches the canonical aspect
+    grammar carries a ``manifest.yaml`` with the unified registry+content shape.
+    Used by tests to substitute the entry-point-sourced registry without
+    requiring pip-installed wheels.
+    """
+    aspects: dict[str, dict[str, Any]] = {}
+    if not overlay_root.is_dir():
+        return aspects
+    for sub in sorted(overlay_root.iterdir()):
+        if not sub.is_dir():
+            continue
+        name = sub.name
+        if not _ASPECT_NAME_RE.match(name):
+            continue
+        manifest_path = sub / "manifest.yaml"
+        if not manifest_path.is_file():
+            continue
+        manifest = _load_yaml(manifest_path)
+        entry = dict(manifest)
+        if "path" not in entry:
+            entry["path"] = f"aspects/{name}"
+        aspects[name] = entry
+    return aspects
+
+
+@lru_cache(maxsize=1)
+def _load_top_manifest() -> dict[str, Any]:
+    """Load the substrate's top-level manifest.
+
+    Phase A.2.2: ``aspects:`` are sourced from Python entry-points (group
+    ``kanon.aspects``) per ADR-0040, NOT from the kit YAML's ``aspects:``
+    block. The kit YAML at ``src/kanon/kit/manifest.yaml`` is still read for
+    kit-globals (``defaults:``, ``files:``); Phase A.3 retires those.
+    """
+    path = _kit_root() / "manifest.yaml"
+    yaml_data: dict[str, Any] = _load_yaml(path) if path.is_file() else {}
+    yaml_data["aspects"] = _load_aspects_from_entry_points()
+    return yaml_data
 
 
 def _aspect_provides(aspect: str) -> list[str]:
