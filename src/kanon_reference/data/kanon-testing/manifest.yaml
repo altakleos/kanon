@@ -1,0 +1,46 @@
+# Per-aspect sub-manifest for `testing` — test discipline for LLM-agent-driven repos.
+#
+# Depth 0: opt-out. Depth 1: test discipline. Depth 2: AC-first + TDD. Depth 3: automated enforcement.
+# Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.
+# Paths under `files:` are relative to src/kanon/kit/aspects/testing/files/.
+# Paths under `protocols:` are relative to src/kanon/kit/aspects/testing/protocols/.
+# Names under `sections:` resolve to src/kanon/kit/aspects/testing/sections/<name>.md,
+# except the unprefixed `protocols-index` which is rendered dynamically by the CLI
+# as the cross-aspect unified catalog.
+#
+# See docs/specs/testing.md and ADR-0021.
+
+files: []
+depth-0:
+  files: []
+  protocols: []
+  sections: []
+
+depth-1:
+  files: []
+  protocols:
+    - test-discipline.md
+    - error-diagnosis.md
+  sections:
+    - protocols-index
+  # Phase A.4: preflight block retired (per ADR-0048 de-opinionation;
+  # depended on removed config-schema variables ${test_cmd}, ${lint_cmd}, etc.).
+
+depth-2:
+  files: []
+  protocols:
+    - ac-first-tdd.md
+  sections: []
+  validators:
+    - kanon._validators.test_import_check
+
+depth-3:
+  # Phase A.8: scaffolded ci/check_test_quality.py retired
+  # (per ADR-0048 de-opinionation).
+  files: []
+  protocols: []
+  sections: []
+
+# Phase A.4: config-schema retired (per ADR-0048 de-opinionation; substrate
+# no longer reads test_cmd / lint_cmd / typecheck_cmd / format_cmd /
+# coverage_floor from kanon-testing's user-config block).

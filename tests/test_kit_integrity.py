@@ -33,7 +33,8 @@ def _load_sdd_manifest() -> dict:
 
 def test_kit_root_has_expected_top_level_entries() -> None:
     # Phase A.3: kit.md retired per ADR-0048 de-opinionation.
-    for entry in ("manifest.yaml", "harnesses.yaml", "aspects"):
+    # Sub-content-move: aspects/ moved to src/kanon_reference/data/.
+    for entry in ("manifest.yaml", "harnesses.yaml"):
         assert (_KIT / entry).exists(), f"missing kit entry: {entry}"
 
 
