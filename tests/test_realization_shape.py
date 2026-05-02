@@ -321,3 +321,28 @@ def test_shape_validation_error_default_code_is_shape_violation() -> None:
     assert err.code == "shape-violation"
     assert err.subcode == "invalid-verb"
 
+
+# --- Cardinality lock per plan v040a1-followup AC5: V1_DIALECT_VERBS must
+# stay at 9 verbs. Accidental drops fail fast.
+
+
+def test_v1_dialect_verbs_count_is_nine() -> None:
+    """v1 dialect (kanon-dialect: 2026-05-01) ships exactly 9 verbs per the
+    enumeration in docs/specs/dialect-grammar.md / docs/design/dialect-grammar.md.
+    Adding a verb requires an ADR-driven dialect supersession (per ADR-0041);
+    silently dropping one would break every contract that pinned the v1
+    dialect, so this cardinality lock is a guardrail."""
+    from kanon._realization_shape import V1_DIALECT_VERBS
+
+    assert len(V1_DIALECT_VERBS) == 9, (
+        f"V1_DIALECT_VERBS has {len(V1_DIALECT_VERBS)} entries; expected 9. "
+        f"Current set: {sorted(V1_DIALECT_VERBS)!r}. If this is intentional, "
+        "the change requires an ADR-driven dialect supersession per ADR-0041."
+    )
+    # Spot-check the canonical 9 are present.
+    assert frozenset({
+        "lint", "test", "typecheck", "format",
+        "scan", "audit", "sign", "publish", "report",
+    }) == V1_DIALECT_VERBS
+
+

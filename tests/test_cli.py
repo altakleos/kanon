@@ -1251,3 +1251,38 @@ def test_aspect_remove_preserves_v4_fields(tmp_path: Path) -> None:
         "publisher-added top-level keys must round-trip"
     )
 
+
+# --- Plan v040a1-followup AC7: kanon init grow-hints use canonical
+# kanon-<local> names; bare names trigger Phase A.5 deprecation warnings,
+# so the hints must not walk users into them.
+
+
+def test_init_hints_use_canonical_kanon_names(tmp_path: Path) -> None:
+    """Init grow-hints must reference aspects via the canonical kanon-<local>
+    form. Bare-name shorthand (`testing`, `security`, `worktrees`, `sdd`) is
+    deprecated per Phase A.5 / ADR-0045 and emits stderr warnings — recommending
+    them in init hints would walk every new user straight into the warning."""
+    runner = CliRunner()
+    target = tmp_path / "scratch"
+    # --profile solo enables only kanon-sdd; the testing/security/worktrees
+    # hints (which suggest growing) all fire.
+    result = runner.invoke(main, ["init", str(target), "--profile", "solo"])
+    assert result.exit_code == 0, result.output
+
+    # Positive: the canonical forms appear.
+    assert "kanon aspect add . kanon-testing" in result.output
+    assert "kanon aspect add . kanon-security" in result.output
+    assert "kanon aspect add . kanon-worktrees" in result.output
+    assert "kanon aspect set-depth . kanon-sdd " in result.output
+
+    # Negative: the deprecated bare forms do NOT appear.
+    # Match `add . <bare> ` (with surrounding spaces so we don't trip on `kanon-testing`).
+    for bare in ("testing", "security", "worktrees", "sdd"):
+        assert f"add . {bare} " not in result.output, (
+            f"init hint suggests deprecated bare-name aspect {bare!r}; "
+            "use the canonical kanon-<local> form."
+        )
+        assert f"set-depth . {bare} " not in result.output, (
+            f"init hint suggests deprecated bare-name aspect {bare!r}."
+        )
+

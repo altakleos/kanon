@@ -15,9 +15,12 @@ The remaining four invariants (realization-shape-required, shape-validates-resol
 composition-acyclic, replaces-substitution) are enforced by the realization-shape
 and composition modules (Phase A.6c and A.6d).
 
-Wiring into `_manifest.py` load-time validation lands in a later sub-plan, coupled
-with adding `kanon-dialect:` to actual aspect manifests (currently they don't carry it).
-The validator is exercised via direct tests in `tests/test_dialects.py`.
+Wired into `_manifest.py:_load_aspects_from_entry_points` (PR #78); every
+entry-point-discovered aspect's `kanon-dialect:` pin is validated at substrate
+startup. All seven reference aspects carry `kanon-dialect: "2026-05-01"`. The
+validator surfaces typed `DialectPinError` (subclass of `click.ClickException`)
+carrying spec-aligned `code:` ∈ `{missing-dialect-pin, unknown-dialect}` per
+docs/specs/dialect-grammar.md INV 1-2.
 """
 
 from __future__ import annotations

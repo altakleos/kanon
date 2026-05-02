@@ -7,10 +7,14 @@ INV-dialect-grammar-replaces-substitution).
 
 When multiple contracts target the same ``surface:``, the kernel orders them via
 topological sort over ``before:`` / ``after:`` edges. ``replaces:`` substitutes
-one contract for another. Cycles fail loudly with explicit cycle-path reporting.
+one contract for another. Cycles fail loudly with explicit cycle-path reporting:
+``before/after`` cycles emit ``code: composition-cycle`` (INV 5);
+``replaces:`` cycles emit ``code: replacement-cycle`` (INV 6, distinct so
+publishers can pattern-match the two failure modes independently).
 
-Wiring into substrate runtime (composition at replay time) deferred — coupled
-with the absence of real contracts. The algebra is exercised via direct tests.
+Surfaced via the ``kanon contracts validate`` CLI verb (per Phase A.7); composition
+at replay time is deferred until reference aspects ship contracts that use the
+``surface:`` field. The algebra is also exercised via direct tests.
 """
 
 from __future__ import annotations

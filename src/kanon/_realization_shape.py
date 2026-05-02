@@ -7,9 +7,12 @@ INV-dialect-grammar-shape-validates-resolutions).
 
 A contract's `realization-shape:` frontmatter declares which verbs, evidence-kinds,
 and stages a valid resolution may cite. The substrate validates resolutions against
-the contract's declared shape at replay time. A.6c authors the parser + validator;
-wiring into `_resolutions.py` replay path lands in a later sub-plan, coupled with
-adding `realization-shape:` to actual contracts (none exist today).
+the contract's declared shape at replay time. Wired into `_resolutions._replay_inner`
+via `_validate_shape_against_contract` (PR #77); shape findings surface as
+`ReplayError(code="shape-violation", ...)` with the historical impl-specific kind
+preserved in `subcode:` ∈ `{invalid-verb, invalid-evidence-kind, invalid-stage,
+unknown-key}`. Skip-when-absent: contracts without a `realization-shape:` block
+are exempt (today's reference contracts don't declare one).
 """
 
 from __future__ import annotations

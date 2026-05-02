@@ -1,6 +1,6 @@
 """kanon-sdd MANIFEST stub — Phase A.2.1 LOADER for the substrate's entry-point discovery.
 
-Mirrors src/kanon/kit/aspects/kanon-sdd/manifest.yaml byte-for-byte in semantic content
+Mirrors src/kanon_reference/data/kanon-sdd/manifest.yaml byte-for-byte in semantic content
 (modulo YAML→Python conversion). The duplication is short-lived: Phase A.3 deletes the
 YAML and the LOADER stubs become the canonical shape.
 """

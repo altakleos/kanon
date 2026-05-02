@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.4.0a2] — 2026-05-02
+
+Paper-cuts sweep deferred from `v040a1-release-prep` (plan: `v040a1-followup`).
+
+### Changed
+
+- **Stale module docstrings refreshed**: `_dialects.py`, `_realization_shape.py`, `_composition.py` headers no longer say "Wiring deferred" / "lands in a later sub-plan" — wiring landed in PRs #77, #78, and `kanon contracts validate` (Phase A.7). Docstrings now describe the post-wiring reality and link the spec-aligned error codes.
+- **Reference-manifest header comments updated** (7 files): `src/kanon_reference/data/<aspect>/manifest.yaml` headers now cite the correct `src/kanon_reference/data/<aspect>/files/` path. The corresponding LOADER docstrings at `src/kanon_reference/aspects/kanon_<aspect>.py` updated to match.
+- **`docs/design/preflight.md`** gains a Phase A.4 supersession note explaining that the `${test_cmd}` / `${lint_cmd}` / `${typecheck_cmd}` / `${format_cmd}` config-schema placeholders described in the body were retired in PR #66. The historical body is preserved for traceability of how preflight was conceived.
+- **Spec/design path drift swept** (4 specs + 2 designs): `docs/specs/aspects.md`, `docs/specs/aspect-config.md`, `docs/specs/project-aspects.md`, `docs/specs/spec-graph-rename.md`, `docs/design/aspect-model.md`, `docs/design/kernel-reference-interface.md` updated to reference `src/kanon_reference/data/<aspect>/` (the post-Phase-A.7 canonical location). `docs/design/distribution-boundary.md` retains `src/kanon/kit/aspects/**` references because they describe the substrate's own wheel-exclude pattern (defensive against re-introduction) — that is correct as-is.
+- **`cli.py:_emit_init_hints` uses canonical `kanon-<local>` aspect names**: the grow-hints emitted by `kanon init` previously suggested `kanon aspect add . testing` / `kanon aspect set-depth . sdd 2` (bare-name forms deprecated by Phase A.5). New hints recommend `kanon aspect add . kanon-testing` etc., so new users aren't walked straight into the deprecation warning the substrate now surfaces.
+
+### Added
+
+- **`tests/test_realization_shape.py::test_v1_dialect_verbs_count_is_nine`**: cardinality lock on `V1_DIALECT_VERBS` (the v1 dialect's verb enumeration). Adding a verb requires an ADR-driven dialect supersession per ADR-0041; silently dropping one would break every contract pinned to v1, so this guardrail fails fast on accidental loss.
+- **`tests/test_cli.py::test_init_hints_use_canonical_kanon_names`**: positive + negative assertions that `kanon init` grow-hints use canonical `kanon-<local>` aspect references.
+
+### Notes
+
+- AC6 (coverage gap on `invalid-realization-shape` error path) was already met by tests added in PR 4 of `v040a1-release-prep` — no new tests needed.
+- Items 8 (CHANGELOG line-ref drift convention) and 9 (bare-name removal-horizon ADR) from the critic-review minor list remain deferred to a future cycle.
+
 ## [0.4.0a1] — 2026-05-02
 
 The "kit → protocol substrate" pivot. ADR-0045 de-opinionation transition (Phase 0 + Phase 0.5 + 9 Phase A steps + 3 deferred sub-plans + 4 release-prep PRs from plan `v040a1-release-prep`) lands in one release. See ADR-0048 for the framing change. v0.3.x consumers cannot upgrade in place — use `kanon migrate v0.3 → v0.4` (deprecated-on-arrival; will be removed before v1.0).

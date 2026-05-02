@@ -52,7 +52,7 @@ The kit has seven slug namespaces. The rename command treats each as a distinct 
 | `principle` | `docs/foundations/principles/<slug>.md` | `P-prose-is-code` | spec `realizes:`, prose mentions in plans |
 | `persona` | `docs/foundations/personas/<slug>.md` | `solo-engineer` | spec `stressed_by:`, persona `stresses:` |
 | `spec` | `docs/specs/<slug>.md` (filename stem) | `aspect-config` | plan `serves:` (in prose / frontmatter), `INV-<spec>-*` anchor prefixes |
-| `aspect` | `src/kanon/kit/manifest.yaml` aspects key + `src/kanon/kit/aspects/<name>/` directory | `worktrees` | `requires:` depth-predicates, `provides:` capability owner aspect, AGENTS.md `<!-- kanon:begin:<aspect>/* -->` markers, consumer `.kanon/config.yaml` `aspects.<name>:` |
+| `aspect` | `src/kanon/kit/manifest.yaml` aspects key + `src/kanon_reference/data/<name>/` directory | `worktrees` | `requires:` depth-predicates, `provides:` capability owner aspect, AGENTS.md `<!-- kanon:begin:<aspect>/* -->` markers, consumer `.kanon/config.yaml` `aspects.<name>:` |
 | `capability` | top-manifest `provides:` lists | `planning-discipline` | `requires:` capability-presence predicates |
 | `inv-anchor` | `<!-- INV-<spec>-<short-name> -->` HTML comments and matching `invariant_coverage:` map keys | `INV-aspect-config-yaml-scalar-parsing` | spec body anchors, `invariant_coverage:` keys |
 | `adr` | `docs/decisions/<NNNN>-<slug>.md` filename | `0024-crash-consistent-atomicity` | prose mentions in specs/ADRs/CHANGELOG; `supersedes:`/`superseded-by:` frontmatter once those edges are formally typed |
@@ -77,7 +77,7 @@ The kit has seven slug namespaces. The rename command treats each as a distinct 
 4. **Postcondition: the kit's CI fleet passes.** After a successful rename, the following all return exit 0 against the renamed repo: `python ci/check_foundations.py`, `python ci/check_invariant_ids.py`, `python ci/check_verified_by.py`, `python ci/check_links.py`, `python ci/check_kit_consistency.py`, `kanon verify .`. The tool runs this fleet as a self-check before clearing its sentinel; if any check fails, the sentinel persists and the operation reports which check rejected the rename.
 
 <!-- INV-spec-graph-rename-byte-equality -->
-5. **Byte-equality boundary handling.** Files in the kit-bundle byte-equality whitelist (declared per-aspect in `src/kanon/kit/aspects/<name>/manifest.yaml` under `byte-equality:` per ADR-0011) have a kit-side mirror at `src/kanon/kit/aspects/<name>/files/<rel>`. When the rename touches a repo-canonical file with a kit mirror, both copies are rewritten together in the same ops-manifest run; INV-3's atomicity covers them as a single transaction.
+5. **Byte-equality boundary handling.** Files in the kit-bundle byte-equality whitelist (declared per-aspect in `src/kanon_reference/data/<name>/manifest.yaml` under `byte-equality:` per ADR-0011) have a kit-side mirror at `src/kanon_reference/data/<name>/files/<rel>`. When the rename touches a repo-canonical file with a kit mirror, both copies are rewritten together in the same ops-manifest run; INV-3's atomicity covers them as a single transaction.
 
 <!-- INV-spec-graph-rename-dry-run -->
 6. **`--dry-run` is mandatory infrastructure.** With `--dry-run`, the tool emits the ops-manifest contents to stdout (one line per `{path, before-line, after-line}` pair) and exits 0 without writing anything. No `.kanon/.pending` sentinel is written; no `.kanon/graph-rename.ops` file is created. Users can review the planned change before committing to it.
