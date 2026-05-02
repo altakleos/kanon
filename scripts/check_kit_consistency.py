@@ -148,7 +148,13 @@ def _check_byte_equality(errors: list[str]) -> None:
                     f"byte-equality drift: {repo_rel} and "
                     f"{aspect_path.relative_to(_REPO_ROOT)} differ — must be identical."
                 )
-    # Per-aspect protocols byte-equality
+    # Per-aspect protocols presence check (per ADR-0049 D1: byte-mirror clause
+    # loosened to behavioural conformance — the repo-canonical protocol mirror
+    # MUST exist in `.kanon/protocols/<aspect>/`, but its content may drift from
+    # the kit-side source-of-truth at `aspects/kanon_<slug>/protocols/<file>.md`.
+    # ADR-0044 §2's self-host probe is satisfied by `kanon verify .` exit-0,
+    # not by filesystem byte-equality. Existence is the structural anchor;
+    # behavioural conformance is the content guarantee.
     for aspect in top["aspects"]:
         aspect_root = _aspect_root(aspect, top)
         if aspect_root is None:
@@ -163,12 +169,7 @@ def _check_byte_equality(errors: list[str]) -> None:
                 errors.append(
                     f"missing repo-canonical protocol: .kanon/protocols/{aspect}/{kit_proto.name}"
                 )
-                continue
-            if kit_proto.read_bytes() != repo_proto.read_bytes():
-                errors.append(
-                    f"byte-equality drift: .kanon/protocols/{aspect}/{kit_proto.name} and "
-                    f"{kit_proto.relative_to(_REPO_ROOT)} differ — must be identical."
-                )
+                # Note: NO byte-equality check here per ADR-0049 D1.
 
 
 # Phase A.3: _check_kit_md_exists() retired. Per ADR-0048 de-opinionation,
