@@ -42,21 +42,22 @@ def test_resolve_consumer_stages(tmp_path: Path) -> None:
 
 
 def test_resolve_aspect_defaults(tmp_path: Path) -> None:
-    """Aspect-contributed preflight entries are collected."""
+    """Aspect-contributed preflight entries are collected.
+
+    Phase A.4 (per ADR-0048 de-opinionation): kanon-testing's preflight block
+    was retired with its config-schema. This test now exercises kanon-deps,
+    which still ships a `push: deps-scan` preflight entry as a literal command
+    (no ${var} substitution).
+    """
     runner = CliRunner()
     target = tmp_path / "proj"
-    runner.invoke(main, ["init", str(target), "--aspects", "sdd:1,testing:1"])
+    runner.invoke(main, ["init", str(target), "--aspects", "deps:2"])
     config = yaml.safe_load((target / ".kanon" / "config.yaml").read_text())
-    config["aspects"]["kanon-testing"]["config"] = {
-        "lint_cmd": "echo lint",
-        "test_cmd": "echo test",
-    }
     aspects = {a: d["depth"] for a, d in config["aspects"].items()}
 
     checks = _resolve_preflight_checks(aspects, config, "push")
     labels = [c["label"] for c in checks]
-    assert "lint" in labels
-    assert "tests" in labels
+    assert "deps-scan" in labels
 
 
 def test_consumer_overrides_aspect_default(tmp_path: Path) -> None:

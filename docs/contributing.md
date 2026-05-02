@@ -134,7 +134,6 @@ flowchart TB
 | [`_graph.py`](../src/kanon/_graph.py) | 733 | Cross-link graph; powers `graph orphans` and `graph rename` | `test_graph.py`, `test_graph_orphans.py`, `test_graph_rename.py` | — |
 | [`_rename.py`](../src/kanon/_rename.py) | 517 | Crash-consistent ops-manifest replay for `graph rename` | `test_graph_rename.py` | [ADR-0027](decisions/0027-graph-rename-ops-manifest.md), [ADR-0030](decisions/0030-recovery-model.md) |
 | [`_preflight.py`](../src/kanon/_preflight.py) | 124 | Staged check runner (commit ⊂ push ⊂ release) | `test_preflight.py` | [ADR-0036](decisions/0036-secure-defaults-config-trust-carveout.md) |
-| [`_detect.py`](../src/kanon/_detect.py) | 71 | Project-type detection (pyproject / package.json / Cargo / go.mod) | `test_detect.py` | — |
 | [`_atomic.py`](../src/kanon/_atomic.py) | 71 | `atomic_write_text` + `.pending` sentinel | `test_atomic.py` | [ADR-0024](decisions/0024-crash-consistent-atomicity.md) |
 | [`_banner.py`](../src/kanon/_banner.py) | 31 | Brand banner — single source of truth, bytes asserted | `test_banner.py` | — |
 

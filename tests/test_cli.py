@@ -577,10 +577,12 @@ def test_upgrade_preserves_aspect_config(tmp_path: Path) -> None:
 
     config_path = target / ".kanon" / "config.yaml"
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    # Phase A.4: kanon-testing's config-schema retired; this test now uses
+    # arbitrary user config keys (substrate preserves any keys verbatim).
     config["aspects"]["kanon-testing"] = {
         "depth": 3,
         "enabled_at": "2025-01-01T00:00:00+00:00",
-        "config": {"test_cmd": "pytest -q", "lint_cmd": "ruff check"},
+        "config": {"my_custom_key": "value-a", "another_key": "value-b"},
     }
     config["kit_version"] = "0.0.0"
     config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
@@ -589,8 +591,8 @@ def test_upgrade_preserves_aspect_config(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
 
     updated = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-    assert updated["aspects"]["kanon-testing"]["config"]["test_cmd"] == "pytest -q"
-    assert updated["aspects"]["kanon-testing"]["config"]["lint_cmd"] == "ruff check"
+    assert updated["aspects"]["kanon-testing"]["config"]["my_custom_key"] == "value-a"
+    assert updated["aspects"]["kanon-testing"]["config"]["another_key"] == "value-b"
 
 
 

@@ -16,11 +16,6 @@ aspects:
     depth: 3
   - id: kanon-testing
     depth: 3
-    config:
-      test_cmd: .venv/bin/python -m pytest --no-cov -q
-      lint_cmd: .venv/bin/ruff check src/ tests/ ci/
-      typecheck_cmd: .venv/bin/mypy src/kanon
-      format_cmd: ''
   - id: kanon-worktrees
     depth: 2
   - id: kanon-release
