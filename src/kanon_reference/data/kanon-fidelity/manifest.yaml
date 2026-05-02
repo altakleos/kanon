@@ -1,3 +1,4 @@
+kanon-dialect: "2026-05-01"
 # Per-aspect sub-manifest for `kanon-fidelity` — Tier-1 behavioural-conformance verification.
 #
 # Depth 0: opt-out. Depth 1: lexical-replay engine + authoring protocol + AGENTS.md fragments.

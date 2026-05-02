@@ -1,3 +1,4 @@
+kanon-dialect: "2026-05-01"
 # Per-aspect sub-manifest for `worktrees` — isolated parallel execution via git worktrees.
 #
 # Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + automation.

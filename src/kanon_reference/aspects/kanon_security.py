@@ -8,6 +8,7 @@ YAML and the LOADER stubs become the canonical shape.
 from typing import Any
 
 MANIFEST: dict[str, Any] = {
+    "kanon-dialect": "2026-05-01",
     "stability": "experimental",
     "depth-range": [0, 2],
     "default-depth": 1,

@@ -1,3 +1,4 @@
+kanon-dialect: "2026-05-01"
 # Deps aspect — dependency hygiene for LLM-agent-driven repos.
 #
 # Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + CI validator.

@@ -1,3 +1,4 @@
+kanon-dialect: "2026-05-01"
 # Release aspect — disciplined release publishing.
 # Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + automation.
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N.
