@@ -52,7 +52,16 @@ def _read_kernel_version() -> str | None:
 def _build(cwd: Path) -> tuple[int, str]:
     if _DIST.is_dir():
         shutil.rmtree(_DIST)
-    cmd = ["uv", "tool", "run", "--from", "build", "python", "-m", "build"]
+    # Prefer the calling python's `build` module (CI installs it via pip).
+    # Fall back to `uv tool run --from build` for the local dev loop where
+    # `build` may not be in the project's deps.
+    try:
+        import build  # noqa: F401
+        cmd = [sys.executable, "-m", "build"]
+    except ImportError:
+        if shutil.which("uv") is None:
+            return 127, "neither `python -m build` nor `uv tool run --from build` is available"
+        cmd = ["uv", "tool", "run", "--from", "build", "python", "-m", "build"]
     proc = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True)
     return proc.returncode, (proc.stdout + proc.stderr)
 
