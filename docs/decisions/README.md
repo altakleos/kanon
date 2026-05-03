@@ -104,6 +104,7 @@ Bug fixes, threshold tuning, documentation improvements, presentation/formatting
 | [0049](0049-monorepo-layout.md) | Monorepo layout — 6 of 8 §1 rules for the kanon repo's directory shape (per-aspect bundles, `ci/`→`scripts/`, `plans/active`+`archive`, byte-mirror loosen, etc.); §1(2) kernel-flatten + §1(7) aspects-flatten initially deferred | accepted | process |
 | [0050](0050-kernel-flatten-deferral.md) | Kernel-flatten deferral — Hatch editable-install constraint blocked the in-place `src/kanon/` → `kernel/` rename via `wheel.sources` source-remap; deferred with three forward-options (A: Python module rename, B: `kernel/kanon/` wrapper, C: skip) — Option A executed in v0.5.0a2 | accepted | process |
 | [0051](0051-distribution-naming.md) | Distribution naming for the three-package split — `kanon-core`+`kanon-aspects`+`kanon-kit` (supersedes ADR-0048 names only) | accepted | release |
+| [0052](0052-aspects-flatten.md) | Aspects-flatten path selection — defers `src/kanon_reference/` → `aspects/` (same Hatch editable-install constraint as ADR-0050; Option C accepted-debt over Option B's 6–8h rename cost) | draft | process |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 
