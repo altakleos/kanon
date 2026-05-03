@@ -37,9 +37,9 @@ def _build_wheel(tmp_path: Path, *, extra_files: dict[str, str] | None = None,
     for f in mod._CORE_REQUIRED_FILES:
         if f in omit:
             continue
-        if f == "kanon/__init__.py":
+        if f == "kernel/__init__.py":
             files[f] = f'__version__ = "{version}"\n'
-        elif f == "kanon/kit/manifest.yaml":
+        elif f == "kernel/kit/manifest.yaml":
             files[f] = _TOP_MANIFEST_TEXT
         else:
             files[f] = ""
@@ -104,7 +104,7 @@ def test_valid_wheel_passes(tmp_path: Path) -> None:
 
 
 def test_missing_required_file(tmp_path: Path) -> None:
-    whl = _build_wheel(tmp_path, omit={"kanon/__init__.py"})
+    whl = _build_wheel(tmp_path, omit={"kernel/__init__.py"})
     changelog = tmp_path / "CHANGELOG.md"
     rc, report = mod.check_wheel(whl, _TAG, changelog_path=changelog)
     assert rc == 1
@@ -135,7 +135,7 @@ def test_version_mismatch(tmp_path: Path) -> None:
 
 
 def test_kit_md_not_in_core_required_files() -> None:
-    """Per Phase A.3 (kit-globals deletion), kanon/kit/kit.md was retired.
+    """Per Phase A.3 (kit-globals deletion), kernel/kit/kit.md was retired.
     The wheel-shape gate must not require it — otherwise the v0.4.0a1
     release-preflight against the built wheel will hard-block the tag."""
-    assert "kanon/kit/kit.md" not in mod._CORE_REQUIRED_FILES
+    assert "kernel/kit/kit.md" not in mod._CORE_REQUIRED_FILES

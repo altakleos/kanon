@@ -7,9 +7,10 @@ relies on:
   manifest, agents-md templates, sections, protocols, and files declared in
   the kit's manifests are present in the wheel.
 - **No forbidden path prefixes.** Repo-only content (consumer state under
-  `.kanon/`, the kit's own `docs/`, `tests/`, `ci/`, `.github/`, `.venv/`,
-  and the kit's own `AGENTS.md` / `CLAUDE.md`) never leaks into the wheel.
-- **Version concordance.** `kanon/__init__.py.__version__` matches the
+  `.kanon/`, the kit's own `docs/`, `tests/`, `scripts/`, `.github/`,
+  `.venv/`, and the kit's own `AGENTS.md` / `CLAUDE.md`) never leaks into
+  the wheel.
+- **Version concordance.** `kernel/__init__.py.__version__` matches the
   supplied `--tag` (leading `v` stripped). Literal string comparison — the
   release process requires the maintainer to keep them exactly in sync.
 - **Changelog entry.** `CHANGELOG.md` (repo root, not in the wheel — ships
@@ -41,16 +42,16 @@ from typing import Any
 import yaml
 
 # Core files that must always be present regardless of aspects.
-# Per Phase A.3 (kit-globals deletion): kanon/kit/kit.md was retired and is
-# no longer in the wheel. Per Phase A.7 (substrate-content-move): aspect data
-# now lives at kanon_reference/data/<slug>/, but the substrate-level
-# kanon/kit/manifest.yaml + harnesses.yaml stay.
+# Per Phase A.3 (kit-globals deletion): kernel/kit/kit.md was retired and is
+# no longer in the wheel. Per ADR-0050 Option A: substrate Python module is
+# `kernel/` (was `kanon/`); aspect data lives at `kanon_reference/aspects/`,
+# but the substrate-level `kernel/kit/manifest.yaml` + `harnesses.yaml` stay.
 _CORE_REQUIRED_FILES: tuple[str, ...] = (
-    "kanon/__init__.py",
-    "kanon/cli.py",
-    "kanon/_atomic.py",
-    "kanon/kit/manifest.yaml",
-    "kanon/kit/harnesses.yaml",
+    "kernel/__init__.py",
+    "kernel/cli.py",
+    "kernel/_atomic.py",
+    "kernel/kit/manifest.yaml",
+    "kernel/kit/harnesses.yaml",
 )
 
 # Populated at wheel-check time from the manifest inside the wheel.
@@ -62,7 +63,7 @@ FORBIDDEN_PREFIXES: tuple[str, ...] = (
     ".kanon/",
     "docs/",               # kit's own docs/ are not shipped in the wheel
     "tests/",
-    "ci/",
+    "scripts/",
     ".github/",
     ".venv/",
 )
@@ -104,9 +105,9 @@ def _changelog_entry_status(changelog_path: Path, version: str) -> tuple[str, st
 def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list[str]]:
     """Read manifest.yaml from the wheel and derive required files and dirs."""
     required_files = list(_CORE_REQUIRED_FILES)
-    required_dirs = ["kanon/kit/"]
+    required_dirs = ["kernel/kit/"]
     try:
-        top = yaml.safe_load(z.read("kanon/kit/manifest.yaml").decode("utf-8"))
+        top = yaml.safe_load(z.read("kernel/kit/manifest.yaml").decode("utf-8"))
     except (KeyError, yaml.YAMLError):
         return required_files, required_dirs
     if not isinstance(top, dict) or not isinstance(top.get("aspects"), dict):
@@ -151,7 +152,7 @@ def check_wheel(wheel_path: Path, tag: str, changelog_path: Path | None = None) 
     with zipfile.ZipFile(wheel_path) as z:
         names = z.namelist()
         try:
-            init_content = z.read("kanon/__init__.py").decode("utf-8")
+            init_content = z.read("kernel/__init__.py").decode("utf-8")
         except KeyError:
             init_content = ""
         required_files, required_dirs = _derive_requirements_from_wheel(z)
