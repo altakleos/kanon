@@ -1,9 +1,10 @@
 ---
 slug: adr-0051-sweep
-status: approved
+status: done
 owner: makutaku
 created: 2026-05-03
 related-adr: 0051
+shipped-in: PR #102
 ---
 
 # Plan — ADR-0051 distribution-rename sweep

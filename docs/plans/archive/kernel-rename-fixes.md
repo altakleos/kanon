@@ -1,10 +1,11 @@
 ---
 slug: kernel-rename-fixes
-status: approved
+status: done
 owner: makutaku
 created: 2026-05-03
 related-adr: 0050
 related-pr: 96
+shipped-in: PR #97 (v0.5.0a2)
 ---
 
 # Plan — Kernel-rename follow-up fixes (v0.5.0a2)
