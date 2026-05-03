@@ -1,7 +1,7 @@
 """Tests for the prose-as-code protocol layer (docs/specs/protocols.md).
 
 Under the aspect-model layout (ADR-0012), protocols live under each aspect's
-namespace: kit side at src/kanon/kit/aspects/<aspect>/protocols/*.md, consumer
+namespace: kit side at kernel/kit/aspects/<aspect>/protocols/*.md, consumer
 side at .kanon/protocols/<aspect>/*.md. Frontmatter uses `depth-min:`.
 """
 

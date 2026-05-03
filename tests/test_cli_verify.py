@@ -8,8 +8,7 @@ from pathlib import Path
 import pytest
 import yaml
 from click.testing import CliRunner
-
-from kanon.cli import main
+from kernel.cli import main
 
 
 def _extract_verify_json(output: str) -> dict:
@@ -147,13 +146,13 @@ def test_verify_marker_imbalance(tmp_path: Path) -> None:
 
 def test_project_validator_import_error(tmp_path: Path) -> None:
     """run_project_validators records ImportError for missing validator module."""
-    from kanon._verify import run_project_validators
+    from kernel._verify import run_project_validators
 
     errors: list[str] = []
     warnings: list[str] = []
     aspects = {"project-bad": 1}
     # Mock _aspect_validators to return a nonexistent module.
-    import kanon._verify as _v
+    import kernel._verify as _v
     orig = _v._aspect_validators
     _v._aspect_validators = lambda _a: ["nonexistent_module_xyz"]  # type: ignore[assignment]
     try:
@@ -166,14 +165,14 @@ def test_project_validator_import_error(tmp_path: Path) -> None:
 
 def test_project_validator_missing_check(tmp_path: Path) -> None:
     """run_project_validators records error when module has no check() callable."""
-    from kanon._verify import run_project_validators
+    from kernel._verify import run_project_validators
 
     # Create a module with no check() function.
     (tmp_path / "no_check_mod.py").write_text("x = 1\n", encoding="utf-8")
     errors: list[str] = []
     warnings: list[str] = []
     aspects = {"project-bad": 1}
-    import kanon._verify as _v
+    import kernel._verify as _v
     orig = _v._aspect_validators
     _v._aspect_validators = lambda _a: ["no_check_mod"]  # type: ignore[assignment]
     try:
@@ -186,7 +185,7 @@ def test_project_validator_missing_check(tmp_path: Path) -> None:
 
 def test_project_validator_check_raises(tmp_path: Path) -> None:
     """run_project_validators records error when check() raises."""
-    from kanon._verify import run_project_validators
+    from kernel._verify import run_project_validators
 
     (tmp_path / "bad_check_mod.py").write_text(
         "def check(target, errors, warnings):\n    raise RuntimeError('boom')\n",
@@ -195,7 +194,7 @@ def test_project_validator_check_raises(tmp_path: Path) -> None:
     errors: list[str] = []
     warnings: list[str] = []
     aspects = {"project-bad": 1}
-    import kanon._verify as _v
+    import kernel._verify as _v
     orig = _v._aspect_validators
     _v._aspect_validators = lambda _a: ["bad_check_mod"]  # type: ignore[assignment]
     try:

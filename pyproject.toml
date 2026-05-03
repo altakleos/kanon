@@ -29,7 +29,7 @@ dev = [
 ]
 
 [project.scripts]
-kanon = "kanon.cli:main"
+kanon = "kernel.cli:main"
 
 # Phase A.2.2: substrate discovers aspects via Python entry-points group
 # `kanon.aspects` per ADR-0040. The seven kanon-* aspects are shipped by
@@ -44,14 +44,14 @@ kanon-testing = "kanon_reference.aspects.kanon_testing.loader:MANIFEST"
 kanon-worktrees = "kanon_reference.aspects.kanon_worktrees.loader:MANIFEST"
 
 [tool.hatch.version]
-path = "src/kanon/__init__.py"
+path = "kernel/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/kanon", "src/kanon_reference"]
+packages = ["kernel", "src/kanon_reference"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "src/kanon",
+    "kernel",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
@@ -61,7 +61,7 @@ include = [
 [tool.mypy]
 python_version = "3.10"
 strict = true
-packages = ["kanon"]
+packages = ["kernel"]
 mypy_path = "src"
 
 [[tool.mypy.overrides]]
@@ -70,7 +70,7 @@ disallow_untyped_defs = false
 
 [tool.ruff]
 target-version = "py310"
-src = ["src", "tests", "ci"]
+src = ["kernel", "src", "tests", "scripts"]
 line-length = 120
 
 [tool.ruff.lint]
@@ -78,9 +78,9 @@ select = ["E", "F", "W", "I", "UP", "B", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=kanon --cov-report=term-missing --cov-fail-under=90 -m 'not e2e'"
+addopts = "--cov=kernel --cov-report=term-missing --cov-fail-under=90 -m 'not e2e'"
 markers = ["e2e: end-to-end tests against installed package (slow)"]
 
 [tool.coverage.run]
-source = ["src/kanon"]
+source = ["kernel"]
 branch = true

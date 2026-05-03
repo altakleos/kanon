@@ -23,19 +23,18 @@ import click
 import pytest
 import yaml
 from click.testing import CliRunner
-
-from kanon._cli_helpers import (
+from kernel._cli_helpers import (
     _check_removal_dependents,
     _check_requires,
     _classify_predicate,
 )
-from kanon._manifest import (
+from kernel._manifest import (
     _aspect_provides,
     _capability_suppliers,
     _load_top_manifest,
     _validate_provides_field,
 )
-from kanon.cli import (
+from kernel.cli import (
     main,
 )
 
@@ -219,7 +218,7 @@ def test_aspect_info_provides_none_when_aspect_has_no_provides(tmp_path: Path) -
     `_aspect_provides` to simulate an aspect without a declaration.
     """
     runner = CliRunner()
-    with patch("kanon.cli._aspect_provides", return_value=[]):
+    with patch("kernel.cli._aspect_provides", return_value=[]):
         result = runner.invoke(main, ["aspect", "info", "kanon-sdd"])
     assert result.exit_code == 0, result.output
     assert "Provides:      (none)" in result.output
@@ -311,9 +310,9 @@ def test_every_shipped_aspect_declares_capability(
 
 def test_kit_manifest_yaml_matches_loader() -> None:
     """The kit manifest YAML and `_load_top_manifest` agree on `provides:` entries."""
-    import kanon
+    import kernel
 
-    manifest_path = Path(kanon.__file__).parent / "kit" / "manifest.yaml"
+    manifest_path = Path(kernel.__file__).parent / "kit" / "manifest.yaml"
     on_disk = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
     loaded = _load_top_manifest()
     for name, entry in on_disk["aspects"].items():
@@ -349,7 +348,7 @@ def test_existing_kit_requires_predicates_classify_as_depth() -> None:
 
 def test_normalise_aspect_name_bare_sugars_to_kanon() -> None:
     """A bare aspect name resolves to the `kanon-` namespace by default."""
-    from kanon._manifest import _normalise_aspect_name
+    from kernel._manifest import _normalise_aspect_name
     assert _normalise_aspect_name("sdd") == "kanon-sdd"
     assert _normalise_aspect_name("worktrees") == "kanon-worktrees"
     assert _normalise_aspect_name("graph-rename") == "kanon-graph-rename"
@@ -357,7 +356,7 @@ def test_normalise_aspect_name_bare_sugars_to_kanon() -> None:
 
 def test_normalise_aspect_name_namespaced_passes_through() -> None:
     """A name already in canonical form is returned unchanged."""
-    from kanon._manifest import _normalise_aspect_name
+    from kernel._manifest import _normalise_aspect_name
     assert _normalise_aspect_name("kanon-sdd") == "kanon-sdd"
     assert _normalise_aspect_name("kanon-worktrees") == "kanon-worktrees"
     assert _normalise_aspect_name("project-auth-policy") == "project-auth-policy"
@@ -367,8 +366,7 @@ def test_normalise_aspect_name_invalid_rejected() -> None:
     """Anything that fails both regexes (e.g., uppercase, leading dash) is rejected."""
     import click
     import pytest
-
-    from kanon._manifest import _normalise_aspect_name
+    from kernel._manifest import _normalise_aspect_name
     with pytest.raises(click.ClickException, match="Invalid aspect name"):
         _normalise_aspect_name("SDD")
     with pytest.raises(click.ClickException, match="Invalid aspect name"):
@@ -379,7 +377,7 @@ def test_normalise_aspect_name_invalid_rejected() -> None:
 
 def test_split_aspect_name() -> None:
     """`_split_aspect_name` returns (namespace, local) where local may contain dashes."""
-    from kanon._manifest import _split_aspect_name
+    from kernel._manifest import _split_aspect_name
     assert _split_aspect_name("kanon-sdd") == ("kanon", "sdd")
     assert _split_aspect_name("kanon-graph-rename") == ("kanon", "graph-rename")
     assert _split_aspect_name("project-auth-policy") == ("project", "auth-policy")
@@ -387,20 +385,20 @@ def test_split_aspect_name() -> None:
 
 def test_classify_predicate_bare_aspect_name_sugars() -> None:
     """A 3-token depth predicate with a bare aspect name sugars to `kanon-` form."""
-    from kanon._cli_helpers import _classify_predicate
+    from kernel._cli_helpers import _classify_predicate
     classified = _classify_predicate("sdd >= 1")
     assert classified == ("depth", "kanon-sdd", ">=", 1)
 
 
 def test_classify_predicate_namespaced_aspect_name_unchanged() -> None:
     """A 3-token depth predicate with a namespaced aspect name passes through."""
-    from kanon._cli_helpers import _classify_predicate
+    from kernel._cli_helpers import _classify_predicate
     classified = _classify_predicate("kanon-sdd >= 1")
     assert classified == ("depth", "kanon-sdd", ">=", 1)
 
 
 def test_classify_predicate_capability_unaffected_by_namespace_grammar() -> None:
     """A 1-token capability predicate is not subject to aspect-name sugar."""
-    from kanon._cli_helpers import _classify_predicate
+    from kernel._cli_helpers import _classify_predicate
     classified = _classify_predicate("planning-discipline")
     assert classified == ("capability", "planning-discipline")

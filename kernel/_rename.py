@@ -33,7 +33,7 @@ from typing import Any
 
 import click
 
-from kanon._atomic import atomic_write_text
+from kernel._atomic import atomic_write_text
 
 _OP_GRAPH_RENAME = "graph-rename"
 """Sentinel label for an in-progress ``kanon graph rename`` op (rename-spec INV-7)."""
@@ -452,7 +452,7 @@ def perform_rename(
     Side-effects: writes the ops-manifest + sentinel before rewrites,
     clears them after.
     """
-    from kanon._atomic import clear_sentinel, write_sentinel  # local: avoids cycle
+    from kernel._atomic import clear_sentinel, write_sentinel  # local: avoids cycle
 
     validate_namespace(namespace)
     validate_slug(old_slug, "old")
@@ -506,7 +506,7 @@ def recover_pending_rename(repo_root: Path) -> bool:
     point's ``_check_pending_recovery`` integration — when the sentinel
     label is ``graph-rename``, call this to finish the work.
     """
-    from kanon._atomic import clear_sentinel  # local: avoids cycle
+    from kernel._atomic import clear_sentinel  # local: avoids cycle
 
     manifest = read_ops_manifest(repo_root)
     if manifest is None:

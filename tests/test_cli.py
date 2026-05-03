@@ -13,9 +13,8 @@ from unittest.mock import patch
 import pytest
 import yaml
 from click.testing import CliRunner
-
-from kanon import __version__
-from kanon.cli import main
+from kernel import __version__
+from kernel.cli import main
 
 
 def _extract_verify_json(output: str) -> dict:
@@ -79,7 +78,7 @@ def _stage_project_aspect(target: Path, name: str, manifest_text: str) -> Path:
 
 def _read_banner() -> str:
     """Read the canonical banner constant via the same import path as production."""
-    from kanon._banner import _BANNER
+    from kernel._banner import _BANNER
     return _BANNER
 
 
@@ -199,7 +198,7 @@ def test_profile_team_enables_five_aspects(tmp_path: Path) -> None:
 
 def test_profile_all_uses_default_depths(tmp_path: Path) -> None:
     """INV-cli-init-profile: --profile all enables every kit aspect at its manifest default-depth."""
-    from kanon._manifest import _load_top_manifest
+    from kernel._manifest import _load_top_manifest
     runner = CliRunner()
     target = tmp_path / "scratch"
     result = runner.invoke(main, ["init", str(target), "--profile", "all"])
@@ -214,7 +213,7 @@ def test_profile_all_uses_default_depths(tmp_path: Path) -> None:
 
 def test_profile_max_uses_max_depths(tmp_path: Path) -> None:
     """INV-cli-init-profile: --profile max enables every kit aspect at the upper end of its depth-range."""
-    from kanon._manifest import _load_top_manifest
+    from kernel._manifest import _load_top_manifest
     runner = CliRunner()
     target = tmp_path / "scratch"
     result = runner.invoke(main, ["init", str(target), "--profile", "max"])
@@ -1005,7 +1004,7 @@ def test_upgrade_does_not_modify_project_aspect_files(tmp_path: Path) -> None:
 
 def _read_banner() -> str:
     """Read the canonical banner constant via the same import path as production."""
-    from kanon._banner import _BANNER
+    from kernel._banner import _BANNER
     return _BANNER
 
 
@@ -1025,18 +1024,18 @@ def _banner_literal() -> str:
 
 # INV-kanon-banner-single-source: one constant feeds all three surfaces.
 def test_banner_constant_used_by_all_surfaces() -> None:
-    """The _BANNER constant defined in src/kanon/_banner.py is the only
+    """The _BANNER constant defined in kernel/_banner.py is the only
     byte-equal copy in the source tree, and it is referenced by both the
     runtime emission path (cli.py) and the AGENTS.md scaffolding (_scaffold.py).
     """
-    import kanon._banner as banner_mod
+    import kernel._banner as banner_mod
 
     src_root = Path(banner_mod.__file__).resolve().parent
     cli_text = (src_root / "cli.py").read_text(encoding="utf-8")
     scaffold_text = (src_root / "_scaffold.py").read_text(encoding="utf-8")
 
-    assert "from kanon._banner import" in cli_text and "_BANNER" in cli_text
-    assert "from kanon._banner import _BANNER" in scaffold_text
+    assert "from kernel._banner import" in cli_text and "_BANNER" in cli_text
+    assert "from kernel._banner import _BANNER" in scaffold_text
 
     # No second byte-equal copy of the banner literal anywhere else in src/.
     literal_substr = " |_|\\_\\__,_|_| |_|\\___/|_| |_|"
@@ -1055,7 +1054,7 @@ def test_banner_emitted_on_tty(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
 
-    with patch("kanon._banner._should_emit_banner", return_value=True):
+    with patch("kernel._banner._should_emit_banner", return_value=True):
         init_result = runner.invoke(main, ["init", str(target), "--tier", "1"])
         upgrade_result = runner.invoke(main, ["upgrade", str(target)])
 
@@ -1089,7 +1088,7 @@ def test_banner_suppressed_with_quiet_flag(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
 
-    with patch("kanon._banner._should_emit_banner", return_value=False):
+    with patch("kernel._banner._should_emit_banner", return_value=False):
         # _should_emit_banner already returns False when quiet=True; this
         # test validates the wiring by invoking with --quiet and asserting
         # the banner is absent regardless of TTY.
@@ -1117,7 +1116,7 @@ def test_banner_goes_to_stderr_not_stdout(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "scratch"
 
-    with patch("kanon._banner._should_emit_banner", return_value=True):
+    with patch("kernel._banner._should_emit_banner", return_value=True):
         init_result = runner.invoke(main, ["init", str(target), "--tier", "1"])
         upgrade_result = runner.invoke(main, ["upgrade", str(target)])
 
@@ -1166,7 +1165,7 @@ def test_banner_not_emitted_by_other_commands(tmp_path: Path) -> None:
     runner.invoke(main, ["init", str(target), "--tier", "1"])
 
     banner = _read_banner()
-    with patch("kanon._banner._should_emit_banner", return_value=True):
+    with patch("kernel._banner._should_emit_banner", return_value=True):
         for cmd in (
             ["verify", str(target)],
             ["aspect", "list"],

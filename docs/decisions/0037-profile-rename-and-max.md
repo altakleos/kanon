@@ -32,4 +32,4 @@ Keep `full` and add a new `max` alongside it. Rejected — `full`'s name is the 
 
 - [`docs/specs/cli.md`](../specs/cli.md) — INV-cli-init-profile.
 - [`docs/plans/profile-rename.md`](../plans/archive/profile-rename.md) — implementing plan.
-- [`src/kanon/kit/manifest.yaml`](../../src/kanon/kit/manifest.yaml) — `default-depth` and `depth-range` source.
+- [`src/kanon/kit/manifest.yaml`](../../kernel/kit/manifest.yaml) — `default-depth` and `depth-range` source.

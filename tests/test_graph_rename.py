@@ -15,16 +15,15 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-
-from kanon._atomic import read_sentinel
-from kanon._cli_helpers import _PENDING_OP_TO_COMMAND
-from kanon._rename import (
+from kernel._atomic import read_sentinel
+from kernel._cli_helpers import _PENDING_OP_TO_COMMAND
+from kernel._rename import (
     _OP_GRAPH_RENAME,
     OPS_MANIFEST_FILENAME,
     perform_rename,
     recover_pending_rename,
 )
-from kanon.cli import main
+from kernel.cli import main
 
 
 def _make_minimal_repo(root: Path) -> None:
@@ -32,7 +31,7 @@ def _make_minimal_repo(root: Path) -> None:
     (root / "docs" / "foundations" / "personas").mkdir(parents=True)
     (root / "docs" / "specs").mkdir(parents=True)
     (root / "docs" / "plans").mkdir(parents=True)
-    (root / "src" / "kanon" / "kit").mkdir(parents=True)
+    (root / "kernel" / "kit").mkdir(parents=True)
     (root / ".kanon").mkdir(parents=True)
 
 
@@ -144,8 +143,8 @@ def test_inv3_recovery_completes_partial_rename(tmp_path: Path) -> None:
     _write(tmp_path / "docs/specs/feature.md",
            "---\nstatus: accepted\nrealizes: [P-foo]\n---\n# Feature\n")
     # Compute the rewrites and write the manifest + sentinel without applying.
-    from kanon._atomic import write_sentinel
-    from kanon._rename import (
+    from kernel._atomic import write_sentinel
+    from kernel._rename import (
         OpsManifest,
         compute_rewrites,
         write_ops_manifest,
@@ -225,8 +224,8 @@ def test_check_pending_recovery_auto_replays_graph_rename(tmp_path: Path) -> Non
            "---\nstatus: accepted\nrealizes: [P-foo]\n---\n# Feature\n")
 
     # Stage a partial rename: ops-manifest + sentinel on disk, rewrites unapplied.
-    from kanon._atomic import write_sentinel
-    from kanon._rename import OpsManifest, compute_rewrites, write_ops_manifest
+    from kernel._atomic import write_sentinel
+    from kernel._rename import OpsManifest, compute_rewrites, write_ops_manifest
 
     rewrites = compute_rewrites(tmp_path, "principle", "P-foo", "P-bar")
     write_ops_manifest(
@@ -371,8 +370,8 @@ def test_ops_manifest_records_full_content(tmp_path: Path) -> None:
            "---\nid: P-foo\nkind: pedagogical\nstatus: accepted\n---\n")
     _write(tmp_path / "docs/specs/uses-foo.md",
            "---\nstatus: accepted\nrealizes: [P-foo]\n---\n")
-    from kanon._atomic import write_sentinel
-    from kanon._rename import (
+    from kernel._atomic import write_sentinel
+    from kernel._rename import (
         OpsManifest,
         compute_rewrites,
         manifest_path,
@@ -398,8 +397,7 @@ def test_ops_manifest_records_full_content(tmp_path: Path) -> None:
 def test_require_canonical_exists_file_not_found(tmp_path: Path) -> None:
     """Missing principle file raises ClickException."""
     import click
-
-    from kanon._rename import _require_canonical_exists
+    from kernel._rename import _require_canonical_exists
 
     _make_minimal_repo(tmp_path)
     with pytest.raises(click.ClickException, match="Cannot rename"):
@@ -411,7 +409,7 @@ def test_require_canonical_exists_file_not_found(tmp_path: Path) -> None:
 
 def test_replace_in_frontmatter_no_frontmatter(tmp_path: Path) -> None:
     """A file without frontmatter is returned unchanged."""
-    from kanon._rename import _replace_in_frontmatter, _slug_boundary_pattern
+    from kernel._rename import _replace_in_frontmatter, _slug_boundary_pattern
 
     text = "# Just a heading\nNo frontmatter here.\n"
     result = _replace_in_frontmatter(text, _slug_boundary_pattern("P-foo"), "P-bar")
@@ -420,7 +418,7 @@ def test_replace_in_frontmatter_no_frontmatter(tmp_path: Path) -> None:
 
 def test_replace_in_frontmatter_no_match(tmp_path: Path) -> None:
     """Frontmatter that doesn't contain the slug is returned unchanged."""
-    from kanon._rename import _replace_in_frontmatter, _slug_boundary_pattern
+    from kernel._rename import _replace_in_frontmatter, _slug_boundary_pattern
 
     text = "---\nid: P-other\nstatus: accepted\n---\nBody text.\n"
     result = _replace_in_frontmatter(text, _slug_boundary_pattern("P-foo"), "P-bar")
@@ -432,7 +430,7 @@ def test_replace_in_frontmatter_no_match(tmp_path: Path) -> None:
 
 def test_read_ops_manifest_file_not_found(tmp_path: Path) -> None:
     """Missing ops-manifest returns None."""
-    from kanon._rename import read_ops_manifest
+    from kernel._rename import read_ops_manifest
 
     assert read_ops_manifest(tmp_path) is None
 
@@ -440,8 +438,7 @@ def test_read_ops_manifest_file_not_found(tmp_path: Path) -> None:
 def test_read_ops_manifest_json_decode_error(tmp_path: Path) -> None:
     """Malformed JSON in ops-manifest raises ClickException."""
     import click
-
-    from kanon._rename import read_ops_manifest
+    from kernel._rename import read_ops_manifest
 
     (tmp_path / ".kanon").mkdir(parents=True)
     (tmp_path / ".kanon" / "graph-rename.ops").write_text("not json{{{")
@@ -452,8 +449,7 @@ def test_read_ops_manifest_json_decode_error(tmp_path: Path) -> None:
 def test_read_ops_manifest_malformed_data(tmp_path: Path) -> None:
     """A non-dict ops-manifest raises ClickException."""
     import click
-
-    from kanon._rename import read_ops_manifest
+    from kernel._rename import read_ops_manifest
 
     (tmp_path / ".kanon").mkdir(parents=True)
     (tmp_path / ".kanon" / "graph-rename.ops").write_text('"just a string"')
@@ -466,8 +462,7 @@ def test_read_ops_manifest_path_traversal(tmp_path: Path) -> None:
     import json
 
     import click
-
-    from kanon._rename import read_ops_manifest
+    from kernel._rename import read_ops_manifest
 
     (tmp_path / ".kanon").mkdir(parents=True)
     payload = {
@@ -482,8 +477,7 @@ def test_read_ops_manifest_path_traversal(tmp_path: Path) -> None:
 def test_compute_principle_rewrites_missing_file(tmp_path: Path) -> None:
     """_principle_rewrites raises ClickException on missing principle file."""
     import click
-
-    from kanon._rename import _principle_rewrites
+    from kernel._rename import _principle_rewrites
 
     with pytest.raises(click.ClickException, match="Cannot read principle file"):
         _principle_rewrites(tmp_path, "nonexistent", "new-name")
@@ -494,7 +488,7 @@ def test_compute_principle_rewrites_missing_file(tmp_path: Path) -> None:
 
 def test_format_dry_run_empty_rewrites(tmp_path: Path) -> None:
     """An empty rewrites list produces the fallback message."""
-    from kanon._rename import format_dry_run
+    from kernel._rename import format_dry_run
 
     result = format_dry_run([], tmp_path)
     assert result == "(no files would change)"
@@ -505,7 +499,7 @@ def test_format_dry_run_empty_rewrites(tmp_path: Path) -> None:
 
 def test_compute_rewrites_non_principle_namespace_raises(tmp_path: Path) -> None:
     """A non-principle namespace raises NotImplementedError."""
-    from kanon._rename import compute_rewrites
+    from kernel._rename import compute_rewrites
 
     _make_minimal_repo(tmp_path)
     with pytest.raises(NotImplementedError, match="not yet implemented"):
@@ -520,7 +514,7 @@ def test_inv8_aspect_namespace_raises_not_implemented(tmp_path: Path) -> None:
     """Per INV-8, aspect rename is staged for future implementation.
     ``compute_rewrites`` must raise ``NotImplementedError`` for the
     ``aspect`` namespace until the rewrite engine lands."""
-    from kanon._rename import compute_rewrites
+    from kernel._rename import compute_rewrites
 
     _make_minimal_repo(tmp_path)
     with pytest.raises(NotImplementedError, match="not yet implemented"):

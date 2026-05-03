@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 slug: kernel-rename-option-a
 date: 2026-05-03
 ---

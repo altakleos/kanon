@@ -11,9 +11,8 @@ from pathlib import Path
 
 import yaml
 from click.testing import CliRunner
-
-from kanon import __version__
-from kanon.cli import main
+from kernel import __version__
+from kernel.cli import main
 
 
 def _verify_ok(runner: CliRunner, target: Path) -> dict:

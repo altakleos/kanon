@@ -21,7 +21,7 @@ from typing import Any
 import click
 import yaml
 
-import kanon
+import kernel
 
 
 def _load_yaml(path: Path, expected_type: type = dict) -> Any:
@@ -129,7 +129,7 @@ def _find_section_pair(
 
 
 def _kit_root() -> Path:
-    return Path(kanon.__file__).parent / "kit"
+    return Path(kernel.__file__).parent / "kit"
 
 
 # --- Manifest loaders ---
@@ -290,7 +290,7 @@ def _load_aspects_from_entry_points() -> dict[str, dict[str, Any]]:
         # Per INV-dialect-grammar-pin-required: every aspect manifest MUST pin
         # `kanon-dialect:`. Validates the pin is recognized; emits stderr
         # deprecation warning if pin matches DEPRECATION_WARNING_BEFORE.
-        from kanon._dialects import validate_dialect_pin
+        from kernel._dialects import validate_dialect_pin
 
         validate_dialect_pin(entry.get("kanon-dialect"), source=ep.name)
         # Validate required registry fields surface from the LOADER MANIFEST.
@@ -356,7 +356,7 @@ def _load_top_manifest() -> dict[str, Any]:
 
     Phase A.2.2: ``aspects:`` are sourced from Python entry-points (group
     ``kanon.aspects``) per ADR-0040, NOT from the kit YAML's ``aspects:``
-    block. The kit YAML at ``src/kanon/kit/manifest.yaml`` is still read for
+    block. The kit YAML at ``kernel/kit/manifest.yaml`` is still read for
     kit-globals (``defaults:``, ``files:``); Phase A.3 retires those.
     """
     path = _kit_root() / "manifest.yaml"
@@ -643,7 +643,7 @@ def _validate_validators_field(sub_path: Path, validators: Any) -> None:
 def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
     """Load the aspect's per-aspect ``manifest.yaml``.
 
-    For kit-aspects the file lives at ``src/kanon/kit/aspects/<aspect>/manifest.yaml``.
+    For kit-aspects the file lives at ``kernel/kit/aspects/<aspect>/manifest.yaml``.
     For project-aspects the file lives at ``<target>/.kanon/aspects/<aspect>/manifest.yaml``
     (resolved via the active overlay set by :func:`_load_aspect_registry`).
     """
@@ -705,7 +705,7 @@ def _aspect_path(aspect: str) -> Path:
 
     Per ADR-0044 substrate-independence: the substrate (kanon-substrate) MUST
     NOT silently fall back to a dead legacy path when kanon_reference is
-    absent. After Phase A.7 (substrate-content-move), src/kanon/kit/aspects/
+    absent. After Phase A.7 (substrate-content-move), kernel/kit/aspects/
     no longer exists for kanon-* aspects; returning that path would resolve
     to a non-existent directory and downstream callers (_load_aspect_manifest,
     file readers, scaffolders) would fail with confusing FileNotFoundError
@@ -781,7 +781,7 @@ def _namespaced_section(aspect: str, section: str) -> str:
 
 
 # Phase A.3: _default_aspects() retired. Per ADR-0048 de-opinionation, the
-# kit-global defaults: block was deleted from src/kanon/kit/manifest.yaml;
+# kit-global defaults: block was deleted from kernel/kit/manifest.yaml;
 # `kanon init` with no flags now scaffolds an empty project.
 
 

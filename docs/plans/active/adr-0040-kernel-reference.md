@@ -11,7 +11,7 @@ design: "This plan delivers the design alongside the ADR (`docs/design/kernel-re
 
 The second ADR of Phase 0. The most urgent in the round-5 panel review: three agents (architect, critic, code-reviewer) independently named the kernel/reference runtime interface as **critical and unspecified**. Without this ADR, the substrate's "de-installable reference aspects" claim is words on paper — the kernel currently has no mechanism to discover aspects from a separately-installed package.
 
-Today's `_kit_root()` at [`src/kanon/_manifest.py:127`](../../../src/kanon/_manifest.py) is referenced 10+ times across `_manifest.py` and `_scaffold.py`; every reference embeds the assumption that the kit ships exactly one of itself. Under the protocol-substrate commitment, the kernel (`kanon-substrate`) and reference aspects (`kanon-reference`) ship as separate distributions. The kernel must discover reference aspects (and future `acme-` aspects) without privileging any.
+Today's `_kit_root()` at [`src/kanon/_manifest.py:127`](../../../kernel/_manifest.py) is referenced 10+ times across `_manifest.py` and `_scaffold.py`; every reference embeds the assumption that the kit ships exactly one of itself. Under the protocol-substrate commitment, the kernel (`kanon-substrate`) and reference aspects (`kanon-reference`) ship as separate distributions. The kernel must discover reference aspects (and future `acme-` aspects) without privileging any.
 
 ADR-0040 ratifies the **discovery mechanism**: Python entry-points (`importlib.metadata.entry_points(group="kanon.aspects")`). Plus the publisher-symmetric registry semantics, and the `kanon-substrate`-must-pass-tests-without-`kanon-reference` invariant.
 

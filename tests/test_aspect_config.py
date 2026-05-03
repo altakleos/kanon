@@ -12,9 +12,8 @@ from unittest.mock import patch
 import pytest
 import yaml
 from click.testing import CliRunner
-
-from kanon._cli_helpers import _parse_config_pair
-from kanon.cli import main
+from kernel._cli_helpers import _parse_config_pair
+from kernel.cli import main
 
 
 def _init_with(runner: CliRunner, target: Path, *aspects: str) -> None:
@@ -175,8 +174,7 @@ def test_set_config_accepts_any_key_when_no_schema(tmp_path: Path) -> None:
 def test_malformed_config_schema_rejected_at_manifest_load(tmp_path: Path) -> None:
     """A schema entry missing `type:` raises a clear error from `_load_aspect_manifest`."""
     import click
-
-    from kanon._manifest import _validate_config_schema
+    from kernel._manifest import _validate_config_schema
 
     bad = {"key1": {"description": "no type"}}
     with pytest.raises(click.ClickException) as exc:
@@ -186,8 +184,7 @@ def test_malformed_config_schema_rejected_at_manifest_load(tmp_path: Path) -> No
 
 def test_malformed_config_schema_invalid_type_rejected(tmp_path: Path) -> None:
     import click
-
-    from kanon._manifest import _validate_config_schema
+    from kernel._manifest import _validate_config_schema
 
     bad = {"key1": {"type": "tuple"}}
     with pytest.raises(click.ClickException) as exc:
@@ -197,8 +194,7 @@ def test_malformed_config_schema_invalid_type_rejected(tmp_path: Path) -> None:
 
 def test_malformed_config_schema_unknown_field_rejected(tmp_path: Path) -> None:
     import click
-
-    from kanon._manifest import _validate_config_schema
+    from kernel._manifest import _validate_config_schema
 
     bad = {"key1": {"type": "string", "min": 0}}
     with pytest.raises(click.ClickException) as exc:
@@ -230,7 +226,7 @@ def test_set_config_persists_sentinel_on_mid_write_failure(tmp_path: Path) -> No
     pending = target / ".kanon" / ".pending"
 
     # Patch _write_config to raise after the sentinel write but before clear.
-    with patch("kanon._cli_aspect._write_config", side_effect=OSError("simulated disk full")):
+    with patch("kernel._cli_aspect._write_config", side_effect=OSError("simulated disk full")):
         runner.invoke(
             main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=90"]
         )
@@ -281,7 +277,7 @@ def test_set_config_errors_when_aspect_not_enabled(tmp_path: Path) -> None:
 
 def test_discover_project_aspects_skips_hidden_dirs(tmp_path: Path) -> None:
     """Hidden directories (starting with '.') under .kanon/aspects/ are skipped."""
-    from kanon._manifest import _discover_project_aspects
+    from kernel._manifest import _discover_project_aspects
 
     aspects_dir = tmp_path / ".kanon" / "aspects"
     (aspects_dir / ".hidden-dir").mkdir(parents=True)
@@ -295,8 +291,7 @@ def test_discover_project_aspects_skips_hidden_dirs(tmp_path: Path) -> None:
 def test_discover_project_aspects_missing_manifest_error(tmp_path: Path) -> None:
     """A project-aspect directory without manifest.yaml raises ClickException."""
     import click
-
-    from kanon._manifest import _discover_project_aspects
+    from kernel._manifest import _discover_project_aspects
 
     (tmp_path / ".kanon" / "aspects" / "project-nofile").mkdir(parents=True)
     with pytest.raises(click.ClickException, match="missing manifest.yaml"):
@@ -306,8 +301,7 @@ def test_discover_project_aspects_missing_manifest_error(tmp_path: Path) -> None
 def test_discover_project_aspects_kanon_prefix_rejected(tmp_path: Path) -> None:
     """A kanon-* directory under .kanon/aspects/ is rejected (namespace ownership)."""
     import click
-
-    from kanon._manifest import _discover_project_aspects
+    from kernel._manifest import _discover_project_aspects
 
     d = tmp_path / ".kanon" / "aspects" / "kanon-bad"
     d.mkdir(parents=True)
@@ -319,8 +313,7 @@ def test_discover_project_aspects_kanon_prefix_rejected(tmp_path: Path) -> None:
 def test_discover_project_aspects_invalid_depth_range(tmp_path: Path) -> None:
     """A project-aspect with a non-list depth-range raises ClickException."""
     import click
-
-    from kanon._manifest import _discover_project_aspects
+    from kernel._manifest import _discover_project_aspects
 
     d = tmp_path / ".kanon" / "aspects" / "project-bad"
     d.mkdir(parents=True)
@@ -334,8 +327,7 @@ def test_discover_project_aspects_invalid_depth_range(tmp_path: Path) -> None:
 def test_discover_project_aspects_invalid_stability(tmp_path: Path) -> None:
     """A project-aspect with an invalid stability value raises ClickException."""
     import click
-
-    from kanon._manifest import _discover_project_aspects
+    from kernel._manifest import _discover_project_aspects
 
     d = tmp_path / ".kanon" / "aspects" / "project-bad"
     d.mkdir(parents=True)
@@ -349,8 +341,7 @@ def test_discover_project_aspects_invalid_stability(tmp_path: Path) -> None:
 def test_discover_project_aspects_missing_required_field(tmp_path: Path) -> None:
     """A project-aspect missing a required field raises ClickException."""
     import click
-
-    from kanon._manifest import _discover_project_aspects
+    from kernel._manifest import _discover_project_aspects
 
     d = tmp_path / ".kanon" / "aspects" / "project-bad"
     d.mkdir(parents=True)
@@ -365,8 +356,7 @@ def test_discover_project_aspects_missing_required_field(tmp_path: Path) -> None
 def test_validate_config_schema_non_dict_rejected(tmp_path: Path) -> None:
     """A non-dict config-schema raises ClickException."""
     import click
-
-    from kanon._manifest import _validate_config_schema
+    from kernel._manifest import _validate_config_schema
 
     with pytest.raises(click.ClickException, match="must be a mapping"):
         _validate_config_schema(tmp_path / "fake.yaml", ["not", "a", "dict"])
@@ -375,8 +365,7 @@ def test_validate_config_schema_non_dict_rejected(tmp_path: Path) -> None:
 def test_validate_config_schema_non_string_key_rejected(tmp_path: Path) -> None:
     """A non-string key in config-schema raises ClickException."""
     import click
-
-    from kanon._manifest import _validate_config_schema
+    from kernel._manifest import _validate_config_schema
 
     with pytest.raises(click.ClickException, match="must be a non-empty string"):
         _validate_config_schema(tmp_path / "fake.yaml", {42: {"type": "integer"}})
@@ -385,8 +374,7 @@ def test_validate_config_schema_non_string_key_rejected(tmp_path: Path) -> None:
 def test_validate_config_schema_non_dict_descriptor_rejected(tmp_path: Path) -> None:
     """A non-dict descriptor in config-schema raises ClickException."""
     import click
-
-    from kanon._manifest import _validate_config_schema
+    from kernel._manifest import _validate_config_schema
 
     with pytest.raises(click.ClickException, match="must be a mapping"):
         _validate_config_schema(tmp_path / "fake.yaml", {"key1": "not-a-dict"})
@@ -398,8 +386,7 @@ def test_validate_config_schema_non_dict_descriptor_rejected(tmp_path: Path) -> 
 def test_validate_validators_non_list_rejected(tmp_path: Path) -> None:
     """A non-list validators field raises ClickException."""
     import click
-
-    from kanon._manifest import _validate_validators_field
+    from kernel._manifest import _validate_validators_field
 
     with pytest.raises(click.ClickException, match="must be a list"):
         _validate_validators_field(tmp_path / "fake.yaml", "not-a-list")
@@ -408,8 +395,7 @@ def test_validate_validators_non_list_rejected(tmp_path: Path) -> None:
 def test_validate_validators_non_string_entry_rejected(tmp_path: Path) -> None:
     """A non-string entry in validators raises ClickException."""
     import click
-
-    from kanon._manifest import _validate_validators_field
+    from kernel._manifest import _validate_validators_field
 
     with pytest.raises(click.ClickException, match="must be a string"):
         _validate_validators_field(tmp_path / "fake.yaml", [42])
@@ -418,8 +404,7 @@ def test_validate_validators_non_string_entry_rejected(tmp_path: Path) -> None:
 def test_validate_validators_non_dotted_path_rejected(tmp_path: Path) -> None:
     """A non-dotted-path entry in validators raises ClickException."""
     import click
-
-    from kanon._manifest import _validate_validators_field
+    from kernel._manifest import _validate_validators_field
 
     with pytest.raises(click.ClickException, match="not a valid dotted module path"):
         _validate_validators_field(tmp_path / "fake.yaml", ["not valid!"])
@@ -431,8 +416,7 @@ def test_validate_validators_non_dotted_path_rejected(tmp_path: Path) -> None:
 def test_load_aspect_manifest_unknown_aspect_rejected() -> None:
     """An unknown aspect name raises ClickException."""
     import click
-
-    from kanon._manifest import _load_aspect_manifest, _set_project_aspects_overlay
+    from kernel._manifest import _load_aspect_manifest, _set_project_aspects_overlay
 
     _load_aspect_manifest.cache_clear()
     _set_project_aspects_overlay(None)

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from kanon._validators.index_consistency import check
+from kernel._validators.index_consistency import check
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 

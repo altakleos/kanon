@@ -3,10 +3,10 @@
 Each LOADER stub at ``src/kanon_reference/aspects/kanon_<id>.py`` carries a
 ``MANIFEST: dict[str, Any]`` literal that mirrors the **union** of:
 
-- the registry-level fields from ``src/kanon/kit/manifest.yaml``'s
+- the registry-level fields from ``kernel/kit/manifest.yaml``'s
   ``aspects.<id>:`` entry (``stability``, ``depth-range``, ``default-depth``,
   ``description``, ``requires``, ``provides``, optional ``suggests``); and
-- the content fields from ``src/kanon/kit/aspects/<id>/manifest.yaml`` (``files``,
+- the content fields from ``kernel/kit/aspects/<id>/manifest.yaml`` (``files``,
   ``depth-N``, optional ``byte-equality``, ``config-schema``, etc.).
 
 The ``path:`` field from the top manifest is NOT included in the LOADER —
@@ -26,7 +26,7 @@ import pytest
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-KIT_ROOT = REPO_ROOT / "src" / "kanon" / "kit"
+KIT_ROOT = REPO_ROOT / "kernel" / "kit"
 # Per substrate-content-move sub-plan: aspect data moved to
 # src/kanon_reference/aspects/<slug>/. Top manifest stays at kit/.
 KIT_ASPECTS = REPO_ROOT / "src" / "kanon_reference" / "aspects"
@@ -56,7 +56,7 @@ def _ensure_kanon_reference_importable():
 
 @pytest.fixture(scope="module")
 def _top_manifest() -> dict:
-    """The kit-global YAML manifest at src/kanon/kit/manifest.yaml."""
+    """The kit-global YAML manifest at kernel/kit/manifest.yaml."""
     return yaml.safe_load((KIT_ROOT / "manifest.yaml").read_text(encoding="utf-8"))
 
 

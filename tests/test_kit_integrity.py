@@ -13,7 +13,7 @@ import pytest
 import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
-_KIT = _REPO_ROOT / "src" / "kanon" / "kit"
+_KIT = _REPO_ROOT / "kernel" / "kit"
 # Per substrate-content-move sub-plan: kanon-* aspect data lives at
 # src/kanon_reference/aspects/<slug>/. Tests below reference _REF_DATA.
 _REF_DATA = _REPO_ROOT / "src" / "kanon_reference" / "aspects"

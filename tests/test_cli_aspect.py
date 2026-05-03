@@ -8,8 +8,7 @@ from unittest.mock import patch
 import pytest
 import yaml
 from click.testing import CliRunner
-
-from kanon.cli import main
+from kernel.cli import main
 
 _PROJECT_ASPECT_MIN_MANIFEST = (
     "stability: experimental\n"
@@ -57,7 +56,7 @@ _PROJECT_ASPECT_WITH_VALIDATORS = (
 
 def test_aspect_level_files(tmp_path: Path) -> None:
     """Aspect-level files (sub-manifest top-level `files:`) are scaffolded at any depth."""
-    from kanon._manifest import _load_aspect_manifest
+    from kernel._manifest import _load_aspect_manifest
     sub = _load_aspect_manifest("kanon-sdd")
     aspect_files = sub.get("files", []) or []
     # Currently empty — this test validates the mechanism works.
@@ -535,7 +534,7 @@ def test_aspect_remove_persists_sentinel_on_mid_write_failure(tmp_path: Path) ->
     pending = target / ".kanon" / ".pending"
 
     # Patch _write_config to raise after the sentinel write but before clear.
-    with patch("kanon.cli._write_config", side_effect=OSError("simulated disk full")):
+    with patch("kernel.cli._write_config", side_effect=OSError("simulated disk full")):
         runner.invoke(main, ["aspect", "remove", str(target), "kanon-worktrees"])
     assert pending.is_file(), "sentinel must persist after mid-write failure"
     assert pending.read_text(encoding="utf-8").strip() == "aspect-remove"
@@ -917,7 +916,7 @@ def test_project_aspect_capability_substitutes_kit_capability_requirement() -> N
     """A project-aspect's `provides:` capability satisfies a kit-aspect's
     1-token capability `requires:` predicate (project-aspects spec INV-8 /
     ADR-0028 source-neutral substitutability)."""
-    from kanon.cli import _check_requires
+    from kernel.cli import _check_requires
 
     # Synthetic registry: kit-side `kanon-foo` requires `planning-discipline`
     # in capability-presence form (1-token); `project-lean-sdd` provides it.

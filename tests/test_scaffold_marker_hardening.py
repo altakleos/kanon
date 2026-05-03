@@ -14,8 +14,8 @@ from __future__ import annotations
 import textwrap
 from pathlib import Path
 
-from kanon._manifest import _find_section_pair, _iter_markers
-from kanon._scaffold import (
+from kernel._manifest import _find_section_pair, _iter_markers
+from kernel._scaffold import (
     _assemble_agents_md,
     _merge_agents_md,
     _replace_section,
@@ -125,7 +125,7 @@ def test_assembled_agents_md_is_merge_fixed_point() -> None:
 
 def test_repo_agents_md_round_trips() -> None:
     """The repo's own AGENTS.md should be a fixed point of merge(_, assemble(...))."""
-    from kanon._scaffold import _config_aspects, _read_config
+    from kernel._scaffold import _config_aspects, _read_config
 
     repo_root = Path(__file__).resolve().parents[1]
     config = _read_config(repo_root)
@@ -149,7 +149,7 @@ def test_rewrite_legacy_markers_handles_all_six_bare_aspects() -> None:
     """v0.2 bare-prefixed markers (`<aspect>/<section>`) migrate to v3 namespaced
     (`kanon-<aspect>/<section>`) for every kit-shipped aspect — not just sdd.
     """
-    from kanon._scaffold import _rewrite_legacy_markers
+    from kernel._scaffold import _rewrite_legacy_markers
 
     bare = "\n".join(
         f"<!-- kanon:begin:{a}/body -->\nbody for {a}\n<!-- kanon:end:{a}/body -->"
@@ -170,7 +170,7 @@ def test_rewrite_legacy_markers_handles_all_six_bare_aspects() -> None:
 
 def test_rewrite_legacy_markers_idempotent_on_already_namespaced() -> None:
     """A second call on an already-namespaced text is a no-op (project-aspects INV-5)."""
-    from kanon._scaffold import _rewrite_legacy_markers
+    from kernel._scaffold import _rewrite_legacy_markers
 
     namespaced = (
         "<!-- kanon:begin:kanon-sdd/body -->\n"
@@ -185,7 +185,7 @@ def test_rewrite_legacy_markers_idempotent_on_already_namespaced() -> None:
 
 def test_rewrite_legacy_markers_preserves_user_prose_outside_markers() -> None:
     """User-authored prose outside any kit marker survives the rewrite verbatim."""
-    from kanon._scaffold import _rewrite_legacy_markers
+    from kernel._scaffold import _rewrite_legacy_markers
 
     text = (
         "# AGENTS.md\n"
@@ -216,7 +216,7 @@ def test_rewrite_legacy_markers_preserves_balance() -> None:
     """
     import re as _re
 
-    from kanon._scaffold import _rewrite_legacy_markers
+    from kernel._scaffold import _rewrite_legacy_markers
 
     text = (
         "<!-- kanon:begin:sdd/plan-before-build -->\nA\n"

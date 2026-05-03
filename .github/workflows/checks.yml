@@ -45,7 +45,7 @@ jobs:
         run: ruff check src/ tests/ scripts/
 
       - name: Type check with mypy
-        run: mypy src/kanon
+        run: mypy kernel
 
       - name: Check foundations layer
         run: python scripts/check_foundations.py

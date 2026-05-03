@@ -14,7 +14,7 @@ from typing import Any
 import click
 import yaml
 
-from kanon._manifest import (
+from kernel._manifest import (
     _CAPABILITY_NAME_RE,
     _capability_suppliers,
     _normalise_aspect_name,
@@ -292,14 +292,14 @@ def _check_pending_recovery(target: Path) -> None:
       `_PENDING_OP_TO_COMMAND`. The user types the suggested command and
       it completes the partial state.
     """
-    from kanon._atomic import read_sentinel
+    from kernel._atomic import read_sentinel
 
     pending = read_sentinel(target / ".kanon")
     if pending is None:
         return
     if pending == _OP_GRAPH_RENAME:
         # Auto-recover graph-rename: the ops-manifest replays idempotently.
-        from kanon._rename import recover_pending_rename
+        from kernel._rename import recover_pending_rename
         try:
             recovered = recover_pending_rename(target)
         except click.ClickException:
