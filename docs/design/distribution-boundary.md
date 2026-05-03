@@ -49,9 +49,9 @@ requires = ["hatchling>=1.18"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/kanon"]
+packages = ["kernel"]
 exclude = [
-    "src/kanon/kit/aspects/**",  # kit-shape aspects retired; ship none
+    "kernel/kit/aspects/**",  # kit-shape aspects retired; ship none
 ]
 ```
 
@@ -186,11 +186,11 @@ Phase A's `scripts/check_release_cadence.py` (or analogous) enforces `INV-releas
 import subprocess, sys
 from pathlib import Path
 
-KERNEL_VERSION_FILE = Path("kanon-substrate/src/kanon/__init__.py")
+KERNEL_VERSION_FILE = Path("kanon-substrate/kernel/__init__.py")
 DIALECT_GRAMMAR_PATHS = [
     Path("docs/specs/dialect-grammar.md"),
     Path("docs/design/dialect-grammar.md"),
-    Path("kanon-substrate/src/kanon/_dialects.py"),
+    Path("kanon-substrate/kernel/_dialects.py"),
 ]
 
 def main():
@@ -225,7 +225,7 @@ The check is conservative: it rejects coincidental same-commit bundling. If a re
 The migration script (Phase A) transitions a v0.3.x consumer repo to v0.4. It is deprecated-on-arrival per [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md)'s migration commitment; deleted after the kanon repo's own migration commit lands.
 
 ```python
-# kanon-substrate/src/kanon/_migration_v3_to_v4.py (Phase A; deprecated-on-arrival)
+# kanon-substrate/kernel/_migration_v3_to_v4.py (Phase A; deprecated-on-arrival)
 #
 # Migrates a v0.3.x consumer repo to v0.4.
 #

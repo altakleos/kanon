@@ -30,7 +30,7 @@ Three properties define the kit ([vision.md](foundations/vision.md)):
 
 - **Portable.** Same `AGENTS.md` works across nine harnesses via shim files. New harnesses are a data-file edit.
 - **Aspect-oriented.** Disciplines are opt-in *aspects* with depth dials. Enable only what you need; grow without ceremony you don't need yet.
-- **Self-hosting.** This repo is itself a kanon project at `kanon-sdd:3` + `kanon-worktrees:2` + others. `src/kanon/kit/` (the bundle the kit ships) and `docs/` (the kit's own SDD artifacts) share source-of-truth, CI-enforced. *If you can't use the kit to develop the kit, the kit isn't good enough.*
+- **Self-hosting.** This repo is itself a kanon project at `kanon-sdd:3` + `kanon-worktrees:2` + others. `kernel/kit/` (the bundle the kit ships) and `docs/` (the kit's own SDD artifacts) share source-of-truth, CI-enforced. *If you can't use the kit to develop the kit, the kit isn't good enough.*
 
 That self-hosting twist is the most surprising thing about the codebase: **the same code that templates consumer repos templates this repo**. `src/kanon_reference/aspects/kanon_<local>/` and `docs/` + `.kanon/` look duplicative until you realize the former is the source-of-truth and the latter is an instance of it.
 
@@ -59,7 +59,7 @@ flowchart LR
     style DIAL fill:#fef3c7,stroke:#92400e
 ```
 
-The 7 kit-shipped aspects (verbatim from [`src/kanon/kit/manifest.yaml:35-108`](../kernel/kit/manifest.yaml)):
+The 7 kit-shipped aspects (verbatim from [`kernel/kit/manifest.yaml:35-108`](../kernel/kit/manifest.yaml)):
 
 | Aspect | Stability | Depth range | Default | What it gives you |
 |---|---|---|---:|---|
@@ -137,7 +137,7 @@ flowchart TB
 | [`_atomic.py`](../kernel/_atomic.py) | 71 | `atomic_write_text` + `.pending` sentinel | `test_atomic.py` | [ADR-0024](decisions/0024-crash-consistent-atomicity.md) |
 | [`_banner.py`](../kernel/_banner.py) | 31 | Brand banner — single source of truth, bytes asserted | `test_banner.py` | — |
 
-In-process kit validators in [`src/kanon/_validators/`](../kernel/_validators/) — called by `_verify.py` only:
+In-process kit validators in [`kernel/_validators/`](../kernel/_validators/) — called by `_verify.py` only:
 
 | Validator | Aspect | Depth-min | Purpose |
 |---|---|---:|---|
@@ -150,7 +150,7 @@ In-process kit validators in [`src/kanon/_validators/`](../kernel/_validators/) 
 
 Other trees, one sentence each:
 
-- [`src/kanon_reference/aspects/`](../src/kanon_reference/aspects/) — the seven reference aspects' data (manifests, protocols, files); one directory per aspect (`kanon-<local>/`). Plus substrate-level files at [`src/kanon/kit/`](../kernel/kit/) (`manifest.yaml`, `agents-md-base.md`, `harnesses.yaml`).
+- [`src/kanon_reference/aspects/`](../src/kanon_reference/aspects/) — the seven reference aspects' data (manifests, protocols, files); one directory per aspect (`kanon-<local>/`). Plus substrate-level files at [`kernel/kit/`](../kernel/kit/) (`manifest.yaml`, `agents-md-base.md`, `harnesses.yaml`).
 - [`tests/`](../tests/) — 950+ tests; `test_e2e_*.py` deselected by default (`e2e` marker); `tests/scripts/test_check_*.py` covers the CI scripts.
 - [`scripts/`](../scripts/) — standalone substrate-internal validators. (Per Phase A.8, the substrate no longer scaffolds CI scripts into consumer repos.)
 - [`docs/decisions/`](decisions/) — 39 ADRs; index in [`README.md`](decisions/README.md), category-tagged.
@@ -163,13 +163,13 @@ First: which aspect (if any) does this belong to? Then: do I need a spec, a plan
 
 | If your change is… | It belongs in… | Spec / plan needed? |
 |---|---|---|
-| New CLI command, flag, or subcommand | [`src/kanon/cli.py`](../kernel/cli.py) + spec amendment in [`docs/specs/cli.md`](specs/cli.md) | **Spec** + plan |
+| New CLI command, flag, or subcommand | [`kernel/cli.py`](../kernel/cli.py) + spec amendment in [`docs/specs/cli.md`](specs/cli.md) | **Spec** + plan |
 | New protocol that gates agent behaviour | `src/kanon_reference/aspects/kanon_<local>/protocols/<name>.md` + sub-manifest entry | Plan |
 | Edit existing protocol prose | `src/kanon_reference/aspects/kanon_<local>/protocols/<name>.md` + recapture fidelity fixtures per [`fidelity-discipline`](../.kanon/protocols/kanon-fidelity/fidelity-discipline.md) | Plan |
 | New aspect | New dir `src/kanon_reference/aspects/kanon-<local>/` + LOADER stub at `src/kanon_reference/aspects/kanon_<local>.py` + entry-point in [`pyproject.toml`](../pyproject.toml) `[project.entry-points."kanon.aspects"]` + spec | **Spec** + ADR + plan |
 | Add a CI check | `scripts/check_<name>.py` + wire into [`.github/workflows/checks.yml`](../.github/workflows/checks.yml) + test in `tests/scripts/` | Plan |
-| Add an in-process kit validator | `src/kanon/_validators/<name>.py` + register in target aspect's `manifest.yaml` `validators:` | Plan |
-| Bundle file change (template, scaffolded README) | `src/kanon_reference/aspects/kanon_<local>/files/...` or `src/kanon/kit/<file>` (substrate-level) | Plan |
+| Add an in-process kit validator | `kernel/_validators/<name>.py` + register in target aspect's `manifest.yaml` `validators:` | Plan |
+| Bundle file change (template, scaffolded README) | `src/kanon_reference/aspects/kanon_<local>/files/...` or `kernel/kit/<file>` (substrate-level) | Plan |
 | Bug fix (single function, single test) | Direct fix; no plan iff truly trivial per `plan-before-build` § 1 | Trivial path: no plan |
 | New ADR | `docs/decisions/NNNN-<slug>.md` + entry in [`docs/decisions/README.md`](decisions/README.md) | No plan; the ADR *is* the artifact |
 
@@ -194,7 +194,7 @@ flowchart TB
     style SEMANTIC fill:#fee2e2,stroke:#991b1b,stroke-width:2px
 ```
 
-`kanon verify .` reads but does not write: it walks the consumer repo, asks each enabled aspect whether its contract is satisfied at the declared depth, aggregates findings, and returns `ok` or `fail`. Project-defined validators run first; kit validators run after and override (ADR-0028 § non-overriding). When the `behavioural-verification` capability is present, fidelity assertions replay against committed `.dogfood.md` captures (ADR-0029). Implementation: [`src/kanon/_verify.py`](../kernel/_verify.py).
+`kanon verify .` reads but does not write: it walks the consumer repo, asks each enabled aspect whether its contract is satisfied at the declared depth, aggregates findings, and returns `ok` or `fail`. Project-defined validators run first; kit validators run after and override (ADR-0028 § non-overriding). When the `behavioural-verification` capability is present, fidelity assertions replay against committed `.dogfood.md` captures (ADR-0029). Implementation: [`kernel/_verify.py`](../kernel/_verify.py).
 
 The full gate matrix:
 
@@ -202,7 +202,7 @@ The full gate matrix:
 |---|---|---|---|
 | `pytest -v` | Hard | All non-e2e tests pass on py3.10–3.13 | `make test` |
 | `ruff check src/ tests/ ci/` | Hard | Lint clean | `make lint` |
-| `mypy src/kanon` | Hard | `--strict` type check | `make typecheck` |
+| `mypy kernel` | Hard | `--strict` type check | `make typecheck` |
 | `scripts/check_foundations.py` | Hard | Principles + personas frontmatter; no orphans | `python scripts/check_foundations.py` |
 | `scripts/check_links.py` | Hard | Every relative markdown link resolves | `python scripts/check_links.py` |
 | `scripts/check_kit_consistency.py` | Hard | Bundle byte-equality + manifest validity | `python scripts/check_kit_consistency.py` |
@@ -263,7 +263,7 @@ These are non-negotiable contracts. CI catches most but not all of them.
 2. **Weaken a fidelity assertion to make a fixture pass.** Fix the prose, fix the agent's prompt, or remove the assertion deliberately with a note. See [`fidelity-discipline`](../.kanon/protocols/kanon-fidelity/fidelity-discipline.md) § 3.
 3. **Bypass `_atomic.py` for kit-managed files.** Use `atomic_write_text()` and the `.pending` sentinel pattern. The crash-consistency contract is non-negotiable. See [ADR-0024](decisions/0024-crash-consistent-atomicity.md).
 4. **Add `subprocess.run(..., shell=True)` without an `# nosec — see ADR-0036` annotation and a same-repo trust-boundary justification.** Carve-out grammar: [`secure-defaults`](../.kanon/protocols/kanon-security/secure-defaults.md) § Injection.
-5. **Edit kit-rendered marker bodies in consumer trees.** Anything between `<!-- kanon:begin:... -->` and `<!-- kanon:end:... -->` is owned by `kanon upgrade`; hand-edits are silently overwritten on next refresh. Edit the source under `src/kanon/kit/` instead.
+5. **Edit kit-rendered marker bodies in consumer trees.** Anything between `<!-- kanon:begin:... -->` and `<!-- kanon:end:... -->` is owned by `kanon upgrade`; hand-edits are silently overwritten on next refresh. Edit the source under `kernel/kit/` instead.
 
 ## See also
 
