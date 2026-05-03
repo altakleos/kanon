@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- **`make wheel-check` + release-preflight `wheel-build-validate` stage** — `scripts/check_wheel_build.py` builds a fresh sdist+wheel via `python -m build` (the same pipeline `release.yml` runs on tag push) and validates the result via `scripts/check_package_contents.py`. Closes the local-validation gap that produced v0.5.0a2 hotfix PRs #99 and #100: previously, local builds via `python -m build --wheel` (direct, no sdist) bypassed the sdist-include filter and produced a complete wheel even when the actual CI sdist→wheel pipeline shipped an incomplete one. Per plan `docs/plans/active/wheel-build-preflight.md`.
+
 ### Changed
 
 - **Distribution naming**: ADR-0051 (accepted) renames the two planned-but-unpublished distributions for the upcoming three-package PyPI split: `kanon-substrate` → `kanon-core`, `kanon-reference` → `kanon-aspects`. The meta-package `kanon-kit` is unchanged. Both old names returned HTTP 404 on PyPI at acceptance time; rename is doc-only with no consumer migration. Per plan `docs/plans/archive/adr-0051-sweep.md`.
