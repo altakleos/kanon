@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from kernel._manifest import (
+from kanon_core._manifest import (
     _aspect_depth_range,
     _load_aspect_manifest,
     _render_placeholder,

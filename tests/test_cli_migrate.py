@@ -7,7 +7,8 @@ from pathlib import Path
 
 import yaml
 from click.testing import CliRunner
-from kernel.cli import main
+
+from kanon_core.cli import main
 
 
 def _write_v3_config(target: Path, with_testing_config: bool = True) -> None:

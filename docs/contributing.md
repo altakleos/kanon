@@ -30,7 +30,7 @@ Three properties define the kit ([vision.md](foundations/vision.md)):
 
 - **Portable.** Same `AGENTS.md` works across nine harnesses via shim files. New harnesses are a data-file edit.
 - **Aspect-oriented.** Disciplines are opt-in *aspects* with depth dials. Enable only what you need; grow without ceremony you don't need yet.
-- **Self-hosting.** This repo is itself a kanon project at `kanon-sdd:3` + `kanon-worktrees:2` + others. `kernel/kit/` (the bundle the kit ships) and `docs/` (the kit's own SDD artifacts) share source-of-truth, CI-enforced. *If you can't use the kit to develop the kit, the kit isn't good enough.*
+- **Self-hosting.** This repo is itself a kanon project at `kanon-sdd:3` + `kanon-worktrees:2` + others. `packages/kanon-core/src/kanon_core/kit/` (the bundle the kit ships) and `docs/` (the kit's own SDD artifacts) share source-of-truth, CI-enforced. *If you can't use the kit to develop the kit, the kit isn't good enough.*
 
 That self-hosting twist is the most surprising thing about the codebase: **the same code that templates consumer repos templates this repo**. `src/kanon_reference/aspects/kanon_<local>/` and `docs/` + `.kanon/` look duplicative until you realize the former is the source-of-truth and the latter is an instance of it.
 
@@ -59,7 +59,7 @@ flowchart LR
     style DIAL fill:#fef3c7,stroke:#92400e
 ```
 
-The 7 kit-shipped aspects (verbatim from [`kernel/kit/manifest.yaml:35-108`](../kernel/kit/manifest.yaml)):
+The 7 kit-shipped aspects (verbatim from [`packages/kanon-core/src/kanon_core/kit/manifest.yaml:35-108`](../packages/kanon-core/src/kanon_core/kit/manifest.yaml)):
 
 | Aspect | Stability | Depth range | Default | What it gives you |
 |---|---|---|---:|---|
@@ -71,7 +71,7 @@ The 7 kit-shipped aspects (verbatim from [`kernel/kit/manifest.yaml:35-108`](../
 | `kanon-deps` | experimental | 0–2 | 1 | Dependency hygiene + CI scanner |
 | `kanon-fidelity` | experimental | 0–1 | 1 | Behavioural conformance via lexical assertions |
 
-Default `kanon init` enables 5 of the 7 (`kanon-sdd`, `kanon-testing`, `kanon-security`, `kanon-deps`, `kanon-worktrees`); `kanon-release` and `kanon-fidelity` are opt-in ([`manifest.yaml:24-29`](../kernel/kit/manifest.yaml)). Aspects compose via a `provides:` capability registry — a dependent's `requires: ["planning-discipline"]` is satisfied by *any* enabled aspect that declares the capability, kit-shipped or project-defined ([ADR-0026](decisions/0026-aspect-provides-and-generalised-requires.md)).
+Default `kanon init` enables 5 of the 7 (`kanon-sdd`, `kanon-testing`, `kanon-security`, `kanon-deps`, `kanon-worktrees`); `kanon-release` and `kanon-fidelity` are opt-in ([`manifest.yaml:24-29`](../packages/kanon-core/src/kanon_core/kit/manifest.yaml)). Aspects compose via a `provides:` capability registry — a dependent's `requires: ["planning-discipline"]` is satisfied by *any* enabled aspect that declares the capability, kit-shipped or project-defined ([ADR-0026](decisions/0026-aspect-provides-and-generalised-requires.md)).
 
 For mechanism (sub-manifest shape, depth resolution, marker namespacing): [`docs/design/aspect-model.md`](design/aspect-model.md). Not re-explained here.
 
@@ -95,7 +95,7 @@ sequenceDiagram
 
 Three things to internalize:
 
-1. **The I/O surface is small.** Only [`_scaffold.py`](../kernel/_scaffold.py) and [`_manifest.py`](../kernel/_manifest.py) touch the filesystem; everything else is pure-ish. New filesystem writes flow through `_write_tree_atomically()` so the sentinel discipline is preserved.
+1. **The I/O surface is small.** Only [`_scaffold.py`](../packages/kanon-core/src/kanon_core/_scaffold.py) and [`_manifest.py`](../packages/kanon-core/src/kanon_core/_manifest.py) touch the filesystem; everything else is pure-ish. New filesystem writes flow through `_write_tree_atomically()` so the sentinel discipline is preserved.
 2. **Atomic writes + sentinels = crash consistency.** Every multi-file mutation writes `.kanon/.pending` *before* the first byte and clears it *after* the last. The next `kanon` invocation reads the sentinel and replays. See [ADR-0024](decisions/0024-crash-consistent-atomicity.md) and [ADR-0030](decisions/0030-recovery-model.md). Don't bypass this.
 3. **`init`, `upgrade`, `verify`, `aspect set-depth` share the same skeleton.** `init` is the only one that doesn't call `_check_pending_recovery` first (greenfield: nothing to recover); the others do.
 
@@ -124,33 +124,33 @@ flowchart TB
 
 | Module | LOC | Role | Primary tests | Governing ADR |
 |---|---:|---|---|---|
-| [`cli.py`](../kernel/cli.py) | 1,121 | Click dispatcher; 9 commands, 11 subcommands | `test_cli.py`, `test_cli_aspect.py`, `test_cli_verify.py`, `test_cli_fidelity.py` | — |
-| [`_cli_helpers.py`](../kernel/_cli_helpers.py) | 321 | Pure-logic CLI helpers (parse, validate, recover) | `test_cli_helpers.py` | — |
-| [`_cli_aspect.py`](../kernel/_cli_aspect.py) | 194 | `aspect set-depth` engine | `test_set_aspect_depth_helpers.py`, `test_cli_aspect.py` | [ADR-0012](decisions/0012-aspect-model.md) |
-| [`_manifest.py`](../kernel/_manifest.py) | 662 | Loads kit + project aspect registry; placeholder rendering | `test_kit_integrity.py`, `test_aspect_provides.py` | [ADR-0011](decisions/0011-kit-bundle-refactor.md), [ADR-0028](decisions/0028-project-aspects.md) |
-| [`_scaffold.py`](../kernel/_scaffold.py) | 636 | AGENTS.md assembly, marker rewrite, harness shim render, atomic tree write | `test_scaffold_marker_hardening.py`, `test_scaffold_symlink.py`, `test_cli.py` | [ADR-0034](decisions/0034-routing-index-agents-md.md) |
-| [`_verify.py`](../kernel/_verify.py) | 374 | Validation orchestration; structural checks → validators | `test_cli_verify.py`, `test_verify_validators.py` | [ADR-0004](decisions/0004-verification-co-authoritative-source.md) |
-| [`_fidelity.py`](../kernel/_fidelity.py) | 482 | Lexical assertion engine over `.dogfood.md` captures (text-only) | `test_fidelity.py`, `test_cli_fidelity.py` | [ADR-0029](decisions/0029-verification-fidelity-replay-carveout.md), [ADR-0031](decisions/0031-fidelity-aspect.md) |
-| [`_graph.py`](../kernel/_graph.py) | 733 | Cross-link graph; powers `graph orphans` and `graph rename` | `test_graph.py`, `test_graph_orphans.py`, `test_graph_rename.py` | — |
-| [`_rename.py`](../kernel/_rename.py) | 517 | Crash-consistent ops-manifest replay for `graph rename` | `test_graph_rename.py` | [ADR-0027](decisions/0027-graph-rename-ops-manifest.md), [ADR-0030](decisions/0030-recovery-model.md) |
-| [`_preflight.py`](../kernel/_preflight.py) | 124 | Staged check runner (commit ⊂ push ⊂ release) | `test_preflight.py` | [ADR-0036](decisions/0036-secure-defaults-config-trust-carveout.md) |
-| [`_atomic.py`](../kernel/_atomic.py) | 71 | `atomic_write_text` + `.pending` sentinel | `test_atomic.py` | [ADR-0024](decisions/0024-crash-consistent-atomicity.md) |
-| [`_banner.py`](../kernel/_banner.py) | 31 | Brand banner — single source of truth, bytes asserted | `test_banner.py` | — |
+| [`cli.py`](../packages/kanon-core/src/kanon_core/cli.py) | 1,121 | Click dispatcher; 9 commands, 11 subcommands | `test_cli.py`, `test_cli_aspect.py`, `test_cli_verify.py`, `test_cli_fidelity.py` | — |
+| [`_cli_helpers.py`](../packages/kanon-core/src/kanon_core/_cli_helpers.py) | 321 | Pure-logic CLI helpers (parse, validate, recover) | `test_cli_helpers.py` | — |
+| [`_cli_aspect.py`](../packages/kanon-core/src/kanon_core/_cli_aspect.py) | 194 | `aspect set-depth` engine | `test_set_aspect_depth_helpers.py`, `test_cli_aspect.py` | [ADR-0012](decisions/0012-aspect-model.md) |
+| [`_manifest.py`](../packages/kanon-core/src/kanon_core/_manifest.py) | 662 | Loads kit + project aspect registry; placeholder rendering | `test_kit_integrity.py`, `test_aspect_provides.py` | [ADR-0011](decisions/0011-kit-bundle-refactor.md), [ADR-0028](decisions/0028-project-aspects.md) |
+| [`_scaffold.py`](../packages/kanon-core/src/kanon_core/_scaffold.py) | 636 | AGENTS.md assembly, marker rewrite, harness shim render, atomic tree write | `test_scaffold_marker_hardening.py`, `test_scaffold_symlink.py`, `test_cli.py` | [ADR-0034](decisions/0034-routing-index-agents-md.md) |
+| [`_verify.py`](../packages/kanon-core/src/kanon_core/_verify.py) | 374 | Validation orchestration; structural checks → validators | `test_cli_verify.py`, `test_verify_validators.py` | [ADR-0004](decisions/0004-verification-co-authoritative-source.md) |
+| [`_fidelity.py`](../packages/kanon-core/src/kanon_core/_fidelity.py) | 482 | Lexical assertion engine over `.dogfood.md` captures (text-only) | `test_fidelity.py`, `test_cli_fidelity.py` | [ADR-0029](decisions/0029-verification-fidelity-replay-carveout.md), [ADR-0031](decisions/0031-fidelity-aspect.md) |
+| [`_graph.py`](../packages/kanon-core/src/kanon_core/_graph.py) | 733 | Cross-link graph; powers `graph orphans` and `graph rename` | `test_graph.py`, `test_graph_orphans.py`, `test_graph_rename.py` | — |
+| [`_rename.py`](../packages/kanon-core/src/kanon_core/_rename.py) | 517 | Crash-consistent ops-manifest replay for `graph rename` | `test_graph_rename.py` | [ADR-0027](decisions/0027-graph-rename-ops-manifest.md), [ADR-0030](decisions/0030-recovery-model.md) |
+| [`_preflight.py`](../packages/kanon-core/src/kanon_core/_preflight.py) | 124 | Staged check runner (commit ⊂ push ⊂ release) | `test_preflight.py` | [ADR-0036](decisions/0036-secure-defaults-config-trust-carveout.md) |
+| [`_atomic.py`](../packages/kanon-core/src/kanon_core/_atomic.py) | 71 | `atomic_write_text` + `.pending` sentinel | `test_atomic.py` | [ADR-0024](decisions/0024-crash-consistent-atomicity.md) |
+| [`_banner.py`](../packages/kanon-core/src/kanon_core/_banner.py) | 31 | Brand banner — single source of truth, bytes asserted | `test_banner.py` | — |
 
-In-process kit validators in [`kernel/_validators/`](../kernel/_validators/) — called by `_verify.py` only:
+In-process kit validators in [`packages/kanon-core/src/kanon_core/_validators/`](../packages/kanon-core/src/kanon_core/_validators/) — called by `_verify.py` only:
 
 | Validator | Aspect | Depth-min | Purpose |
 |---|---|---:|---|
-| [`plan_completion.py`](../kernel/_validators/plan_completion.py) | `kanon-sdd` | 1 | Flag plans `status: done` with unchecked tasks |
-| [`index_consistency.py`](../kernel/_validators/index_consistency.py) | `kanon-sdd` | 1 | Flag duplicate link targets in `docs/*/README.md` |
-| [`link_check.py`](../kernel/_validators/link_check.py) | `kanon-sdd` | 2 | Flag broken relative markdown links under `docs/` |
-| [`adr_immutability.py`](../kernel/_validators/adr_immutability.py) | `kanon-sdd` | 2 | Flag body changes to accepted ADRs in HEAD commit |
-| [`spec_design_parity.py`](../kernel/_validators/spec_design_parity.py) | `kanon-sdd` | 3 | Warn on accepted specs without companion design doc |
-| [`test_import_check.py`](../kernel/_validators/test_import_check.py) | `kanon-testing` | 2 | Flag `tests/scripts/test_*.py` referencing missing CI scripts |
+| [`plan_completion.py`](../packages/kanon-core/src/kanon_core/_validators/plan_completion.py) | `kanon-sdd` | 1 | Flag plans `status: done` with unchecked tasks |
+| [`index_consistency.py`](../packages/kanon-core/src/kanon_core/_validators/index_consistency.py) | `kanon-sdd` | 1 | Flag duplicate link targets in `docs/*/README.md` |
+| [`link_check.py`](../packages/kanon-core/src/kanon_core/_validators/link_check.py) | `kanon-sdd` | 2 | Flag broken relative markdown links under `docs/` |
+| [`adr_immutability.py`](../packages/kanon-core/src/kanon_core/_validators/adr_immutability.py) | `kanon-sdd` | 2 | Flag body changes to accepted ADRs in HEAD commit |
+| [`spec_design_parity.py`](../packages/kanon-core/src/kanon_core/_validators/spec_design_parity.py) | `kanon-sdd` | 3 | Warn on accepted specs without companion design doc |
+| [`test_import_check.py`](../packages/kanon-core/src/kanon_core/_validators/test_import_check.py) | `kanon-testing` | 2 | Flag `tests/scripts/test_*.py` referencing missing CI scripts |
 
 Other trees, one sentence each:
 
-- [`src/kanon_reference/aspects/`](../src/kanon_reference/aspects/) — the seven reference aspects' data (manifests, protocols, files); one directory per aspect (`kanon-<local>/`). Plus substrate-level files at [`kernel/kit/`](../kernel/kit/) (`manifest.yaml`, `agents-md-base.md`, `harnesses.yaml`).
+- [`src/kanon_reference/aspects/`](../src/kanon_reference/aspects/) — the seven reference aspects' data (manifests, protocols, files); one directory per aspect (`kanon-<local>/`). Plus substrate-level files at [`packages/kanon-core/src/kanon_core/kit/`](../packages/kanon-core/src/kanon_core/kit/) (`manifest.yaml`, `agents-md-base.md`, `harnesses.yaml`).
 - [`tests/`](../tests/) — 950+ tests; `test_e2e_*.py` deselected by default (`e2e` marker); `tests/scripts/test_check_*.py` covers the CI scripts.
 - [`scripts/`](../scripts/) — standalone substrate-internal validators. (Per Phase A.8, the substrate no longer scaffolds CI scripts into consumer repos.)
 - [`docs/decisions/`](decisions/) — 39 ADRs; index in [`README.md`](decisions/README.md), category-tagged.
@@ -163,13 +163,13 @@ First: which aspect (if any) does this belong to? Then: do I need a spec, a plan
 
 | If your change is… | It belongs in… | Spec / plan needed? |
 |---|---|---|
-| New CLI command, flag, or subcommand | [`kernel/cli.py`](../kernel/cli.py) + spec amendment in [`docs/specs/cli.md`](specs/cli.md) | **Spec** + plan |
+| New CLI command, flag, or subcommand | [`packages/kanon-core/src/kanon_core/cli.py`](../packages/kanon-core/src/kanon_core/cli.py) + spec amendment in [`docs/specs/cli.md`](specs/cli.md) | **Spec** + plan |
 | New protocol that gates agent behaviour | `src/kanon_reference/aspects/kanon_<local>/protocols/<name>.md` + sub-manifest entry | Plan |
 | Edit existing protocol prose | `src/kanon_reference/aspects/kanon_<local>/protocols/<name>.md` + recapture fidelity fixtures per [`fidelity-discipline`](../.kanon/protocols/kanon-fidelity/fidelity-discipline.md) | Plan |
 | New aspect | New dir `src/kanon_reference/aspects/kanon-<local>/` + LOADER stub at `src/kanon_reference/aspects/kanon_<local>.py` + entry-point in [`pyproject.toml`](../pyproject.toml) `[project.entry-points."kanon.aspects"]` + spec | **Spec** + ADR + plan |
 | Add a CI check | `scripts/check_<name>.py` + wire into [`.github/workflows/checks.yml`](../.github/workflows/checks.yml) + test in `tests/scripts/` | Plan |
-| Add an in-process kit validator | `kernel/_validators/<name>.py` + register in target aspect's `manifest.yaml` `validators:` | Plan |
-| Bundle file change (template, scaffolded README) | `src/kanon_reference/aspects/kanon_<local>/files/...` or `kernel/kit/<file>` (substrate-level) | Plan |
+| Add an in-process kit validator | `packages/kanon-core/src/kanon_core/_validators/<name>.py` + register in target aspect's `manifest.yaml` `validators:` | Plan |
+| Bundle file change (template, scaffolded README) | `src/kanon_reference/aspects/kanon_<local>/files/...` or `packages/kanon-core/src/kanon_core/kit/<file>` (substrate-level) | Plan |
 | Bug fix (single function, single test) | Direct fix; no plan iff truly trivial per `plan-before-build` § 1 | Trivial path: no plan |
 | New ADR | `docs/decisions/NNNN-<slug>.md` + entry in [`docs/decisions/README.md`](decisions/README.md) | No plan; the ADR *is* the artifact |
 
@@ -194,7 +194,7 @@ flowchart TB
     style SEMANTIC fill:#fee2e2,stroke:#991b1b,stroke-width:2px
 ```
 
-`kanon verify .` reads but does not write: it walks the consumer repo, asks each enabled aspect whether its contract is satisfied at the declared depth, aggregates findings, and returns `ok` or `fail`. Project-defined validators run first; kit validators run after and override (ADR-0028 § non-overriding). When the `behavioural-verification` capability is present, fidelity assertions replay against committed `.dogfood.md` captures (ADR-0029). Implementation: [`kernel/_verify.py`](../kernel/_verify.py).
+`kanon verify .` reads but does not write: it walks the consumer repo, asks each enabled aspect whether its contract is satisfied at the declared depth, aggregates findings, and returns `ok` or `fail`. Project-defined validators run first; kit validators run after and override (ADR-0028 § non-overriding). When the `behavioural-verification` capability is present, fidelity assertions replay against committed `.dogfood.md` captures (ADR-0029). Implementation: [`packages/kanon-core/src/kanon_core/_verify.py`](../packages/kanon-core/src/kanon_core/_verify.py).
 
 The full gate matrix:
 
@@ -263,7 +263,7 @@ These are non-negotiable contracts. CI catches most but not all of them.
 2. **Weaken a fidelity assertion to make a fixture pass.** Fix the prose, fix the agent's prompt, or remove the assertion deliberately with a note. See [`fidelity-discipline`](../.kanon/protocols/kanon-fidelity/fidelity-discipline.md) § 3.
 3. **Bypass `_atomic.py` for kit-managed files.** Use `atomic_write_text()` and the `.pending` sentinel pattern. The crash-consistency contract is non-negotiable. See [ADR-0024](decisions/0024-crash-consistent-atomicity.md).
 4. **Add `subprocess.run(..., shell=True)` without an `# nosec — see ADR-0036` annotation and a same-repo trust-boundary justification.** Carve-out grammar: [`secure-defaults`](../.kanon/protocols/kanon-security/secure-defaults.md) § Injection.
-5. **Edit kit-rendered marker bodies in consumer trees.** Anything between `<!-- kanon:begin:... -->` and `<!-- kanon:end:... -->` is owned by `kanon upgrade`; hand-edits are silently overwritten on next refresh. Edit the source under `kernel/kit/` instead.
+5. **Edit kit-rendered marker bodies in consumer trees.** Anything between `<!-- kanon:begin:... -->` and `<!-- kanon:end:... -->` is owned by `kanon upgrade`; hand-edits are silently overwritten on next refresh. Edit the source under `packages/kanon-core/src/kanon_core/kit/` instead.
 
 ## See also
 

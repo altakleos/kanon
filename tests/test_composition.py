@@ -7,7 +7,7 @@ docs/design/dialect-grammar.md §"Composition resolution algorithm".
 
 from __future__ import annotations
 
-from kernel._composition import (
+from kanon_core._composition import (
     ContractRef,
     compose,
 )

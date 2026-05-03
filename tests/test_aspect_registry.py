@@ -19,7 +19,8 @@ from pathlib import Path
 
 import click
 import pytest
-from kernel._manifest import (
+
+from kanon_core._manifest import (
     _load_aspect_manifest,
     _load_aspect_registry,
     _load_aspects_from_entry_points,
@@ -150,7 +151,7 @@ def test_entry_point_manifest_missing_required_field_rejected(
     # validation by going through the real entry-point reader on a synthetic
     # MANIFEST. Quickest assertion: the registry entry exists but lacks the
     # validated fields — downstream callers (e.g., _aspect_depth_range) raise.
-    from kernel._manifest import _aspect_depth_range, _load_top_manifest
+    from kanon_core._manifest import _aspect_depth_range, _load_top_manifest
     _load_top_manifest.cache_clear()
     with pytest.raises((click.ClickException, KeyError)):
         _aspect_depth_range("kanon-bogus")
@@ -253,7 +254,7 @@ def test_aspect_path_fails_loudly_without_kanon_reference(
     no longer exists post-Phase-A.7."""
     import sys
 
-    from kernel import _manifest as m
+    from kanon_core import _manifest as m
 
     # Force the entry to lack _source so the synthesis fallback runs.
     monkeypatch.setattr(m, "_aspect_entry", lambda a: {"path": "aspects/kanon-sdd"})

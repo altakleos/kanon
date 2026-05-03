@@ -29,8 +29,8 @@ def _local_python() -> str:
 
 
 def _find_version() -> str | None:
-    # Per ADR-0050 Option A: substrate kernel source is at `kernel/__init__.py`.
-    candidate = Path("kernel/__init__.py")
+    # Per ADR-0050 Option A: substrate kernel source is at `packages/kanon-core/src/kanon_core/__init__.py`.
+    candidate = Path("packages/kanon-core/src/kanon_core/__init__.py")
     if not candidate.is_file():
         return None
     m = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', candidate.read_text())

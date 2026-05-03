@@ -33,8 +33,8 @@ def test_find_version_missing(mod, monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
 
 
 def test_find_version_from_init(mod, monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """_find_version() extracts version from kernel/__init__.py."""
-    init = tmp_path / "kernel" / "__init__.py"
+    """_find_version() extracts version from kanon_core/__init__.py."""
+    init = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "__init__.py"
     init.parent.mkdir(parents=True)
     init.write_text('__version__ = "1.2.3"\n')
     monkeypatch.chdir(tmp_path)
@@ -60,7 +60,7 @@ def test_main_all_pass(
     tmp_path: Path,
 ) -> None:
     """main() exits 0 and reports ok=true when everything passes."""
-    init = tmp_path / "kernel" / "__init__.py"
+    init = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "__init__.py"
     init.parent.mkdir(parents=True)
     init.write_text('__version__ = "1.2.3"\n')
     (tmp_path / "CHANGELOG.md").write_text("## [1.2.3] - 2026-04-25\n")
@@ -85,7 +85,7 @@ def test_main_version_mismatch(
     tmp_path: Path,
 ) -> None:
     """main() exits 1 when __version__ doesn't match the tag."""
-    init = tmp_path / "kernel" / "__init__.py"
+    init = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "__init__.py"
     init.parent.mkdir(parents=True)
     init.write_text('__version__ = "1.2.2"\n')
     (tmp_path / "CHANGELOG.md").write_text("## [1.2.3] - 2026-04-25\n")
@@ -110,7 +110,7 @@ def test_main_missing_changelog(
     tmp_path: Path,
 ) -> None:
     """main() exits 1 when CHANGELOG.md is absent."""
-    init = tmp_path / "kernel" / "__init__.py"
+    init = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "__init__.py"
     init.parent.mkdir(parents=True)
     init.write_text('__version__ = "1.2.3"\n')
     # No CHANGELOG.md created

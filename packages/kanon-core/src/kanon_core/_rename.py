@@ -10,7 +10,7 @@ The contract:
 - A ``.kanon/.pending`` sentinel labels the operation ``graph-rename``;
   the recovery path reads the manifest and completes a partial rename
   idempotently.
-- Each rewrite is applied via :func:`kernel._atomic.atomic_write_text`,
+- Each rewrite is applied via :func:`kanon_core._atomic.atomic_write_text`,
   preserving per-file crash safety from ADR-0024.
 - ``--dry-run`` emits the plan without writing anything.
 
@@ -33,7 +33,7 @@ from typing import Any
 
 import click
 
-from kernel._atomic import atomic_write_text
+from kanon_core._atomic import atomic_write_text
 
 _OP_GRAPH_RENAME = "graph-rename"
 """Sentinel label for an in-progress ``kanon graph rename`` op (rename-spec INV-7)."""
@@ -452,7 +452,7 @@ def perform_rename(
     Side-effects: writes the ops-manifest + sentinel before rewrites,
     clears them after.
     """
-    from kernel._atomic import clear_sentinel, write_sentinel  # local: avoids cycle
+    from kanon_core._atomic import clear_sentinel, write_sentinel  # local: avoids cycle
 
     validate_namespace(namespace)
     validate_slug(old_slug, "old")
@@ -506,7 +506,7 @@ def recover_pending_rename(repo_root: Path) -> bool:
     point's ``_check_pending_recovery`` integration — when the sentinel
     label is ``graph-rename``, call this to finish the work.
     """
-    from kernel._atomic import clear_sentinel  # local: avoids cycle
+    from kanon_core._atomic import clear_sentinel  # local: avoids cycle
 
     manifest = read_ops_manifest(repo_root)
     if manifest is None:

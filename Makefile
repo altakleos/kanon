@@ -5,10 +5,10 @@ test:
 	.venv/bin/pytest -x -q
 
 lint:
-	.venv/bin/ruff check kernel/ src/ tests/ scripts/
+	.venv/bin/ruff check packages/kanon-core/src/ src/ tests/ scripts/
 
 typecheck:
-	.venv/bin/mypy kernel/
+	.venv/bin/mypy packages/kanon-core/src/kanon_core/
 
 e2e:
 	.venv/bin/pytest -m e2e -x -q

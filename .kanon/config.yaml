@@ -47,8 +47,8 @@ preflight-stages:
   - run: .venv/bin/python scripts/check_deps.py
     label: deps-scan
   release:
-  - run: .venv/bin/python -c "import kernel; v='$TAG'.lstrip('v'); assert kernel.__version__
-      == v, f'{kernel.__version__} != {v}'"
+  - run: .venv/bin/python -c "import kanon_core; v='$TAG'.lstrip('v'); assert kanon_core.__version__
+      == v, f'{kanon_core.__version__} != {v}'"
     label: release-preflight
   - run: .venv/bin/python scripts/check_wheel_build.py --tag $TAG
     label: wheel-build-validate

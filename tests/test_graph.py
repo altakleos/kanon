@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from kernel._graph import (
+from kanon_core._graph import (
     EDGE_INV_REF,
     EDGE_REALIZES,
     EDGE_REQUIRES,
@@ -48,7 +48,7 @@ def _make_minimal_repo(root: Path) -> None:
     (root / "docs" / "foundations" / "personas").mkdir(parents=True)
     (root / "docs" / "specs").mkdir(parents=True)
     (root / "docs" / "plans").mkdir(parents=True)
-    (root / "kernel" / "kit").mkdir(parents=True)
+    (root / "packages" / "kanon-core" / "src" / "kanon_core" / "kit").mkdir(parents=True)
 
 
 # ---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ def test_vision_singleton(tmp_path: Path) -> None:
 
 def test_aspect_and_capability_discovery(tmp_path: Path) -> None:
     _make_minimal_repo(tmp_path)
-    kit_root = tmp_path / "kernel/kit"
+    kit_root = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
     _write(kit_root / "manifest.yaml", (
         "aspects:\n"
         "  alpha:\n"
@@ -166,7 +166,7 @@ def test_persona_stresses_resolves_to_spec_or_principle(tmp_path: Path) -> None:
 
 def test_aspect_requires_distinguishes_depth_and_capability(tmp_path: Path) -> None:
     _make_minimal_repo(tmp_path)
-    kit_root = tmp_path / "kernel/kit"
+    kit_root = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
     _write(kit_root / "manifest.yaml", (
         "aspects:\n"
         "  alpha:\n"
@@ -326,7 +326,7 @@ def test_orphan_exempt_default_false() -> None:
 
 def test_split_frontmatter_yaml_parses_to_list() -> None:
     """YAML that parses to a non-dict (e.g. a list) → returns ({}, body)."""
-    from kernel._graph import _split_frontmatter
+    from kanon_core._graph import _split_frontmatter
 
     text = "---\n- item1\n- item2\n---\n# Body\n"
     fm, body = _split_frontmatter(text)
@@ -336,7 +336,7 @@ def test_split_frontmatter_yaml_parses_to_list() -> None:
 
 def test_read_md_nonexistent_path(tmp_path: Path) -> None:
     """Non-existent path → returns ({}, '')."""
-    from kernel._graph import _read_md
+    from kanon_core._graph import _read_md
 
     fm, body = _read_md(tmp_path / "does-not-exist.md")
     assert fm == {}
@@ -348,7 +348,7 @@ def test_read_md_nonexistent_path(tmp_path: Path) -> None:
 
 
 def test_iter_md_skips_readme_and_template(tmp_path: Path) -> None:
-    from kernel._graph import _iter_md
+    from kanon_core._graph import _iter_md
 
     d = tmp_path / "docs"
     d.mkdir()
@@ -390,7 +390,7 @@ def test_discover_personas_non_string_id(tmp_path: Path) -> None:
 def test_discover_aspects_malformed_yaml(tmp_path: Path) -> None:
     """Malformed YAML in top manifest → returns empty."""
     _make_minimal_repo(tmp_path)
-    kit_root = tmp_path / "kernel/kit"
+    kit_root = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
     _write(kit_root / "manifest.yaml", "{{not: valid: yaml:")
     g = build_graph(tmp_path)
     aspects = [n for n in g.nodes if n.namespace == NAMESPACE_ASPECT]
@@ -400,7 +400,7 @@ def test_discover_aspects_malformed_yaml(tmp_path: Path) -> None:
 def test_discover_aspects_data_not_dict(tmp_path: Path) -> None:
     """aspects_data not a dict → empty."""
     _make_minimal_repo(tmp_path)
-    kit_root = tmp_path / "kernel/kit"
+    kit_root = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
     _write(kit_root / "manifest.yaml", "aspects: not-a-dict\n")
     g = build_graph(tmp_path)
     aspects = [n for n in g.nodes if n.namespace == NAMESPACE_ASPECT]
@@ -410,7 +410,7 @@ def test_discover_aspects_data_not_dict(tmp_path: Path) -> None:
 def test_discover_aspects_entry_not_dict(tmp_path: Path) -> None:
     """Aspect entry that is not a dict → skipped."""
     _make_minimal_repo(tmp_path)
-    kit_root = tmp_path / "kernel/kit"
+    kit_root = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
     _write(kit_root / "manifest.yaml", "aspects:\n  bad-aspect: not-a-dict\n")
     g = build_graph(tmp_path)
     aspects = [n for n in g.nodes if n.namespace == NAMESPACE_ASPECT]
@@ -423,7 +423,7 @@ def test_discover_aspects_entry_not_dict(tmp_path: Path) -> None:
 
 def test_plan_edges_missing_dir(tmp_path: Path) -> None:
     """plans_dir doesn't exist → returns []."""
-    from kernel._graph import _plan_edges
+    from kanon_core._graph import _plan_edges
 
     edges = _plan_edges(tmp_path / "nonexistent")
     assert edges == []
@@ -435,7 +435,7 @@ def test_plan_edges_missing_dir(tmp_path: Path) -> None:
 
 def test_spec_inv_ref_edges_oserror(tmp_path: Path) -> None:
     """OSError reading spec → returns []."""
-    from kernel._graph import _spec_inv_ref_edges
+    from kanon_core._graph import _spec_inv_ref_edges
 
     node = Node(
         slug="broken",
@@ -449,7 +449,7 @@ def test_spec_inv_ref_edges_oserror(tmp_path: Path) -> None:
 
 def test_spec_inv_ref_edges_no_dash_in_ref(tmp_path: Path) -> None:
     """INV ref with no dash after prefix → no edge."""
-    from kernel._graph import _spec_inv_ref_edges
+    from kanon_core._graph import _spec_inv_ref_edges
 
     spec_file = tmp_path / "nodash.md"
     spec_file.write_text("---\nstatus: draft\n---\nINVnodash text\n")
@@ -540,7 +540,7 @@ def test_real_repo_inbound_live_excludes_deferred_specs() -> None:
 
 def test_build_graph_missing_docs_dir(tmp_path: Path) -> None:
     """build_graph handles missing docs/ directory gracefully."""
-    from kernel._graph import build_graph
+    from kanon_core._graph import build_graph
 
     # tmp_path has no docs/ directory
     graph = build_graph(tmp_path)
@@ -549,7 +549,7 @@ def test_build_graph_missing_docs_dir(tmp_path: Path) -> None:
 
 def test_build_graph_malformed_frontmatter(tmp_path: Path) -> None:
     """build_graph handles files with malformed YAML frontmatter."""
-    from kernel._graph import build_graph
+    from kanon_core._graph import build_graph
 
     docs = tmp_path / "docs" / "plans"
     docs.mkdir(parents=True)

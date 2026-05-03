@@ -547,7 +547,7 @@ def build_graph(repo_root: Path) -> GraphData:
     foundations = repo_root / "docs" / "foundations"
     specs_dir = repo_root / "docs" / "specs"
     plans_dir = repo_root / "docs" / "plans"
-    kit_root = repo_root / "kernel" / "kit"
+    kit_root = repo_root / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
 
     principle_nodes = _discover_principles(foundations)
     persona_nodes = _discover_personas(foundations)

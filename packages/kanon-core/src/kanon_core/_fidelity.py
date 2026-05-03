@@ -21,7 +21,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from kernel._manifest import _parse_frontmatter
+from kanon_core._manifest import _parse_frontmatter
 
 # The capability flag that gates the carve-out per ADR-0026 / spec INV-6.
 BEHAVIOURAL_VERIFICATION_CAPABILITY = "behavioural-verification"

@@ -26,7 +26,7 @@ import pytest
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-KIT_ROOT = REPO_ROOT / "kernel" / "kit"
+KIT_ROOT = REPO_ROOT / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
 # Per substrate-content-move sub-plan: aspect data moved to
 # src/kanon_reference/aspects/<slug>/. Top manifest stays at kit/.
 KIT_ASPECTS = REPO_ROOT / "src" / "kanon_reference" / "aspects"
