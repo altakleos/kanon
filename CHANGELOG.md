@@ -12,7 +12,7 @@ ADR-0049 monorepo-layout migration cycle: 5 of 6 §1 rules implemented; the kern
 
 ### Added
 
-- **ADR-0050 (draft) — Kernel-flatten deferral** (per plan `docs/plans/active/v040a4-release.md`). Documents the editable-install constraint that blocked ADR-0049 §1(2) (`src/kanon/` → `kernel/`) — the panel's expected mechanism (Hatch source-remap `"kernel" = "kanon"`) fails on PEP 660 editable installs because the `editables` library only supports prefix STRIP, not prefix RENAME. ADR-0050 explicitly forecloses the simple `git mv` path that this ADR documents as broken; any future kernel-flatten requires either Python-package rename (`kanon` → `kernel`) or `kernel/kanon/` wrapper compromise — both via a new ADR. Status: **draft** — user reviews + flips to accepted.
+- **ADR-0050 (accepted) — Kernel-flatten deferral** (per plan `docs/plans/active/v040a4-release.md`). Documents the editable-install constraint that blocked ADR-0049 §1(2) (`src/kanon/` → `kernel/`) — the panel's expected mechanism (Hatch source-remap `"kernel" = "kanon"`) fails on PEP 660 editable installs because the `editables` library only supports prefix STRIP, not prefix RENAME. ADR-0050 explicitly forecloses the simple `git mv` path that this ADR documents as broken; any future kernel-flatten requires either Python-package rename (`kanon` → `kernel`) or `kernel/kanon/` wrapper compromise — both via a new ADR. Status: **accepted** (ratified per autopilot directive 2026-05-03; subsequent body changes governed by ADR-immutability gate per ADR-0032).
 
 ### Migration cycle (ADR-0049 §Implementation Roadmap)
 

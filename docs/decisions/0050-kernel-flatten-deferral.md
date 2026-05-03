@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-05-03
 ---
 # ADR-0050: Kernel-flatten deferral — supersedes ADR-0049 §1(2)
