@@ -283,7 +283,7 @@ def _check_pending_recovery(target: Path) -> None:
 
     - `graph-rename` carries an ops-manifest at `.kanon/graph-rename.ops`
       that captures the per-file rewrite plan. On detecting that sentinel,
-      this function calls :func:`kanon._rename.recover_pending_rename` to
+      this function calls :func:`kernel._rename.recover_pending_rename` to
       replay the manifest idempotently, clear the sentinel, and emit a
       one-line "Recovered ..." message. No manual re-run required.
     - Other sentinels (init / upgrade / set-depth / set-config /

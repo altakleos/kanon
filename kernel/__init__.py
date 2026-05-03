@@ -4,4 +4,4 @@ The user-facing CLI command remains `kanon`; the distribution name remains
 `kanon-substrate`/`kanon-kit`; the entry-point group remains `kanon.aspects`.
 Only the importable Python module path changed: `from kernel.X import Y`."""
 
-__version__ = "0.5.0a1"
+__version__ = "0.5.0a2"

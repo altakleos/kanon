@@ -14,7 +14,7 @@ def mod(load_ci_script):
 
 
 def test_real_repo_no_errors(mod, repo_root) -> None:
-    """The kanon repo's own src/kanon/ must be free of tls-disabled findings.
+    """The kanon repo's own kernel/ must be free of tls-disabled findings.
 
     sql-interpolation is excluded because the best-effort regex flags f-strings
     containing the word "update" (e.g. ``f"fidelity: … update."``).
@@ -27,7 +27,7 @@ def test_real_repo_no_errors(mod, repo_root) -> None:
     for f in files:
         findings.extend(mod._scan_file(f))
     bad = [f for f in findings if f["rule"] == "tls-disabled"]
-    assert bad == [], f"unexpected findings in src/kanon/:\n{bad}"
+    assert bad == [], f"unexpected findings in kernel/:\n{bad}"
 
 
 def test_sql_interpolation_detected(mod, tmp_path: Path) -> None:

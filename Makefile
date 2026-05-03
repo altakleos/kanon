@@ -8,7 +8,7 @@ lint:
 	.venv/bin/ruff check src/ tests/
 
 typecheck:
-	.venv/bin/mypy src/kanon/
+	.venv/bin/mypy kernel/
 
 e2e:
 	.venv/bin/pytest -m e2e -x -q

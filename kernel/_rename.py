@@ -10,7 +10,7 @@ The contract:
 - A ``.kanon/.pending`` sentinel labels the operation ``graph-rename``;
   the recovery path reads the manifest and completes a partial rename
   idempotently.
-- Each rewrite is applied via :func:`kanon._atomic.atomic_write_text`,
+- Each rewrite is applied via :func:`kernel._atomic.atomic_write_text`,
   preserving per-file crash safety from ADR-0024.
 - ``--dry-run`` emits the plan without writing anything.
 
