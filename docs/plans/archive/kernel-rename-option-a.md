@@ -1,7 +1,8 @@
 ---
-status: approved
+status: done
 slug: kernel-rename-option-a
 date: 2026-05-03
+shipped-in: PR #96 (v0.5.0a1)
 ---
 
 # Plan: Kernel rename (ADR-0050 Option A) — `kanon` Python package → `kernel`
