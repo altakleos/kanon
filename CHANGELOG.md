@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Decided
+
+- **ADR-0053 (accepted) — Phase A implementation deferral pending forcing function.** The three-distribution PyPI split (`kanon-core` + `kanon-aspects` + `kanon-kit` per ADR-0043 + ADR-0051) is paused indefinitely. Per-package pyproject co-location hits the same Hatch + `editables` library constraint that produced ADR-0050, but in a form (per-package pyproject inside the package directory) that none of the deferred-rename options solve. The substrate-shape commitment (ADR-0048), distribution-name ratification (ADR-0051), and monorepo-layout ratification (ADR-0049) all remain in force; what's deferred is the actual implementation. Reopens on any of: (a) a downstream consumer asking for `kanon-core` only, (b) `pfmoore/editables#20` resolving upstream, (c) a panel re-review judging the cost has been paid down.
+
 ### Added
 
 - **`make wheel-check` + release-preflight `wheel-build-validate` stage** — `scripts/check_wheel_build.py` builds a fresh sdist+wheel via `python -m build` (the same pipeline `release.yml` runs on tag push) and validates the result via `scripts/check_package_contents.py`. Closes the local-validation gap that produced v0.5.0a2 hotfix PRs #99 and #100: previously, local builds via `python -m build --wheel` (direct, no sdist) bypassed the sdist-include filter and produced a complete wheel even when the actual CI sdist→wheel pipeline shipped an incomplete one. Per plan `docs/plans/archive/wheel-build-preflight.md`.
