@@ -6,9 +6,27 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Changed
+
+- **Distribution naming**: ADR-0051 (accepted) renames the two planned-but-unpublished distributions for the upcoming three-package PyPI split: `kanon-substrate` → `kanon-core`, `kanon-reference` → `kanon-aspects`. The meta-package `kanon-kit` is unchanged. Both old names returned HTTP 404 on PyPI at acceptance time; rename is doc-only with no consumer migration. Per plan `docs/plans/archive/adr-0051-sweep.md`.
+- **Substrate-independence allow-list**: `kernel/_manifest.py` validator (per ADR-0040) now accepts `kanon-aspects` or `kanon-kit` as the publishing distribution for `kanon-*` aspect entry-points. Today only `kanon-kit` ships to PyPI; no current consumer is affected.
+
+### Documentation
+
+- ADR-0051 ratified: distribution naming for the three-package split (PRs #101 + #102).
+- ADR-0049 + ADR-0050 catalog rows backfilled in `docs/decisions/README.md` (PR #103).
+- Stale `src/kanon/` path-cites updated to `kernel/` across `docs/contributing.md`, `docs/kanon-implementation.md`, and `docs/design/distribution-boundary.md` (PR #98).
+- 51 in-repo references to the old distribution names swept across 9 ADR bodies (Allow-ADR-edit covered), 6 design/spec docs, 4 foundational docs, 13 active plans, 6 code files, README, and `.kanon/` config (PR #102).
+
+### Fixed
+
+- `Makefile` lint target now lints `kernel/`, `src/`, `tests/`, `scripts/` (was only `src/ tests/`, silently skipping the kernel — same omission class as the v0.5.0a2 typecheck-target bug).
+- `kernel/_manifest.py:241` allow-list error message now mentions both accepted distribution names (`kanon-aspects` or `kanon-kit`) instead of just the first.
+- Three completed plans moved from `docs/plans/active/` to `docs/plans/archive/` per the active/archive convention (ADR-0049 §1(4)): `kernel-rename-option-a.md`, `kernel-rename-fixes.md`, `adr-0051-sweep.md`. Status flipped `approved → done` in same change.
+
 ## [0.5.0a2] — 2026-05-03
 
-Follow-up fixes for ADR-0050 Option A kernel rename (PR #96 / v0.5.0a1) — operational blockers identified by adversarial critic pass before tagging the v0.5.0a1 release. Per plan `docs/plans/active/kernel-rename-fixes.md`.
+Follow-up fixes for ADR-0050 Option A kernel rename (PR #96 / v0.5.0a1) — operational blockers identified by adversarial critic pass before tagging the v0.5.0a1 release. Per plan `docs/plans/archive/kernel-rename-fixes.md`.
 
 ### Fixed
 
@@ -31,7 +49,7 @@ ADR-0049 §1(2) kernel-flatten finally realized via ADR-0050 Option A: Python pa
 
 ### Changed
 
-- **Substrate Python package renamed**: `kanon` → `kernel` (ADR-0050 Option A; per plan `docs/plans/active/kernel-rename-option-a.md` promoted from draft to approved in this PR). Source tree: `src/kanon/` → `kernel/`. Imports: `from kanon.X import Y` → `from kernel.X import Y`. ~50 substrate-internal files updated by mechanical grep-replace across `tests/`, `kernel/` itself, and `scripts/`. **Preserved unchanged**: user-facing CLI command name `kanon` (Click app's `prog_name`); distribution names `kanon-substrate` / `kanon-reference` / `kanon-kit`; entry-point group `kanon.aspects` (per ADR-0040 protocol contract); aspect slugs (`kanon-sdd` etc.); consumer-side `.kanon/` directory + config schema.
+- **Substrate Python package renamed**: `kanon` → `kernel` (ADR-0050 Option A; per plan `docs/plans/archive/kernel-rename-option-a.md` promoted from draft to approved in this PR). Source tree: `src/kanon/` → `kernel/`. Imports: `from kanon.X import Y` → `from kernel.X import Y`. ~50 substrate-internal files updated by mechanical grep-replace across `tests/`, `kernel/` itself, and `scripts/`. **Preserved unchanged**: user-facing CLI command name `kanon` (Click app's `prog_name`); distribution names `kanon-substrate` / `kanon-reference` / `kanon-kit`; entry-point group `kanon.aspects` (per ADR-0040 protocol contract); aspect slugs (`kanon-sdd` etc.); consumer-side `.kanon/` directory + config schema.
 - **`pyproject.toml` reconfiguration**: `[tool.hatch.version] path = "kernel/__init__.py"`; `[tool.hatch.build.targets.wheel] packages = ["kernel", "src/kanon_reference"]`; `[tool.mypy] packages = ["kernel"]`; `[tool.coverage.run] source = ["kernel"]`; `[tool.ruff] src = ["kernel", "src", "tests", "scripts"]`; `[project.scripts] kanon = "kernel.cli:main"`.
 - **`kernel/__init__.py` docstring updated** to document the rename + name preservation contracts.
 

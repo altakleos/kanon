@@ -5,7 +5,7 @@ test:
 	.venv/bin/pytest -x -q
 
 lint:
-	.venv/bin/ruff check src/ tests/
+	.venv/bin/ruff check kernel/ src/ tests/ scripts/
 
 typecheck:
 	.venv/bin/mypy kernel/
