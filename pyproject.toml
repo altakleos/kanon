@@ -26,6 +26,7 @@ dev = [
     "mypy>=1.10",
     "ruff>=0.4",
     "types-PyYAML>=6.0",
+    "build>=1.0",   # used by scripts/check_wheel_build.py + release.yml
 ]
 
 [project.scripts]
