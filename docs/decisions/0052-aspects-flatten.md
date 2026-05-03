@@ -1,5 +1,6 @@
 ---
-status: accepted
+status: superseded
+superseded-by: 0054
 date: 2026-05-03
 ---
 # ADR-0052: aspects-flatten path selection
