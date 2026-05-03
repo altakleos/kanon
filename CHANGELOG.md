@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.4.0a4] — 2026-05-03
+
+ADR-0049 monorepo-layout migration cycle: 5 of 6 §1 rules implemented; the kernel-flatten (§1(2)) is deferred to a future ADR per ADR-0050 (engineering constraint discovered: Hatch's `wheel.sources` source-remap doesn't survive editable installs).
+
+### Added
+
+- **ADR-0050 (draft) — Kernel-flatten deferral** (per plan `docs/plans/active/v040a4-release.md`). Documents the editable-install constraint that blocked ADR-0049 §1(2) (`src/kanon/` → `kernel/`) — the panel's expected mechanism (Hatch source-remap `"kernel" = "kanon"`) fails on PEP 660 editable installs because the `editables` library only supports prefix STRIP, not prefix RENAME. ADR-0050 explicitly forecloses the simple `git mv` path that this ADR documents as broken; any future kernel-flatten requires either Python-package rename (`kanon` → `kernel`) or `kernel/kanon/` wrapper compromise — both via a new ADR. Status: **draft** — user reviews + flips to accepted.
+
+### Migration cycle (ADR-0049 §Implementation Roadmap)
+
+The five migration PRs that landed this cycle (already documented in their per-PR entries below): PR A (bundle collapse), PR B (kill packaging), PR C (ci/→scripts/), PR D (docs/plans/active+archive), PR F (loosen byte-mirror). PR E (kernel-flatten) deferred per ADR-0050.
+
 ### Changed
 
 - **Migration PR F — Loosen `check_kit_consistency.py` byte-mirror clause** (per ADR-0049 D1 + Implementation Roadmap step F, plan `docs/plans/active/migration-pr-f-loosen-byte-mirror.md`). The per-aspect protocols byte-equality enforcement at `scripts/check_kit_consistency.py:151-171` is replaced with an existence-only check. `.kanon/protocols/<aspect>/<file>.md` mirrors must still EXIST for each kit-side protocol (the structural anchor; ADR-0044 self-host probe), but their CONTENT may drift from the kit-side source-of-truth at `aspects/kanon_<slug>/protocols/<file>.md`. ADR-0044 §2 conformance is satisfied by `kanon verify .` exit-0 (behavioural), not by filesystem byte-equality (an over-strong invariant invented by `check_kit_consistency.py`'s clause). Out of scope: the broader byte-equality whitelist at lines 126-150 (e.g., `docs/sdd-method.md` ↔ kit template) is a different cross-tree relationship; ADR-0049 D1 doesn't comment on it; deferred. **Result**: protocol prose edits now touch one file (the kit-side source-of-truth), not two; the substrate's self-host loop is no longer a byte-mirror pain point. 7 gates green.
