@@ -6,11 +6,11 @@ date: 2026-05-01
 
 ## Context
 
-[ADR-0040](0040-kernel-reference-runtime-interface.md) ratified the *runtime interface* — Python entry-points group `kanon.aspects` is how the kernel discovers aspects at startup. [ADR-0041](0041-realization-shape-dialect-grammar.md) ratified the *grammar* — what shape contracts have, how dialects evolve. Neither addresses the *packaging mechanics*: how `kanon-substrate` and `kanon-reference` actually ship as separately-installable distributions, what release cadence the substrate honours across its kernel/reference/dialect surfaces, or how a consumer adopts a starter set without re-introducing kit-shape behaviour through a side door.
+[ADR-0040](0040-kernel-reference-runtime-interface.md) ratified the *runtime interface* — Python entry-points group `kanon.aspects` is how the kernel discovers aspects at startup. [ADR-0041](0041-realization-shape-dialect-grammar.md) ratified the *grammar* — what shape contracts have, how dialects evolve. Neither addresses the *packaging mechanics*: how `kanon-core` and `kanon-aspects` actually ship as separately-installable distributions, what release cadence the substrate honours across its kernel/reference/dialect surfaces, or how a consumer adopts a starter set without re-introducing kit-shape behaviour through a side door.
 
 This ADR ratifies all three as one coherent decision because they are coupled by the protocol commitment:
 
-1. **Distribution boundary**: ADR-0040 said "publishers register entry-points"; this ADR says how `kanon-substrate` (kernel) and `kanon-reference` (seven `kanon-` aspects as data) actually package separately. Round-5 code-reviewer's option-B (substrate + reference + meta-alias) over per-aspect-wheels ("theatre") and single-wheel (kit-shape vestige).
+1. **Distribution boundary**: ADR-0040 said "publishers register entry-points"; this ADR says how `kanon-core` (kernel) and `kanon-aspects` (seven `kanon-` aspects as data) actually package separately. Round-5 code-reviewer's option-B (substrate + reference + meta-alias) over per-aspect-wheels ("theatre") and single-wheel (kit-shape vestige).
 
 2. **Release cadence**: today's `kanon-kit` ships daily-alpha. Under the protocol commitment with dialect grammar (per ADR-0041), unrestrained daily-alpha would shred any future `acme-` author. Round-5 planner: "a breaking dialect change every day would shred any future `acme-` author." Cadence discipline keeps kernel evolution fast while keeping dialect evolution slow.
 
@@ -22,11 +22,11 @@ Three numbered ratifications:
 
 ### 1. Distribution boundary
 
-The `kanon-substrate` and `kanon-reference` distributions are separately installable. A `kanon-kit` meta-package alias provides the convenience-install path.
+The `kanon-core` and `kanon-aspects` distributions are separately installable. A `kanon-kit` meta-package alias provides the convenience-install path.
 
-- **`kanon-substrate`** ships the kernel: `_atomic.py`, `_scaffold.py`, `_manifest.py`, `_verify.py`, `_fidelity.py`, `_resolutions.py` (Phase A), `_dialects.py` (Phase A), `_composition.py` (Phase A), `_validators/` (in-process kit-side correctness), `cli.py`, dialect-grammar parsers, structural validators. Zero aspects ship in this distribution. Per [ADR-0040](0040-kernel-reference-runtime-interface.md)'s independence invariant, the substrate's test suite passes with `kanon-reference` uninstalled.
-- **`kanon-reference`** ships the seven reference aspects (`kanon-sdd`, `kanon-testing`, `kanon-worktrees`, `kanon-release`, `kanon-security`, `kanon-deps`, `kanon-fidelity`) as data. It declares Python entry-points under `kanon.aspects` per [ADR-0040](0040-kernel-reference-runtime-interface.md)'s entry-point shape. Depends on `kanon-substrate>=1.0`.
-- **`kanon-kit`** is a meta-package alias. It declares `kanon-substrate` and `kanon-reference` as dependencies and ships no source. `pip install kanon-kit` installs both; `pip install kanon-substrate` installs only the kernel.
+- **`kanon-core`** ships the kernel: `_atomic.py`, `_scaffold.py`, `_manifest.py`, `_verify.py`, `_fidelity.py`, `_resolutions.py` (Phase A), `_dialects.py` (Phase A), `_composition.py` (Phase A), `_validators/` (in-process kit-side correctness), `cli.py`, dialect-grammar parsers, structural validators. Zero aspects ship in this distribution. Per [ADR-0040](0040-kernel-reference-runtime-interface.md)'s independence invariant, the substrate's test suite passes with `kanon-aspects` uninstalled.
+- **`kanon-aspects`** ships the seven reference aspects (`kanon-sdd`, `kanon-testing`, `kanon-worktrees`, `kanon-release`, `kanon-security`, `kanon-deps`, `kanon-fidelity`) as data. It declares Python entry-points under `kanon.aspects` per [ADR-0040](0040-kernel-reference-runtime-interface.md)'s entry-point shape. Depends on `kanon-core>=1.0`.
+- **`kanon-kit`** is a meta-package alias. It declares `kanon-core` and `kanon-aspects` as dependencies and ships no source. `pip install kanon-kit` installs both; `pip install kanon-core` installs only the kernel.
 
 The package names are public and stable. `kanon-kit` is preserved (rather than introduced as a new alias) because the v0.3.x audience may have it pinned in CI configs; the meta-alias semantics are honoured for backward compatibility through the deprecation horizon.
 
@@ -34,8 +34,8 @@ The package names are public and stable. `kanon-kit` is preserved (rather than i
 
 Three cadences govern three release surfaces:
 
-- **Kernel: daily-alpha permitted.** `kanon-substrate` may ship daily alpha releases under semver (e.g., `1.0.0a1`, `1.0.0a2`). Daily-alpha is the substrate-author's option, not an obligation. Bug fixes, contract validators, CLI ergonomics, structural validator improvements — these are kernel-cadence work.
-- **Reference: weekly cadence.** `kanon-reference` ships at weekly cadence (substrate-author discretion). Reference releases never include kernel-level changes. A change that affects both kernel and reference (e.g., a new dialect that bumps both surfaces) ships as separate, coordinated releases — kernel ships first; reference ships within the same week.
+- **Kernel: daily-alpha permitted.** `kanon-core` may ship daily alpha releases under semver (e.g., `1.0.0a1`, `1.0.0a2`). Daily-alpha is the substrate-author's option, not an obligation. Bug fixes, contract validators, CLI ergonomics, structural validator improvements — these are kernel-cadence work.
+- **Reference: weekly cadence.** `kanon-aspects` ships at weekly cadence (substrate-author discretion). Reference releases never include kernel-level changes. A change that affects both kernel and reference (e.g., a new dialect that bumps both surfaces) ships as separate, coordinated releases — kernel ships first; reference ships within the same week.
 - **Dialect: quarterly minimum, annual default.** A new dialect (`kanon-dialect: YYYY-MM-DD` per ADR-0041) ships at quarterly minimum, annual default. Dialect supersession is calendar-driven; an ADR ratifies the new dialect; the new dialect's spec describes what changed relative to its predecessor; publishers migrate at their own pace within the deprecation horizon.
 
 **A breaking dialect change is never a kernel release.** This is the cadence discipline's load-bearing rule. If a substrate evolution requires a grammar change, it ships as a *dialect supersession* (a new ADR + a new dialect spec + the substrate honouring the previous dialect for at least the deprecation horizon), not as a kernel release. This is what makes daily-alpha kernel releases safe for `acme-` publishers who pin against a dialect: the dialect — not the kernel — is the API surface they author against.
@@ -67,8 +67,8 @@ This satisfies de-opinionation (no kernel feature dictating which recipe is righ
 
 ### Distribution
 
-- **Phase A authors three `pyproject.toml` files**: `kanon-substrate/pyproject.toml`, `kanon-reference/pyproject.toml`, `kanon-kit/pyproject.toml` (meta-alias). Each declares its dependencies, version, and (for reference) `[project.entry-points."kanon.aspects"]` per [ADR-0040](0040-kernel-reference-runtime-interface.md).
-- **`kanon-kit` meta-alias depends on `kanon-substrate` and `kanon-reference`** at exact versions for each release. Coordinating across the split is part of Phase A's release-workflow.
+- **Phase A authors three `pyproject.toml` files**: `kanon-core/pyproject.toml`, `kanon-aspects/pyproject.toml`, `kanon-kit/pyproject.toml` (meta-alias). Each declares its dependencies, version, and (for reference) `[project.entry-points."kanon.aspects"]` per [ADR-0040](0040-kernel-reference-runtime-interface.md).
+- **`kanon-kit` meta-alias depends on `kanon-core` and `kanon-aspects`** at exact versions for each release. Coordinating across the split is part of Phase A's release-workflow.
 - **The `kanon migrate v0.3 → v0.4` script** (per ADR-0048's migration commitment) migrates a v0.3.x consumer repo to v0.4 by rewriting `.kanon/config.yaml` to opt-in form, copying the `reference-default` recipe to `.kanon/recipes/`, and deprecating itself on first use. Phase A authors.
 
 ### Cadence
@@ -79,7 +79,7 @@ This satisfies de-opinionation (no kernel feature dictating which recipe is righ
 
 ### Recipes
 
-- **`kanon-reference` ships at least one recipe**: `reference-default` (opts the consumer into all seven reference aspects at their default depths). Phase A authors. Per [ADR-0048](0048-kanon-as-protocol-substrate.md)'s commitment, the kanon repo's own self-host uses this recipe.
+- **`kanon-aspects` ships at least one recipe**: `reference-default` (opts the consumer into all seven reference aspects at their default depths). Phase A authors. Per [ADR-0048](0048-kanon-as-protocol-substrate.md)'s commitment, the kanon repo's own self-host uses this recipe.
 - **The substrate scaffolds `.kanon/recipes/.gitkeep`** at `kanon init` (Phase A) so the directory exists; consumers populate it by `cp`-ing recipes from publisher bundles.
 - **`kanon aspect list`** (Phase A) gains a `--recipes` flag that enumerates recipes available in installed publishers (read-only inspection; no application).
 

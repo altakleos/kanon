@@ -11,16 +11,16 @@ design: "This plan delivers the design alongside the ADR (`docs/design/kernel-re
 
 The second ADR of Phase 0. The most urgent in the round-5 panel review: three agents (architect, critic, code-reviewer) independently named the kernel/reference runtime interface as **critical and unspecified**. Without this ADR, the substrate's "de-installable reference aspects" claim is words on paper — the kernel currently has no mechanism to discover aspects from a separately-installed package.
 
-Today's `_kit_root()` at [`src/kanon/_manifest.py:127`](../../../kernel/_manifest.py) is referenced 10+ times across `_manifest.py` and `_scaffold.py`; every reference embeds the assumption that the kit ships exactly one of itself. Under the protocol-substrate commitment, the kernel (`kanon-substrate`) and reference aspects (`kanon-reference`) ship as separate distributions. The kernel must discover reference aspects (and future `acme-` aspects) without privileging any.
+Today's `_kit_root()` at [`src/kanon/_manifest.py:127`](../../../kernel/_manifest.py) is referenced 10+ times across `_manifest.py` and `_scaffold.py`; every reference embeds the assumption that the kit ships exactly one of itself. Under the protocol-substrate commitment, the kernel (`kanon-core`) and reference aspects (`kanon-aspects`) ship as separate distributions. The kernel must discover reference aspects (and future `acme-` aspects) without privileging any.
 
-ADR-0040 ratifies the **discovery mechanism**: Python entry-points (`importlib.metadata.entry_points(group="kanon.aspects")`). Plus the publisher-symmetric registry semantics, and the `kanon-substrate`-must-pass-tests-without-`kanon-reference` invariant.
+ADR-0040 ratifies the **discovery mechanism**: Python entry-points (`importlib.metadata.entry_points(group="kanon.aspects")`). Plus the publisher-symmetric registry semantics, and the `kanon-core`-must-pass-tests-without-`kanon-aspects` invariant.
 
 ## Goal
 
 Land a single self-contained PR that:
 
 1. **Authors ADR-0040** ratifying the kernel/reference runtime interface: entry-point discovery group `kanon.aspects`, publisher-id resolution, the no-kit-global-files commitment, and the substrate-self-conformance test invariant.
-2. **Authors `docs/design/kernel-reference-interface.md`** as the companion design doc — concrete entry-point shape, registry composition algorithm, the `kanon-substrate`-without-`kanon-reference` test design.
+2. **Authors `docs/design/kernel-reference-interface.md`** as the companion design doc — concrete entry-point shape, registry composition algorithm, the `kanon-core`-without-`kanon-aspects` test design.
 3. **Amends `docs/specs/aspects.md` and `docs/specs/project-aspects.md`** to reference the new entry-point discovery (small, frontmatter + 1-2 paragraph additions; specs survive but gain protocol-substrate clauses).
 4. **No source / aspect-manifest / protocol-prose / CI changes.** Phase A implementation comes in subsequent plans.
 
@@ -32,11 +32,11 @@ Land a single self-contained PR that:
 
 `docs/decisions/0040-kernel-reference-runtime-interface.md`. Sections:
 
-- **Context** — why the substrate needs a runtime discovery mechanism; the kit-shape `_kit_root()` problem; the publisher-symmetry requirement; the need to pass tests with `kanon-reference` uninstalled.
+- **Context** — why the substrate needs a runtime discovery mechanism; the kit-shape `_kit_root()` problem; the publisher-symmetry requirement; the need to pass tests with `kanon-aspects` uninstalled.
 - **Decision** — Python entry-points group `kanon.aspects` is the discovery mechanism. Publishers register entries via their package's `pyproject.toml`. The substrate's `_load_aspect_registry` unions: (a) entry-point-discovered publishers, (b) consumer-side `.kanon/aspects/project-*/` per ADR-0028, (c) optionally project-overlay (test fixtures). No publisher is privileged at any code path.
-- **Alternatives Considered** — at least 5 (filesystem-walk-only; environment-variable path overlay; namespace-package discovery; kanon-substrate vendoring kanon-reference; kanon-substrate hardcoding "the seven kanon- aspects").
+- **Alternatives Considered** — at least 5 (filesystem-walk-only; environment-variable path overlay; namespace-package discovery; kanon-core vendoring kanon-aspects; kanon-core hardcoding "the seven kanon- aspects").
 - **Consequences** — what changes for `_kit_root()` (deleted), kit-global `files:` field (deleted), `_load_top_manifest` (becomes per-publisher), `_load_aspect_registry` (tri-source union), and the substrate's CI gate (must build kernel without reference and run full test suite).
-- **Config Impact** — `pyproject.toml` shape for `kanon-substrate`, `kanon-reference`, future `acme-X` (each declares its publisher namespace + aspect list under `[project.entry-points."kanon.aspects"]`).
+- **Config Impact** — `pyproject.toml` shape for `kanon-core`, `kanon-aspects`, future `acme-X` (each declares its publisher namespace + aspect list under `[project.entry-points."kanon.aspects"]`).
 - **References** — ADR-0048, ADR-0028, ADR-0026, ADR-0039, the new design doc.
 
 Length target: ~140–180 lines.
@@ -48,9 +48,9 @@ Concrete mechanism. Sections:
 - **Context** — what ADR-0040 ratifies; what this design specifies.
 - **Entry-point group structure** — `[project.entry-points."kanon.aspects"]` shape; one entry per aspect; resolved at substrate-startup.
 - **Publisher registry composition algorithm** — `_load_aspect_registry()` v2 algorithm (entry-points + project-aspects + optional overlay), keyed by publisher id, with namespace-collision detection.
-- **The independence invariant** — `kanon-substrate`'s test suite must pass with no `kanon-reference` installed. CI gate algorithm: install kernel only, run pytest, assert green.
+- **The independence invariant** — `kanon-core`'s test suite must pass with no `kanon-aspects` installed. CI gate algorithm: install kernel only, run pytest, assert green.
 - **`_kit_root()` retirement** — every call site walked: what replaces it (publisher path lookup via registry), where the publisher path comes from (entry-point's distribution path).
-- **Phase A implementation footprint** — `_manifest.py` changes (~120 LOC; replace `_kit_root` with publisher-keyed lookups), new `pyproject.toml` for the eventual `kanon-reference` package (~30 LOC), CI gate addition (~30 LOC), test extensions (~80 LOC).
+- **Phase A implementation footprint** — `_manifest.py` changes (~120 LOC; replace `_kit_root` with publisher-keyed lookups), new `pyproject.toml` for the eventual `kanon-aspects` package (~30 LOC), CI gate addition (~30 LOC), test extensions (~80 LOC).
 
 Length target: ~150–250 lines.
 
@@ -73,8 +73,8 @@ One paragraph under `## [Unreleased]` § Added (alongside the ADR-0039 paragraph
 
 ### Out of scope
 
-- **All code changes.** Phase A implements entry-point discovery, retires `_kit_root()`, splits the wheel into `kanon-substrate` + `kanon-reference`, ships the substrate-without-reference CI gate. This PR is documentation only.
-- **Distribution boundary specifics** — the actual `pyproject.toml` for `kanon-substrate` / `kanon-reference` lands in ADR-0043 (distribution + cadence) and Phase A. ADR-0040 specifies the *interface*; ADR-0043 specifies the *packaging mechanics*.
+- **All code changes.** Phase A implements entry-point discovery, retires `_kit_root()`, splits the wheel into `kanon-core` + `kanon-aspects`, ships the substrate-without-reference CI gate. This PR is documentation only.
+- **Distribution boundary specifics** — the actual `pyproject.toml` for `kanon-core` / `kanon-aspects` lands in ADR-0043 (distribution + cadence) and Phase A. ADR-0040 specifies the *interface*; ADR-0043 specifies the *packaging mechanics*.
 - **Realization-shape schema** — ADR-0041.
 - **Dialect grammar versioning** — ADR-0041.
 - **Composition algebra** (`surface:`, `before/after:`, `replaces:`) — ADR-0041.
@@ -132,7 +132,7 @@ One paragraph under `## [Unreleased]` § Added (alongside the ADR-0039 paragraph
 - **Risk: ADR-0040 may overlap with ADR-0043 (distribution boundary).** Mitigation: ADR-0040 specifies the *runtime interface* (how the kernel discovers aspects at startup); ADR-0043 specifies the *packaging mechanics* (wheel split, release cadence). Clean separation; ADR-0043 cites ADR-0040 for the interface.
 - **Risk: spec amendments to aspects.md and project-aspects.md may be challenged on immutability grounds.** Mitigation: the amendments are append-only (new section appended) and do not modify existing INV bodies. Same pattern applied to verification-contract.md INV-11 in PR #53. ADR-0040 ratifies the amendment; predecessor SHAs are recorded in fidelity.lock.
 - **Risk: Phase A implementation may diverge from the design.** Mitigation: design pseudocode is intentionally minimal; Phase A authors a more detailed implementation plan that this design doc references back. Divergence within the registry-composition algorithm's outputs is fine; divergence on the entry-point group name (`kanon.aspects`) is NOT — that's the public contract `acme-` publishers depend on.
-- **Risk: `kanon-substrate` test suite may not actually pass without `kanon-reference` today.** Mitigation: ADR-0040's independence invariant is a *future* commitment; Phase A is responsible for making the kernel pass tests independently. The ADR commits to the invariant; the implementation lands the gate. Calling out the gap explicitly in Consequences.
+- **Risk: `kanon-core` test suite may not actually pass without `kanon-aspects` today.** Mitigation: ADR-0040's independence invariant is a *future* commitment; Phase A is responsible for making the kernel pass tests independently. The ADR commits to the invariant; the implementation lands the gate. Calling out the gap explicitly in Consequences.
 
 ## Documentation impact
 

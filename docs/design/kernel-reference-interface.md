@@ -16,11 +16,11 @@ implements: docs/specs/aspects.md
 Publishers register aspects via `[project.entry-points."kanon.aspects"]` in their package's `pyproject.toml`:
 
 ```toml
-# kanon-reference/pyproject.toml (the kit-author's reference bundle)
+# kanon-aspects/pyproject.toml (the kit-author's reference bundle)
 [project]
-name = "kanon-reference"
+name = "kanon-aspects"
 version = "1.0.0"
-dependencies = ["kanon-substrate>=1.0"]
+dependencies = ["kanon-core>=1.0"]
 
 [project.entry-points."kanon.aspects"]
 kanon-sdd = "kanon_reference.aspects.kanon_sdd:MANIFEST"
@@ -39,7 +39,7 @@ A third-party publisher (`acme-fintech-compliance`) registers analogously:
 [project]
 name = "acme-fintech-compliance"
 version = "1.0.0"
-dependencies = ["kanon-substrate>=1.0"]
+dependencies = ["kanon-core>=1.0"]
 
 [project.entry-points."kanon.aspects"]
 acme-fintech-compliance = "acme_fintech_compliance.kanon:MANIFEST"
@@ -124,10 +124,10 @@ def validate_namespace_ownership(aspect_slug: str, dist: Distribution) -> None:
     namespace, _local = parts
 
     if namespace == "kanon":
-        if dist.metadata["name"] != "kanon-reference":
+        if dist.metadata["name"] != "kanon-aspects":
             raise NamespaceViolationError(
                 f"aspect '{aspect_slug}' uses 'kanon-' namespace but is registered "
-                f"by distribution '{dist.metadata['name']}', not 'kanon-reference'"
+                f"by distribution '{dist.metadata['name']}', not 'kanon-aspects'"
             )
     elif namespace == "project":
         raise NamespaceViolationError(
@@ -160,16 +160,16 @@ This replaces every call site of `_kit_root() / aspect_relative_path`.
 
 ## The independence invariant — CI gate algorithm
 
-Per ADR-0040 Decision §6: `kanon-substrate`'s test suite must pass with `kanon-reference` uninstalled.
+Per ADR-0040 Decision §6: `kanon-core`'s test suite must pass with `kanon-aspects` uninstalled.
 
 ```bash
 # scripts/check_substrate_independence.py (Phase A authors)
 #
 # 1. Create a clean venv.
-# 2. pip install -e ./kanon-substrate    (kernel only — no kanon-reference)
+# 2. pip install -e ./kanon-core    (kernel only — no kanon-aspects)
 # 3. Run pytest against tests/.
 # 4. Assert exit 0.
-# 5. Optionally: assert no test was skipped due to "kanon-reference not available".
+# 5. Optionally: assert no test was skipped due to "kanon-aspects not available".
 
 import subprocess, tempfile, sys
 from pathlib import Path
@@ -183,7 +183,7 @@ def main():
         subprocess.check_call([str(pip), "install", "-e", "."])  # substrate only
         result = subprocess.run([str(pytest), "-x", "tests/"])
         if result.returncode != 0:
-            print(f"substrate-independence: FAIL — kernel tests require kanon-reference", file=sys.stderr)
+            print(f"substrate-independence: FAIL — kernel tests require kanon-aspects", file=sys.stderr)
             sys.exit(1)
     print("substrate-independence: OK")
 
@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
 This gate is what proves ADR-0040's central claim. Phase A authors it as part of the substrate/reference split work; on first run, it will likely fail (revealing today's hidden dependencies). Phase A's iteration loop is "make this gate green, ship the split."
 
-### What the kernel's tests need from `kanon-reference` today
+### What the kernel's tests need from `kanon-aspects` today
 
 Audit reveals (Phase A will confirm):
 
@@ -202,7 +202,7 @@ Audit reveals (Phase A will confirm):
 - `test_cli_*.py`: many tests assume default aspects are available.
 - `test_fidelity.py`: uses the `kanon-fidelity` capability.
 
-Each will need refactoring to either (a) use a synthetic test-overlay publisher injected via the registry's source-3 overlay mechanism, or (b) move into `kanon-reference`'s own test suite.
+Each will need refactoring to either (a) use a synthetic test-overlay publisher injected via the registry's source-3 overlay mechanism, or (b) move into `kanon-aspects`'s own test suite.
 
 ## `_kit_root()` retirement walkthrough
 
@@ -238,7 +238,7 @@ Phase A walks each call site explicitly. The pattern is consistent: every `_kit_
 | `_manifest.py` | ~+120 / -50 | Add registry composition; delete `_kit_root()`; replace call sites |
 | `_scaffold.py` | ~+40 / -30 | Replace `_kit_root()` references with registry lookups |
 | `_validators.py` (new helper module) | ~+30 | `validate_namespace_ownership()` |
-| New `pyproject.toml` for `kanon-reference` | ~+40 | Entry-point declarations for the seven aspects |
+| New `pyproject.toml` for `kanon-aspects` | ~+40 | Entry-point declarations for the seven aspects |
 | `scripts/check_substrate_independence.py` | ~+60 | The CI gate above |
 | Test extensions | ~+150 | New `test_aspect_registry.py`; refactor `test_e2e_lifecycle.py` and `test_kit_integrity.py` to use registry overlays |
 | Migration of `.kanon/kit.md` ownership | ~+10 | Move to `kanon-sdd` aspect or delete |

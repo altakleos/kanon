@@ -217,7 +217,7 @@ def _validate_namespace_ownership(slug: str, dist: Any) -> None:
     """Per ADR-0040 §5: an entry-point may only register aspect slugs in its
     distribution's namespace.
 
-    - ``kanon-*`` slugs require dist name ``kanon-reference`` or ``kanon-kit``
+    - ``kanon-*`` slugs require dist name ``kanon-aspects`` or ``kanon-kit``
       (the latter is transitional while the top-level pyproject ships both).
     - ``project-*`` slugs are forbidden via entry-points; project-aspects live
       under ``<target>/.kanon/aspects/`` per ADR-0028.
@@ -235,10 +235,10 @@ def _validate_namespace_ownership(slug: str, dist: Any) -> None:
     namespace, _ = _split_aspect_name(slug)
     dist_name = dist.metadata["name"] if dist is not None else None
     if namespace == _KANON_NAMESPACE:
-        if dist_name not in ("kanon-reference", "kanon-kit"):
+        if dist_name not in ("kanon-aspects", "kanon-kit"):
             raise click.ClickException(
                 f"entry-point {slug!r} uses 'kanon-' namespace but is registered "
-                f"by distribution {dist_name!r}, not 'kanon-reference' (ADR-0040)."
+                f"by distribution {dist_name!r}, not 'kanon-aspects' (ADR-0040)."
             )
     elif namespace == _PROJECT_NAMESPACE:
         raise click.ClickException(
@@ -703,7 +703,7 @@ def _aspect_path(aspect: str) -> Path:
     look up via :func:`_aspect_entry` without first calling the registry),
     the fallback synthesizes the path from kanon_reference for kanon-* aspects.
 
-    Per ADR-0044 substrate-independence: the substrate (kanon-substrate) MUST
+    Per ADR-0044 substrate-independence: the substrate (kanon-core) MUST
     NOT silently fall back to a dead legacy path when kanon_reference is
     absent. After Phase A.7 (substrate-content-move), kernel/kit/aspects/
     no longer exists for kanon-* aspects; returning that path would resolve
@@ -724,10 +724,10 @@ def _aspect_path(aspect: str) -> Path:
         except ImportError as exc:
             raise click.ClickException(
                 f"Cannot resolve aspect {aspect!r}: kanon_reference is not "
-                f"installed. kanon-substrate ships no kanon-* aspect data per "
+                f"installed. kanon-core ships no kanon-* aspect data per "
                 f"ADR-0044 substrate-independence; install kanon-kit (which "
-                f"depends on both kanon-substrate and kanon-reference) or "
-                f"install kanon-reference directly. ({exc})"
+                f"depends on both kanon-core and kanon-aspects) or "
+                f"install kanon-aspects directly. ({exc})"
             ) from exc
     return _kit_root() / str(entry["path"])
 

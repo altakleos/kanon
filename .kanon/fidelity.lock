@@ -5,19 +5,19 @@ entries:
     spec_sha: "sha256:e3c3a193e449bab3508d847fe40c61ddc56f274fdeb19344bd3fe7fbd2539ead"
     fixture_shas:
       tests/test_aspect_config.py: "sha256:bf46f87c1b838747d878d501b5c8ec761f72c75224483dfb1b5460fb002c5dba"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   aspect-decoupling:
     spec_sha: "sha256:951c4f45a42075c19bd52692f376b70e80ad0e2d7b728a166af5eac3e66ea749"
     fixture_shas:
       tests/scripts/test_check_kit_consistency.py: "sha256:a7cfc59610fe9430460a3f855058d72c8855859ddd6bff47bf2359559f5e8938"
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_scaffold_marker_hardening.py: "sha256:034527e6ee09973c363aa101f6a90889c86857032a8a4ca7e4a20397d503318c"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   aspect-provides:
     spec_sha: "sha256:ae3e85e9628b75224b36195bb4563a619b5088491e01b5f1ae40469c2843cd23"
     fixture_shas:
       tests/test_aspect_provides.py: "sha256:2b3ba056b0ed229048e502618f0937544ac862fe5216f6dee9349e27de994f95"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   aspects:
     spec_sha: "sha256:b6537981bcc03325bd52c8520a9fffb829ac5ca0d9ba7ba8b95a22c1ed2e43ec"
     fixture_shas:
@@ -26,11 +26,11 @@ entries:
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_kit_integrity.py: "sha256:74e60da460dd4c15aebb6ce8d317840919b739145d6a826a8a152e6f16e807ca"
       tests/test_protocols.py: "sha256:dae5e3711b54361c5ef824df6f288702faded7af7088d3329a3290ba3437bd89"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   cli:
     spec_sha: "sha256:82a2f5337f4748e42a6c71622d166a50ed6849c0f2d44549eeda5069c778df78"
     fixture_shas:
-      README.md: "sha256:f15bc418e37ecc31b5963def002b356839f54641cb75b2520f6df836de5a0b9f"
+      README.md: "sha256:6b65fc850baa44deab6512db9cbe11738e0ff6a953987fc8c65c2ae185d2c1af"
       pyproject.toml: "sha256:82c029c67f95b271ccb5167297f98a7a256d90810d5cc62333853f4dabbc92c1"
       tests/test_aspect_config.py: "sha256:bf46f87c1b838747d878d501b5c8ec761f72c75224483dfb1b5460fb002c5dba"
       tests/test_atomic.py: "sha256:dbd11dcc2f67a8dcab5548b061c11c178a652a9f0fe7c9d09f100aaeb227068d"
@@ -40,14 +40,14 @@ entries:
       tests/test_cli_verify.py: "sha256:5bb6cb954898759a563ad50a0e2b7d7b8692f239785e926eee5f64530192b6ef"
       tests/test_graph_orphans.py: "sha256:f1effa8aa949b36ed4e0ebd9a4025762ccdcfe6b0eefd623a93d31638c7fcd59"
       tests/test_graph_rename.py: "sha256:3f95ec515d10cd1b078b3d6c75882c4f8f0d4c66f1b8d2dde3edd07b9e505505"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   cross-harness-shims:
     spec_sha: "sha256:d545007cfaa7ceacf8049d092a4620dbd6f88c4f4893bfc4fe0b44aa7f2d646e"
     fixture_shas:
       tests/test_cli.py: "sha256:f37008dd4a184db700e1e1e7fa2693ca8c62978b0b84fb7a242adf44bc509a88"
       tests/test_cli_helpers.py: "sha256:9c0511b0d33f3624cc20ca8e9baba24524d403f3e44665541a423a447ef73cdd"
       tests/test_kit_integrity.py: "sha256:74e60da460dd4c15aebb6ce8d317840919b739145d6a826a8a152e6f16e807ca"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   deps:
     spec_sha: "sha256:79ca87eea2435e3a859cc450eff1ba8bb27e554f5af2b94f2bffd2d86683e2ee"
     fixture_shas:
@@ -55,35 +55,35 @@ entries:
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_kit_integrity.py: "sha256:74e60da460dd4c15aebb6ce8d317840919b739145d6a826a8a152e6f16e807ca"
       tests/test_scaffold_marker_hardening.py: "sha256:034527e6ee09973c363aa101f6a90889c86857032a8a4ca7e4a20397d503318c"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   dialect-grammar:
-    spec_sha: "sha256:32a55ecafe907d530775242b945e053f42c1058633ea1337f37b5c60e29ab23a"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    spec_sha: "sha256:8d8194f15c9506b4073b72b57e72e0fd6abbeee352749586351b23ecb627e846"
+    locked_at: "2026-05-03T06:18:49+00:00"
   fidelity:
     spec_sha: "sha256:7e67ae8eed65d266e55abbfd14d0ee7b09cee172774bd8ccb62bf68e76db33ed"
     fixture_shas:
       tests/test_fidelity.py: "sha256:e57af51c5b32dd227bc8603996efede6959c1a985759fa0926b03036f435bf29"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   fidelity-lock:
     spec_sha: "sha256:f046db07c4811e93515ecfdc51f595cbdf8da96f1586a3311e41d0e0a9d0f7ab"
     fixture_shas:
       tests/test_cli_fidelity.py: "sha256:9227b59084307d62c5252164759368108fea09c44b41089fe1f3e7db9ecc4422"
       tests/test_cli_verify.py: "sha256:5bb6cb954898759a563ad50a0e2b7d7b8692f239785e926eee5f64530192b6ef"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   invariant-ids:
     spec_sha: "sha256:4d3020d054831e3be9fb905b1879622307f40ee4ddbf4dd56a24c3d00592f9ef"
     fixture_shas:
       tests/scripts/test_check_invariant_ids.py: "sha256:72bae4019c406096eb936ce0b2ec9130eb7b61d4472b31197b371e5ddff6b0ac"
       tests/test_cli.py: "sha256:f37008dd4a184db700e1e1e7fa2693ca8c62978b0b84fb7a242adf44bc509a88"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   preflight:
     spec_sha: "sha256:36957de8a7653fab891a52f2d169c57b1166b80cc36c0d34a390f59dda4a3036"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   process-gates:
     spec_sha: "sha256:b1b8b7d748f720c6169b67a01459d8f978bdc1242e06a994b1290556452cd8eb"
     fixture_shas:
       tests/scripts/test_check_process_gates.py: "sha256:6b4ba092adaa7f0b94c0a5e37dc8317270ffed1bdedea1cc935bfa188831b734"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   project-aspects:
     spec_sha: "sha256:6a57ca56095ec9134db3a661855c87543332223cbfb8c817554c0680198ff552"
     fixture_shas:
@@ -93,30 +93,30 @@ entries:
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_cli_helpers.py: "sha256:9c0511b0d33f3624cc20ca8e9baba24524d403f3e44665541a423a447ef73cdd"
       tests/test_scaffold_marker_hardening.py: "sha256:034527e6ee09973c363aa101f6a90889c86857032a8a4ca7e4a20397d503318c"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   protocols:
     spec_sha: "sha256:9bc96e515f6386a22ec0ea3b711a400f24d0f87ba156575da4cef3714673142d"
     fixture_shas:
       tests/test_cli.py: "sha256:f37008dd4a184db700e1e1e7fa2693ca8c62978b0b84fb7a242adf44bc509a88"
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_protocols.py: "sha256:dae5e3711b54361c5ef824df6f288702faded7af7088d3329a3290ba3437bd89"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   release:
     spec_sha: "sha256:f20258ae91dc29a84258667a6fc2a2046cb1254d108ac261abc22f5756f70224"
     fixture_shas:
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_kit_integrity.py: "sha256:74e60da460dd4c15aebb6ce8d317840919b739145d6a826a8a152e6f16e807ca"
       tests/test_scaffold_marker_hardening.py: "sha256:034527e6ee09973c363aa101f6a90889c86857032a8a4ca7e4a20397d503318c"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   release-cadence:
-    spec_sha: "sha256:bb3bd6351e1b98512da3c8c6300901284b04746aabdb9325658506cd50f28c35"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    spec_sha: "sha256:3072375b57c0ac6c51bf5fc50c29ac64ae498a24e3529f6c3f40b9af1459901f"
+    locked_at: "2026-05-03T06:18:49+00:00"
   resolutions:
     spec_sha: "sha256:79071855216959e026f6806c486b7ec4fac69523c6084f1fd8f38c6d309f4195"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   scaffold-v2:
     spec_sha: "sha256:e571bc4236ba4a9b8dc19b2efe67f1db66749b6a1200b07528ccf99df3314e79"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   security:
     spec_sha: "sha256:f888568708c082e05fc7159bfd56499d88edc123062314b812e4beab5c052ef7"
     fixture_shas:
@@ -124,10 +124,10 @@ entries:
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_kit_integrity.py: "sha256:74e60da460dd4c15aebb6ce8d317840919b739145d6a826a8a152e6f16e807ca"
       tests/test_scaffold_marker_hardening.py: "sha256:034527e6ee09973c363aa101f6a90889c86857032a8a4ca7e4a20397d503318c"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   substrate-self-conformance:
-    spec_sha: "sha256:42171c2f8b310eca075e3d5ee3887b00fb76388b421a82eb0d63c4b2b8742f44"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    spec_sha: "sha256:7fd3fdd6d7cb01bff86b5486a5b8b9ab910d2292f01f8ab7231a253a3d610599"
+    locked_at: "2026-05-03T06:18:49+00:00"
   testing:
     spec_sha: "sha256:f8880dec542e632a12c71f544d689c3e00195452e030e13655f78cc60f30241c"
     fixture_shas:
@@ -135,7 +135,7 @@ entries:
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_kit_integrity.py: "sha256:74e60da460dd4c15aebb6ce8d317840919b739145d6a826a8a152e6f16e807ca"
       tests/test_scaffold_marker_hardening.py: "sha256:034527e6ee09973c363aa101f6a90889c86857032a8a4ca7e4a20397d503318c"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   verification-contract:
     spec_sha: "sha256:777c247ffd49d6fdace7b1cda56f379f076d76a30212c6f55615b57e5ac6bfba"
     fixture_shas:
@@ -145,17 +145,17 @@ entries:
       tests/test_cli.py: "sha256:f37008dd4a184db700e1e1e7fa2693ca8c62978b0b84fb7a242adf44bc509a88"
       tests/test_cli_verify.py: "sha256:5bb6cb954898759a563ad50a0e2b7d7b8692f239785e926eee5f64530192b6ef"
       tests/test_fidelity.py: "sha256:e57af51c5b32dd227bc8603996efede6959c1a985759fa0926b03036f435bf29"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   verified-by:
     spec_sha: "sha256:5da3375098c8b10f6b26c321711526d0815c6633fd9d7fec88db3190ec2940f4"
     fixture_shas:
       tests/scripts/test_check_verified_by.py: "sha256:a9efd792e136020c55aae7ab5cf26dd74f816f652c40defdab9162514ad72b53"
       tests/test_cli.py: "sha256:f37008dd4a184db700e1e1e7fa2693ca8c62978b0b84fb7a242adf44bc509a88"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"
   worktrees:
     spec_sha: "sha256:ff392f1024ceec666d809a007992598ad98f44c02cda63dc17e5679b928cc0c9"
     fixture_shas:
       tests/test_cli_aspect.py: "sha256:6862a881e5f3cd4b9ed708badfc17157ca222eb845e398b48bf12d827f3de5b1"
       tests/test_kit_integrity.py: "sha256:74e60da460dd4c15aebb6ce8d317840919b739145d6a826a8a152e6f16e807ca"
       tests/test_scaffold_marker_hardening.py: "sha256:034527e6ee09973c363aa101f6a90889c86857032a8a4ca7e4a20397d503318c"
-    locked_at: "2026-05-03T05:40:30+00:00"
+    locked_at: "2026-05-03T06:18:49+00:00"

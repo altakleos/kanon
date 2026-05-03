@@ -24,7 +24,7 @@ This persona is kanon's actual default user. `solo-engineer` and `platform-team`
 - Run multiple concurrent agents without them overwriting each other's work.
 - Get worktree-style isolation on day one, not "when a second human joins."
 - Have a shared source of truth — plan SHAs, decision-number reservations — that every agent session reads before writing.
-- Adopt a starter recipe (`kanon-reference`'s `reference-default` recipe, or any other publisher's recipe) without losing the substrate's de-opinionated core.
+- Adopt a starter recipe (`kanon-aspects`'s `reference-default` recipe, or any other publisher's recipe) without losing the substrate's de-opinionated core.
 - Optionally consume `acme-` aspects as they appear, with publisher-symmetric resolution semantics.
 
 ## What stresses the substrate

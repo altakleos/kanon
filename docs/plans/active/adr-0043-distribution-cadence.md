@@ -9,11 +9,11 @@ design: "This plan delivers the design alongside the ADR (`docs/design/distribut
 
 ## Context
 
-The fifth Phase 0 ADR. ADR-0040 ratified entry-point discovery as the runtime interface; this ADR ratifies the **packaging mechanics** the substrate ships under: how `kanon-substrate` and `kanon-reference` split into separately-installable distributions, what version-pinning across the split looks like, what release cadence the substrate honours.
+The fifth Phase 0 ADR. ADR-0040 ratified entry-point discovery as the runtime interface; this ADR ratifies the **packaging mechanics** the substrate ships under: how `kanon-core` and `kanon-aspects` split into separately-installable distributions, what version-pinning across the split looks like, what release cadence the substrate honours.
 
 Three coupled commitments:
 
-1. **Distribution boundary**: `kanon-substrate` (the kernel) ships separately from `kanon-reference` (the seven `kanon-` aspects as data). A `kanon-kit` meta-package alias provides the convenience-install path. Round-5 code-reviewer's preferred answer (rejected per-aspect wheels as "theatre"; rejected single-wheel as kit-shape vestige).
+1. **Distribution boundary**: `kanon-core` (the kernel) ships separately from `kanon-aspects` (the seven `kanon-` aspects as data). A `kanon-kit` meta-package alias provides the convenience-install path. Round-5 code-reviewer's preferred answer (rejected per-aspect wheels as "theatre"; rejected single-wheel as kit-shape vestige).
 
 2. **Release cadence**: kernel ships daily-alpha permitted; reference ships weekly cadence; dialects ship quarterly minimum, annual default. A breaking dialect change is *never* a kernel release; it always cuts a new dialect spec. Round-5 planner: "the kit ships daily alpha. Under B-flavor with dialect grammar, is daily alpha still safe? A breaking dialect change every day would shred any future `acme-` author."
 
@@ -38,7 +38,7 @@ Land a single self-contained PR that:
 
 - **Context** — three coupled commitments; references to ADR-0040 (entry-point interface) and ADR-0041 (dialect grammar — what cadence governs).
 - **Decision** — three numbered claims:
-  1. Distribution shape: `kanon-substrate` + `kanon-reference` + `kanon-kit` meta-alias.
+  1. Distribution shape: `kanon-core` + `kanon-aspects` + `kanon-kit` meta-alias.
   2. Cadence policy: kernel daily-alpha; reference weekly; dialect quarterly minimum / annual default; breaking-dialect changes are never kernel releases.
   3. Recipe artifact: publisher-shipped target-tree YAML; consumer copies to `.kanon/recipes/`; substrate has no kernel verb.
 - **Alternatives Considered** — at least 5 (single wheel kit-shape; per-aspect wheels; vendor reference into substrate; daily-alpha across all surfaces; recipes as kernel feature).
@@ -53,8 +53,8 @@ Length target: ~180–220 lines.
 Concrete mechanism. Sections:
 
 - **Context** — what ADR-0043 ratifies.
-- **`pyproject.toml` shapes** — concrete examples for `kanon-substrate`, `kanon-reference`, `kanon-kit` meta-alias.
-- **Recipe YAML schema** — concrete shape; worked example for `kanon-reference`'s `reference-default` recipe.
+- **`pyproject.toml` shapes** — concrete examples for `kanon-core`, `kanon-aspects`, `kanon-kit` meta-alias.
+- **Recipe YAML schema** — concrete shape; worked example for `kanon-aspects`'s `reference-default` recipe.
 - **Cadence policy** — kernel daily-alpha rules; reference weekly cadence rules; dialect quarterly cadence rules; breaking-change-not-in-kernel rule.
 - **Migration script** — `kanon migrate v0.3 → v0.4` outline (Phase A authors).
 - **Release-workflow CI gate** — what the cadence-discipline CI gate checks.
@@ -69,11 +69,11 @@ New spec. Sections:
 - Frontmatter with `realizes:` (`P-publisher-symmetry`, `P-protocol-not-product`).
 - **Definition** — what cadence IS; what dialect-cadence-vs-kernel-cadence separation means.
 - **Invariants** (five release-cadence anchors):
-  - `INV-release-cadence-kernel-daily-alpha-permitted`: `kanon-substrate` may ship daily alpha releases under semver.
-  - `INV-release-cadence-reference-weekly`: `kanon-reference` ships at weekly cadence (substrate-author discretion); reference releases never include kernel-level changes.
+  - `INV-release-cadence-kernel-daily-alpha-permitted`: `kanon-core` may ship daily alpha releases under semver.
+  - `INV-release-cadence-reference-weekly`: `kanon-aspects` ships at weekly cadence (substrate-author discretion); reference releases never include kernel-level changes.
   - `INV-release-cadence-dialect-quarterly-minimum`: a new dialect (`kanon-dialect: YYYY-MM-DD`) ships at quarterly minimum, annual default; date-stamping per ADR-0041.
   - `INV-release-cadence-breaking-not-in-kernel`: a breaking dialect change is never a kernel release; it always ships as a dialect supersession.
-  - `INV-release-cadence-substrate-honours-n-minus-1`: at any time, `kanon-substrate` honours at least the current dialect (N) and the previous dialect (N-1); manifests pinning N-2 receive a deprecation warning.
+  - `INV-release-cadence-substrate-honours-n-minus-1`: at any time, `kanon-core` honours at least the current dialect (N) and the previous dialect (N-1); manifests pinning N-2 receive a deprecation warning.
 - **Verification approach** — fixtures Phase A authors.
 
 Length target: ~120–180 lines.
@@ -90,10 +90,10 @@ One paragraph under `## [Unreleased]` § Added summarizing ADR-0043's three comm
 
 ### Out of scope
 
-- **All code changes.** Phase A authors the actual `pyproject.toml` for `kanon-substrate`, `kanon-reference`, `kanon-kit`; the migration script; the release-workflow CI gate.
+- **All code changes.** Phase A authors the actual `pyproject.toml` for `kanon-core`, `kanon-aspects`, `kanon-kit`; the migration script; the release-workflow CI gate.
 - **Substrate self-conformance** — ADR-0044.
 - **De-opinionation transition** — ADR-0045.
-- **Specific recipe contents** — `kanon-reference`'s `reference-default` recipe is a publisher artifact; this PR specifies the shape, not the contents.
+- **Specific recipe contents** — `kanon-aspects`'s `reference-default` recipe is a publisher artifact; this PR specifies the shape, not the contents.
 - **acme- publisher cadence guidance** — Phase B/C; `acme-` publishers set their own cadence.
 
 ## Approach

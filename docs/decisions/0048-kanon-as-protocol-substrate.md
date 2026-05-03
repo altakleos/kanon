@@ -22,9 +22,9 @@ ADR-0012 §Alternatives recorded the substrate-shape option ("Kernel + sibling k
 
 Specifically:
 
-1. **The substrate's deliverable is a contract grammar plus a replay engine**, not a curated discipline bundle. The pip distribution `kanon-substrate` ships the kernel (atomic writes, scaffolding, verify orchestration, fidelity replay, resolution-replay engine, dialect grammar parser, structural validators). It scaffolds nothing on its own behalf into consumer trees.
+1. **The substrate's deliverable is a contract grammar plus a replay engine**, not a curated discipline bundle. The pip distribution `kanon-core` ships the kernel (atomic writes, scaffolding, verify orchestration, fidelity replay, resolution-replay engine, dialect grammar parser, structural validators). It scaffolds nothing on its own behalf into consumer trees.
 
-2. **Reference aspects (`kanon-sdd`, `kanon-testing`, `kanon-worktrees`, `kanon-release`, `kanon-security`, `kanon-deps`, `kanon-fidelity`) are demonstrations, not the product.** They ship in a separate, opt-in `kanon-reference` distribution. They are de-installable, and the substrate's capability registry (per ADR-0026) admits substitution by other publishers as the cross-publisher arbitration semantics are completed in Phase 0. A `kanon-kit` meta-package alias preserves the convenience-install path.
+2. **Reference aspects (`kanon-sdd`, `kanon-testing`, `kanon-worktrees`, `kanon-release`, `kanon-security`, `kanon-deps`, `kanon-fidelity`) are demonstrations, not the product.** They ship in a separate, opt-in `kanon-aspects` distribution. They are de-installable, and the substrate's capability registry (per ADR-0026) admits substitution by other publishers as the cross-publisher arbitration semantics are completed in Phase 0. A `kanon-kit` meta-package alias preserves the convenience-install path.
 
 3. **The substrate publishes a defined set of principles as stable protocol commitments.** Six principles cross over into public-tier status: `P-prose-is-code`, `P-protocol-not-product`, `P-publisher-symmetry`, `P-runtime-non-interception`, `P-specs-are-source`, `P-verification-co-authored`. Two remain kit-author-internal: `P-self-hosted-bootstrap`, `P-cross-link-dont-duplicate`. Public-tier principles are versioned with the dialect, citable by `acme-` publishers, and immutable post-acceptance under the same discipline that protects ADR bodies (ADR-0032). This discipline applies prospectively from this ADR's acceptance: the principle amendments ratified in this PR (`P-specs-are-source`, `P-self-hosted-bootstrap`, `P-verification-co-authored`) are the moment public-tier principles cross over into stable-commitment status. Future amendments require dialect supersession, not in-place edits.
 
@@ -52,7 +52,7 @@ Specifically:
 
 ### Substrate-level
 
-- **`kanon-substrate` ships the kernel only.** The current `kanon-kit` wheel splits: substrate (kernel + grammar parser + structural validators), reference (the seven `kanon-` aspects as data), meta-alias (`kanon-kit`) for the convenience-install path. Phase 0 ADRs (0039–0045) author the implementation.
+- **`kanon-core` ships the kernel only.** The current `kanon-kit` wheel splits: substrate (kernel + grammar parser + structural validators), reference (the seven `kanon-` aspects as data), meta-alias (`kanon-kit`) for the convenience-install path. Phase 0 ADRs (0039–0045) author the implementation.
 - **`kanon init` produces a bare scaffold.** No aspects auto-enabled. The scaffolded `AGENTS.md` teaches the substrate's nature; recipes are discovered via documentation, not built into the kernel.
 - **`defaults:` and `_detect.py` are removed.** Both are kit-shape vestiges that contradict publisher symmetry.
 - **Bare-name CLI sugar (`--aspects sdd:1`) is deprecated.** Future invocations require explicit publisher prefixes. A deprecation shim runs for one minor version with a warning.
@@ -78,7 +78,7 @@ Specifically:
 
 ### Migration
 
-- **Clean break with explicit migration script.** `kanon-substrate==1.0.0a1` ships as a hard cut from `kanon-kit==0.3.x`. A `kanon migrate v0.3→v0.4` script will be written, marked deprecated-on-arrival in its initial release, and deleted after the kanon repo's own migration commit lands. The script's existence is acknowledged honestly: `P-self-hosted-bootstrap` makes a literal clean break impossible (the kit's own working tree is the first migration victim).
+- **Clean break with explicit migration script.** `kanon-core==1.0.0a1` ships as a hard cut from `kanon-kit==0.3.x`. A `kanon migrate v0.3→v0.4` script will be written, marked deprecated-on-arrival in its initial release, and deleted after the kanon repo's own migration commit lands. The script's existence is acknowledged honestly: `P-self-hosted-bootstrap` makes a literal clean break impossible (the kit's own working tree is the first migration victim).
 
 ### Versioning
 

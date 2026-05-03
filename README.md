@@ -12,7 +12,7 @@ cd ~/myproject           # open with any LLM coding agent
 
 ---
 
-`kanon` is a **protocol substrate** ([ADR-0048](docs/decisions/0048-kanon-as-protocol-substrate.md)) — a small kernel (`kanon-substrate`) plus a separately distributed reference set of opt-in disciplines (`kanon-reference`) that publishers and consumers compose. Drop it into any repo, point your LLM agent at the scaffolded `AGENTS.md`, and the agent becomes a process-disciplined contributor: plans before building, specs before designing, worktrees for parallel work, verification as a first-class layer.
+`kanon` is a **protocol substrate** ([ADR-0048](docs/decisions/0048-kanon-as-protocol-substrate.md)) — a small kernel (`kanon-core`) plus a separately distributed reference set of opt-in disciplines (`kanon-aspects`) that publishers and consumers compose. Drop it into any repo, point your LLM agent at the scaffolded `AGENTS.md`, and the agent becomes a process-disciplined contributor: plans before building, specs before designing, worktrees for parallel work, verification as a first-class layer.
 
 The substrate is **publisher-symmetric**: kit-shipped (`kanon-`), consumer-defined (`project-`), and third-party (`acme-`) aspects all flow through identical code paths. The substrate makes no claim about which disciplines are "right" — it only enforces the grammar by which any publisher's disciplines are authored, composed, and verified.
 
@@ -44,7 +44,7 @@ kanon verify ~/myproject
 
 ## Reference aspects
 
-The seven reference aspects ship via `kanon-reference` (and re-exported by `kanon-kit`); each is opt-in and individually depth-dialed.
+The seven reference aspects ship via `kanon-aspects` (and re-exported by `kanon-kit`); each is opt-in and individually depth-dialed.
 
 | Aspect | Depth range | Stability | What it provides |
 |--------|-------------|-----------|------------------|
@@ -64,7 +64,7 @@ Consumers may declare their own aspects under `.kanon/aspects/project-<local>/ma
 
 The two filesystem source namespaces are **strictly source-bounded**:
 
-- `kanon-<local>` — reference-shipped, loaded from the installed `kanon-reference` distribution via entry-points.
+- `kanon-<local>` — reference-shipped, loaded from the installed `kanon-aspects` distribution via entry-points.
 - `project-<local>` — consumer-defined, loaded from `.kanon/aspects/`.
 
 A `kanon-` directory under `.kanon/aspects/` is rejected at load. Cross-source path collisions raise a `ClickException` at scaffold time. Capability substitutability is source-neutral: a `project-<local>`'s `provides:` capability can satisfy a kit-aspect's 1-token `requires:` predicate.

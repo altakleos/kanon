@@ -9,9 +9,9 @@ design: docs/design/kernel-reference-interface.md
 
 ## Context
 
-Per [ADR-0044 substrate-self-conformance](../../decisions/0044-substrate-self-conformance.md): `kanon-substrate` MUST run without `kanon-reference`. This is the substrate's foundational invariant — it's how we prove kanon is a substrate, not a kit. The gate is publicly-readable; `acme-` publishers can replicate against their own bundles per ADR-0044's invariants.
+Per [ADR-0044 substrate-self-conformance](../../decisions/0044-substrate-self-conformance.md): `kanon-core` MUST run without `kanon-aspects`. This is the substrate's foundational invariant — it's how we prove kanon is a substrate, not a kit. The gate is publicly-readable; `acme-` publishers can replicate against their own bundles per ADR-0044's invariants.
 
-**Today's reality:** `kanon-substrate` and `kanon-reference` ship together as one `kanon-kit` wheel from the top-level pyproject. The packaging split (per ADR-0043) is documented but not built. So the substrate-independence gate can't yet verify a separately-installed `kanon-substrate` wheel.
+**Today's reality:** `kanon-core` and `kanon-aspects` ship together as one `kanon-kit` wheel from the top-level pyproject. The packaging split (per ADR-0043) is documented but not built. So the substrate-independence gate can't yet verify a separately-installed `kanon-core` wheel.
 
 **What this gate CAN verify:** the substrate's *runtime code* doesn't fail when `kanon_reference` isn't importable. We achieve this by:
 
@@ -74,7 +74,7 @@ print("substrate-independence: OK")
 
 ### Out of scope
 
-- Building separate `kanon-substrate` wheel and installing in clean venv (future plan; requires packaging split to be build-active)
+- Building separate `kanon-core` wheel and installing in clean venv (future plan; requires packaging split to be build-active)
 - Refactoring substrate code to avoid `kanon_reference` imports (none exist today; if any creep in later, this gate catches them)
 
 ## Acceptance criteria

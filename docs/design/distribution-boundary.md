@@ -7,17 +7,17 @@ implements: docs/specs/release-cadence.md
 
 ## Context
 
-[`docs/specs/release-cadence.md`](../specs/release-cadence.md) defines the cadence invariants the substrate enforces; [ADR-0043](../decisions/0043-distribution-boundary-and-cadence.md) ratifies the distribution boundary, cadence policy, and recipe artifact in one decision. This design specifies *how* the substrate packages: concrete `pyproject.toml` shapes for `kanon-substrate`, `kanon-reference`, and `kanon-kit`; concrete recipe YAML schema; the cadence-CI-gate algorithm; and the `kanon migrate v0.3 → v0.4` script outline.
+[`docs/specs/release-cadence.md`](../specs/release-cadence.md) defines the cadence invariants the substrate enforces; [ADR-0043](../decisions/0043-distribution-boundary-and-cadence.md) ratifies the distribution boundary, cadence policy, and recipe artifact in one decision. This design specifies *how* the substrate packages: concrete `pyproject.toml` shapes for `kanon-core`, `kanon-aspects`, and `kanon-kit`; concrete recipe YAML schema; the cadence-CI-gate algorithm; and the `kanon migrate v0.3 → v0.4` script outline.
 
 ## `pyproject.toml` shapes
 
-### `kanon-substrate/pyproject.toml`
+### `kanon-core/pyproject.toml`
 
 The kernel-only distribution. Ships zero aspects.
 
 ```toml
 [project]
-name = "kanon-substrate"
+name = "kanon-core"
 version = "1.0.0a1"
 description = "Protocol substrate for prose-as-code engineering discipline in LLM-agent-driven repos."
 readme = "README.md"
@@ -57,20 +57,20 @@ exclude = [
 
 Critical: the `exclude` clause ensures no kit-shape aspect content leaks into the substrate wheel. Phase A authors a CI assertion that verifies the wheel contains zero `kanon/kit/aspects/` files.
 
-### `kanon-reference/pyproject.toml`
+### `kanon-aspects/pyproject.toml`
 
 Ships the seven reference aspects as data. Declares Python entry-points per [ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md).
 
 ```toml
 [project]
-name = "kanon-reference"
+name = "kanon-aspects"
 version = "1.0.0a1"
 description = "Reference discipline aspects for the kanon protocol substrate."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 dependencies = [
-    "kanon-substrate>=1.0.0a1,<2.0",
+    "kanon-core>=1.0.0a1,<2.0",
 ]
 
 [project.entry-points."kanon.aspects"]
@@ -92,19 +92,19 @@ packages = ["src/kanon_reference"]
 
 ### `kanon-kit/pyproject.toml` (meta-alias)
 
-Ships zero source. Pins `kanon-substrate` and `kanon-reference` at coordinated versions.
+Ships zero source. Pins `kanon-core` and `kanon-aspects` at coordinated versions.
 
 ```toml
 [project]
 name = "kanon-kit"
 version = "1.0.0a1"
-description = "Convenience meta-package: installs kanon-substrate plus kanon-reference."
+description = "Convenience meta-package: installs kanon-core plus kanon-aspects."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 dependencies = [
-    "kanon-substrate==1.0.0a1",
-    "kanon-reference==1.0.0a1",
+    "kanon-core==1.0.0a1",
+    "kanon-aspects==1.0.0a1",
 ]
 
 [build-system]
@@ -112,21 +112,21 @@ requires = ["hatchling>=1.18"]
 build-backend = "hatchling.build"
 ```
 
-The exact version pins (rather than `>=` ranges) ensure `pip install kanon-kit==1.0.0a1` produces a reproducible install across the three packages. `kanon-substrate` and `kanon-reference` may evolve independently; `kanon-kit` ships coordinated bundles at lockstep versions.
+The exact version pins (rather than `>=` ranges) ensure `pip install kanon-kit==1.0.0a1` produces a reproducible install across the three packages. `kanon-core` and `kanon-aspects` may evolve independently; `kanon-kit` ships coordinated bundles at lockstep versions.
 
 ## Recipe YAML schema
 
 A recipe is publisher-shipped target-tree YAML. Schema:
 
 ```yaml
-# kanon-reference/recipes/reference-default.yaml (shipped as data in kanon-reference)
+# kanon-aspects/recipes/reference-default.yaml (shipped as data in kanon-aspects)
 ---
 schema-version: 1
 recipe-id: reference-default
-publisher: kanon-reference
+publisher: kanon-aspects
 recipe-version: "1.0"
 target-dialect: "2026-05-01"
-description: "Default reference recipe — opts the consumer into all seven kanon-reference aspects at their default depths."
+description: "Default reference recipe — opts the consumer into all seven kanon-aspects aspects at their default depths."
 aspects:
   - id: kanon-sdd
     depth: 1
@@ -160,12 +160,12 @@ The recipe lives in the consumer's repo at `.kanon/recipes/<recipe-name>.yaml` (
 
 ```bash
 # Copy the recipe from the publisher bundle to the consumer repo.
-cp $(pip show kanon-reference | grep Location | awk '{print $2}')/kanon_reference/recipes/reference-default.yaml \
+cp $(pip show kanon-aspects | grep Location | awk '{print $2}')/kanon_reference/recipes/reference-default.yaml \
    .kanon/recipes/reference-default.yaml
 
 # Commit it.
 git add .kanon/recipes/reference-default.yaml
-git commit -m "feat: opt into reference-default recipe (kanon-reference 1.0)"
+git commit -m "feat: opt into reference-default recipe (kanon-aspects 1.0)"
 
 # kanon next read of .kanon/config.yaml + .kanon/recipes/* enables the recipe's aspects.
 kanon verify .
@@ -180,17 +180,17 @@ Phase A's `scripts/check_release_cadence.py` (or analogous) enforces `INV-releas
 ```python
 # scripts/check_release_cadence.py (Phase A)
 #
-# Fails if a `kanon-substrate` kernel release commit also touches
+# Fails if a `kanon-core` kernel release commit also touches
 # dialect-grammar files (which would breach INV-release-cadence-breaking-not-in-kernel).
 
 import subprocess, sys
 from pathlib import Path
 
-KERNEL_VERSION_FILE = Path("kanon-substrate/kernel/__init__.py")
+KERNEL_VERSION_FILE = Path("kanon-core/kernel/__init__.py")
 DIALECT_GRAMMAR_PATHS = [
     Path("docs/specs/dialect-grammar.md"),
     Path("docs/design/dialect-grammar.md"),
-    Path("kanon-substrate/kernel/_dialects.py"),
+    Path("kanon-core/kernel/_dialects.py"),
 ]
 
 def main():
@@ -225,12 +225,12 @@ The check is conservative: it rejects coincidental same-commit bundling. If a re
 The migration script (Phase A) transitions a v0.3.x consumer repo to v0.4. It is deprecated-on-arrival per [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md)'s migration commitment; deleted after the kanon repo's own migration commit lands.
 
 ```python
-# kanon-substrate/kernel/_migration_v3_to_v4.py (Phase A; deprecated-on-arrival)
+# kanon-core/kernel/_migration_v3_to_v4.py (Phase A; deprecated-on-arrival)
 #
 # Migrates a v0.3.x consumer repo to v0.4.
 #
 # - Rewrites .kanon/config.yaml to opt-in form (no defaults; explicit aspect+depth list)
-# - Copies kanon-reference's reference-default recipe to .kanon/recipes/
+# - Copies kanon-aspects's reference-default recipe to .kanon/recipes/
 # - Adds kanon-dialect: 2026-05-01 to migrated config
 # - Records migration provenance
 
@@ -252,7 +252,7 @@ def migrate_v3_to_v4(target: Path) -> MigrationReport:
         "provenance": [
             {
                 "recipe": "migration-v3-to-v4",
-                "publisher": "kanon-substrate",
+                "publisher": "kanon-core",
                 "applied_at": iso8601_now(),
             },
         ],
@@ -265,7 +265,7 @@ def migrate_v3_to_v4(target: Path) -> MigrationReport:
     write_yaml_atomic(target / ".kanon" / "config.yaml", new_config)
     report.add("rewrote-config", "schema v3 → v4")
 
-    # 2. Copy reference-default recipe if kanon-reference is installed.
+    # 2. Copy reference-default recipe if kanon-aspects is installed.
     if importlib.util.find_spec("kanon_reference"):
         recipe_src = Path(importlib.util.find_spec("kanon_reference").origin).parent / "recipes" / "reference-default.yaml"
         recipe_dst = target / ".kanon" / "recipes" / "reference-default.yaml"
@@ -281,10 +281,10 @@ def migrate_v3_to_v4(target: Path) -> MigrationReport:
 
 | Surface | LOC delta | What |
 |---|---:|---|
-| `kanon-substrate/pyproject.toml` | ~+50 | New file (kernel-only distribution shape) |
-| `kanon-reference/pyproject.toml` | ~+30 | New file (entry-points declaration) |
+| `kanon-core/pyproject.toml` | ~+50 | New file (kernel-only distribution shape) |
+| `kanon-aspects/pyproject.toml` | ~+30 | New file (entry-points declaration) |
 | `kanon-kit/pyproject.toml` | ~+20 | New file (meta-alias) |
-| `kanon-reference/recipes/reference-default.yaml` | ~+30 | First recipe; opts into seven aspects at default depths |
+| `kanon-aspects/recipes/reference-default.yaml` | ~+30 | First recipe; opts into seven aspects at default depths |
 | `_migration_v3_to_v4.py` | ~+100 | Migration script (deprecated-on-arrival) |
 | `scripts/check_release_cadence.py` | ~+80 | Cadence-gate CI script |
 | Release workflows (`.github/workflows/release.yml` rewrite) | ~+150 | Three publish jobs (substrate, reference, meta-alias) |

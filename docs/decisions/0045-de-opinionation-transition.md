@@ -30,21 +30,21 @@ The reverse order — Phase A deletions before Phase 0.5 — would break self-ho
 
 The canonical Phase A sequence (steps numbered for traceability; reordering between adjacent steps is acceptable if self-host stays green):
 
-- **A.1 — Distribution split.** Author `kanon-substrate/pyproject.toml`, `kanon-reference/pyproject.toml`, `kanon-kit/pyproject.toml` per [`docs/design/distribution-boundary.md`](../design/distribution-boundary.md). Reorganize source tree so substrate ships kernel-only and reference ships aspects-only. CI matrix updated.
+- **A.1 — Distribution split.** Author `kanon-core/pyproject.toml`, `kanon-aspects/pyproject.toml`, `kanon-kit/pyproject.toml` per [`docs/design/distribution-boundary.md`](../design/distribution-boundary.md). Reorganize source tree so substrate ships kernel-only and reference ships aspects-only. CI matrix updated.
 - **A.2 — `_kit_root()` retirement.** Replace every call site (10+, walked in [`docs/design/kernel-reference-interface.md`](../design/kernel-reference-interface.md)) with publisher-registry lookups. Author `ci/check_substrate_independence.py`; the gate runs and likely fails — iteration to green is the deliverable.
 - **A.3 — Kit-global `files:` and `defaults:` deleted.** `.kanon/kit.md` migrates to an aspect or is deleted. The top-level `defaults:` field is removed from kit manifest. Phase 0.5's hand-over makes this a no-op for the kanon repo.
 - **A.4 — `_detect.py` deleted.** Testing-aspect's `config-schema:` for runtime commands (`test_cmd`, `lint_cmd`, etc.) removed. Replaced by the resolution model (per ADR-0039); the kit's runtime-binding lives in `.kanon/resolutions.yaml`, not in `kanon aspect set-config`.
 - **A.5 — Bare-name CLI sugar deprecated.** `--aspects sdd:1` keeps working for one minor cycle with a deprecation warning; future cycle requires `--aspects kanon-sdd:1`.
 - **A.6 — Resolution + dialect + composition modules.** Author `_resolutions.py` (per ADR-0039 design), `_dialects.py` (per ADR-0041 design), `_composition.py` (per ADR-0041 design). Replay engine, dialect-pin validator, topo-sort with cycle detection.
 - **A.7 — New CLI verbs.** Author `kanon resolve` (developer-machine resolver invocation), `kanon resolutions check` (pin-check phase only), `kanon resolutions explain` (diagnostic), `kanon contracts validate <bundle-path>` (publisher-facing validator).
-- **A.8 — Scaffolded `ci/check_*.py` retirement.** The four scripts the kit historically scaffolded into consumer trees (`check_deps.py`, `check_security_patterns.py`, `check_test_quality.py`, `release-preflight.py`) are removed from `kanon-reference`'s scaffolded files. The kanon repo's own consumer-side `ci/check_*.py` files survive as authored realizations the resolution model binds to.
+- **A.8 — Scaffolded `ci/check_*.py` retirement.** The four scripts the kit historically scaffolded into consumer trees (`check_deps.py`, `check_security_patterns.py`, `check_test_quality.py`, `release-preflight.py`) are removed from `kanon-aspects`'s scaffolded files. The kanon repo's own consumer-side `ci/check_*.py` files survive as authored realizations the resolution model binds to.
 - **A.9 — Migration script.** Author `kanon migrate v0.3 → v0.4` per [`docs/design/distribution-boundary.md`](../design/distribution-boundary.md). Mark deprecated-on-arrival; delete after the kanon repo's own migration commit lands (Phase 0.5 is its first lived event, so deletion happens shortly after Phase A.9 ships).
 
 Substrate-self-conformance (per ADR-0044) gates every step. A step that breaks the substrate-independence gate or the self-host probe is reverted before merge.
 
 ### 3. No backward-compatibility shims for v0.3.x
 
-Per [ADR-0048](0048-kanon-as-protocol-substrate.md) clean-break commitment: there are no current external consumers; the cost of breaking compatibility is zero. `kanon-substrate==1.0.0a1` ships as a hard cut from `kanon-kit==0.3.x`. The `kanon migrate v0.3 → v0.4` script (Phase A.9) handles the kanon repo's own transition and is deprecated-on-arrival.
+Per [ADR-0048](0048-kanon-as-protocol-substrate.md) clean-break commitment: there are no current external consumers; the cost of breaking compatibility is zero. `kanon-core==1.0.0a1` ships as a hard cut from `kanon-kit==0.3.x`. The `kanon migrate v0.3 → v0.4` script (Phase A.9) handles the kanon repo's own transition and is deprecated-on-arrival.
 
 A future fork of v0.3.x is its forker's responsibility. The substrate's first Phase A release ships with a one-line release note: *"kanon-kit 0.3.x is end-of-life. The substrate is the successor. There is no migration path; opt in explicitly via the migration script."*
 
@@ -54,7 +54,7 @@ A future fork of v0.3.x is its forker's responsibility. The substrate's first Ph
 
 2. **Informal ordering** — let Phase A's PR sequence emerge organically; no canonical sequence in the ADR. **Rejected.** Round-5 panel called sequencing the load-bearing concern. Without a ratified sequence, contributors (the lead, working with multiple LLM-agent worktrees per the `solo-with-agents` persona) may iterate in different orders across worktrees and break self-host. The canonical sequence is the only way to coordinate.
 
-3. **Backward-compatibility shims for v0.3.x consumers.** Ship `kanon-substrate==1.0.0a1` with a `defaults: [...]` shim that emits deprecation warnings; consumers migrate at their own pace. **Rejected.** Per ADR-0048's clean-break commitment, no current consumers exist; backward-compat would be pure cost without offsetting benefit. The migration script handles the kanon repo (the only existing consumer); future v0.3.x forkers handle themselves.
+3. **Backward-compatibility shims for v0.3.x consumers.** Ship `kanon-core==1.0.0a1` with a `defaults: [...]` shim that emits deprecation warnings; consumers migrate at their own pace. **Rejected.** Per ADR-0048's clean-break commitment, no current consumers exist; backward-compat would be pure cost without offsetting benefit. The migration script handles the kanon repo (the only existing consumer); future v0.3.x forkers handle themselves.
 
 4. **Defer transition to v1.0.** Keep kit-shape under v0.4.x; cut v1.0 as the protocol-substrate ship. **Rejected.** Two reasons. (a) The substrate's identity is committed by ADR-0048; deferring contradicts the lead's "kit was a prototype against our DNA" framing. (b) Each release-cycle that ships kit-shape accumulates more lock-in (per ADR-0048 alternatives §3): the cheapest moment to migrate is now, with zero current consumers. Deferring increases cost without changing the destination.
 
@@ -65,12 +65,12 @@ A future fork of v0.3.x is its forker's responsibility. The substrate's first Ph
 - **The 9-step sequence is canonical.** Phase A executes in this order; deviation requires either (a) self-host staying green throughout (the deviation is acceptable), or (b) a superseding ADR (the deviation is structural and requires re-ratification).
 - **The substrate-independence gate's first run will fail.** This is expected and named honestly here. Phase A.2 (`_kit_root()` retirement) is the iteration step that turns the gate green; subsequent steps preserve green.
 - **Self-host stays green at every commit Phase A merges.** ADR-0044's discipline blocks merges that violate this.
-- **No v0.3.x reverse compatibility.** `kanon-substrate==1.0.0a1` ships clean.
+- **No v0.3.x reverse compatibility.** `kanon-core==1.0.0a1` ships clean.
 
 ### Substrate ship
 
-- **`kanon-substrate==1.0.0a1`** ships when Phase A.1–A.7 complete (the structural transition: distribution + interface + grammar + verification). A.8–A.9 may follow in subsequent point releases.
-- **`kanon-reference==1.0.0a1`** ships in lockstep, with the seven aspects authored against the v1 dialect (`kanon-dialect: 2026-05-01` per ADR-0041).
+- **`kanon-core==1.0.0a1`** ships when Phase A.1–A.7 complete (the structural transition: distribution + interface + grammar + verification). A.8–A.9 may follow in subsequent point releases.
+- **`kanon-aspects==1.0.0a1`** ships in lockstep, with the seven aspects authored against the v1 dialect (`kanon-dialect: 2026-05-01` per ADR-0041).
 - **`kanon-kit==1.0.0a1`** meta-alias ships with exact-version pins to substrate and reference.
 - **The Phase 0.5 commit is the kanon repo's first migration event.** It exercises the publisher-recipe-opt-in path before any external consumer ever does — and this is the substrate's primary correctness probe.
 

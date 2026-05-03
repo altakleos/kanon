@@ -43,7 +43,7 @@ Deliver a foundations layer that:
   - Opening: kanon is a protocol substrate, not a kit
   - Three defining properties: prose-as-code, de-opinionated, self-hosting (revised meanings)
   - Section: **Public protocol commitments** — listing the six public principles by ID with one-line statements
-  - Section: **Substrate guarantees** — what `kanon-substrate` provides regardless of which aspects a consumer enables
+  - Section: **Substrate guarantees** — what `kanon-core` provides regardless of which aspects a consumer enables
   - Section: **Non-goals** (refreshed) — what the protocol explicitly will not do
   - Section: **Why prose-as-code is the bet** — the founding axiom, traced to the lead's framing
   - Section: **Self-hosting under vision-led design** — epistemological role, not dogfooding

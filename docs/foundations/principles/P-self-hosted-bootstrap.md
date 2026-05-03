@@ -19,7 +19,7 @@ If the substrate's grammar feels onerous when applied to the kanon repo's own ev
 
 ## Implications
 
-- **The kanon repo's `.kanon/config.yaml` opts into reference aspects via a publisher recipe** (`reference-default` shipped by `kanon-reference`), with `provenance:` recording the recipe and publisher. The opt-in is identical to what any external consumer would author. The substrate does not know the kanon repo is special.
+- **The kanon repo's `.kanon/config.yaml` opts into reference aspects via a publisher recipe** (`reference-default` shipped by `kanon-aspects`), with `provenance:` recording the recipe and publisher. The opt-in is identical to what any external consumer would author. The substrate does not know the kanon repo is special.
 - **No kernel-side carve-outs for the kanon repo.** Code paths that would have privileged the repo (kit-global `files:`, `defaults:`, bare-name namespace sugar at runtime) are removed under the protocol-substrate commitment.
 - **Self-hosting falsification probes are the substrate's primary correctness signal.** Their detail (P1 self-host-from-clone, P2 substrate-determinism, P0 resolution-determinism) lives in [`de-opinionation.md` § Self-hosting as falsification](../de-opinionation.md). The kanon repo's state is what those probes fire against.
 - **When the substrate ships a new capability, the kanon repo must adopt it before the release is cut.** "We built it but we don't use it" is a red flag.
@@ -30,7 +30,7 @@ If the substrate's grammar feels onerous when applied to the kanon repo's own ev
 
 - Some kit-author files (the substrate's Python source, pyproject metadata, the reference-aspect bundle's manifests) have no analogue in a peer consumer's tree. Those are kit-author-internal artifacts; they don't participate in the consumer-facing self-hosting check. The kanon repo's *consumer-facing* state (`.kanon/config.yaml`, `AGENTS.md`, scaffolded protocols) is what `kanon verify` exercises against, and that state is peer-consumer-symmetric.
 - Major substrate refactors may temporarily break self-hosting between commits. Those commits should be bounded and named, analogous to the bootstrap phase.
-- The kit-author also publishes `kanon-reference`. That co-authorship is a fact about who maintains the project, not a privilege the substrate grants. A future split (separate maintainers, separate repos) would reduce the appearance of privilege without changing the substrate's behaviour.
+- The kit-author also publishes `kanon-aspects`. That co-authorship is a fact about who maintains the project, not a privilege the substrate grants. A future split (separate maintainers, separate repos) would reduce the appearance of privilege without changing the substrate's behaviour.
 
 ## Source
 

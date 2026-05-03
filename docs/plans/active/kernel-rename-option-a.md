@@ -14,14 +14,14 @@ date: 2026-05-03
 
 Rename the substrate Python package from `kanon` → `kernel` so the source tree matches ADR-0049's intent (`kernel/cli.py` at depth 2). Preserve:
 - The user-facing CLI command name `kanon` (Click app stays named `kanon`).
-- The distribution names `kanon-substrate` / `kanon-reference` / `kanon-kit` (PyPI surface unchanged).
+- The distribution names `kanon-core` / `kanon-aspects` / `kanon-kit` (PyPI surface unchanged).
 - The entry-point group name `kanon.aspects` (per ADR-0040's runtime contract for `acme-` publishers).
 - The aspect slugs `kanon-sdd`, `kanon-testing`, etc.
 - The consumer's `.kanon/` directory + config schema.
 
 Change:
 - The Python import path: `from kanon.X import Y` → `from kernel.X import Y` (substrate-internal).
-- The wheel-imported package name: when a consumer's pyproject lists `kanon-substrate`, `pip install kanon-substrate` lands `kernel/` on `sys.path`.
+- The wheel-imported package name: when a consumer's pyproject lists `kanon-core`, `pip install kanon-core` lands `kernel/` on `sys.path`.
 - 49 substrate-internal files updated by mechanical grep-replace.
 
 ## Background
@@ -47,7 +47,7 @@ In scope:
 
 Out of scope:
 - The user-facing CLI command name (`kanon` stays).
-- Distribution names (`kanon-substrate`, `kanon-kit`, `kanon-reference` stay).
+- Distribution names (`kanon-core`, `kanon-kit`, `kanon-aspects` stay).
 - Entry-point group `kanon.aspects` (stays — it's the protocol contract per ADR-0040).
 - The `aspects/` rename (ADR-0049 §1(7); separate plan; same constraint applies if attempted via Hatch).
 - Any consumer-facing config (`.kanon/`, `kanon init`, etc.).
@@ -60,7 +60,7 @@ Out of scope:
 - AC3: `from kanon.cli import main` raises `ModuleNotFoundError` (the rename is COMPLETE; no shim).
 - AC4: `kanon --version` prints `0.4.0a5` (or whatever the bump version is).
 - AC5: `kanon verify .` exits 0.
-- AC6: `kanon-substrate` wheel `pip install`s and `python -c "import kernel; print(kernel.cli.main)"` works.
+- AC6: `kanon-core` wheel `pip install`s and `python -c "import kernel; print(kernel.cli.main)"` works.
 - AC7: 7 standalone gates pass; full pytest passes.
 - AC8: Active docs reference `kernel.X` for substrate imports; ADR/done-plan/CHANGELOG history preserved.
 - AC9: Version bump to `0.4.0a5` (or 0.5.0a1 if breaking-change framing is preferred — see "Versioning question" below).
@@ -86,7 +86,7 @@ Out of scope:
 The rename is BREAKING for any code that does `from kanon.X import Y`. There are no current external consumers per ADR-0048, so the cost is zero externally. Two framings:
 
 - **Patch-class bump (0.4.0a4 → 0.4.0a5)**: substrate-internal-only change; consumers see no API change (everything routes through `kanon` CLI / `kanon-kit` wheel). Honest IF we accept "the importable Python module name is internal API."
-- **Minor-class bump (0.4.0a4 → 0.5.0a1)**: signals the breaking nature of the import rename. Conservative; correct per SemVer for any future PyPI release that anyone DOES `pip install kanon-substrate` against (the importable module changes from `kanon` to `kernel`).
+- **Minor-class bump (0.4.0a4 → 0.5.0a1)**: signals the breaking nature of the import rename. Conservative; correct per SemVer for any future PyPI release that anyone DOES `pip install kanon-core` against (the importable module changes from `kanon` to `kernel`).
 
 Recommendation: **0.5.0a1**. Even with zero current consumers, the rename changes a public surface (the importable wheel package) and SemVer-correct framing helps downstream tooling reason about it.
 

@@ -107,7 +107,7 @@ One paragraph under `## [Unreleased]` § Added (alongside ADR-0039 and ADR-0040 
 - **Distribution boundary** — ADR-0043.
 - **Substrate self-conformance** — ADR-0044.
 - **De-opinionation transition** — ADR-0045.
-- **Defining specific realization-shapes for the seven `kanon-` reference aspects** — those are publisher artifacts, ratified when `kanon-reference` is split out (Phase A scope).
+- **Defining specific realization-shapes for the seven `kanon-` reference aspects** — those are publisher artifacts, ratified when `kanon-aspects` is split out (Phase A scope).
 - **`acme-` publisher onboarding documentation** — that's part of Phase B once dialect grammar is real.
 
 ## Approach
@@ -159,7 +159,7 @@ One paragraph under `## [Unreleased]` § Added (alongside ADR-0039 and ADR-0040 
 
 - **Risk: three coupled commitments in one ADR may overwhelm review.** Mitigation: ADR's Decision section is three numbered claims; each Alternative Considered targets one claim; reviewers can engage per-claim.
 - **Risk: shape schema may be too permissive or too strict.** Mitigation: Phase A's `kanon contracts validate` test suite is the falsification surface; if the shape rejects valid contracts, Phase A reveals it and we amend in ADR follow-up. If too permissive, kit-author audits surface drift.
-- **Risk: dialect-versioning collides with semver of `kanon-substrate` itself.** Mitigation: dialects are date-stamped (`YYYY-MM-DD`), substrate is semver. Different vocabularies, different artifacts. ADR-0041 explains the distinction.
+- **Risk: dialect-versioning collides with semver of `kanon-core` itself.** Mitigation: dialects are date-stamped (`YYYY-MM-DD`), substrate is semver. Different vocabularies, different artifacts. ADR-0041 explains the distinction.
 - **Risk: composition algebra too restrictive (forbidding cycles makes some legitimate flows impossible).** Mitigation: cycles in `before/after:` graphs are universally bugs; if a real use case emerges, it's the seed of a future ADR. Today's substrate has zero composition cycles.
 
 ## Documentation impact

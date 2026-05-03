@@ -9,9 +9,9 @@ design: docs/design/distribution-boundary.md
 
 ## Context
 
-Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 1: "Distribution split (substrate / reference / meta-alias pyproject.toml files)". Per [ADR-0043](../../decisions/0043-distribution-boundary-and-cadence.md): `kanon-substrate` (kernel) ships separately from `kanon-reference` (aspects); `kanon-kit` is a meta-package alias preserving the convenience-install path. The canonical shapes for all three `pyproject.toml` files are specified in [`docs/design/distribution-boundary.md`](../../design/distribution-boundary.md).
+Per [ADR-0045](../../decisions/0045-de-opinionation-transition.md) §Decision step 1: "Distribution split (substrate / reference / meta-alias pyproject.toml files)". Per [ADR-0043](../../decisions/0043-distribution-boundary-and-cadence.md): `kanon-core` (kernel) ships separately from `kanon-aspects` (aspects); `kanon-kit` is a meta-package alias preserving the convenience-install path. The canonical shapes for all three `pyproject.toml` files are specified in [`docs/design/distribution-boundary.md`](../../design/distribution-boundary.md).
 
-**Coupling note (intentional design choice for A.1):** the canonical substrate wheel built from `packaging/substrate/pyproject.toml` will not be runtime-functional until A.2 wires entry-point-based aspect discovery (per ADR-0040). The substrate's `_kit_root()` machinery currently looks for aspects co-located with the kernel package; A.1 lands the *packaging shape*, A.2 lands the *runtime discovery*. The `kanon-reference` wheel has no `LOADER` infrastructure until A.2 either. **A.1 ships pyproject files as schema-of-record, not as the active build path.** The top-level `pyproject.toml` continues to build `kanon-kit` v0.3.x.
+**Coupling note (intentional design choice for A.1):** the canonical substrate wheel built from `packaging/substrate/pyproject.toml` will not be runtime-functional until A.2 wires entry-point-based aspect discovery (per ADR-0040). The substrate's `_kit_root()` machinery currently looks for aspects co-located with the kernel package; A.1 lands the *packaging shape*, A.2 lands the *runtime discovery*. The `kanon-aspects` wheel has no `LOADER` infrastructure until A.2 either. **A.1 ships pyproject files as schema-of-record, not as the active build path.** The top-level `pyproject.toml` continues to build `kanon-kit` v0.3.x.
 
 This ordering matches ADR-0045's stipulation that each Phase A step gates on substrate-self-conformance staying green: if A.1 ripped aspect content into a `kanon_reference` source tree before A.2 wired the runtime discovery, the kernel would break between commits.
 
@@ -34,7 +34,7 @@ New file. Follows the substrate shape from `docs/design/distribution-boundary.md
 
 ```toml
 [project]
-name = "kanon-substrate"
+name = "kanon-core"
 version = "1.0.0a1"
 description = "Protocol substrate for prose-as-code engineering discipline in LLM-agent-driven repos."
 readme = "../../README.md"
@@ -80,14 +80,14 @@ New file. Follows the reference shape from the design. Since `kanon_reference` P
 
 ```toml
 [project]
-name = "kanon-reference"
+name = "kanon-aspects"
 version = "1.0.0a1"
 description = "Reference discipline aspects for the kanon protocol substrate."
 readme = "../../README.md"
 requires-python = ">=3.10"
 license = { file = "../../LICENSE" }
 dependencies = [
-    "kanon-substrate==1.0.0a1",
+    "kanon-core==1.0.0a1",
 ]
 
 # Activated by Phase A.2 — see docs/design/kernel-reference-interface.md.
@@ -117,13 +117,13 @@ New file. The meta-alias:
 [project]
 name = "kanon-kit"
 version = "1.0.0a1"
-description = "Convenience meta-package: installs kanon-substrate plus kanon-reference."
+description = "Convenience meta-package: installs kanon-core plus kanon-aspects."
 readme = "../../README.md"
 requires-python = ">=3.10"
 license = { file = "../../LICENSE" }
 dependencies = [
-    "kanon-substrate==1.0.0a1",
-    "kanon-reference==1.0.0a1",
+    "kanon-core==1.0.0a1",
+    "kanon-aspects==1.0.0a1",
 ]
 
 [build-system]
@@ -135,7 +135,7 @@ build-backend = "hatchling.build"
 packages = ["src/_kanon_kit_meta"]
 ```
 
-A two-line `packaging/kit/src/_kanon_kit_meta/__init__.py` (`""" kanon-kit meta-package — installs kanon-substrate + kanon-reference. """`) gives hatch something to package.
+A two-line `packaging/kit/src/_kanon_kit_meta/__init__.py` (`""" kanon-kit meta-package — installs kanon-core + kanon-aspects. """`) gives hatch something to package.
 
 #### D. CI gate `scripts/check_packaging_split.py`
 
@@ -143,11 +143,11 @@ New file. Validates each of the three `packaging/*/pyproject.toml` files:
 
 - file exists
 - parses as TOML
-- top-level `[project].name` matches expected (`kanon-substrate` / `kanon-reference` / `kanon-kit`)
+- top-level `[project].name` matches expected (`kanon-core` / `kanon-aspects` / `kanon-kit`)
 - top-level `[project].version` is `1.0.0a1`
 - top-level `[project].requires-python` is `>=3.10`
 - substrate has a `[project.scripts] kanon = "kanon.cli:main"` entry; reference and kit do not
-- reference depends on `kanon-substrate==1.0.0a1`; kit depends on both
+- reference depends on `kanon-core==1.0.0a1`; kit depends on both
 - substrate's `[tool.hatch.build.targets.wheel].exclude` includes `"../../src/kanon/kit/aspects/**"`
 
 Mirrors the gate-shape of `scripts/check_kit_consistency.py` and `scripts/check_foundations.py`. Returns `{"errors": [...], "status": "ok"|"error"}` JSON.
@@ -166,7 +166,7 @@ One paragraph under `## [Unreleased]` § Added.
 
 #### H. Optional: README pointer
 
-A one-line addition in the README under "Installation" or near the existing kanon-kit reference, noting that v1.0 will ship as `kanon-substrate` + `kanon-reference` with a `kanon-kit` meta alias. Soft pointer; design lives in `docs/design/distribution-boundary.md`.
+A one-line addition in the README under "Installation" or near the existing kanon-kit reference, noting that v1.0 will ship as `kanon-core` + `kanon-aspects` with a `kanon-kit` meta alias. Soft pointer; design lives in `docs/design/distribution-boundary.md`.
 
 ### Out of scope
 
@@ -196,20 +196,20 @@ A one-line addition in the README under "Installation" or near the existing kano
 ### Substrate pyproject
 
 - [ ] AC-S1: `packaging/substrate/pyproject.toml` exists; parses as TOML.
-- [ ] AC-S2: `[project].name = "kanon-substrate"`; `version = "1.0.0a1"`; `requires-python = ">=3.10"`; `dependencies` include `click>=8.1` + `pyyaml>=6.0`.
+- [ ] AC-S2: `[project].name = "kanon-core"`; `version = "1.0.0a1"`; `requires-python = ">=3.10"`; `dependencies` include `click>=8.1` + `pyyaml>=6.0`.
 - [ ] AC-S3: `[project.scripts] kanon = "kanon.cli:main"` present.
 - [ ] AC-S4: `[tool.hatch.build.targets.wheel].exclude` contains `"../../src/kanon/kit/aspects/**"`.
 
 ### Reference pyproject
 
 - [ ] AC-R1: `packaging/reference/pyproject.toml` exists; parses as TOML.
-- [ ] AC-R2: `[project].name = "kanon-reference"`; `version = "1.0.0a1"`; depends on `kanon-substrate==1.0.0a1`.
+- [ ] AC-R2: `[project].name = "kanon-aspects"`; `version = "1.0.0a1"`; depends on `kanon-core==1.0.0a1`.
 - [ ] AC-R3: `[project.entry-points."kanon.aspects"]` exists as a *commented-out* stub for traceability (one comment line per the seven aspects); not active.
 
 ### Kit meta pyproject
 
 - [ ] AC-K1: `packaging/kit/pyproject.toml` exists; parses as TOML.
-- [ ] AC-K2: `[project].name = "kanon-kit"`; `version = "1.0.0a1"`; depends on both `kanon-substrate==1.0.0a1` and `kanon-reference==1.0.0a1`.
+- [ ] AC-K2: `[project].name = "kanon-kit"`; `version = "1.0.0a1"`; depends on both `kanon-core==1.0.0a1` and `kanon-aspects==1.0.0a1`.
 - [ ] AC-K3: Sentinel module `packaging/kit/src/_kanon_kit_meta/__init__.py` exists with a one-line docstring.
 
 ### CI gate

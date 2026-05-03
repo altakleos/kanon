@@ -38,7 +38,7 @@ One principle is retired: [`P-tiers-insulate`](principles/P-tiers-insulate.md) (
 
 ## Substrate Guarantees
 
-What `kanon-substrate` provides regardless of which aspects a consumer enables:
+What `kanon-core` provides regardless of which aspects a consumer enables:
 
 - **Atomic, crash-recoverable file writes** for kit-managed files, with `.pending` sentinel replay across interrupted operations.
 - **Aspect registry composition** across kit-shipped (`kanon-`), consumer-defined (`project-`), and third-party (`acme-`) namespaces, with capability-keyed substitutability.
@@ -95,8 +95,8 @@ What this constrains: substrate features that cannot be exercised by the kanon r
 
 ### v0.4 (in flight — protocol substrate transition)
 
-- `kanon-substrate` ships as a separately-installable distribution; the kernel scaffolds nothing on its own behalf.
-- `kanon-reference` ships the seven reference aspects as data; `kanon-kit` meta-alias preserves the convenience-install path.
+- `kanon-core` ships as a separately-installable distribution; the kernel scaffolds nothing on its own behalf.
+- `kanon-aspects` ships the seven reference aspects as data; `kanon-kit` meta-alias preserves the convenience-install path.
 - `kanon init` produces a bare scaffold with no aspects auto-enabled.
 - The repo passes `kanon verify .` opting into reference aspects via a publisher recipe, with no kernel-side privilege.
 - Public-tier principles are versioned with the dialect; `acme-` publishers can cite them.

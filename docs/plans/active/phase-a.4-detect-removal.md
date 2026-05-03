@@ -77,7 +77,7 @@ If `_emit_init_hints` becomes empty after removing both sections, delete the fun
 - `src/kanon_reference/aspects/kanon_testing.py` — delete the `"config-schema": {...}` block (lines 39-70)
 - `src/kanon/kit/aspects/kanon-testing/manifest.yaml` — delete the corresponding `config-schema:` block
 
-The publisher (kanon-reference) keeps full control over the aspect; it just no longer declares opinionated config keys. `acme-` publishers can declare their own config-schema if they want to.
+The publisher (kanon-aspects) keeps full control over the aspect; it just no longer declares opinionated config keys. `acme-` publishers can declare their own config-schema if they want to.
 
 #### E. Recipe + repo config cleanup
 
