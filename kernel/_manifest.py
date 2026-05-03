@@ -238,7 +238,7 @@ def _validate_namespace_ownership(slug: str, dist: Any) -> None:
         if dist_name not in ("kanon-aspects", "kanon-kit"):
             raise click.ClickException(
                 f"entry-point {slug!r} uses 'kanon-' namespace but is registered "
-                f"by distribution {dist_name!r}, not 'kanon-aspects' (ADR-0040)."
+                f"by distribution {dist_name!r}, not 'kanon-aspects' or 'kanon-kit' (ADR-0040)."
             )
     elif namespace == _PROJECT_NAMESPACE:
         raise click.ClickException(
