@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.5.0a1] — 2026-05-03
+
+ADR-0049 §1(2) kernel-flatten finally realized via ADR-0050 Option A: Python package renamed from `kanon` → `kernel`. Bumped to 0.5.0a1 (minor-class) to signal the importable-module rename per SemVer-correct framing — even with zero current external consumers per ADR-0048, downstream tooling that pattern-matches against the wheel's importable name is the boundary that warrants the bump.
+
+### Changed
+
+- **Substrate Python package renamed**: `kanon` → `kernel` (ADR-0050 Option A; per plan `docs/plans/active/kernel-rename-option-a.md` promoted from draft to approved in this PR). Source tree: `src/kanon/` → `kernel/`. Imports: `from kanon.X import Y` → `from kernel.X import Y`. ~50 substrate-internal files updated by mechanical grep-replace across `tests/`, `kernel/` itself, and `scripts/`. **Preserved unchanged**: user-facing CLI command name `kanon` (Click app's `prog_name`); distribution names `kanon-substrate` / `kanon-reference` / `kanon-kit`; entry-point group `kanon.aspects` (per ADR-0040 protocol contract); aspect slugs (`kanon-sdd` etc.); consumer-side `.kanon/` directory + config schema.
+- **`pyproject.toml` reconfiguration**: `[tool.hatch.version] path = "kernel/__init__.py"`; `[tool.hatch.build.targets.wheel] packages = ["kernel", "src/kanon_reference"]`; `[tool.mypy] packages = ["kernel"]`; `[tool.coverage.run] source = ["kernel"]`; `[tool.ruff] src = ["kernel", "src", "tests", "scripts"]`; `[project.scripts] kanon = "kernel.cli:main"`.
+- **`kernel/__init__.py` docstring updated** to document the rename + name preservation contracts.
+
+### Deferred
+
+- The `aspects/` flatten (ADR-0049 §1(7)). Same engineering constraint applies (Hatch source-remap doesn't survive editable installs); needs its own ADR + plan if the user authorizes it.
+- ADR / done-plan / CHANGELOG body refs to `from kanon.X import Y` are NOT updated. They describe historical state at write time; ADR-immutability protects the bodies.
+
 ## [0.4.0a4] — 2026-05-03
 
 ADR-0049 monorepo-layout migration cycle: 5 of 6 §1 rules implemented; the kernel-flatten (§1(2)) is deferred to a future ADR per ADR-0050 (engineering constraint discovered: Hatch's `wheel.sources` source-remap doesn't survive editable installs).

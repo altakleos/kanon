@@ -29,7 +29,7 @@ MANIFEST: dict[str, Any] = {
         "files": [],
         "protocols": ["ac-first-tdd.md"],
         "sections": [],
-        "validators": ["kanon._validators.test_import_check"],
+        "validators": ["kernel._validators.test_import_check"],
     },
     "depth-3": {
         # Phase A.8: scaffolded ci/check_test_quality.py retired

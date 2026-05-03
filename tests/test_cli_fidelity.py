@@ -7,8 +7,7 @@ from pathlib import Path
 
 import yaml
 from click.testing import CliRunner
-
-from kanon.cli import main
+from kernel.cli import main
 
 # --- fidelity lock tests ---
 

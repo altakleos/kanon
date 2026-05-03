@@ -20,7 +20,7 @@ _VERSION = "1.0.0"
 # Read the real manifests so synthetic wheels match the actual kit shape.
 # Per ADR-0049 Migration PR A (bundle collapse): kanon-* aspect bundles
 # live at src/kanon_reference/aspects/kanon_<slug>/. Top manifest stays at kit/.
-_KIT = _REPO_ROOT / "src" / "kanon" / "kit"
+_KIT = _REPO_ROOT / "kernel" / "kit"
 _REF_DATA = _REPO_ROOT / "src" / "kanon_reference" / "aspects"
 _TOP_MANIFEST_TEXT = (_KIT / "manifest.yaml").read_text(encoding="utf-8")
 _TOP_MANIFEST = yaml.safe_load(_TOP_MANIFEST_TEXT)

@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import click
 import pytest
-
-from kanon import _dialects
-from kanon._dialects import (
+from kernel import _dialects
+from kernel._dialects import (
     DEPRECATION_WARNING_BEFORE,
     SUPPORTED_DIALECTS,
     validate_dialect_pin,
@@ -155,7 +154,7 @@ def test_deprecation_warning_includes_source_label(
 
 def test_missing_pin_raises_dialect_pin_error_with_spec_code() -> None:
     """Missing pin → typed DialectPinError carrying spec-aligned `code`."""
-    from kanon._dialects import DialectPinError
+    from kernel._dialects import DialectPinError
 
     with pytest.raises(DialectPinError) as exc_info:
         validate_dialect_pin(None, source="acme-x")
@@ -164,7 +163,7 @@ def test_missing_pin_raises_dialect_pin_error_with_spec_code() -> None:
 
 def test_unknown_pin_raises_dialect_pin_error_with_spec_code() -> None:
     """Unsupported pin → typed DialectPinError carrying spec-aligned `code`."""
-    from kanon._dialects import DialectPinError
+    from kernel._dialects import DialectPinError
 
     with pytest.raises(DialectPinError) as exc_info:
         validate_dialect_pin("9999-12-31", source="acme-x")
@@ -174,8 +173,7 @@ def test_unknown_pin_raises_dialect_pin_error_with_spec_code() -> None:
 def test_dialect_pin_error_subclasses_click_exception() -> None:
     """Backward-compat: DialectPinError still catchable as click.ClickException."""
     import click
-
-    from kanon._dialects import DialectPinError
+    from kernel._dialects import DialectPinError
 
     assert issubclass(DialectPinError, click.ClickException)
 

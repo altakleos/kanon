@@ -5,7 +5,7 @@ import subprocess
 import textwrap
 from pathlib import Path
 
-from kanon._validators import adr_immutability, link_check, plan_completion
+from kernel._validators import adr_immutability, link_check, plan_completion
 
 # ── plan_completion ──────────────────────────────────────────────
 
@@ -313,7 +313,7 @@ class TestSplitFm:
 
 def test_validators_nonexistent_target(tmp_path: Path) -> None:
     """Validators handle nonexistent target gracefully."""
-    from kanon._validators import index_consistency, link_check, plan_completion
+    from kernel._validators import index_consistency, link_check, plan_completion
 
     target = tmp_path / "nonexistent"
     for validator in (link_check, index_consistency, plan_completion):
@@ -326,7 +326,7 @@ def test_validators_nonexistent_target(tmp_path: Path) -> None:
 
 def test_validators_empty_docs(tmp_path: Path) -> None:
     """Validators handle target with empty docs/ directory."""
-    from kanon._validators import index_consistency, link_check
+    from kernel._validators import index_consistency, link_check
 
     (tmp_path / "docs").mkdir()
     for validator in (link_check, index_consistency):

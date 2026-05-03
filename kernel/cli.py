@@ -28,9 +28,9 @@ from typing import Any
 
 import click
 
-from kanon import __version__
-from kanon._cli_aspect import _commit_aspect_meta, _set_aspect_depth
-from kanon._cli_helpers import (
+from kernel import __version__
+from kernel._cli_aspect import _commit_aspect_meta, _set_aspect_depth
+from kernel._cli_helpers import (
     _OP_ASPECT_REMOVE,
     _OP_FIDELITY_UPDATE,
     _OP_INIT,
@@ -42,13 +42,13 @@ from kanon._cli_helpers import (
     _parse_aspects_flag,
     _parse_config_pair,
 )
-from kanon._fidelity import _accepted_or_draft_specs, _fixture_shas, _spec_sha
-from kanon._graph import (
+from kernel._fidelity import _accepted_or_draft_specs, _fixture_shas, _spec_sha
+from kernel._graph import (
     ORPHAN_CANDIDATE_NAMESPACES,
     build_graph,
     compute_orphans,
 )
-from kanon._manifest import (
+from kernel._manifest import (
     _aspect_config_schema,
     _aspect_depth_range,
     _aspect_provides,
@@ -58,7 +58,7 @@ from kanon._manifest import (
     _normalise_aspect_name,
     _now_iso,
 )
-from kanon._scaffold import (
+from kernel._scaffold import (
     _DEFAULT_V4_EXTRAS,
     _aspects_with_meta,
     _assemble_agents_md,
@@ -207,7 +207,7 @@ def init(
     quiet_arg: bool,
 ) -> None:
     """Scaffold a new kanon project at TARGET."""
-    from kanon._banner import _BANNER, _should_emit_banner
+    from kernel._banner import _BANNER, _should_emit_banner
     if _should_emit_banner(quiet_arg):
         click.echo(_BANNER, err=True, nl=False)
 
@@ -306,7 +306,7 @@ def init(
     shim_names = _resolve_init_harnesses(harness_arg, target)
     bundle.update(_render_shims(only=shim_names))
 
-    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
+    from kernel._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
     # AGENTS.md is written out-of-band: `_write_tree_atomically` skips
     # files that exist when `force=False`, but per ADR-0038 init must
@@ -347,7 +347,7 @@ def init(
 )
 def upgrade(target: Path, quiet_arg: bool) -> None:
     """Refresh TARGET's .kanon/ from the installed kit (preserving docs/, AGENTS.md, config)."""
-    from kanon._banner import _BANNER, _should_emit_banner
+    from kernel._banner import _BANNER, _should_emit_banner
     if _should_emit_banner(quiet_arg):
         click.echo(_BANNER, err=True, nl=False)
 
@@ -374,7 +374,7 @@ def upgrade(target: Path, quiet_arg: bool) -> None:
             f"Already at {__version__}. Re-rendering kit-managed sections."
         )
 
-    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
+    from kernel._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
     write_sentinel(target / ".kanon", _OP_UPGRADE)
     migrated_flat = _migrate_flat_protocols(target, aspects)
@@ -425,7 +425,7 @@ def upgrade(target: Path, quiet_arg: bool) -> None:
 @main.command(help=_ADR_0042_VERIFY_SCOPE)
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def verify(target: Path) -> None:
-    from kanon._verify import (
+    from kernel._verify import (
         check_agents_md_markers,
         check_aspects_known,
         check_fidelity_assertions,
@@ -508,7 +508,7 @@ def verify(target: Path) -> None:
 @click.option("--fail-fast", is_flag=True, help="Stop on first failing check.")
 def preflight(target: Path, stage: str, tag: str | None, fail_fast: bool) -> None:
     """Run staged local validation: verify + configured checks."""
-    from kanon._preflight import _resolve_preflight_checks, _run_preflight
+    from kernel._preflight import _resolve_preflight_checks, _run_preflight
 
     if stage == "release" and not tag:
         raise click.ClickException("--tag is required for --stage release.")
@@ -840,7 +840,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
     if err:
         raise click.ClickException(err)
 
-    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
+    from kernel._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
     # Remove aspect from config
     aspects_meta = dict(config.get("aspects", {}))
@@ -869,7 +869,7 @@ def aspect_remove(target: Path, aspect_name: str) -> None:
     clear_sentinel(target / ".kanon")
 
     # List aspect-specific files left on disk
-    from kanon._manifest import _aspect_files, _aspect_protocols
+    from kernel._manifest import _aspect_files, _aspect_protocols
 
     depth = aspects[aspect_name]
     left: list[str] = list(_aspect_files(aspect_name, depth))
@@ -918,7 +918,7 @@ def aspect_set_config(target: Path, aspect_name: str, pair: str) -> None:
     schema = _aspect_config_schema(aspect_name)
     key, value = _parse_config_pair(pair, schema)
 
-    from kanon._atomic import clear_sentinel, write_sentinel
+    from kernel._atomic import clear_sentinel, write_sentinel
 
     aspects_meta = dict(config.get("aspects", {}))
     kit_version = config.get("kit_version", __version__)
@@ -948,7 +948,7 @@ def fidelity() -> None:
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def fidelity_update(target: Path) -> None:
     """Generate or refresh .kanon/fidelity.lock."""
-    from kanon._atomic import atomic_write_text, clear_sentinel, write_sentinel
+    from kernel._atomic import atomic_write_text, clear_sentinel, write_sentinel
 
     target = target.resolve()
     _check_pending_recovery(target)
@@ -1101,7 +1101,7 @@ def graph_rename(
 
     Use --dry-run to preview the rewrite plan without modifying anything.
     """
-    from kanon._rename import perform_rename
+    from kernel._rename import perform_rename
 
     root = Path(target).resolve() if target else Path.cwd()
     if not dry_run:
@@ -1135,7 +1135,7 @@ def resolutions_check(target: Path) -> None:
     Per ADR-0039 INV-resolutions-stale-fails. Cheap; suitable for IDE
     integration and the development loop before invoking `kanon preflight`.
     """
-    from kanon._resolutions import stale_check
+    from kernel._resolutions import stale_check
 
     target = target.resolve()
     report = stale_check(target)
@@ -1210,9 +1210,9 @@ def contracts_validate(bundle_path: Path) -> None:
     """
     import yaml
 
-    from kanon._composition import ContractRef, compose
-    from kanon._dialects import validate_dialect_pin
-    from kanon._realization_shape import parse_realization_shape
+    from kernel._composition import ContractRef, compose
+    from kernel._dialects import validate_dialect_pin
+    from kernel._realization_shape import parse_realization_shape
 
     bundle_path = bundle_path.resolve()
     manifest_path = bundle_path / "manifest.yaml"
@@ -1400,7 +1400,7 @@ def migrate(target: Path, dry_run: bool) -> None:
     """
     import yaml
 
-    from kanon._atomic import atomic_write_text
+    from kernel._atomic import atomic_write_text
 
     deprecation_warning = (
         "`kanon migrate` is deprecated-on-arrival per ADR-0045; "

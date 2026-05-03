@@ -1,12 +1,11 @@
-"""Tests for validator error branches in kanon._verify."""
+"""Tests for validator error branches in kernel._verify."""
 from __future__ import annotations
 
 from pathlib import Path
 
 import yaml
 from click.testing import CliRunner
-
-from kanon.cli import main
+from kernel.cli import main
 
 
 def _init_project(tmp_path: Path) -> Path:
@@ -90,12 +89,12 @@ def test_kit_validator_lookup_failure_warns(tmp_path: Path) -> None:
     """Kit validator lookup failure surfaces as a warning, not silent."""
     from unittest.mock import patch
 
-    from kanon._verify import run_kit_validators
+    from kernel._verify import run_kit_validators
 
     errors: list[str] = []
     warnings: list[str] = []
     with patch(
-        "kanon._verify._aspect_depth_validators",
+        "kernel._verify._aspect_depth_validators",
         side_effect=RuntimeError("boom"),
     ):
         run_kit_validators(tmp_path, {"kanon-sdd": 1}, errors, warnings)
@@ -106,12 +105,12 @@ def test_fidelity_capability_lookup_failure_warns(tmp_path: Path) -> None:
     """Fidelity capability lookup failure surfaces as a warning, not silent."""
     from unittest.mock import patch
 
-    from kanon._verify import check_fidelity_assertions
+    from kernel._verify import check_fidelity_assertions
 
     errors: list[str] = []
     warnings: list[str] = []
     with patch(
-        "kanon._verify._aspect_provides",
+        "kernel._verify._aspect_provides",
         side_effect=RuntimeError("boom"),
     ):
         check_fidelity_assertions(tmp_path, {"kanon-sdd": 1}, errors, warnings)

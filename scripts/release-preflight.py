@@ -29,10 +29,16 @@ def _local_python() -> str:
 
 
 def _find_version() -> str | None:
-    for candidate in Path("src").rglob("__init__.py"):
-        m = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', candidate.read_text())
-        if m:
-            return m.group(1)
+    # Per ADR-0050 Option A: substrate kernel source is at `kernel/` (was `src/kanon/`).
+    # Scan both for backward compatibility with any consumer-side layout.
+    for root in ("kernel", "src"):
+        root_path = Path(root)
+        if not root_path.is_dir():
+            continue
+        for candidate in root_path.rglob("__init__.py"):
+            m = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', candidate.read_text())
+            if m:
+                return m.group(1)
     return None
 
 

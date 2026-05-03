@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from kanon._cli_aspect import _apply_tier_down
+from kernel._cli_aspect import _apply_tier_down
 
 
 def test_apply_tier_down_returns_only_existing_files(tmp_path: Path) -> None:
@@ -29,7 +29,7 @@ def test_apply_tier_down_returns_only_existing_files(tmp_path: Path) -> None:
 
     # Create one file that exists in sdd:3 but not sdd:1, and one that exists
     # in both. Only the first should be reported.
-    from kanon._manifest import _expected_files
+    from kernel._manifest import _expected_files
 
     only_in_3 = [
         p for p in _expected_files(sdd_at_3) if p not in set(_expected_files(sdd_at_1))
@@ -51,7 +51,7 @@ def test_apply_tier_down_returns_only_existing_files(tmp_path: Path) -> None:
 
 def test_apply_tier_down_does_not_mutate_filesystem(tmp_path: Path) -> None:
     """Calling `_apply_tier_down` must not delete or modify any files."""
-    from kanon._manifest import _expected_files
+    from kernel._manifest import _expected_files
 
     sdd_at_3 = {"kanon-sdd": 3}
     sdd_at_1 = {"kanon-sdd": 1}

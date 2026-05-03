@@ -9,8 +9,7 @@ from __future__ import annotations
 
 import click
 import pytest
-
-from kanon._realization_shape import (
+from kernel._realization_shape import (
     V1_DIALECT_VERBS,
     RealizationShape,
     parse_realization_shape,
@@ -294,8 +293,7 @@ def test_validator_evidence_without_kind_field_passes() -> None:
 def test_shape_parse_error_carries_spec_code() -> None:
     """Malformed shape → typed ShapeParseError with spec-aligned `code`."""
     import pytest as _pt
-
-    from kanon._realization_shape import ShapeParseError, parse_realization_shape
+    from kernel._realization_shape import ShapeParseError, parse_realization_shape
 
     with _pt.raises(ShapeParseError) as exc_info:
         parse_realization_shape(
@@ -307,15 +305,14 @@ def test_shape_parse_error_carries_spec_code() -> None:
 def test_shape_parse_error_subclasses_click_exception() -> None:
     """Backward-compat: ShapeParseError still catchable as click.ClickException."""
     import click
-
-    from kanon._realization_shape import ShapeParseError
+    from kernel._realization_shape import ShapeParseError
 
     assert issubclass(ShapeParseError, click.ClickException)
 
 
 def test_shape_validation_error_default_code_is_shape_violation() -> None:
     """Per spec INV 4: every shape mismatch's `code` field is `shape-violation`."""
-    from kanon._realization_shape import ShapeValidationError
+    from kernel._realization_shape import ShapeValidationError
 
     err = ShapeValidationError(subcode="invalid-verb", contract="x", detail="y")
     assert err.code == "shape-violation"
@@ -332,7 +329,7 @@ def test_v1_dialect_verbs_count_is_nine() -> None:
     Adding a verb requires an ADR-driven dialect supersession (per ADR-0041);
     silently dropping one would break every contract that pinned the v1
     dialect, so this cardinality lock is a guardrail."""
-    from kanon._realization_shape import V1_DIALECT_VERBS
+    from kernel._realization_shape import V1_DIALECT_VERBS
 
     assert len(V1_DIALECT_VERBS) == 9, (
         f"V1_DIALECT_VERBS has {len(V1_DIALECT_VERBS)} entries; expected 9. "

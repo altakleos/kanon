@@ -13,7 +13,7 @@ from pathlib import Path
 
 def test_fenced_ranges_unclosed_fence() -> None:
     """Unclosed fence treats rest of file as fenced (lines 86-87)."""
-    from kanon._manifest import _fenced_ranges
+    from kernel._manifest import _fenced_ranges
 
     text = "before\n```\nfenced content\nno closing fence\n"
     ranges = _fenced_ranges(text)
@@ -24,7 +24,7 @@ def test_fenced_ranges_unclosed_fence() -> None:
 
 def test_fenced_ranges_tilde_fence() -> None:
     """Tilde fences (~~~) are recognized (lines 74-79)."""
-    from kanon._manifest import _fenced_ranges
+    from kernel._manifest import _fenced_ranges
 
     text = "before\n~~~\nfenced\n~~~\nafter\n"
     ranges = _fenced_ranges(text)
@@ -35,7 +35,7 @@ def test_fenced_ranges_tilde_fence() -> None:
 
 def test_fenced_ranges_nested_different_delimiters() -> None:
     """Backtick fence inside tilde fence doesn't close the tilde fence."""
-    from kanon._manifest import _fenced_ranges
+    from kernel._manifest import _fenced_ranges
 
     text = "before\n~~~\n```\nnested\n```\n~~~\nafter\n"
     ranges = _fenced_ranges(text)
@@ -45,7 +45,7 @@ def test_fenced_ranges_nested_different_delimiters() -> None:
 
 def test_fenced_ranges_longer_closer() -> None:
     """A closer with more backticks than the opener still closes (line 78)."""
-    from kanon._manifest import _fenced_ranges
+    from kernel._manifest import _fenced_ranges
 
     text = "before\n```\nfenced\n````\nafter\n"
     ranges = _fenced_ranges(text)
@@ -57,7 +57,7 @@ def test_fenced_ranges_longer_closer() -> None:
 
 def test_remove_section_missing_section() -> None:
     """_remove_section returns text unchanged when section doesn't exist."""
-    from kanon._scaffold import _remove_section
+    from kernel._scaffold import _remove_section
 
     text = "# Header\n\nSome content.\n"
     assert _remove_section(text, "nonexistent") == text
@@ -65,7 +65,7 @@ def test_remove_section_missing_section() -> None:
 
 def test_remove_section_present() -> None:
     """_remove_section strips the section and its markers."""
-    from kanon._scaffold import _remove_section
+    from kernel._scaffold import _remove_section
 
     text = (
         "# Header\n\n"
@@ -84,7 +84,7 @@ def test_remove_section_present() -> None:
 
 def test_write_tree_atomically_with_symlink_in_path(tmp_path: Path) -> None:
     """Scaffold writes work when target contains a symlink component."""
-    from kanon._scaffold import _write_tree_atomically
+    from kernel._scaffold import _write_tree_atomically
 
     real_dir = tmp_path / "real"
     real_dir.mkdir()
@@ -99,7 +99,7 @@ def test_write_tree_atomically_with_symlink_in_path(tmp_path: Path) -> None:
 
 def test_write_tree_atomically_unicode_path(tmp_path: Path) -> None:
     """Scaffold handles unicode characters in file paths."""
-    from kanon._scaffold import _write_tree_atomically
+    from kernel._scaffold import _write_tree_atomically
 
     _write_tree_atomically(tmp_path, {"docs/日本語.md": "# テスト\n"}, force=True)
     assert (tmp_path / "docs" / "日本語.md").read_text(encoding="utf-8") == "# テスト\n"
@@ -107,7 +107,7 @@ def test_write_tree_atomically_unicode_path(tmp_path: Path) -> None:
 
 def test_atomic_write_text_unicode_content(tmp_path: Path) -> None:
     """atomic_write_text handles unicode content correctly."""
-    from kanon._atomic import atomic_write_text
+    from kernel._atomic import atomic_write_text
 
     target = tmp_path / "émojis_🎉.txt"
     atomic_write_text(target, "Ünïcödé content: 日本語 🚀\n")
@@ -119,7 +119,7 @@ def test_atomic_write_text_unicode_content(tmp_path: Path) -> None:
 
 def test_config_aspects_empty() -> None:
     """_config_aspects returns empty dict for empty aspects."""
-    from kanon._scaffold import _config_aspects
+    from kernel._scaffold import _config_aspects
 
     assert _config_aspects({}) == {}
     assert _config_aspects({"aspects": {}}) == {}

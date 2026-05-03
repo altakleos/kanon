@@ -177,7 +177,7 @@ def _locate_contract(
     """
     if registry is None:
         try:
-            from kanon._manifest import _load_aspect_registry
+            from kernel._manifest import _load_aspect_registry
 
             registry = _load_aspect_registry(None)
         except Exception:
@@ -360,7 +360,7 @@ def _validate_shape_against_contract(
     are exempt from shape validation. Per INV-dialect-grammar-shape-validates-
     resolutions, contracts that DO declare the block get validated.
     """
-    from kanon._realization_shape import (
+    from kernel._realization_shape import (
         parse_realization_shape,
         validate_resolution_against_shape,
     )

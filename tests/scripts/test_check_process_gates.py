@@ -393,7 +393,7 @@ def test_json_report_structure(_M, tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 def test_no_kanon_imports() -> None:
-    """The script must have zero imports from kanon.*."""
+    """The script must have zero imports from kernel.*."""
     text = _SCRIPT_PATH.read_text(encoding="utf-8")
     for line in text.splitlines():
         stripped = line.strip()

@@ -10,8 +10,7 @@ import json
 from pathlib import Path
 
 from click.testing import CliRunner
-
-from kanon.cli import main
+from kernel.cli import main
 
 
 def _make_minimal_repo(root: Path) -> None:
@@ -19,7 +18,7 @@ def _make_minimal_repo(root: Path) -> None:
     (root / "docs" / "foundations" / "personas").mkdir(parents=True)
     (root / "docs" / "specs").mkdir(parents=True)
     (root / "docs" / "plans").mkdir(parents=True)
-    (root / "src" / "kanon" / "kit").mkdir(parents=True)
+    (root / "kernel" / "kit").mkdir(parents=True)
 
 
 def _write(path: Path, content: str) -> None:
@@ -120,7 +119,7 @@ def test_inv2_persona_with_outbound_stresses_is_not_orphan(tmp_path: Path) -> No
 
 def test_inv2_capability_orphan_when_no_requires_predicate(tmp_path: Path) -> None:
     _make_minimal_repo(tmp_path)
-    kit_root = tmp_path / "src/kanon/kit"
+    kit_root = tmp_path / "kernel/kit"
     _write(kit_root / "manifest.yaml", (
         "aspects:\n"
         "  alpha:\n"
@@ -139,7 +138,7 @@ def test_inv2_capability_orphan_when_no_requires_predicate(tmp_path: Path) -> No
 
 def test_inv2_capability_consumed_by_requires_is_not_orphan(tmp_path: Path) -> None:
     _make_minimal_repo(tmp_path)
-    kit_root = tmp_path / "src/kanon/kit"
+    kit_root = tmp_path / "kernel/kit"
     _write(kit_root / "manifest.yaml", (
         "aspects:\n"
         "  alpha:\n"

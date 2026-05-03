@@ -19,9 +19,9 @@ def test_real_repo_no_errors(mod, repo_root) -> None:
     sql-interpolation is excluded because the best-effort regex flags f-strings
     containing the word "update" (e.g. ``f"fidelity: … update."``).
     """
-    src_dir = repo_root / "src" / "kanon"
+    src_dir = repo_root / "kernel"
     if not src_dir.is_dir():
-        pytest.skip("src/kanon/ not found")
+        pytest.skip("kernel/ not found")
     files = mod._collect_files(src_dir)
     findings: list[dict] = []
     for f in files:
