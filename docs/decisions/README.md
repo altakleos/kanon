@@ -105,6 +105,7 @@ Bug fixes, threshold tuning, documentation improvements, presentation/formatting
 | [0050](0050-kernel-flatten-deferral.md) | Kernel-flatten deferral — Hatch editable-install constraint blocked the in-place `src/kanon/` → `kernel/` rename via `wheel.sources` source-remap; deferred with three forward-options (A: Python module rename, B: `kernel/kanon/` wrapper, C: skip) — Option A executed in v0.5.0a2 | accepted | process |
 | [0051](0051-distribution-naming.md) | Distribution naming for the three-package split — `kanon-core`+`kanon-aspects`+`kanon-kit` (supersedes ADR-0048 names only) | accepted | release |
 | [0052](0052-aspects-flatten.md) | Aspects-flatten path selection — defers `src/kanon_reference/` → `aspects/` (same Hatch editable-install constraint as ADR-0050; Option C accepted-debt over Option B's 6–8h rename cost) | accepted | process |
+| [0053](0053-phase-a-implementation-deferral.md) | Phase A implementation deferral pending forcing function — three-distribution PyPI split paused (per-pyproject co-location hits same Hatch+editables constraint as ADR-0050); kanon-kit monolith remains the ship target until a downstream consumer or upstream `editables` fix appears | accepted | process |
 
 **Reading guide:** Focus on ADRs matching your task's category. For CLI work, read `cli` + `aspects`. For test work, read `testing`. For process questions, read `process`. The `kit-internals` category is relevant only when modifying the kit bundle or scaffold logic.
 
