@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-05-03
 ---
 # ADR-0052: aspects-flatten path selection
