@@ -10,7 +10,7 @@ sdist→wheel CI pipeline was broken.
 
 Usage:
     python scripts/check_wheel_build.py --tag v0.5.0a2
-    python scripts/check_wheel_build.py            # uses kernel.__version__
+    python scripts/check_wheel_build.py            # uses kanon_core.__version__
 
 Invokes `uv tool run --from build python -m build` so `build` need not
 be in the project's runtime/dev dependencies. Wipes `dist/` first.
@@ -38,7 +38,7 @@ from typing import Any
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _DIST = _REPO_ROOT / "dist"
 _VALIDATOR = _REPO_ROOT / "scripts" / "check_package_contents.py"
-_KERNEL_INIT = _REPO_ROOT / "kernel" / "__init__.py"
+_KERNEL_INIT = _REPO_ROOT / "packages" / "kanon-core" / "src" / "kanon_core" / "__init__.py"
 _VERSION_PATTERN = re.compile(r'^__version__\s*=\s*["\']([^"\']+)["\']', re.MULTILINE)
 
 
@@ -88,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--tag",
         default=None,
-        help="Release tag, e.g. v0.5.0a2. Defaults to 'v' + kernel.__version__.",
+        help="Release tag, e.g. v0.5.0a2. Defaults to 'v' + kanon_core.__version__.",
     )
     args = parser.parse_args(argv)
 
@@ -96,7 +96,8 @@ def main(argv: list[str] | None = None) -> int:
     if tag is None:
         version = _read_kernel_version()
         if version is None:
-            print(json.dumps({"ok": False, "phase": "tag-resolution", "error": "could not read kernel.__version__"}))
+            err = "could not read kanon_core.__version__"
+            print(json.dumps({"ok": False, "phase": "tag-resolution", "error": err}))
             return 1
         tag = f"v{version}"
 

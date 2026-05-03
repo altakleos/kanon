@@ -53,7 +53,7 @@ def _make_fake_kit(tmp: Path | None, content: str) -> Path:
 
 def test_parse_frontmatter_no_end_marker() -> None:
     """Line 170: frontmatter start but no closing ---."""
-    from kernel._manifest import _parse_frontmatter
+    from kanon_core._manifest import _parse_frontmatter
 
     assert _parse_frontmatter("---\ntitle: hello\nno closing") == {}
 
@@ -61,7 +61,7 @@ def test_parse_frontmatter_no_end_marker() -> None:
 
 def test_parse_frontmatter_non_dict_yaml() -> None:
     """Line 173: frontmatter YAML parses to non-dict."""
-    from kernel._manifest import _parse_frontmatter
+    from kanon_core._manifest import _parse_frontmatter
 
     assert _parse_frontmatter("---\n- a list item\n---\nbody") == {}
 
@@ -72,7 +72,7 @@ def test_parse_frontmatter_non_dict_yaml() -> None:
 
 def test_namespaced_section_unprefixed() -> None:
     """Line 147→149: section in _UNPREFIXED_SECTIONS stays unprefixed."""
-    from kernel._manifest import _namespaced_section
+    from kanon_core._manifest import _namespaced_section
 
     assert _namespaced_section("kanon-sdd", "protocols-index") == "protocols-index"
 
@@ -83,7 +83,7 @@ def test_namespaced_section_unprefixed() -> None:
 
 def test_read_config_malformed(tmp_path: Path) -> None:
     """Line 45: config.yaml is not a dict."""
-    from kernel._scaffold import _read_config
+    from kanon_core._scaffold import _read_config
 
     config_dir = tmp_path / ".kanon"
     config_dir.mkdir()
@@ -95,7 +95,7 @@ def test_read_config_malformed(tmp_path: Path) -> None:
 
 def test_load_yaml_invalid_syntax(tmp_path: Path) -> None:
     """_load_yaml wraps yaml.YAMLError into ClickException."""
-    from kernel._manifest import _load_yaml
+    from kanon_core._manifest import _load_yaml
 
     bad = tmp_path / "bad.yaml"
     bad.write_text(":\n  - :\n  bad: [unterminated", encoding="utf-8")
@@ -106,7 +106,7 @@ def test_load_yaml_invalid_syntax(tmp_path: Path) -> None:
 
 def test_load_yaml_wrong_type(tmp_path: Path) -> None:
     """_load_yaml raises ClickException when top-level type doesn't match."""
-    from kernel._manifest import _load_yaml
+    from kanon_core._manifest import _load_yaml
 
     f = tmp_path / "list.yaml"
     f.write_text("- one\n- two\n", encoding="utf-8")
@@ -117,7 +117,7 @@ def test_load_yaml_wrong_type(tmp_path: Path) -> None:
 
 def test_migrate_legacy_config_no_tier_no_aspects() -> None:
     """Line 54: config has neither 'aspects' nor 'tier'."""
-    from kernel._scaffold import _migrate_legacy_config
+    from kanon_core._scaffold import _migrate_legacy_config
 
     result = _migrate_legacy_config({"kit_version": "1.0"})
     assert result == {"kit_version": "1.0"}
@@ -131,10 +131,10 @@ def test_load_harnesses_missing_file(monkeypatch: pytest.MonkeyPatch) -> None:
     """Line 101: harnesses.yaml doesn't exist."""
     import tempfile
 
-    from kernel._scaffold import _load_harnesses
+    from kanon_core._scaffold import _load_harnesses
 
     with tempfile.TemporaryDirectory() as d:
-        monkeypatch.setattr("kernel._scaffold._kit_root", lambda: Path(d))
+        monkeypatch.setattr("kanon_core._scaffold._kit_root", lambda: Path(d))
         assert _load_harnesses() == []
 
 
@@ -143,12 +143,12 @@ def test_load_harnesses_malformed(monkeypatch: pytest.MonkeyPatch) -> None:
     """Line 104: harnesses.yaml is not a list."""
     import tempfile
 
-    from kernel._scaffold import _load_harnesses
+    from kanon_core._scaffold import _load_harnesses
 
     with tempfile.TemporaryDirectory() as d:
         p = Path(d)
         (p / "harnesses.yaml").write_text("not_a_list: true", encoding="utf-8")
-        monkeypatch.setattr("kernel._scaffold._kit_root", lambda: p)
+        monkeypatch.setattr("kanon_core._scaffold._kit_root", lambda: p)
         with pytest.raises(click.ClickException, match="expected a YAML list"):
             _load_harnesses()
 
@@ -158,7 +158,7 @@ def test_render_shims_frontmatter_and_plain(monkeypatch: pytest.MonkeyPatch) -> 
     """Lines 142, 147: _render_shims with and without frontmatter."""
     import tempfile
 
-    from kernel._scaffold import _render_shims
+    from kanon_core._scaffold import _render_shims
 
     harnesses = [
         {"path": "with_fm.md", "body": "hello\n", "frontmatter": {"key": "val"}},
@@ -169,7 +169,7 @@ def test_render_shims_frontmatter_and_plain(monkeypatch: pytest.MonkeyPatch) -> 
         (p / "harnesses.yaml").write_text(
             yaml.safe_dump(harnesses), encoding="utf-8"
         )
-        monkeypatch.setattr("kernel._scaffold._kit_root", lambda: p)
+        monkeypatch.setattr("kanon_core._scaffold._kit_root", lambda: p)
         result = _render_shims()
     assert "---" in result["with_fm.md"]
     assert "key: val" in result["with_fm.md"]
@@ -182,7 +182,7 @@ def test_render_shims_frontmatter_and_plain(monkeypatch: pytest.MonkeyPatch) -> 
 
 def test_replace_section_no_markers() -> None:
     """Line 271→274: markers not found, text returned unchanged."""
-    from kernel._scaffold import _replace_section
+    from kanon_core._scaffold import _replace_section
 
     text = "no markers here"
     assert _replace_section(text, "missing", "content") == text
@@ -191,7 +191,7 @@ def test_replace_section_no_markers() -> None:
 
 def test_remove_section_no_markers() -> None:
     """_remove_section with no markers returns text unchanged."""
-    from kernel._scaffold import _remove_section
+    from kanon_core._scaffold import _remove_section
 
     text = "no markers here"
     assert _remove_section(text, "missing") == text
@@ -200,7 +200,7 @@ def test_remove_section_no_markers() -> None:
 
 def test_insert_section_no_anchor_no_trailing_newline() -> None:
     """Lines 289-291: no anchor found, text doesn't end with newline."""
-    from kernel._scaffold import _insert_section
+    from kanon_core._scaffold import _insert_section
 
     result = _insert_section("some text", "test-section", "new content")
     assert "<!-- kanon:begin:test-section -->" in result
@@ -214,7 +214,7 @@ def test_insert_section_no_anchor_no_trailing_newline() -> None:
 
 def test_render_protocols_index_no_protocols() -> None:
     """Line 217: no protocols at depth 0 → 'No protocols active' message."""
-    from kernel._scaffold import _render_protocols_index
+    from kanon_core._scaffold import _render_protocols_index
 
     result = _render_protocols_index({"kanon-sdd": 0})
     assert "No protocols active" in result
@@ -233,7 +233,7 @@ def test_render_protocols_index_no_protocols() -> None:
 
 def test_migrate_flat_protocols_no_flat_files(tmp_path: Path) -> None:
     """Line 375: protocols dir exists but no flat .md files."""
-    from kernel._scaffold import _migrate_flat_protocols
+    from kanon_core._scaffold import _migrate_flat_protocols
 
     protocols_dir = tmp_path / ".kanon" / "protocols"
     protocols_dir.mkdir(parents=True)
@@ -243,7 +243,7 @@ def test_migrate_flat_protocols_no_flat_files(tmp_path: Path) -> None:
 
 def test_migrate_flat_protocols_no_sdd_aspect(tmp_path: Path) -> None:
     """Line 380: flat files exist but 'kanon-sdd' not in aspects."""
-    from kernel._scaffold import _migrate_flat_protocols
+    from kanon_core._scaffold import _migrate_flat_protocols
 
     protocols_dir = tmp_path / ".kanon" / "protocols"
     protocols_dir.mkdir(parents=True)
@@ -254,7 +254,7 @@ def test_migrate_flat_protocols_no_sdd_aspect(tmp_path: Path) -> None:
 
 def test_migrate_flat_protocols_dest_exists(tmp_path: Path) -> None:
     """Line 386: destination already exists → unlink source instead of rename."""
-    from kernel._scaffold import _migrate_flat_protocols
+    from kanon_core._scaffold import _migrate_flat_protocols
 
     protocols_dir = tmp_path / ".kanon" / "protocols"
     sdd_dir = protocols_dir / "kanon-sdd"
@@ -272,7 +272,7 @@ def test_migrate_flat_protocols_dest_exists(tmp_path: Path) -> None:
 
 def test_write_tree_atomically_skips_existing(tmp_path: Path) -> None:
     """Line 363: existing file not overwritten when force=False."""
-    from kernel._scaffold import _write_tree_atomically
+    from kanon_core._scaffold import _write_tree_atomically
 
     (tmp_path / "existing.txt").write_text("original", encoding="utf-8")
     _write_tree_atomically(tmp_path, {"existing.txt": "new content"}, force=False)
@@ -282,7 +282,7 @@ def test_write_tree_atomically_skips_existing(tmp_path: Path) -> None:
 
 def test_write_tree_atomically_rejects_path_traversal(tmp_path: Path) -> None:
     """Scaffold paths escaping the target directory are rejected."""
-    from kernel._scaffold import _write_tree_atomically
+    from kanon_core._scaffold import _write_tree_atomically
 
     with pytest.raises(click.ClickException, match="Path escapes target directory"):
         _write_tree_atomically(tmp_path, {"../../escape.txt": "malicious"}, force=True)
@@ -291,7 +291,7 @@ def test_write_tree_atomically_rejects_path_traversal(tmp_path: Path) -> None:
 
 def test_rewrite_assembled_views_missing_agents_md(tmp_path: Path) -> None:
     """_rewrite_assembled_views returns early when AGENTS.md is absent."""
-    from kernel._cli_aspect import _rewrite_assembled_views
+    from kanon_core._cli_aspect import _rewrite_assembled_views
 
     # Should not raise — just returns early.
     _rewrite_assembled_views(tmp_path, {"kanon-sdd": 1}, "test-project")
@@ -301,7 +301,7 @@ def test_rewrite_assembled_views_missing_agents_md(tmp_path: Path) -> None:
 
 def test_config_aspects_rejects_malformed_entry(tmp_path: Path) -> None:
     """_config_aspects raises ClickException when an entry is not a dict."""
-    from kernel._scaffold import _config_aspects
+    from kanon_core._scaffold import _config_aspects
 
     with pytest.raises(click.ClickException, match="must be a mapping"):
         _config_aspects({"aspects": {"kanon-sdd": 2}})
@@ -310,7 +310,7 @@ def test_config_aspects_rejects_malformed_entry(tmp_path: Path) -> None:
 
 def test_migrate_legacy_config_rejects_non_dict_aspects() -> None:
     """_migrate_legacy_config raises when aspects is not a dict."""
-    from kernel._scaffold import _migrate_legacy_config
+    from kanon_core._scaffold import _migrate_legacy_config
 
     with pytest.raises(click.ClickException, match="must be a mapping"):
         _migrate_legacy_config({"aspects": "garbage"})
@@ -322,7 +322,7 @@ def test_migrate_legacy_config_rejects_non_dict_aspects() -> None:
 
 def test_rewrite_legacy_markers() -> None:
     """Covers the legacy marker rewriting path in _rewrite_legacy_markers."""
-    from kernel._scaffold import _rewrite_legacy_markers
+    from kanon_core._scaffold import _rewrite_legacy_markers
 
     text = (
         "<!-- kanon:begin:protocols-index -->\nold\n"
@@ -339,7 +339,7 @@ def test_rewrite_legacy_markers() -> None:
 
 def test_migrate_legacy_config_v1_to_v3_produces_namespaced_key() -> None:
     """A v1 config (`tier: N`) migrates to v3 with the canonical `kanon-sdd` key."""
-    from kernel._scaffold import _migrate_legacy_config
+    from kanon_core._scaffold import _migrate_legacy_config
 
     v1 = {"kit_version": "0.1.0a1", "tier": 2, "tier_set_at": "2026-04-25T00:00:00+00:00"}
     v3 = _migrate_legacy_config(v1)
@@ -353,7 +353,7 @@ def test_migrate_legacy_config_v1_to_v3_produces_namespaced_key() -> None:
 
 def test_migrate_legacy_config_v3_is_idempotent_no_op() -> None:
     """A config already in v3 (namespaced keys) returns unchanged — no rewrite."""
-    from kernel._scaffold import _migrate_legacy_config
+    from kanon_core._scaffold import _migrate_legacy_config
 
     v3 = {
         "kit_version": "0.3.0",
@@ -371,7 +371,7 @@ def test_migrate_legacy_config_v3_is_idempotent_no_op() -> None:
 def test_migrate_legacy_config_v2_all_six_aspects_round_trip() -> None:
     """A v2 config containing all six bare aspect keys migrates each to its
     `kanon-` form. Insertion order and config blocks survive."""
-    from kernel._scaffold import _migrate_legacy_config
+    from kanon_core._scaffold import _migrate_legacy_config
 
     v2 = {
         "kit_version": "0.2.0a6",
@@ -405,7 +405,8 @@ def test_migrate_legacy_config_mixed_state_hard_fails() -> None:
     """
     import click
     import pytest
-    from kernel._scaffold import _migrate_legacy_config
+
+    from kanon_core._scaffold import _migrate_legacy_config
 
     mixed = {
         "kit_version": "0.3.0",
@@ -450,7 +451,7 @@ def test_migrate_legacy_config_mixed_state_hard_fails() -> None:
     ],
 )
 def test_value_matches_schema_type(value: object, expected: str, result: bool) -> None:
-    from kernel._cli_helpers import _value_matches_schema_type
+    from kanon_core._cli_helpers import _value_matches_schema_type
 
     assert _value_matches_schema_type(value, expected) is result
 
@@ -460,7 +461,7 @@ def test_value_matches_schema_type(value: object, expected: str, result: bool) -
 
 def test_parse_config_pair_missing_equals() -> None:
     """L56: no '=' in token raises ClickException."""
-    from kernel._cli_helpers import _parse_config_pair
+    from kanon_core._cli_helpers import _parse_config_pair
 
     with pytest.raises(click.ClickException, match="expected key=value"):
         _parse_config_pair("no-equals-here", None)
@@ -468,7 +469,7 @@ def test_parse_config_pair_missing_equals() -> None:
 
 def test_parse_config_pair_malformed_yaml_value() -> None:
     """L67-68: YAML parse error in value raises ClickException."""
-    from kernel._cli_helpers import _parse_config_pair
+    from kanon_core._cli_helpers import _parse_config_pair
 
     with pytest.raises(click.ClickException, match="Invalid config value"):
         _parse_config_pair("key=: :\n  bad: [unterminated", None)
@@ -488,7 +489,7 @@ def _make_top(*names: str, depth_range: tuple[int, int] = (0, 3)) -> dict:
 
 def test_parse_aspects_flag_missing_colon() -> None:
     """L106: token without ':' raises ClickException."""
-    from kernel._cli_helpers import _parse_aspects_flag
+    from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="expected name:depth"):
         _parse_aspects_flag("sdd", _make_top("kanon-sdd"))
@@ -496,7 +497,7 @@ def test_parse_aspects_flag_missing_colon() -> None:
 
 def test_parse_aspects_flag_unknown_aspect() -> None:
     """L112: aspect not in top['aspects'] raises ClickException."""
-    from kernel._cli_helpers import _parse_aspects_flag
+    from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="Unknown aspect"):
         _parse_aspects_flag("nope:1", _make_top("kanon-sdd"))
@@ -504,7 +505,7 @@ def test_parse_aspects_flag_unknown_aspect() -> None:
 
 def test_parse_aspects_flag_non_integer_depth() -> None:
     """L117-118: non-integer depth raises ClickException."""
-    from kernel._cli_helpers import _parse_aspects_flag
+    from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="must be an integer"):
         _parse_aspects_flag("sdd:abc", _make_top("kanon-sdd"))
@@ -512,7 +513,7 @@ def test_parse_aspects_flag_non_integer_depth() -> None:
 
 def test_parse_aspects_flag_depth_out_of_range() -> None:
     """L124: depth outside declared range raises ClickException."""
-    from kernel._cli_helpers import _parse_aspects_flag
+    from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="outside range"):
         _parse_aspects_flag("sdd:9", _make_top("kanon-sdd", depth_range=(0, 3)))
@@ -520,7 +521,7 @@ def test_parse_aspects_flag_depth_out_of_range() -> None:
 
 def test_parse_aspects_flag_empty_result() -> None:
     """Whitespace-only tokens hit the missing-colon error."""
-    from kernel._cli_helpers import _parse_aspects_flag
+    from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="expected name:depth"):
         _parse_aspects_flag(" , ", _make_top("kanon-sdd"))
@@ -531,7 +532,7 @@ def test_parse_aspects_flag_empty_result() -> None:
 
 def test_check_removal_dependents_depth_predicate() -> None:
     """L237: remaining aspect has a depth-predicate requiring the removed aspect."""
-    from kernel._cli_helpers import _check_removal_dependents
+    from kanon_core._cli_helpers import _check_removal_dependents
 
     top = {
         "aspects": {
@@ -549,7 +550,7 @@ def test_check_removal_dependents_depth_predicate() -> None:
 def test_check_removal_dependents_skips_depth_zero(
 ) -> None:
     """L233: remaining aspect at depth 0 is skipped (continue branch)."""
-    from kernel._cli_helpers import _check_removal_dependents
+    from kanon_core._cli_helpers import _check_removal_dependents
 
     top = {
         "aspects": {
@@ -564,7 +565,7 @@ def test_check_removal_dependents_skips_depth_zero(
 
 def test_check_removal_dependents_depth_pred_different_aspect() -> None:
     """L237->234: depth-predicate names a different aspect than the one being removed."""
-    from kernel._cli_helpers import _check_removal_dependents
+    from kanon_core._cli_helpers import _check_removal_dependents
 
     top = {
         "aspects": {
@@ -580,7 +581,7 @@ def test_check_removal_dependents_depth_pred_different_aspect() -> None:
 
 def test_check_removal_dependents_capability_not_in_provides() -> None:
     """L244-245: remaining aspect requires a capability the removed aspect doesn't provide."""
-    from kernel._cli_helpers import _check_removal_dependents
+    from kanon_core._cli_helpers import _check_removal_dependents
 
     top = {
         "aspects": {
@@ -596,7 +597,7 @@ def test_check_removal_dependents_capability_not_in_provides() -> None:
 
 def test_check_removal_dependents_sole_supplier() -> None:
     """L245: removed aspect is the sole supplier of a required capability."""
-    from kernel._cli_helpers import _check_removal_dependents
+    from kanon_core._cli_helpers import _check_removal_dependents
 
     top = {
         "aspects": {
@@ -618,7 +619,7 @@ def test_check_pending_recovery_graph_rename_fails(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """L309-310: graph-rename sentinel present but recovery raises ClickException → fallthrough to warning."""
-    from kernel._cli_helpers import _check_pending_recovery
+    from kanon_core._cli_helpers import _check_pending_recovery
 
     kanon_dir = tmp_path / ".kanon"
     kanon_dir.mkdir()
@@ -627,14 +628,14 @@ def test_check_pending_recovery_graph_rename_fails(
     def _mock_recover(target: Path) -> bool:
         raise click.ClickException("recovery failed")
 
-    monkeypatch.setattr("kernel._cli_helpers.recover_pending_rename", _mock_recover, raising=False)
+    monkeypatch.setattr("kanon_core._cli_helpers.recover_pending_rename", _mock_recover, raising=False)
     # The import is lazy inside the function, so we patch the module-level import target.
-    import kernel._cli_helpers as mod
+    import kanon_core._cli_helpers as mod
     monkeypatch.setattr(mod, "recover_pending_rename", _mock_recover, raising=False)
 
-    # Actually, the function does a local import: `from kernel._rename import recover_pending_rename`
+    # Actually, the function does a local import: `from kanon_core._rename import recover_pending_rename`
     # We need to patch it at the source module.
-    monkeypatch.setattr("kernel._rename.recover_pending_rename", _mock_recover)
+    monkeypatch.setattr("kanon_core._rename.recover_pending_rename", _mock_recover)
 
     captured = []
     monkeypatch.setattr(click, "echo", lambda msg, err=False: captured.append(msg))

@@ -1,0 +1,42 @@
+# kanon-core — substrate kernel distribution per ADR-0048 + ADR-0051 + ADR-0054.
+#
+# This pyproject is BUILD-CORRECT STANDALONE. `cd packages/kanon-core && python -m build`
+# produces a publishable wheel + sdist. Per ADR-0053, the actual three-distribution
+# PyPI publish is deferred pending a forcing function; until then, the root
+# pyproject.toml builds the kanon-kit monolith as the only PyPI ship target.
+#
+# Layout invariant per ADR-0054 §2: prefix-REMOVE `sources = ["src"]` form, which
+# the `editables` library accepts (sidesteps the constraint that produced
+# ADR-0050 + ADR-0052 + ADR-0053). Same idiom `pypa/hatch` itself uses for its
+# own monorepo.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kanon-core"
+dynamic = ["version"]
+description = "Substrate kernel for the kanon protocol — atomic writes, scaffolding, verify orchestration, fidelity replay, resolution-replay engine, dialect grammar parser. Per ADR-0048."
+readme = "../../README.md"
+license = { file = "../../LICENSE" }
+requires-python = ">=3.10"
+classifiers = [
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+]
+dependencies = [
+    "click>=8.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+kanon = "kanon_core.cli:main"
+
+[tool.hatch.version]
+path = "src/kanon_core/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src"]
+sources = ["src"]

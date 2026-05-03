@@ -12,8 +12,8 @@ from typing import Any, TypedDict
 import click
 import yaml
 
-from kernel import __version__
-from kernel._manifest import (
+from kanon_core import __version__
+from kanon_core._manifest import (
     _ASPECT_NAME_RE,
     _BARE_ASPECT_NAME_RE,
     _UNPREFIXED_SECTIONS,
@@ -177,7 +177,7 @@ def _write_config(
     extra: dict[str, Any] | None = None,
 ) -> None:
     """Write a v2 .kanon/config.yaml atomically."""
-    from kernel._atomic import atomic_write_text
+    from kanon_core._atomic import atomic_write_text
 
     config_dir = _ensure_within(target / ".kanon", target)
     config_dir.mkdir(parents=True, exist_ok=True)
@@ -442,7 +442,7 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
     text = _render_placeholder(base.read_text(encoding="utf-8"), context)
 
     # Render the brand banner above the H1 (single source: kernel/_banner.py).
-    from kernel._banner import _BANNER
+    from kanon_core._banner import _BANNER
     text = _replace_section(text, "banner", _BANNER)
 
     # Render the hard-gates table (only gates whose aspects are enabled).
@@ -587,7 +587,7 @@ def _merge_agents_md(existing: str, new: str) -> str:
 def _write_tree_atomically(
     target: Path, files: dict[str, str], force: bool = False
 ) -> None:
-    from kernel._atomic import atomic_write_text
+    from kanon_core._atomic import atomic_write_text
 
     for rel, content in sorted(files.items()):
         dst = target / rel

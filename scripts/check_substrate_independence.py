@@ -56,13 +56,13 @@ for mod in list(sys.modules):
 # don't trigger real entry-point loading (which may pull kanon_reference).
 os.environ["KANON_TEST_OVERLAY_PATH"] = "/nonexistent/empty/overlay"
 
-from kernel._manifest import _load_aspects_from_entry_points
+from kanon_core._manifest import _load_aspects_from_entry_points
 
 aspects = _load_aspects_from_entry_points()
 assert aspects == {}, f"expected empty registry, got {sorted(aspects)}"
 
 # Verify _aspect_path falls through cleanly when no aspect is found.
-from kernel._manifest import _aspect_path
+from kanon_core._manifest import _aspect_path
 import click
 try:
     _aspect_path("nonexistent-aspect")
@@ -71,7 +71,7 @@ except click.ClickException:
     pass
 
 # Verify the resolutions engine works without kanon_reference.
-from kernel._resolutions import replay, ReplayReport
+from kanon_core._resolutions import replay, ReplayReport
 from pathlib import Path
 import tempfile
 with tempfile.TemporaryDirectory() as td:
@@ -80,15 +80,15 @@ with tempfile.TemporaryDirectory() as td:
     assert report.ok, f"clean replay should succeed; got errors: {report.errors}"
 
 # Verify the dialect grammar module imports + runs.
-from kernel._dialects import validate_dialect_pin
+from kanon_core._dialects import validate_dialect_pin
 validate_dialect_pin("2026-05-01")  # should not raise
 
 # Verify the realization-shape module imports + runs.
-from kernel._realization_shape import V1_DIALECT_VERBS, parse_realization_shape
+from kanon_core._realization_shape import V1_DIALECT_VERBS, parse_realization_shape
 assert "lint" in V1_DIALECT_VERBS
 
 # Verify the composition module imports + runs.
-from kernel._composition import compose
+from kanon_core._composition import compose
 ordering, findings = compose([], surface="x")
 assert ordering == [] and findings == []
 

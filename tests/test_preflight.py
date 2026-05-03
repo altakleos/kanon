@@ -5,8 +5,9 @@ from pathlib import Path
 
 import yaml
 from click.testing import CliRunner
-from kernel._preflight import _resolve_preflight_checks
-from kernel.cli import main
+
+from kanon_core._preflight import _resolve_preflight_checks
+from kanon_core.cli import main
 
 
 def _init_project(tmp_path: Path, tier: int = 1) -> Path:

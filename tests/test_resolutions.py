@@ -14,7 +14,8 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from kernel._resolutions import (
+
+from kanon_core._resolutions import (
     ExecutionRecord,
     ReplayError,
     ReplayReport,

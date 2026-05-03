@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from kernel._banner import _BANNER, _should_emit_banner
+from kanon_core._banner import _BANNER, _should_emit_banner
 
 
 def test_banner_is_nonempty_and_contains_kanon():
@@ -19,12 +19,12 @@ def test_quiet_true_always_returns_false():
 
 
 def test_quiet_false_tty_returns_true():
-    with patch("kernel._banner.sys.stderr") as mock_stderr:
+    with patch("kanon_core._banner.sys.stderr") as mock_stderr:
         mock_stderr.isatty.return_value = True
         assert _should_emit_banner(quiet=False) is True
 
 
 def test_quiet_false_no_tty_returns_false():
-    with patch("kernel._banner.sys.stderr") as mock_stderr:
+    with patch("kanon_core._banner.sys.stderr") as mock_stderr:
         mock_stderr.isatty.return_value = False
         assert _should_emit_banner(quiet=False) is False

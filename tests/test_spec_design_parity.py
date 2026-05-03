@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from kernel._validators.spec_design_parity import check
+from kanon_core._validators.spec_design_parity import check
 
 
 def _write_spec(specs_dir: Path, name: str, status: str = "accepted", extra_fm: str = "") -> None:

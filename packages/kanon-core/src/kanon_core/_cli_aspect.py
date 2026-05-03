@@ -7,19 +7,19 @@ from typing import Any
 
 import click
 
-from kernel import __version__
-from kernel._cli_helpers import (
+from kanon_core import __version__
+from kanon_core._cli_helpers import (
     _OP_SET_DEPTH,
     _check_pending_recovery,
     _check_requires,
 )
-from kernel._manifest import (
+from kanon_core._manifest import (
     _aspect_depth_range,
     _expected_files,
     _load_aspect_registry,
     _now_iso,
 )
-from kernel._scaffold import (
+from kanon_core._scaffold import (
     _assemble_agents_md,
     _build_bundle,
     _config_aspects,
@@ -44,7 +44,7 @@ def _validate_aspect_and_depth(
 
 def _apply_tier_up(target: Path, target_bundle: dict[str, str]) -> int:
     """Write any new-bundle files that don't yet exist; return the count added."""
-    from kernel._atomic import atomic_write_text
+    from kanon_core._atomic import atomic_write_text
 
     added = 0
     for rel, content in sorted(target_bundle.items()):
@@ -80,7 +80,7 @@ def _rewrite_assembled_views(
 
     Phase A.3: kit.md re-render retired (kit-global files: deleted per ADR-0048).
     """
-    from kernel._atomic import atomic_write_text
+    from kanon_core._atomic import atomic_write_text
 
     new_agents = _assemble_agents_md(new_aspects, project_name)
     agents_path = target / "AGENTS.md"
@@ -122,7 +122,7 @@ def _commit_aspect_meta(
     # Preserve v4 fields (schema-version, kanon-dialect, provenance) and any
     # other publisher-added top-level keys across the write. Without this,
     # mutation verbs silently strip the v4 commitment authored at init time.
-    from kernel._scaffold import _extras_from_config, _read_config
+    from kanon_core._scaffold import _extras_from_config, _read_config
     extras = _extras_from_config(_read_config(target))
     _write_config(target, kit_version, aspects_meta, extra=extras)
 
@@ -150,7 +150,7 @@ def _set_aspect_depth(
     current = aspects.get(aspect_name, -1)
     aspects_meta = dict(config.get("aspects", {}))
 
-    from kernel._atomic import clear_sentinel, write_sentinel
+    from kanon_core._atomic import clear_sentinel, write_sentinel
 
     # Single sentinel wraps every mutation (file writes + AGENTS.md rewrite +
     # config.yaml). Cleared only on the success path; if any call below

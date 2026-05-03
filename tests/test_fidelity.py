@@ -17,7 +17,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import yaml
-from kernel._fidelity import (
+
+from kanon_core._fidelity import (
     BEHAVIOURAL_VERIFICATION_CAPABILITY,
     Fixture,
     PatternDensityEntry,
@@ -28,7 +29,7 @@ from kernel._fidelity import (
     extract_actor_text,
     parse_fixture,
 )
-from kernel._verify import check_fidelity_assertions
+from kanon_core._verify import check_fidelity_assertions
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -56,7 +57,7 @@ def test_invariant_anchor_resolves() -> None:
 
 def test_aspect_registered() -> None:
     """kanon-fidelity must be in the kit's top manifest with the expected shape."""
-    from kernel._manifest import _aspect_provides, _load_top_manifest
+    from kanon_core._manifest import _aspect_provides, _load_top_manifest
 
     top = _load_top_manifest()
     assert "kanon-fidelity" in top["aspects"]
@@ -70,7 +71,7 @@ def test_aspect_registered() -> None:
 
 def test_aspect_stability_experimental() -> None:
     """INV-10: first release ships as experimental."""
-    from kernel._manifest import _load_top_manifest
+    from kanon_core._manifest import _load_top_manifest
 
     assert _load_top_manifest()["aspects"]["kanon-fidelity"]["stability"] == "experimental"
 
@@ -80,7 +81,7 @@ def test_aspect_stability_experimental() -> None:
 
 def test_depth_1_scaffolds_protocol_and_section() -> None:
     """Depth-1 sub-manifest declares protocols (including fidelity-discipline), no files."""
-    from kernel._manifest import _load_aspect_manifest
+    from kanon_core._manifest import _load_aspect_manifest
 
     sub = _load_aspect_manifest("kanon-fidelity")
     assert sub["depth-0"] == {"files": [], "protocols": [], "sections": []}
@@ -354,7 +355,7 @@ def test_replay_skipped_when_depth_zero(tmp_path: Path) -> None:
 
 def test_replay_engine_honours_invariant_bounds() -> None:
     """`_fidelity.py` MUST NOT import subprocess / network / test-runner modules."""
-    src = (_REPO_ROOT / "kernel/_fidelity.py").read_text(encoding="utf-8")
+    src = (_REPO_ROOT / "packages/kanon-core/src/kanon_core/_fidelity.py").read_text(encoding="utf-8")
     forbidden_imports = (
         "import subprocess",
         "from subprocess",
@@ -409,7 +410,7 @@ def test_missing_dogfood_becomes_warning(tmp_path: Path) -> None:
 
 def test_no_subprocess_or_capture_subcommand() -> None:
     """No `kanon transcripts` group or `transcripts capture` subcommand exists."""
-    cli = (_REPO_ROOT / "kernel/cli.py").read_text(encoding="utf-8")
+    cli = (_REPO_ROOT / "packages/kanon-core/src/kanon_core/cli.py").read_text(encoding="utf-8")
     assert '"transcripts"' not in cli
     assert "'transcripts'" not in cli
     assert '"capture"' not in cli
@@ -509,7 +510,7 @@ def test_breaking_dogfood_with_forbidden_command_fails_exemplar() -> None:
 
 def test_check_fidelity_lock_malformed_lock_returns_early(tmp_path: Path) -> None:
     """A fidelity.lock that is not a dict with 'entries' returns early."""
-    from kernel._verify import check_fidelity_lock
+    from kanon_core._verify import check_fidelity_lock
 
     (tmp_path / ".kanon").mkdir(parents=True)
     (tmp_path / ".kanon" / "fidelity.lock").write_text("just a string\n")
@@ -520,7 +521,7 @@ def test_check_fidelity_lock_malformed_lock_returns_early(tmp_path: Path) -> Non
 
 def test_check_fidelity_lock_missing_fixture_warning(tmp_path: Path) -> None:
     """A fixture referenced in fidelity.lock that no longer exists produces a warning."""
-    from kernel._verify import check_fidelity_lock
+    from kanon_core._verify import check_fidelity_lock
 
     (tmp_path / ".kanon").mkdir(parents=True)
     lock = {
@@ -547,7 +548,7 @@ def test_check_fidelity_lock_missing_fixture_warning(tmp_path: Path) -> None:
 
 def test_check_fidelity_lock_untracked_spec_warning(tmp_path: Path) -> None:
     """A spec not tracked in fidelity.lock produces a warning."""
-    from kernel._verify import check_fidelity_lock
+    from kanon_core._verify import check_fidelity_lock
 
     (tmp_path / ".kanon").mkdir(parents=True)
     (tmp_path / ".kanon" / "fidelity.lock").write_text(
@@ -571,7 +572,7 @@ def test_check_fidelity_lock_untracked_spec_warning(tmp_path: Path) -> None:
 
 def test_check_verified_by_skips_non_accepted_specs(tmp_path: Path) -> None:
     """Specs with status != 'accepted' are skipped."""
-    from kernel._verify import check_verified_by
+    from kanon_core._verify import check_verified_by
 
     specs_dir = tmp_path / "docs" / "specs"
     specs_dir.mkdir(parents=True)
@@ -585,7 +586,7 @@ def test_check_verified_by_skips_non_accepted_specs(tmp_path: Path) -> None:
 
 def test_check_verified_by_missing_invariant_coverage(tmp_path: Path) -> None:
     """An accepted spec with anchors but missing invariant_coverage produces a warning."""
-    from kernel._verify import check_verified_by
+    from kanon_core._verify import check_verified_by
 
     specs_dir = tmp_path / "docs" / "specs"
     specs_dir.mkdir(parents=True)
@@ -604,12 +605,12 @@ def test_run_project_validators_manifest_load_failure(tmp_path: Path) -> None:
     """A project-aspect whose manifest fails to load records an error."""
     from unittest.mock import patch
 
-    from kernel._verify import run_project_validators
+    from kanon_core._verify import run_project_validators
 
     errors: list[str] = []
     warnings: list[str] = []
     with patch(
-        "kernel._verify._aspect_validators",
+        "kanon_core._verify._aspect_validators",
         side_effect=Exception("manifest broken"),
     ):
         run_project_validators(
@@ -623,13 +624,13 @@ def test_run_project_validators_non_callable_check(tmp_path: Path) -> None:
     import types
     from unittest.mock import patch
 
-    from kernel._verify import run_project_validators
+    from kanon_core._verify import run_project_validators
 
     fake_module = types.ModuleType("fake_validator")
     fake_module.check = "not-callable"  # type: ignore[attr-defined]
     errors: list[str] = []
     warnings: list[str] = []
-    with patch("kernel._verify._aspect_validators", return_value=["fake_validator"]), \
+    with patch("kanon_core._verify._aspect_validators", return_value=["fake_validator"]), \
          patch("importlib.import_module", return_value=fake_module):
         run_project_validators(
             tmp_path, {"project-test": 1}, errors, warnings,
@@ -642,7 +643,7 @@ def test_run_project_validators_check_exception(tmp_path: Path) -> None:
     import types
     from unittest.mock import patch
 
-    from kernel._verify import run_project_validators
+    from kanon_core._verify import run_project_validators
 
     fake_module = types.ModuleType("fake_validator")
 
@@ -652,7 +653,7 @@ def test_run_project_validators_check_exception(tmp_path: Path) -> None:
     fake_module.check = bad_check  # type: ignore[attr-defined]
     errors: list[str] = []
     warnings: list[str] = []
-    with patch("kernel._verify._aspect_validators", return_value=["fake_validator"]), \
+    with patch("kanon_core._verify._aspect_validators", return_value=["fake_validator"]), \
          patch("importlib.import_module", return_value=fake_module):
         run_project_validators(
             tmp_path, {"project-test": 1}, errors, warnings,
@@ -664,11 +665,11 @@ def test_run_project_validators_import_failure(tmp_path: Path) -> None:
     """A validator module that fails to import records an error."""
     from unittest.mock import patch
 
-    from kernel._verify import run_project_validators
+    from kanon_core._verify import run_project_validators
 
     errors: list[str] = []
     warnings: list[str] = []
-    with patch("kernel._verify._aspect_validators", return_value=["no.such.module"]), \
+    with patch("kanon_core._verify._aspect_validators", return_value=["no.such.module"]), \
          patch("importlib.import_module", side_effect=ImportError("not found")):
         run_project_validators(
             tmp_path, {"project-test": 1}, errors, warnings,
@@ -683,7 +684,7 @@ def test_run_project_validators_adds_target_to_sys_path(tmp_path: Path) -> None:
     import sys
     from unittest.mock import patch
 
-    from kernel._verify import run_project_validators
+    from kanon_core._verify import run_project_validators
 
     # Create a validator module inside the target directory.
     pkg = tmp_path / "mypkg"
@@ -701,7 +702,7 @@ def test_run_project_validators_adds_target_to_sys_path(tmp_path: Path) -> None:
 
     errors: list[str] = []
     warnings: list[str] = []
-    with patch("kernel._verify._aspect_validators", return_value=["mypkg.val"]):
+    with patch("kanon_core._verify._aspect_validators", return_value=["mypkg.val"]):
         run_project_validators(
             tmp_path, {"project-test": 1}, errors, warnings,
         )
@@ -744,7 +745,7 @@ def test_check_fidelity_assertions_parse_error_propagated(tmp_path: Path) -> Non
 
 def test_bracket_turn_marker_extraction(tmp_path: Path) -> None:
     """Bracket turn markers [ACTOR] are extracted when turn_format=bracket."""
-    from kernel._fidelity import extract_actor_text
+    from kanon_core._fidelity import extract_actor_text
 
     dogfood = (
         "[USER] Hello there.\n"
@@ -760,7 +761,7 @@ def test_bracket_turn_marker_extraction(tmp_path: Path) -> None:
 
 def test_colon_default_when_turn_format_absent(tmp_path: Path) -> None:
     """When turn_format is not specified, colon grammar is used (backward compat)."""
-    from kernel._fidelity import extract_actor_text
+    from kanon_core._fidelity import extract_actor_text
 
     dogfood = "AGENT: Hello world.\n"
     text, count = extract_actor_text(dogfood, "AGENT")
@@ -770,7 +771,7 @@ def test_colon_default_when_turn_format_absent(tmp_path: Path) -> None:
 
 def test_bracket_format_ignores_colon_markers(tmp_path: Path) -> None:
     """Bracket format does not match colon-style markers."""
-    from kernel._fidelity import extract_actor_text
+    from kanon_core._fidelity import extract_actor_text
 
     dogfood = "AGENT: Hello world.\n"
     text, count = extract_actor_text(dogfood, "AGENT", turn_format="bracket")
@@ -780,7 +781,7 @@ def test_bracket_format_ignores_colon_markers(tmp_path: Path) -> None:
 
 def test_word_share_within_band_passes(tmp_path: Path) -> None:
     """word_share within [min, max] produces no errors."""
-    from kernel._fidelity import Fixture, WordShareBand, evaluate_fixture
+    from kanon_core._fidelity import Fixture, WordShareBand, evaluate_fixture
 
     fixture = Fixture(
         path=tmp_path / "test.md",
@@ -801,7 +802,7 @@ def test_word_share_within_band_passes(tmp_path: Path) -> None:
 
 def test_word_share_below_min_fails(tmp_path: Path) -> None:
     """word_share below min produces an error."""
-    from kernel._fidelity import Fixture, WordShareBand, evaluate_fixture
+    from kanon_core._fidelity import Fixture, WordShareBand, evaluate_fixture
 
     fixture = Fixture(
         path=tmp_path / "test.md",
@@ -822,7 +823,7 @@ def test_word_share_below_min_fails(tmp_path: Path) -> None:
 
 def test_word_share_above_max_fails(tmp_path: Path) -> None:
     """word_share above max produces an error."""
-    from kernel._fidelity import Fixture, WordShareBand, evaluate_fixture
+    from kanon_core._fidelity import Fixture, WordShareBand, evaluate_fixture
 
     fixture = Fixture(
         path=tmp_path / "test.md",
@@ -843,7 +844,7 @@ def test_word_share_above_max_fails(tmp_path: Path) -> None:
 
 def test_pattern_density_within_band_passes(tmp_path: Path) -> None:
     """pattern_density within band produces no errors."""
-    from kernel._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+    from kanon_core._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
 
     fixture = Fixture(
         path=tmp_path / "test.md",
@@ -869,7 +870,7 @@ def test_pattern_density_within_band_passes(tmp_path: Path) -> None:
 
 def test_pattern_density_below_min_fails(tmp_path: Path) -> None:
     """pattern_density below min produces an error."""
-    from kernel._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+    from kanon_core._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
 
     fixture = Fixture(
         path=tmp_path / "test.md",
@@ -895,7 +896,7 @@ def test_pattern_density_below_min_fails(tmp_path: Path) -> None:
 
 def test_pattern_density_above_max_fails(tmp_path: Path) -> None:
     """pattern_density above max produces an error."""
-    from kernel._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+    from kanon_core._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
 
     fixture = Fixture(
         path=tmp_path / "test.md",
@@ -921,7 +922,7 @@ def test_pattern_density_above_max_fails(tmp_path: Path) -> None:
 
 def test_pattern_density_strip_code_fences(tmp_path: Path) -> None:
     """strip_code_fences removes fenced blocks before counting."""
-    from kernel._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+    from kanon_core._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
 
     fixture = Fixture(
         path=tmp_path / "test.md",
@@ -947,7 +948,7 @@ def test_pattern_density_strip_code_fences(tmp_path: Path) -> None:
 
 def test_pattern_density_multiple_patterns(tmp_path: Path) -> None:
     """Multiple patterns in one entry are unioned for counting."""
-    from kernel._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
+    from kanon_core._fidelity import Fixture, PatternDensityEntry, evaluate_fixture
 
     fixture = Fixture(
         path=tmp_path / "test.md",
@@ -973,7 +974,7 @@ def test_pattern_density_multiple_patterns(tmp_path: Path) -> None:
 
 def test_parse_fixture_with_turn_format_bracket(tmp_path: Path) -> None:
     """parse_fixture accepts turn_format: bracket."""
-    from kernel._fidelity import parse_fixture
+    from kanon_core._fidelity import parse_fixture
 
     fixture_path = tmp_path / "test.md"
     fixture_path.write_text(
@@ -995,7 +996,7 @@ def test_parse_fixture_with_turn_format_bracket(tmp_path: Path) -> None:
 
 def test_parse_fixture_invalid_turn_format(tmp_path: Path) -> None:
     """parse_fixture rejects unknown turn_format values."""
-    from kernel._fidelity import parse_fixture
+    from kanon_core._fidelity import parse_fixture
 
     fixture_path = tmp_path / "test.md"
     fixture_path.write_text(
@@ -1014,7 +1015,7 @@ def test_parse_fixture_invalid_turn_format(tmp_path: Path) -> None:
 
 def test_parse_fixture_word_share_invalid_band(tmp_path: Path) -> None:
     """parse_fixture rejects word_share where min > max."""
-    from kernel._fidelity import parse_fixture
+    from kanon_core._fidelity import parse_fixture
 
     fixture_path = tmp_path / "test.md"
     fixture_path.write_text(
@@ -1035,7 +1036,7 @@ def test_parse_fixture_word_share_invalid_band(tmp_path: Path) -> None:
 
 def test_existing_fixture_backward_compat(tmp_path: Path) -> None:
     """Existing fixtures without new fields continue to work."""
-    from kernel._fidelity import parse_fixture
+    from kanon_core._fidelity import parse_fixture
 
     fixture_path = tmp_path / "test.md"
     fixture_path.write_text(
@@ -1292,7 +1293,7 @@ def test_parse_fixture_unreadable_file_raw(tmp_path: Path) -> None:
     """parse_fixture returns error for unreadable file (raw path variant)."""
     import os
 
-    from kernel._fidelity import parse_fixture
+    from kanon_core._fidelity import parse_fixture
 
     bad = tmp_path / "bad.fixture.md"
     bad.write_text("content")
@@ -1307,7 +1308,7 @@ def test_parse_fixture_unreadable_file_raw(tmp_path: Path) -> None:
 
 def test_parse_fixture_missing_frontmatter(tmp_path: Path) -> None:
     """parse_fixture returns error for file without YAML frontmatter."""
-    from kernel._fidelity import parse_fixture
+    from kanon_core._fidelity import parse_fixture
 
     bad = tmp_path / "no-fm.fixture.md"
     bad.write_text("Just plain text, no frontmatter.\n")
@@ -1318,7 +1319,7 @@ def test_parse_fixture_missing_frontmatter(tmp_path: Path) -> None:
 
 def test_parse_fixture_missing_protocol(tmp_path: Path) -> None:
     """parse_fixture returns error when protocol field is missing."""
-    from kernel._fidelity import parse_fixture
+    from kanon_core._fidelity import parse_fixture
 
     bad = tmp_path / "no-proto.fixture.md"
     bad.write_text(

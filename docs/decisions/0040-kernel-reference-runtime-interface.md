@@ -8,7 +8,7 @@ date: 2026-05-01
 
 [ADR-0048](0048-kanon-as-protocol-substrate.md) committed `kanon-core` (kernel) and `kanon-aspects` (the seven `kanon-` aspects) to ship as separate distributions. [ADR-0039](0039-contract-resolution-model.md) ratified the runtime-binding model — but neither addresses the load-bearing question Round-5 panel review surfaced independently across three reviewers (architect, critic, code-reviewer): **how does the kernel discover aspects shipped by a separately-installed reference package?**
 
-Today's kernel hardcodes the assumption "the kit ships exactly one of itself" via [`_kit_root()` at `src/kanon/_manifest.py:127`](../../kernel/_manifest.py), referenced 10+ times across `_manifest.py` and `_scaffold.py`. The function returns `Path(kanon.__file__).parent / "kit"` — the kit-author's source tree. Under the protocol-substrate commitment, that path no longer exists in `kanon-core`'s distribution; the kernel must locate aspects by other means.
+Today's kernel hardcodes the assumption "the kit ships exactly one of itself" via [`_kit_root()` at `src/kanon/_manifest.py:127`](../../packages/kanon-core/src/kanon_core/_manifest.py), referenced 10+ times across `_manifest.py` and `_scaffold.py`. The function returns `Path(kanon.__file__).parent / "kit"` — the kit-author's source tree. Under the protocol-substrate commitment, that path no longer exists in `kanon-core`'s distribution; the kernel must locate aspects by other means.
 
 The discovery mechanism is the public contract on which third-party (`acme-`) publishers will rely. Choosing it commits the substrate to:
 

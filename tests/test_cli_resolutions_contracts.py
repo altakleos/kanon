@@ -11,7 +11,8 @@ from pathlib import Path
 
 import yaml
 from click.testing import CliRunner
-from kernel.cli import main
+
+from kanon_core.cli import main
 
 # --- kanon resolutions check ---
 

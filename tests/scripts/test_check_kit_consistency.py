@@ -31,7 +31,7 @@ def test_main_exits_zero_on_ok(ckc, capsys: pytest.CaptureFixture[str]) -> None:
 
 def _make_minimal_kit(tmp_path: Path) -> Path:
     """Create a minimal valid kit structure for testing individual checks."""
-    kit = tmp_path / "kernel" / "kit"
+    kit = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
     kit.mkdir(parents=True)
     # Top-level manifest with one aspect
     (kit / "manifest.yaml").write_text(
@@ -208,7 +208,7 @@ def test_kit_aspect_with_project_prefix_rejected(
 
     The kit's CI hard-fails when an aspect-name is outside the `kanon-` namespace.
     """
-    kit = tmp_path / "kernel" / "kit"
+    kit = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
     kit.mkdir(parents=True)
     (kit / "manifest.yaml").write_text(
         "aspects:\n"
@@ -247,7 +247,7 @@ def test_kit_aspect_with_bare_name_rejected(
     The bare-name shorthand is for CLI input only; in the kit registry, every
     aspect must carry the `kanon-` prefix.
     """
-    kit = tmp_path / "kernel" / "kit"
+    kit = tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
     kit.mkdir(parents=True)
     (kit / "manifest.yaml").write_text(
         "aspects:\n"

@@ -10,7 +10,7 @@ relies on:
   `.kanon/`, the kit's own `docs/`, `tests/`, `scripts/`, `.github/`,
   `.venv/`, and the kit's own `AGENTS.md` / `CLAUDE.md`) never leaks into
   the wheel.
-- **Version concordance.** `kernel/__init__.py.__version__` matches the
+- **Version concordance.** `packages/kanon-core/src/kanon_core/__init__.py.__version__` matches the
   supplied `--tag` (leading `v` stripped). Literal string comparison — the
   release process requires the maintainer to keep them exactly in sync.
 - **Changelog entry.** `CHANGELOG.md` (repo root, not in the wheel — ships
@@ -42,16 +42,16 @@ from typing import Any
 import yaml
 
 # Core files that must always be present regardless of aspects.
-# Per Phase A.3 (kit-globals deletion): kernel/kit/kit.md was retired and is
+# Per Phase A.3 (kit-globals deletion): kanon_core/kit/kit.md was retired and is
 # no longer in the wheel. Per ADR-0050 Option A: substrate Python module is
 # `kernel/` (was `kanon/`); aspect data lives at `kanon_reference/aspects/`,
-# but the substrate-level `kernel/kit/manifest.yaml` + `harnesses.yaml` stay.
+# but the substrate-level `kanon_core/kit/manifest.yaml` + `harnesses.yaml` stay.
 _CORE_REQUIRED_FILES: tuple[str, ...] = (
-    "kernel/__init__.py",
-    "kernel/cli.py",
-    "kernel/_atomic.py",
-    "kernel/kit/manifest.yaml",
-    "kernel/kit/harnesses.yaml",
+    "kanon_core/__init__.py",
+    "kanon_core/cli.py",
+    "kanon_core/_atomic.py",
+    "kanon_core/kit/manifest.yaml",
+    "kanon_core/kit/harnesses.yaml",
 )
 
 # Populated at wheel-check time from the manifest inside the wheel.
@@ -105,9 +105,9 @@ def _changelog_entry_status(changelog_path: Path, version: str) -> tuple[str, st
 def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list[str]]:
     """Read manifest.yaml from the wheel and derive required files and dirs."""
     required_files = list(_CORE_REQUIRED_FILES)
-    required_dirs = ["kernel/kit/"]
+    required_dirs = ["kanon_core/kit/"]
     try:
-        top = yaml.safe_load(z.read("kernel/kit/manifest.yaml").decode("utf-8"))
+        top = yaml.safe_load(z.read("kanon_core/kit/manifest.yaml").decode("utf-8"))
     except (KeyError, yaml.YAMLError):
         return required_files, required_dirs
     if not isinstance(top, dict) or not isinstance(top.get("aspects"), dict):
@@ -152,7 +152,7 @@ def check_wheel(wheel_path: Path, tag: str, changelog_path: Path | None = None) 
     with zipfile.ZipFile(wheel_path) as z:
         names = z.namelist()
         try:
-            init_content = z.read("kernel/__init__.py").decode("utf-8")
+            init_content = z.read("kanon_core/__init__.py").decode("utf-8")
         except KeyError:
             init_content = ""
         required_files, required_dirs = _derive_requirements_from_wheel(z)

@@ -21,7 +21,7 @@ from typing import Any
 import click
 import yaml
 
-import kernel
+import kanon_core
 
 
 def _load_yaml(path: Path, expected_type: type = dict) -> Any:
@@ -129,7 +129,7 @@ def _find_section_pair(
 
 
 def _kit_root() -> Path:
-    return Path(kernel.__file__).parent / "kit"
+    return Path(kanon_core.__file__).parent / "kit"
 
 
 # --- Manifest loaders ---
@@ -290,7 +290,7 @@ def _load_aspects_from_entry_points() -> dict[str, dict[str, Any]]:
         # Per INV-dialect-grammar-pin-required: every aspect manifest MUST pin
         # `kanon-dialect:`. Validates the pin is recognized; emits stderr
         # deprecation warning if pin matches DEPRECATION_WARNING_BEFORE.
-        from kernel._dialects import validate_dialect_pin
+        from kanon_core._dialects import validate_dialect_pin
 
         validate_dialect_pin(entry.get("kanon-dialect"), source=ep.name)
         # Validate required registry fields surface from the LOADER MANIFEST.
@@ -781,7 +781,7 @@ def _namespaced_section(aspect: str, section: str) -> str:
 
 
 # Phase A.3: _default_aspects() retired. Per ADR-0048 de-opinionation, the
-# kit-global defaults: block was deleted from kernel/kit/manifest.yaml;
+# kit-global defaults: block was deleted from kanon_core/kit/manifest.yaml;
 # `kanon init` with no flags now scaffolds an empty project.
 
 

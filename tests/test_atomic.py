@@ -13,7 +13,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from kernel._atomic import atomic_write_text
+
+from kanon_core._atomic import atomic_write_text
 
 
 def test_happy_path(tmp_path: Path) -> None:
@@ -36,7 +37,7 @@ def test_crash_on_replace_leaves_original_untouched(tmp_path: Path) -> None:
     target.write_text(original_content, encoding="utf-8")
 
     with (
-        patch("kernel._atomic.os.replace", side_effect=OSError("disk full")),
+        patch("kanon_core._atomic.os.replace", side_effect=OSError("disk full")),
         pytest.raises(OSError, match="disk full"),
     ):
         atomic_write_text(target, "new: content\n")
@@ -54,7 +55,7 @@ def test_overwrites_existing_file(tmp_path: Path) -> None:
 
 
 def test_fsyncs_parent_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    import kernel._atomic as atomic_mod
+    import kanon_core._atomic as atomic_mod
 
     events: list[str] = []
     real_fsync = atomic_mod.os.fsync
@@ -87,7 +88,7 @@ def test_fsyncs_parent_directory(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 
 def test_sentinel_write_and_read(tmp_path: Path) -> None:
     """write_sentinel creates .pending; read_sentinel returns the operation."""
-    from kernel._atomic import read_sentinel, write_sentinel
+    from kanon_core._atomic import read_sentinel, write_sentinel
 
     kanon_dir = tmp_path / ".kanon"
     kanon_dir.mkdir()
@@ -98,7 +99,7 @@ def test_sentinel_write_and_read(tmp_path: Path) -> None:
 
 def test_sentinel_clear(tmp_path: Path) -> None:
     """clear_sentinel removes .pending; read_sentinel returns None."""
-    from kernel._atomic import clear_sentinel, read_sentinel, write_sentinel
+    from kanon_core._atomic import clear_sentinel, read_sentinel, write_sentinel
 
     kanon_dir = tmp_path / ".kanon"
     kanon_dir.mkdir()
@@ -110,7 +111,7 @@ def test_sentinel_clear(tmp_path: Path) -> None:
 
 def test_read_sentinel_absent(tmp_path: Path) -> None:
     """read_sentinel returns None when no sentinel exists."""
-    from kernel._atomic import read_sentinel
+    from kanon_core._atomic import read_sentinel
 
     kanon_dir = tmp_path / ".kanon"
     kanon_dir.mkdir()
@@ -119,7 +120,7 @@ def test_read_sentinel_absent(tmp_path: Path) -> None:
 
 def test_clear_sentinel_idempotent(tmp_path: Path) -> None:
     """clear_sentinel does not raise when .pending is already absent."""
-    from kernel._atomic import clear_sentinel
+    from kanon_core._atomic import clear_sentinel
 
     kanon_dir = tmp_path / ".kanon"
     kanon_dir.mkdir()

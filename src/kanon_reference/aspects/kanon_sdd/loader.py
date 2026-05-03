@@ -41,8 +41,8 @@ MANIFEST: dict[str, Any] = {
         ],
         "sections": ["protocols-index"],
         "validators": [
-            "kernel._validators.plan_completion",
-            "kernel._validators.index_consistency",
+            "kanon_core._validators.plan_completion",
+            "kanon_core._validators.index_consistency",
         ],
     },
     "depth-2": {
@@ -50,8 +50,8 @@ MANIFEST: dict[str, Any] = {
         "protocols": ["spec-review.md", "spec-before-design.md"],
         "sections": None,
         "validators": [
-            "kernel._validators.link_check",
-            "kernel._validators.adr_immutability",
+            "kanon_core._validators.link_check",
+            "kanon_core._validators.adr_immutability",
         ],
     },
     "depth-3": {
@@ -65,6 +65,6 @@ MANIFEST: dict[str, Any] = {
         ],
         "protocols": ["adr-immutability.md"],
         "sections": [],
-        "validators": ["kernel._validators.spec_design_parity"],
+        "validators": ["kanon_core._validators.spec_design_parity"],
     },
 }

@@ -14,7 +14,7 @@ from typing import Any
 import click
 import yaml
 
-from kernel._manifest import (
+from kanon_core._manifest import (
     _CAPABILITY_NAME_RE,
     _capability_suppliers,
     _normalise_aspect_name,
@@ -283,7 +283,7 @@ def _check_pending_recovery(target: Path) -> None:
 
     - `graph-rename` carries an ops-manifest at `.kanon/graph-rename.ops`
       that captures the per-file rewrite plan. On detecting that sentinel,
-      this function calls :func:`kernel._rename.recover_pending_rename` to
+      this function calls :func:`kanon_core._rename.recover_pending_rename` to
       replay the manifest idempotently, clear the sentinel, and emit a
       one-line "Recovered ..." message. No manual re-run required.
     - Other sentinels (init / upgrade / set-depth / set-config /
@@ -292,14 +292,14 @@ def _check_pending_recovery(target: Path) -> None:
       `_PENDING_OP_TO_COMMAND`. The user types the suggested command and
       it completes the partial state.
     """
-    from kernel._atomic import read_sentinel
+    from kanon_core._atomic import read_sentinel
 
     pending = read_sentinel(target / ".kanon")
     if pending is None:
         return
     if pending == _OP_GRAPH_RENAME:
         # Auto-recover graph-rename: the ops-manifest replays idempotently.
-        from kernel._rename import recover_pending_rename
+        from kanon_core._rename import recover_pending_rename
         try:
             recovered = recover_pending_rename(target)
         except click.ClickException:

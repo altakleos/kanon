@@ -1,7 +1,7 @@
 """Kit-bundle consistency validator (maintainer-side, CI hard-fail).
 
 Asserts the invariants that keep kanon self-hosted. All checks operate on
-`kernel/kit/` (see ADR-0011, ADR-0012, and docs/design/aspect-model.md).
+`kanon_core/kit/` (see ADR-0011, ADR-0012, and docs/design/aspect-model.md).
 
 1. **Byte-equality against repo canonical.** A narrow whitelist of files
    under each aspect's `files/` tree that have a counterpart at the repo
@@ -44,12 +44,13 @@ from typing import Any
 import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_KIT = _REPO_ROOT / "kernel" / "kit"
+_KIT = _REPO_ROOT / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
 
 # Allow this script to run from a fresh clone without an installed kanon.
+sys.path.insert(0, str(_REPO_ROOT / "packages" / "kanon-core" / "src"))
 sys.path.insert(0, str(_REPO_ROOT / "src"))
-from kernel._cli_helpers import _classify_predicate  # noqa: E402
-from kernel._manifest import _iter_markers  # noqa: E402
+from kanon_core._cli_helpers import _classify_predicate  # noqa: E402
+from kanon_core._manifest import _iter_markers  # noqa: E402
 
 _UNPREFIXED_SECTIONS: frozenset[str] = frozenset({"protocols-index"})
 _STABILITY_VALUES: frozenset[str] = frozenset({"experimental", "stable", "deprecated"})
@@ -174,7 +175,7 @@ def _check_byte_equality(errors: list[str]) -> None:
 
 # Phase A.3: _check_kit_md_exists() retired. Per ADR-0048 de-opinionation,
 # the kit-global kit.md template was deleted (along with `defaults:` and
-# `files:` blocks in kernel/kit/manifest.yaml).
+# `files:` blocks in kanon_core/kit/manifest.yaml).
 
 
 def _check_registry_and_manifests(errors: list[str]) -> None:

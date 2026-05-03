@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from kernel._validators.test_import_check import check
+from kanon_core._validators.test_import_check import check
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 

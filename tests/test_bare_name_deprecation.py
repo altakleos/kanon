@@ -9,7 +9,8 @@ warning on stderr when sugaring a bare name; behaviour is otherwise preserved.
 from __future__ import annotations
 
 import pytest
-from kernel._manifest import _normalise_aspect_name
+
+from kanon_core._manifest import _normalise_aspect_name
 
 
 def test_bare_name_emits_deprecation_warning(

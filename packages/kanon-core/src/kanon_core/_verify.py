@@ -15,7 +15,7 @@ from typing import Any
 
 import yaml
 
-from kernel._manifest import (
+from kanon_core._manifest import (
     _all_known_aspects,
     _aspect_depth_range,
     _aspect_depth_validators,
@@ -321,7 +321,7 @@ def check_fidelity_assertions(
           actor, and any assertion failure → ``errors``.
         - Missing paired ``.dogfood.md`` capture → ``warnings``.
     """
-    from kernel._fidelity import (
+    from kanon_core._fidelity import (
         BEHAVIOURAL_VERIFICATION_CAPABILITY,
         discover_fixtures,
         dogfood_path_for,

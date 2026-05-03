@@ -69,8 +69,8 @@ pytestmark_e2e = pytest.mark.e2e
 @pytest.mark.e2e
 def test_full_build_and_validate_against_kernel_version(mod) -> None:
     """End-to-end: builds the actual sdist+wheel via `python -m build` and
-    validates against `v` + kernel.__version__. This is the regression-prevention
+    validates against `v` + kanon_core.__version__. This is the regression-prevention
     test for the v0.5.0a2 hotfix class (PRs #99 + #100): catches sdist-include
     misconfiguration and validator-path drift."""
-    rc = mod.main([])  # uses kernel.__version__
+    rc = mod.main([])  # uses kanon_core.__version__
     assert rc == 0, "wheel-build-validate failed end-to-end against current kernel version"
