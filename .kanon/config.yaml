@@ -10,7 +10,7 @@ provenance:
     applied_at: "2026-05-01T00:00:00+00:00"
 
 # v3 fields (read by today's kit; preserved verbatim until Phase A.3 deletes the v3 reader).
-kit_version: 0.5.0a1
+kit_version: 0.5.0a2
 aspects:
   kanon-deps:
     depth: 2
@@ -42,11 +42,11 @@ aspects:
     config: {}
 preflight-stages:
   push:
-  - run: .venv/bin/python ci/check_security_patterns.py
+  - run: .venv/bin/python scripts/check_security_patterns.py
     label: security-scan
-  - run: .venv/bin/python ci/check_deps.py
+  - run: .venv/bin/python scripts/check_deps.py
     label: deps-scan
   release:
-  - run: .venv/bin/python -c "import kanon; v='$TAG'.lstrip('v'); assert kanon.__version__
-      == v, f'{kanon.__version__} != {v}'"
+  - run: .venv/bin/python -c "import kernel; v='$TAG'.lstrip('v'); assert kernel.__version__
+      == v, f'{kernel.__version__} != {v}'"
     label: release-preflight

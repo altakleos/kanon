@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.5.0a2] — 2026-05-03
+
+Follow-up fixes for ADR-0050 Option A kernel rename (PR #96 / v0.5.0a1) — operational blockers identified by adversarial critic pass before tagging the v0.5.0a1 release. Per plan `docs/plans/active/kernel-rename-fixes.md`.
+
+### Fixed
+
+- **`.kanon/config.yaml` release-stage preflight** — `import kanon; kanon.__version__` → `import kernel; kernel.__version__`. The previous form would `ModuleNotFoundError` on every `kanon release` invocation post-rename.
+- **`.kanon/config.yaml` push-stage preflight commands** — `ci/check_security_patterns.py` and `ci/check_deps.py` paths corrected to `scripts/check_*.py` (the `ci/` directory was renamed to `scripts/` in the PR-C migration but config.yaml was not updated then). Pre-existing rot exposed by this PR's preflight audit.
+- **`Makefile` typecheck target** — `mypy src/kanon/` → `mypy kernel/`. `make typecheck` and `make check` were broken on main after the rename.
+- **`scripts/release-preflight.py` `_find_version()`** — narrowed to scan only `kernel/__init__.py` instead of rglobbing both `kernel/` and `src/` (the latter would match unrelated `__init__.py` files in `src/kanon_reference/`).
+- **`tests/scripts/test_check_security_patterns.py`** — docstring + assertion message updated from `src/kanon/` → `kernel/`. Test passed regardless (fixture at line 22 already pointed at `kernel`); the change clarifies failure messages.
+- **`kernel/_cli_helpers.py:286`, `kernel/_rename.py:13`** — Sphinx `:func:` cross-refs updated from `kanon.X` → `kernel.X`.
+- **`src/kanon_reference/aspects/kanon_fidelity/manifest.yaml:9`** — comment cite `src/kanon/_fidelity.py` → `kernel/_fidelity.py`.
+
+### Bumped
+
+- `kernel/__init__.py` `__version__`: `0.5.0a1` → `0.5.0a2`.
+- `.kanon/config.yaml` `kit_version`: `0.5.0a1` → `0.5.0a2` (in lockstep — kit-version drift triggers fidelity-replay diff).
+
 ## [0.5.0a1] — 2026-05-03
 
 ADR-0049 §1(2) kernel-flatten finally realized via ADR-0050 Option A: Python package renamed from `kanon` → `kernel`. Bumped to 0.5.0a1 (minor-class) to signal the importable-module rename per SemVer-correct framing — even with zero current external consumers per ADR-0048, downstream tooling that pattern-matches against the wheel's importable name is the boundary that warrants the bump.
