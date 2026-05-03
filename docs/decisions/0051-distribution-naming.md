@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-05-03
 ---
 # ADR-0051: distribution naming for the three-package split
