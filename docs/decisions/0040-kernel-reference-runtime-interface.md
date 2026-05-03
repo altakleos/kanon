@@ -6,16 +6,16 @@ date: 2026-05-01
 
 ## Context
 
-[ADR-0048](0048-kanon-as-protocol-substrate.md) committed `kanon-substrate` (kernel) and `kanon-reference` (the seven `kanon-` aspects) to ship as separate distributions. [ADR-0039](0039-contract-resolution-model.md) ratified the runtime-binding model — but neither addresses the load-bearing question Round-5 panel review surfaced independently across three reviewers (architect, critic, code-reviewer): **how does the kernel discover aspects shipped by a separately-installed reference package?**
+[ADR-0048](0048-kanon-as-protocol-substrate.md) committed `kanon-core` (kernel) and `kanon-aspects` (the seven `kanon-` aspects) to ship as separate distributions. [ADR-0039](0039-contract-resolution-model.md) ratified the runtime-binding model — but neither addresses the load-bearing question Round-5 panel review surfaced independently across three reviewers (architect, critic, code-reviewer): **how does the kernel discover aspects shipped by a separately-installed reference package?**
 
-Today's kernel hardcodes the assumption "the kit ships exactly one of itself" via [`_kit_root()` at `src/kanon/_manifest.py:127`](../../kernel/_manifest.py), referenced 10+ times across `_manifest.py` and `_scaffold.py`. The function returns `Path(kanon.__file__).parent / "kit"` — the kit-author's source tree. Under the protocol-substrate commitment, that path no longer exists in `kanon-substrate`'s distribution; the kernel must locate aspects by other means.
+Today's kernel hardcodes the assumption "the kit ships exactly one of itself" via [`_kit_root()` at `src/kanon/_manifest.py:127`](../../kernel/_manifest.py), referenced 10+ times across `_manifest.py` and `_scaffold.py`. The function returns `Path(kanon.__file__).parent / "kit"` — the kit-author's source tree. Under the protocol-substrate commitment, that path no longer exists in `kanon-core`'s distribution; the kernel must locate aspects by other means.
 
 The discovery mechanism is the public contract on which third-party (`acme-`) publishers will rely. Choosing it commits the substrate to:
 
 1. A *publisher-registration shape* (what does an `acme-` publisher's `pyproject.toml` look like?).
 2. A *runtime-discovery algorithm* (how does the kernel find aspects at process startup?).
 3. A *publisher-symmetry contract* (no privilege for `kanon-` over `acme-` at any code path; per [`P-publisher-symmetry`](../foundations/principles/P-publisher-symmetry.md)).
-4. An *independence invariant* (`kanon-substrate`'s test suite must pass with `kanon-reference` uninstalled).
+4. An *independence invariant* (`kanon-core`'s test suite must pass with `kanon-aspects` uninstalled).
 
 This ADR ratifies all four. It does not yet specify wheel-packaging mechanics (release cadence, version-pinning across the substrate/reference split) — those land in ADR-0043. ADR-0040 is the *interface*; ADR-0043 will be the *packaging*.
 
@@ -32,11 +32,11 @@ This ADR ratifies all four. It does not yet specify wheel-packaging mechanics (r
    - **Project-aspects** at `<target>/.kanon/aspects/project-*/manifest.yaml` per [ADR-0028](0028-project-aspects.md) (preserved verbatim; the consumer-side filesystem mechanism survives).
    - **Test overlays** (development-only) when an environment variable signals a fixture overlay; intended for the kernel's own test suite.
 
-4. **Publisher-symmetric resolution.** Source order does not imply privilege. A `kanon-testing` aspect from `kanon-reference` and a hypothetical `acme-strict-testing` resolve through the same code paths: same manifest validation, same depth-range enforcement, same capability registry semantics, same scaffolding pipeline. Asymmetries between namespaces are bugs, not features (per `P-publisher-symmetry`).
+4. **Publisher-symmetric resolution.** Source order does not imply privilege. A `kanon-testing` aspect from `kanon-aspects` and a hypothetical `acme-strict-testing` resolve through the same code paths: same manifest validation, same depth-range enforcement, same capability registry semantics, same scaffolding pipeline. Asymmetries between namespaces are bugs, not features (per `P-publisher-symmetry`).
 
-5. **Namespace ownership remains source-bounded** (per [ADR-0028](0028-project-aspects.md) Decision §"Namespace ownership is source-bounded"). An entry-point-discovered publisher MAY register `kanon-*` aspects only if its distribution name matches the canonical `kanon-reference` package; it MAY register `acme-<vendor>-*` aspects only if it is the `acme-<vendor>` package. The kernel detects mis-namespaced entry-points (e.g., a third-party shipping under `kanon-`) and refuses to load them with `code: namespace-violation`.
+5. **Namespace ownership remains source-bounded** (per [ADR-0028](0028-project-aspects.md) Decision §"Namespace ownership is source-bounded"). An entry-point-discovered publisher MAY register `kanon-*` aspects only if its distribution name matches the canonical `kanon-aspects` package; it MAY register `acme-<vendor>-*` aspects only if it is the `acme-<vendor>` package. The kernel detects mis-namespaced entry-points (e.g., a third-party shipping under `kanon-`) and refuses to load them with `code: namespace-violation`.
 
-6. **The substrate's test suite passes with `kanon-reference` uninstalled.** This is an independence invariant: `kanon-substrate`'s pytest run, executed in a clean venv with only `kanon-substrate` installed and no entry-point publishers visible, MUST pass green. This proves the kernel does not depend on reference content for its own correctness.
+6. **The substrate's test suite passes with `kanon-aspects` uninstalled.** This is an independence invariant: `kanon-core`'s pytest run, executed in a clean venv with only `kanon-core` installed and no entry-point publishers visible, MUST pass green. This proves the kernel does not depend on reference content for its own correctness.
 
 7. **`_kit_root()` is retired.** Phase A deletes `_kit_root()` and every reference. Aspect path lookup goes through the publisher registry: each registry entry carries the publisher's distribution path (resolved at entry-point time), and aspect path = `<publisher_dist_path>/<aspect_relative_path>`. The "the kit ships exactly one of itself" assumption is gone.
 
@@ -48,11 +48,11 @@ This ADR ratifies all four. It does not yet specify wheel-packaging mechanics (r
 
 2. **Environment-variable path overlay.** The kernel reads `$KANON_PUBLISHERS` (colon-separated paths) at startup. **Rejected.** Fragile (env-var setup becomes part of kanon's config surface); doesn't compose with packaged publishers; conflicts with virtualenv hygiene; CI/dev parity hard to achieve.
 
-3. **Namespace-package discovery.** `kanon-substrate` declares a namespace package `kanon_aspects`; publishers ship `kanon_aspects.foo` modules; the kernel discovers via Python's namespace package resolution. **Rejected.** Namespace packages are notoriously fragile (PEP 420 has subtle pitfalls with editable installs and zipped distributions); `importlib.metadata.entry_points` is the modern, well-supported mechanism for the same use case. Pip and other tools use entry-points; reusing the convention is cheaper.
+3. **Namespace-package discovery.** `kanon-core` declares a namespace package `kanon_aspects`; publishers ship `kanon_aspects.foo` modules; the kernel discovers via Python's namespace package resolution. **Rejected.** Namespace packages are notoriously fragile (PEP 420 has subtle pitfalls with editable installs and zipped distributions); `importlib.metadata.entry_points` is the modern, well-supported mechanism for the same use case. Pip and other tools use entry-points; reusing the convention is cheaper.
 
-4. **`kanon-substrate` vendoring `kanon-reference`.** Single wheel, single distribution; kernel ships reference aspects internally and exposes them via the registry. **Rejected.** Re-establishes the kit shape under a different name; reference aspects become non-de-installable; `acme-` publishers are second-class; `P-publisher-symmetry` collapses. ADR-0048 explicitly retires this shape.
+4. **`kanon-core` vendoring `kanon-aspects`.** Single wheel, single distribution; kernel ships reference aspects internally and exposes them via the registry. **Rejected.** Re-establishes the kit shape under a different name; reference aspects become non-de-installable; `acme-` publishers are second-class; `P-publisher-symmetry` collapses. ADR-0048 explicitly retires this shape.
 
-5. **Hardcoded "the seven `kanon-` aspects" in the kernel.** `kanon-substrate`'s code explicitly lists `kanon-sdd, kanon-testing, kanon-worktrees, …` and looks them up in known paths. **Rejected.** Fastest to ship; absolutely the wrong commitment. Privileges `kanon-` aspects in code paths; cannot accommodate `acme-` substitution; bakes "the seven" assumption into the kernel forever; explicitly contradicts `P-protocol-not-product`.
+5. **Hardcoded "the seven `kanon-` aspects" in the kernel.** `kanon-core`'s code explicitly lists `kanon-sdd, kanon-testing, kanon-worktrees, …` and looks them up in known paths. **Rejected.** Fastest to ship; absolutely the wrong commitment. Privileges `kanon-` aspects in code paths; cannot accommodate `acme-` substitution; bakes "the seven" assumption into the kernel forever; explicitly contradicts `P-protocol-not-product`.
 
 ## Consequences
 
@@ -75,11 +75,11 @@ version = "1.0.0"
 acme-fintech-compliance = "acme_fintech_compliance.kanon:MANIFEST"
 ```
 
-(`kanon-reference` ships its seven aspects analogously, one entry per aspect.) The exact resolver shape — whether the entry-point value points to a callable, a module attribute, or a package — is a Phase A detail; the design doc specifies one option.
+(`kanon-aspects` ships its seven aspects analogously, one entry per aspect.) The exact resolver shape — whether the entry-point value points to a callable, a module attribute, or a package — is a Phase A detail; the design doc specifies one option.
 
 ### Independence invariant
 
-- **CI gate**: a new check (`ci/check_substrate_independence.py` or analogous) installs `kanon-substrate` in a clean venv with no `kanon-reference` and runs the full pytest suite. Pass = green; fail = the kernel has accidentally taken a hard dependency on reference content. Phase A authors this gate.
+- **CI gate**: a new check (`ci/check_substrate_independence.py` or analogous) installs `kanon-core` in a clean venv with no `kanon-aspects` and runs the full pytest suite. Pass = green; fail = the kernel has accidentally taken a hard dependency on reference content. Phase A authors this gate.
 - **Today's reality**: the kernel currently *does* depend on reference content via `_kit_root()` (the kit dir contains the seven `kanon-*` aspects). The independence invariant is a *future* commitment; Phase A's first job is to make the kernel pass the gate. Reaching the gate is the deliverable that completes ADR-0040's runtime intent.
 
 ### Spec amendments
@@ -91,7 +91,7 @@ Both amendments are append-only, no INV body changes.
 
 ### Out of scope (deferred to subsequent Phase 0 ADRs)
 
-- **Wheel split mechanics** — the actual `pyproject.toml` for `kanon-substrate` and `kanon-reference`, version-pinning across the split, release cadence: ADR-0043 (distribution + cadence).
+- **Wheel split mechanics** — the actual `pyproject.toml` for `kanon-core` and `kanon-aspects`, version-pinning across the split, release cadence: ADR-0043 (distribution + cadence).
 - **Realization-shape schema, dialect grammar, composition algebra** (`surface:`, `before/after:`, `replaces:`): ADR-0041.
 - **Verification scope-of-exit-zero broader wording**: ADR-0042.
 - **Substrate self-conformance** as a top-level spec with INVs: ADR-0044.

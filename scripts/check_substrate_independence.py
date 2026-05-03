@@ -1,6 +1,6 @@
 """Substrate-independence gate (per ADR-0044).
 
-Verifies that ``kanon-substrate``'s runtime code does not depend on
+Verifies that ``kanon-core``'s runtime code does not depend on
 ``kanon_reference`` being importable. The substrate's foundational invariant:
 the kernel runs without the reference aspects.
 

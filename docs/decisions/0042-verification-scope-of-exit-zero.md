@@ -33,7 +33,7 @@ This wording is canonical. CLI help text, README, error messages, `acme-` publis
 
 ### 2. Cross-publisher symmetry
 
-The exit-zero claim applies identically across all aspect namespaces — `kanon-`, `project-`, `acme-` — without warranty exemption. A `kanon-testing` aspect from `kanon-reference` and a hypothetical `acme-strict-testing` aspect verify under identical rules; their conformance failures surface identically; their resolutions are validated against identical invariants. The substrate does NOT claim more (or less) for kit-shipped aspects than for third-party aspects.
+The exit-zero claim applies identically across all aspect namespaces — `kanon-`, `project-`, `acme-` — without warranty exemption. A `kanon-testing` aspect from `kanon-aspects` and a hypothetical `acme-strict-testing` aspect verify under identical rules; their conformance failures surface identically; their resolutions are validated against identical invariants. The substrate does NOT claim more (or less) for kit-shipped aspects than for third-party aspects.
 
 This is a downstream consequence of [`P-publisher-symmetry`](../foundations/principles/P-publisher-symmetry.md): the exit-code surface is one of the code paths where namespace asymmetry would be a bug.
 

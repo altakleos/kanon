@@ -12,9 +12,9 @@ Delete the inert `packaging/{substrate,reference,kit}/pyproject.toml` schema-of-
 
 ## Background
 
-ADR-0049 §1(1) commits to "one pyproject per distribution, co-located with its source." The destination shape is a 3-distribution workspace (kanon-substrate, kanon-reference, kanon-kit) with `[tool.uv.workspace]` at the root. Today there is ONE active distribution: `kanon-kit` v0.4.x. The `packaging/<dist>/pyproject.toml` files are schema-of-record for the eventual split but are not built; the active build path is the top-level `pyproject.toml`.
+ADR-0049 §1(1) commits to "one pyproject per distribution, co-located with its source." The destination shape is a 3-distribution workspace (kanon-core, kanon-aspects, kanon-kit) with `[tool.uv.workspace]` at the root. Today there is ONE active distribution: `kanon-kit` v0.4.x. The `packaging/<dist>/pyproject.toml` files are schema-of-record for the eventual split but are not built; the active build path is the top-level `pyproject.toml`.
 
-This PR honors the "kill packaging/" rule by deleting the schema-of-record. The full workspace rearchitecture (3 co-located pyprojects + workspace root) is deferred to the future PR that actually splits the distribution (when `pip install kanon-substrate` becomes a real install path). Deferring keeps PR B at low blast radius while removing the panel-flagged inert artifact.
+This PR honors the "kill packaging/" rule by deleting the schema-of-record. The full workspace rearchitecture (3 co-located pyprojects + workspace root) is deferred to the future PR that actually splits the distribution (when `pip install kanon-core` becomes a real install path). Deferring keeps PR B at low blast radius while removing the panel-flagged inert artifact.
 
 ## Scope
 
@@ -26,7 +26,7 @@ In scope:
 - CHANGELOG entry noting the deletion and the deferral of the workspace rearchitecture.
 
 Out of scope (deferred to future PRs):
-- The actual 3-distribution workspace structure (co-located pyprojects + `[tool.uv.workspace]` root). This lands when `pip install kanon-substrate` becomes a real install need.
+- The actual 3-distribution workspace structure (co-located pyprojects + `[tool.uv.workspace]` root). This lands when `pip install kanon-core` becomes a real install need.
 - Other ADR-0049 migration steps (PR C-F).
 
 ## Acceptance criteria

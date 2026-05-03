@@ -26,7 +26,7 @@ The protocol commitment is not a redirection — it is the path the project alwa
 
 De-opinionation operates at one specific layer: **the substrate makes no assumption about which disciplines a consumer adopts.** Specifically:
 
-- **Audience de-opinionation** (committed): the substrate has no `defaults:`. `kanon init` enables nothing. Reference aspects are de-installable. Recipes (the path to a starter set) are publisher-shipped target-tree YAML, not a kernel feature. A consumer who installs only `kanon-substrate` and runs `kanon init` gets a bare scaffold and a clear next-step prompt. They choose what discipline to adopt.
+- **Audience de-opinionation** (committed): the substrate has no `defaults:`. `kanon init` enables nothing. Reference aspects are de-installable. Recipes (the path to a starter set) are publisher-shipped target-tree YAML, not a kernel feature. A consumer who installs only `kanon-core` and runs `kanon init` gets a bare scaffold and a clear next-step prompt. They choose what discipline to adopt.
 
 - **Protocol opinionation, retained**: the substrate IS opinionated about contract grammar, dialect semantics, capability symmetry, and the public principle set. These are not user choices — they are the publisher-facing protocol. A would-be `acme-X` author relies on the substrate's published guarantees; without them, every authoring decision is reverse-engineered from observed behaviour.
 

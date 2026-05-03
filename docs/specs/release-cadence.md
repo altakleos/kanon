@@ -13,26 +13,26 @@ fixtures_deferred: "Phase A authors the release-cadence CI gate (`scripts/check_
 
 ## Intent
 
-Define the substrate's release cadence policy across three surfaces: kernel (`kanon-substrate`), reference (`kanon-reference`), and dialect (`kanon-dialect: YYYY-MM-DD` artifacts). Cadence separation is what makes the substrate safe for `acme-` publishers: kernel evolution stays fast (daily-alpha permitted), reference evolution stays steady (weekly), dialect evolution stays slow (quarterly minimum) — and breaking changes never ship as kernel releases.
+Define the substrate's release cadence policy across three surfaces: kernel (`kanon-core`), reference (`kanon-aspects`), and dialect (`kanon-dialect: YYYY-MM-DD` artifacts). Cadence separation is what makes the substrate safe for `acme-` publishers: kernel evolution stays fast (daily-alpha permitted), reference evolution stays steady (weekly), dialect evolution stays slow (quarterly minimum) — and breaking changes never ship as kernel releases.
 
 Per [ADR-0043](../decisions/0043-distribution-boundary-and-cadence.md), this spec carries the invariants the kernel and release workflows enforce. The cadence is opinionated by design; round-5 panel: "a breaking dialect change every day would shred any future `acme-` author."
 
 ## Invariants
 
 <!-- INV-release-cadence-kernel-daily-alpha-permitted -->
-1. **Kernel daily-alpha permitted.** `kanon-substrate` MAY ship daily alpha releases under semver. Daily-alpha is the substrate-author's option, not an obligation. Bug fixes, contract validators, CLI ergonomics, structural validator improvements, performance work — all are kernel-cadence work and may ship at daily alpha.
+1. **Kernel daily-alpha permitted.** `kanon-core` MAY ship daily alpha releases under semver. Daily-alpha is the substrate-author's option, not an obligation. Bug fixes, contract validators, CLI ergonomics, structural validator improvements, performance work — all are kernel-cadence work and may ship at daily alpha.
 
 <!-- INV-release-cadence-reference-weekly -->
-2. **Reference ships at weekly cadence.** `kanon-reference` ships at weekly cadence (substrate-author discretion). Reference releases never include kernel-level changes. A change that affects both surfaces (e.g., a new dialect that bumps reference contracts and substrate validators) ships as separate, coordinated releases — kernel ships first; reference ships within the same week.
+2. **Reference ships at weekly cadence.** `kanon-aspects` ships at weekly cadence (substrate-author discretion). Reference releases never include kernel-level changes. A change that affects both surfaces (e.g., a new dialect that bumps reference contracts and substrate validators) ships as separate, coordinated releases — kernel ships first; reference ships within the same week.
 
 <!-- INV-release-cadence-dialect-quarterly-minimum -->
 3. **Dialect ships at quarterly minimum, annual default.** A new dialect version (`kanon-dialect: YYYY-MM-DD` per [`docs/specs/dialect-grammar.md`](dialect-grammar.md) `INV-dialect-grammar-version-format`) ships at quarterly minimum, annual default. Dialect supersession is calendar-driven; an ADR ratifies the new dialect; the new dialect's spec describes what changed relative to its predecessor.
 
 <!-- INV-release-cadence-breaking-not-in-kernel -->
-4. **Breaking changes never ship as kernel releases.** A grammar change, capability-registry semantic change, or any other change that breaks `acme-` publisher bundles authored under a previous dialect MUST ship as a *dialect supersession* (a new ADR + a new dialect spec + the substrate honouring the previous dialect for at least the deprecation horizon), not as a `kanon-substrate` kernel release. The release-cadence CI gate (Phase A) enforces this by failing builds where a kernel release commit touches dialect-grammar files.
+4. **Breaking changes never ship as kernel releases.** A grammar change, capability-registry semantic change, or any other change that breaks `acme-` publisher bundles authored under a previous dialect MUST ship as a *dialect supersession* (a new ADR + a new dialect spec + the substrate honouring the previous dialect for at least the deprecation horizon), not as a `kanon-core` kernel release. The release-cadence CI gate (Phase A) enforces this by failing builds where a kernel release commit touches dialect-grammar files.
 
 <!-- INV-release-cadence-substrate-honours-n-minus-1 -->
-5. **Substrate honours at least N-1 dialects.** At any time, `kanon-substrate` MUST honour at least the current dialect (N) and the previous dialect (N-1). Manifests pinning N-2 or older receive a deprecation warning but still load (per `INV-dialect-grammar-version-format`); manifests pinning a dialect newer than the substrate knows fail at load (per `INV-dialect-grammar-pin-required`). The deprecation horizon is at least 4 quarters; a substrate planning to drop dialect support before 4 quarters elapse must publish an ADR justifying the shorter horizon.
+5. **Substrate honours at least N-1 dialects.** At any time, `kanon-core` MUST honour at least the current dialect (N) and the previous dialect (N-1). Manifests pinning N-2 or older receive a deprecation warning but still load (per `INV-dialect-grammar-version-format`); manifests pinning a dialect newer than the substrate knows fail at load (per `INV-dialect-grammar-pin-required`). The deprecation horizon is at least 4 quarters; a substrate planning to drop dialect support before 4 quarters elapse must publish an ADR justifying the shorter horizon.
 
 ## Rationale
 

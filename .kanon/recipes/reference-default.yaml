@@ -4,13 +4,13 @@
 # use. Schema per docs/design/distribution-boundary.md (per ADR-0043).
 #
 # This recipe is checked into the kanon repo's .kanon/recipes/ as a stand-in for
-# what kanon-reference's installed recipes/ directory will eventually ship (Phase A.1).
+# what kanon-aspects's installed recipes/ directory will eventually ship (Phase A.1).
 schema-version: 1
 recipe-id: reference-default
-publisher: kanon-reference
+publisher: kanon-aspects
 recipe-version: "1.0"
 target-dialect: "2026-05-01"
-description: "Default reference recipe — opts the consumer into all seven kanon-reference aspects at the kanon repo's current self-host depths."
+description: "Default reference recipe — opts the consumer into all seven kanon-aspects aspects at the kanon repo's current self-host depths."
 aspects:
   - id: kanon-sdd
     depth: 3

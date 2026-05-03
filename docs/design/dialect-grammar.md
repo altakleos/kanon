@@ -81,9 +81,9 @@ A future dialect may extend this enumeration; the v1 set is intentionally narrow
 Every aspect manifest declares the dialect at the top level:
 
 ```yaml
-# kanon-reference/aspects/kanon_testing/manifest.yaml
+# kanon-aspects/aspects/kanon_testing/manifest.yaml
 kanon-dialect: 2026-05-01
-publisher: kanon-reference
+publisher: kanon-aspects
 aspect-id: kanon-testing
 # ... rest of aspect manifest ...
 ```

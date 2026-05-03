@@ -52,7 +52,7 @@ The grammar is deliberately minimal â€” six invariants, no further frontmatter â
 
 ## Out of Scope
 
-- **Specific realization-shapes for the seven `kanon-` reference contracts.** These are publisher artifacts (in `kanon-reference`); they conform to the grammar specified here but are not part of the grammar.
+- **Specific realization-shapes for the seven `kanon-` reference contracts.** These are publisher artifacts (in `kanon-aspects`); they conform to the grammar specified here but are not part of the grammar.
 - **Cross-publisher recipe import grammar.** Recipes (publisher-shipped target-tree YAML opting consumers into multiple contracts) are ratified by ADR-0043 (distribution + cadence).
 - **Mechanical migration translators between dialects.** Round-2 panel raised this as a longevity concern; the substrate's commitment is to ratify a future ADR with mechanical translators when a dialect supersession requires it. v0.4 ships one dialect; the translator question lives in the future.
 - **Consumer-side `prefer:` directives** for resolving ambiguous composition. Future ADR territory.

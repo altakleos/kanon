@@ -100,7 +100,7 @@ class _FakeDist:
 
 
 def test_namespace_ownership_kanon_via_kanon_reference_ok() -> None:
-    _validate_namespace_ownership("kanon-foo", _FakeDist("kanon-reference"))
+    _validate_namespace_ownership("kanon-foo", _FakeDist("kanon-aspects"))
 
 
 def test_namespace_ownership_kanon_via_kanon_kit_ok() -> None:
@@ -266,5 +266,5 @@ def test_aspect_path_fails_loudly_without_kanon_reference(
     msg = exc_info.value.message
     assert "kanon_reference is not installed" in msg
     assert "ADR-0044" in msg
-    assert "kanon-kit" in msg or "kanon-reference" in msg
+    assert "kanon-kit" in msg or "kanon-aspects" in msg
 

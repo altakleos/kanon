@@ -1462,7 +1462,7 @@ def migrate(target: Path, dry_run: bool) -> None:
             raise click.ClickException(
                 f"Unknown schema-version: {schema_version}. This kanon only knows how "
                 f"to migrate v3 → v4. To migrate forward from v{schema_version}, install "
-                f"a newer kanon-substrate."
+                f"a newer kanon-core."
             )
 
     # v3 → v4 augmentation: prepend v4 fields.

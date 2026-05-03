@@ -18,7 +18,7 @@ Define the substrate's discipline for proving its own claim. The substrate commi
 
 Three commitments compose into one discipline:
 
-- **Independence**: `kanon-substrate` runs without `kanon-reference`. Forever.
+- **Independence**: `kanon-core` runs without `kanon-aspects`. Forever.
 - **Self-host**: the kanon repo, opting into reference aspects via the publisher recipe, passes `kanon verify .` against itself.
 - **Public CI signal**: the gates enforcing the above are publicly-readable; `acme-` publishers can replicate.
 
@@ -27,10 +27,10 @@ Per [ADR-0044](../decisions/0044-substrate-self-conformance.md), this spec carri
 ## Invariants
 
 <!-- INV-substrate-self-conformance-independence -->
-1. **Substrate-independence.** `kanon-substrate`'s test suite passes when run in a clean Python environment with no `kanon-reference` installed and no `kanon.aspects` entry-points visible. This invariant is permanent — every kernel-version-bump commit on the substrate's main branch must satisfy it. Failure is P0; the kernel does not ship without independence green.
+1. **Substrate-independence.** `kanon-core`'s test suite passes when run in a clean Python environment with no `kanon-aspects` installed and no `kanon.aspects` entry-points visible. This invariant is permanent — every kernel-version-bump commit on the substrate's main branch must satisfy it. Failure is P0; the kernel does not ship without independence green.
 
 <!-- INV-substrate-self-conformance-self-host-passes -->
-2. **Self-host passes.** The kanon repo (this repo) opts into reference aspects via the `kanon-reference`-shipped recipe and passes `kanon verify .` against itself on every kernel-version-bump commit. Self-host is the substrate's primary correctness probe under vision-led design; failures are P1.
+2. **Self-host passes.** The kanon repo (this repo) opts into reference aspects via the `kanon-aspects`-shipped recipe and passes `kanon verify .` against itself on every kernel-version-bump commit. Self-host is the substrate's primary correctness probe under vision-led design; failures are P1.
 
 <!-- INV-substrate-self-conformance-recipe-opt-in -->
 3. **Self-host opt-in is recipe-mediated.** The kanon repo's `.kanon/config.yaml` declares aspects via a publisher recipe with `provenance:` recording attribution (per [ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) self-host commitment and [ADR-0043](../decisions/0043-distribution-boundary-and-cadence.md) recipe artifact). No kernel-side carve-out treats the kanon repo specially; it opts in like any other consumer.
@@ -39,7 +39,7 @@ Per [ADR-0044](../decisions/0044-substrate-self-conformance.md), this spec carri
 4. **Independence gate is publicly-readable.** The substrate's CI workflow runs `scripts/check_substrate_independence.py` (per [ADR-0040](../decisions/0040-kernel-reference-runtime-interface.md) design) on every PR and merge-to-main. Workflow logs are public; results visible to anyone reading the substrate's repo. Closed-source CI is a violation.
 
 <!-- INV-substrate-self-conformance-replicable -->
-5. **Independence gate is replicable.** The gate's algorithm is documented sufficient that any publisher (including `acme-` authors) can run it against their own bundles and claim substrate-conformance. Independence is not a private property of `kanon-substrate`; it's a published technique.
+5. **Independence gate is replicable.** The gate's algorithm is documented sufficient that any publisher (including `acme-` authors) can run it against their own bundles and claim substrate-conformance. Independence is not a private property of `kanon-core`; it's a published technique.
 
 ## Rationale
 

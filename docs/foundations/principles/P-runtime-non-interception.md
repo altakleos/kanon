@@ -24,7 +24,7 @@ The substrate refuses runtime supervision and accepts the cost: agents that igno
 ## Implications
 
 - **No agent-harness adapters.** The substrate ships no code that runs inside any harness's tool-call path. Cross-harness reach is achieved through `harnesses.yaml` shim files (pointers, not interceptors).
-- **No session daemons.** The substrate has no long-running process. `kanon` is invoked, runs, exits. No background watcher, no pre-commit-time agent-monitor, no MCP server **shipped by `kanon-substrate`**. Consumers may install MCP integrations of their own; the substrate does not require, ship, or supervise any.
+- **No session daemons.** The substrate has no long-running process. `kanon` is invoked, runs, exits. No background watcher, no pre-commit-time agent-monitor, no MCP server **shipped by `kanon-core`**. Consumers may install MCP integrations of their own; the substrate does not require, ship, or supervise any.
 - **No tool-call filters.** The substrate does not validate, transform, or block tool calls an agent makes inside a harness.
 - **Gates are forced-token sentences, not interceptions.** Audit-trail sentences (per `P-prose-is-code`) are the enforcement mechanism: their absence in a transcript is how violations get caught, after the fact.
 - **`kanon verify` is read-only against committed evidence.** It examines committed `.dogfood.md` captures, manifests, and resolutions; it does not invoke an agent or replay a session.

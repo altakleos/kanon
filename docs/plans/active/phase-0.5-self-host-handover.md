@@ -37,7 +37,7 @@ New file. Schema per [`docs/design/distribution-boundary.md`](../../design/distr
 ```yaml
 schema-version: 1
 recipe-id: reference-default
-publisher: kanon-reference
+publisher: kanon-aspects
 recipe-version: "1.0"
 target-dialect: "2026-05-01"
 description: "Default reference recipe..."
@@ -63,7 +63,7 @@ aspects:
     depth: 1
 ```
 
-This recipe is checked into the kanon repo's `.kanon/recipes/`. Phase A.1 (distribution split) will move the canonical version into the `kanon-reference` package's `recipes/` directory; the file in `.kanon/recipes/` remains as the consumer-side opt-in artifact.
+This recipe is checked into the kanon repo's `.kanon/recipes/`. Phase A.1 (distribution split) will move the canonical version into the `kanon-aspects` package's `recipes/` directory; the file in `.kanon/recipes/` remains as the consumer-side opt-in artifact.
 
 #### B. `.kanon/config.yaml` augmentation
 
@@ -75,7 +75,7 @@ schema-version: 4
 kanon-dialect: "2026-05-01"
 provenance:
   - recipe: reference-default
-    publisher: kanon-reference
+    publisher: kanon-aspects
     recipe-version: "1.0"
     applied_at: "2026-05-01T00:00:00+00:00"
 
@@ -101,7 +101,7 @@ One paragraph under `## [Unreleased]` § Changed (this is user-visible substrate
 
 - **Phase A deletions.** This plan ships Phase 0.5 *only*; Phase A.1 onward follows in subsequent plans.
 - **Kit-side parser changes.** The current `_read_config()` is unchanged; Phase A.3 deletes the v3 reader. Phase 0.5 only writes the new file shape.
-- **`kanon-reference` package authoring.** Phase A.1 territory. The recipe file in `.kanon/recipes/` is a stand-in for what `kanon-reference`'s `recipes/` directory will eventually ship.
+- **`kanon-aspects` package authoring.** Phase A.1 territory. The recipe file in `.kanon/recipes/` is a stand-in for what `kanon-aspects`'s `recipes/` directory will eventually ship.
 - **Migration script.** Phase A.9 territory.
 - **No new ADR, spec, design, or principle.**
 

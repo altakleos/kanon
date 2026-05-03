@@ -120,7 +120,7 @@ def _load_aspect_registry(target: Path | None = None) -> dict[str, Any]:
 
 Per ADR-0040 §5: an entry-point may only register aspect slugs in its distribution's namespace. Rules:
 
-- `kanon-*` slugs require dist name `kanon-reference` OR `kanon-kit` (transitional, while top-level pyproject is `kanon-kit`).
+- `kanon-*` slugs require dist name `kanon-aspects` OR `kanon-kit` (transitional, while top-level pyproject is `kanon-kit`).
 - `project-*` slugs are forbidden via entry-points (must come from `<target>/.kanon/aspects/`).
 - `acme-*` slugs are allowed; loose validation (warning, not error) until ADR-0028's `acme-` grammar is fully ratified.
 - Unknown namespaces → warning.

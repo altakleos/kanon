@@ -9,7 +9,7 @@ design: "No new design surface — Phase A authors `scripts/check_substrate_inde
 
 ## Context
 
-The sixth Phase 0 ADR. ADR-0040 introduced the **independence invariant** as a single bullet inside the kernel/reference runtime interface decision: "the substrate's test suite must pass with `kanon-reference` uninstalled." Round-5 panel (architect, critic, code-reviewer, verifier) all converged on this as load-bearing — without it, the de-opinionation commitment is words on paper.
+The sixth Phase 0 ADR. ADR-0040 introduced the **independence invariant** as a single bullet inside the kernel/reference runtime interface decision: "the substrate's test suite must pass with `kanon-aspects` uninstalled." Round-5 panel (architect, critic, code-reviewer, verifier) all converged on this as load-bearing — without it, the de-opinionation commitment is words on paper.
 
 ADR-0044 elevates the independence invariant from a downstream consequence of ADR-0040 to a top-level **substrate self-conformance discipline** with its own ADR, its own spec, and its own permanent CI gate. The substrate's "kernel-as-product, reference-as-demonstration" identity is exactly what this discipline enforces in code paths.
 
@@ -17,7 +17,7 @@ This ADR is small in code-impact (the CI gate is Phase A; this PR is documentati
 
 Three coupled commitments:
 
-1. **Substrate-independence as permanent invariant.** `kanon-substrate`'s test suite passes with `kanon-reference` uninstalled. Forever. Future kernel work must preserve this.
+1. **Substrate-independence as permanent invariant.** `kanon-core`'s test suite passes with `kanon-aspects` uninstalled. Forever. Future kernel work must preserve this.
 2. **Self-host as primary correctness probe** (per the foundations rewrite). The kanon repo is its own first consumer; the substrate's correctness is measured against this repo's own state.
 3. **The substrate's CI publishes self-conformance as a public signal.** Future `acme-` publishers can verify the substrate's independence claim by running the gate themselves.
 
@@ -40,7 +40,7 @@ Land a single self-contained PR that:
 
 - **Context** — why elevate independence from ADR-0040 bullet to top-level ADR; references to round-5 panel convergence; the foundations rewrite's "self-hosting as falsification" framing.
 - **Decision** — three numbered claims:
-  1. Independence invariant: `kanon-substrate` tests pass with `kanon-reference` uninstalled — permanent, not Phase A milestone.
+  1. Independence invariant: `kanon-core` tests pass with `kanon-aspects` uninstalled — permanent, not Phase A milestone.
   2. Self-host probe: the kanon repo's CI runs `kanon verify .` against itself, including with reference aspects opted-in via the publisher recipe per ADR-0048's self-host commitment.
   3. CI-gate visibility: the substrate-independence gate's status is publicly readable; future `acme-` publishers can replicate the gate against their own bundles.
 - **Alternatives Considered** — at least 4 (independence as ADR-0040 bullet only; independence as Phase A milestone only; substrate self-conformance via informal review; integrate into ADR-0042 verification scope).
@@ -56,7 +56,7 @@ Sections:
 - Frontmatter with `realizes:` (`P-self-hosted-bootstrap`, `P-protocol-not-product`, `P-publisher-symmetry`).
 - **Definition** — what substrate self-conformance IS (substrate-independence + self-host-probe + public-signal).
 - **Invariants** with anchor IDs:
-  - `INV-substrate-self-conformance-independence`: `kanon-substrate` tests pass with no `kanon-reference` installed and no `kanon.aspects` entry-points visible.
+  - `INV-substrate-self-conformance-independence`: `kanon-core` tests pass with no `kanon-aspects` installed and no `kanon.aspects` entry-points visible.
   - `INV-substrate-self-conformance-self-host-passes`: the kanon repo passes `kanon verify .` on every kernel-version-bump commit.
   - `INV-substrate-self-conformance-recipe-opt-in`: the kanon repo's `.kanon/config.yaml` opts into reference aspects via a publisher recipe with `provenance:` recording attribution; no kernel-side privilege.
   - `INV-substrate-self-conformance-gate-public`: the substrate-independence CI gate runs in a publicly-readable workflow; results are visible to anyone reading the substrate's repo.

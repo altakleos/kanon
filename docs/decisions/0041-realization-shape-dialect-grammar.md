@@ -57,7 +57,7 @@ The substrate is publisher-blind during composition: a `kanon-testing` contract 
 
 2. **Per-aspect schemas instead of per-contract.** A `kanon-testing` aspect ships one schema covering all its contracts. **Rejected.** Under the substrate's "every contract is independently substitutable" promise (per `P-publisher-symmetry`), per-aspect schemas re-couple contracts to their aspect of origin. A future `acme-strict-testing` aspect substituting only one contract would inherit unwanted shape constraints from `kanon-testing`'s aspect-level schema. Per-contract is the right granularity.
 
-3. **No dialect versioning; all grammar changes are breaking.** Substrate evolution simply breaks publishers; consumers re-resolve. **Rejected.** This collapses the substrate's "publishers can author against stable guarantees" commitment (per ADR-0048). With zero dialect versioning, every `kanon-substrate` release is a potential `acme-` ecosystem extinction event. Dialect-versioning + N-1 honouring lets the substrate evolve without breaking the world.
+3. **No dialect versioning; all grammar changes are breaking.** Substrate evolution simply breaks publishers; consumers re-resolve. **Rejected.** This collapses the substrate's "publishers can author against stable guarantees" commitment (per ADR-0048). With zero dialect versioning, every `kanon-core` release is a potential `acme-` ecosystem extinction event. Dialect-versioning + N-1 honouring lets the substrate evolve without breaking the world.
 
 4. **Semver dialect versioning** (`kanon-dialect: 1.2.3`). **Rejected.** Semver has clean meaning for software (major = breaking, minor = additive, patch = fix); applied to prose grammar, the major/minor/patch distinctions are ambiguous (is "removing a frontmatter field" major or minor? what counts as additive when the field accepts new enum values?). Date-stamping side-steps the ambiguity: each dialect is a snapshot; differences between dialects are recorded in the next dialect's spec. The Markdown ecosystem's CommonMark series uses an analogous date-versioning scheme.
 
@@ -74,7 +74,7 @@ The substrate is publisher-blind during composition: a `kanon-testing` contract 
 
 ### Publisher-side
 
-- **Reference aspects ship `realization-shape:` frontmatter on every contract** (Phase A: a discrete pass through `kanon-reference`'s contract files).
+- **Reference aspects ship `realization-shape:` frontmatter on every contract** (Phase A: a discrete pass through `kanon-aspects`'s contract files).
 - **Publishers declare `kanon-dialect:` in every aspect manifest**. Migration: Phase A bumps every existing manifest to the v0.4 baseline dialect (date TBD by Phase A; likely `kanon-dialect: 2026-05-01`).
 
 ### Verification
@@ -87,7 +87,7 @@ The substrate is publisher-blind during composition: a `kanon-testing` contract 
 - **Distribution boundary mechanics** — ADR-0043.
 - **Substrate self-conformance** — ADR-0044.
 - **De-opinionation transition** — ADR-0045.
-- **Specific realization-shapes for the seven `kanon-` reference contracts** — those are publisher artifacts ratified by `kanon-reference`'s release.
+- **Specific realization-shapes for the seven `kanon-` reference contracts** — those are publisher artifacts ratified by `kanon-aspects`'s release.
 - **`acme-` publisher onboarding documentation** — Phase B.
 
 ## Config Impact

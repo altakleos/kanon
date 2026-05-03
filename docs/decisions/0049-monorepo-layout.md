@@ -6,7 +6,7 @@ date: 2026-05-02
 
 ## Context
 
-[ADR-0048](0048-kanon-as-protocol-substrate.md) committed kanon to a protocol-substrate shape. [ADR-0043](0043-distribution-boundary-and-cadence.md) committed to a three-distribution split (`kanon-substrate` + `kanon-reference` + `kanon-kit`). [ADR-0044](0044-substrate-self-conformance.md) committed to substrate-independence + self-host conformance. The Phase A implementation (PRs #61–85, v0.4.0a1–v0.4.0a3) carried each commitment into running code.
+[ADR-0048](0048-kanon-as-protocol-substrate.md) committed kanon to a protocol-substrate shape. [ADR-0043](0043-distribution-boundary-and-cadence.md) committed to a three-distribution split (`kanon-core` + `kanon-aspects` + `kanon-kit`). [ADR-0044](0044-substrate-self-conformance.md) committed to substrate-independence + self-host conformance. The Phase A implementation (PRs #61–85, v0.4.0a1–v0.4.0a3) carried each commitment into running code.
 
 What none of those ADRs ratified is the **filesystem layout** by which the substrate, the reference aspects, the meta-package, and the substrate's own self-host opt-in coexist in a single git repository. The layout was chosen incrementally during Phase A.7's substrate-content-move sub-plan: substrate at `src/kanon/`; reference data extracted to `src/kanon_reference/data/`; reference loader stubs at `src/kanon_reference/aspects/kanon_<slug>.py`; per-wheel pyprojects schematised at `packaging/{substrate,reference,kit}/pyproject.toml` (schema-of-record only — top-level `pyproject.toml` is the active build); standalone CI gates at top-level `ci/`; `.kanon/` at the repo root holding the substrate's own self-host opt-in (a byte-for-byte mirror of `src/kanon_reference/data/<slug>/protocols/`, enforced by `ci/check_kit_consistency.py`).
 
@@ -94,7 +94,7 @@ Each PR is independently green-able and `git revert`-able. Total estimated effor
 
 ### Distribution boundary (ADR-0043)
 
-- **The three-wheel split (kanon-substrate / kanon-reference / kanon-kit) ratified in ADR-0043 maps to three top-level directories: `kernel/` / `aspects/` / `kit-meta/`.** Each carries its own `pyproject.toml`. This makes ADR-0043's distribution boundary structurally visible — a contributor doesn't need to read three `pyproject.toml` headers to know which wheel a file ships in; the directory tells them.
+- **The three-wheel split (kanon-core / kanon-aspects / kanon-kit) ratified in ADR-0043 maps to three top-level directories: `kernel/` / `aspects/` / `kit-meta/`.** Each carries its own `pyproject.toml`. This makes ADR-0043's distribution boundary structurally visible — a contributor doesn't need to read three `pyproject.toml` headers to know which wheel a file ships in; the directory tells them.
 - **Schema-of-record is eliminated.** Today's `packaging/{substrate,reference,kit}/pyproject.toml` are "future canonical" but inert. Moving them into the actual build path makes the canonical pyprojects also the active ones.
 
 ### CI + tests

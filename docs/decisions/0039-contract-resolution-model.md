@@ -50,7 +50,7 @@ The shape of the answer is **late binding via prose-contract resolution**: prose
 
 ### Substrate-level
 
-- **`kanon-substrate` ships a resolution-replay engine** (no resolver, no LLM client, no LLM cost in CI). Phase A authors `_resolutions.py` (~280 LOC) implementing replay, stale-detection, hand-edit detection, and the JSON report shape `kanon verify` consumes.
+- **`kanon-core` ships a resolution-replay engine** (no resolver, no LLM client, no LLM cost in CI). Phase A authors `_resolutions.py` (~280 LOC) implementing replay, stale-detection, hand-edit detection, and the JSON report shape `kanon verify` consumes.
 - **`kanon resolve` is a developer-machine CLI verb.** It reads contracts, invokes the agent (via the consumer's available LLM harness), writes `.kanon/resolutions.yaml`. Phase A authors this. The kernel does not bundle an LLM client; `kanon resolve` is a thin layer that hands off to whichever harness the consumer has installed.
 - **`kanon resolutions explain` is a developer-machine CLI verb.** Reports why a contract is enabled, which evidence the resolution cited, which publisher attribution applies. Phase A authors this.
 - **`kanon verify` gains a resolution-conformance check.** Per the new INV-11 in `verification-contract.md` (added in this PR): `kanon verify` exit-0 includes "no resolution's structural shape is invalid; no resolution is stale against committed evidence".
@@ -71,10 +71,10 @@ The shape of the answer is **late binding via prose-contract resolution**: prose
 - **Composition algebra** (`surface:`, `before/after:` ordering across contracts targeting the same execution surface, `replaces:` substitution): ADR-0041 (realization-shape + grammar).
 - **Realization-shape schema** (per-contract frontmatter declaring allowed verbs, evidence kinds, stage keys): ADR-0041.
 - **Dialect grammar versioning** (`kanon-dialect:` pin; date-stamped immutable artifacts; deprecation horizon): ADR-0041.
-- **Kernel/reference runtime interface** (how `kanon-substrate` discovers `kanon-reference` aspects via Python entry-points): ADR-0040.
+- **Kernel/reference runtime interface** (how `kanon-core` discovers `kanon-aspects` aspects via Python entry-points): ADR-0040.
 - **Verification scope-of-exit-zero broader wording** (the public claim `kanon verify` makes about consumer-discipline correctness): ADR-0042.
-- **Distribution boundary** (`kanon-substrate` / `kanon-reference` / `kanon-kit` meta-alias; release cadence): ADR-0043.
-- **Substrate self-conformance** (CI gate that builds the kernel without `kanon-reference` and runs the full test suite): ADR-0044.
+- **Distribution boundary** (`kanon-core` / `kanon-aspects` / `kanon-kit` meta-alias; release cadence): ADR-0043.
+- **Substrate self-conformance** (CI gate that builds the kernel without `kanon-aspects` and runs the full test suite): ADR-0044.
 - **De-opinionation transition** (the migration commit sequence; `defaults:` removal; `_detect.py` deletion): ADR-0045.
 
 ### No reverse compatibility

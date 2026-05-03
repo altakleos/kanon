@@ -51,10 +51,10 @@ Land a single self-contained PR that:
   - **Phase A.5**: Bare-name CLI sugar deprecated with shim (one-cycle deprecation).
   - **Phase A.6**: Resolution engine (`_resolutions.py`), dialect parser (`_dialects.py`), composition resolver (`_composition.py`) authored.
   - **Phase A.7**: `kanon resolve`, `kanon resolutions check`, `kanon resolutions explain`, `kanon contracts validate` CLI verbs authored.
-  - **Phase A.8**: All four scaffolded `scripts/check_*.py` files retired from `kanon-reference`'s scaffolded files; consumer-side equivalents remain in the kanon repo as authored realizations (per the protocol-substrate's "kit teaches; consumer realizes; agent binds" model).
+  - **Phase A.8**: All four scaffolded `scripts/check_*.py` files retired from `kanon-aspects`'s scaffolded files; consumer-side equivalents remain in the kanon repo as authored realizations (per the protocol-substrate's "kit teaches; consumer realizes; agent binds" model).
   - **Phase A.9**: `kanon migrate v0.3 → v0.4` script lands; deprecated-on-arrival.
 - **Alternatives Considered** — at least 4 (deletions before hand-over; informal ordering; backward-compat shims for v0.3.x; defer transition to v1.0).
-- **Consequences** — what changes for Phase A's PR sequencing; for the substrate-independence gate's expected first-run-red status; for `kanon-substrate==1.0.0a1` shipping as a hard cut.
+- **Consequences** — what changes for Phase A's PR sequencing; for the substrate-independence gate's expected first-run-red status; for `kanon-core==1.0.0a1` shipping as a hard cut.
 - **Config Impact** — `.kanon/config.yaml` v3 → v4 migration is the kanon repo's first lived event; downstream consumers (none today) would migrate via the script.
 - **References** — ADR-0048 (commitment), ADR-0040 (interface), ADR-0043 (distribution + migration design), ADR-0044 (self-conformance gate), the de-opinionation manifesto.
 

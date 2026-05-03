@@ -31,7 +31,7 @@ Under the protocol-substrate commitment ([ADR-0048](../../decisions/0048-kanon-a
 - **Context-budget pressure.** The agent's attention drops sharply past ~600 tokens of actionable instruction. The process gates must fit in the high-attention zone of `AGENTS.md`.
 - **Forgery pressure.** The audit-trail sentence must be designed such that emitting it falsely is harder than planning correctly. The binary opener (plan-path OR trivial-claim) is the current design.
 - **Aspect discovery.** The agent must be able to determine which aspects are enabled at which depths, and which contracts they bring, without scanning the full project tree. The `protocols-index` marker section in `AGENTS.md` and per-aspect README files satisfy this.
-- **Substrate vs reference distinction.** The agent must understand that the substrate enables protocols but does not invent them; reference aspects ship the prose. A bare `kanon-substrate` install with no aspects enabled produces an `AGENTS.md` that says so explicitly, so the agent does not hallucinate gates that aren't active.
+- **Substrate vs reference distinction.** The agent must understand that the substrate enables protocols but does not invent them; reference aspects ship the prose. A bare `kanon-core` install with no aspects enabled produces an `AGENTS.md` that says so explicitly, so the agent does not hallucinate gates that aren't active.
 
 ## What does NOT stress the substrate
 

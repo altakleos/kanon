@@ -6,7 +6,7 @@ date: 2026-05-01
 
 ## Context
 
-[ADR-0040](0040-kernel-reference-runtime-interface.md) introduced the *independence invariant* as a single bullet inside the kernel/reference runtime interface decision: "the substrate's test suite must pass with `kanon-reference` uninstalled." Round-5 panel review converged on this as load-bearing — three reviewers (architect, critic, code-reviewer) and the verifier independently flagged it as the operational signal that proves the de-opinionation commitment in code paths.
+[ADR-0040](0040-kernel-reference-runtime-interface.md) introduced the *independence invariant* as a single bullet inside the kernel/reference runtime interface decision: "the substrate's test suite must pass with `kanon-aspects` uninstalled." Round-5 panel review converged on this as load-bearing — three reviewers (architect, critic, code-reviewer) and the verifier independently flagged it as the operational signal that proves the de-opinionation commitment in code paths.
 
 ADR-0044 elevates the independence invariant from a downstream consequence of ADR-0040 to a top-level **substrate self-conformance discipline** with its own ADR, its own spec, and its own permanent CI gate. The substrate's "kernel-as-product, reference-as-demonstration" identity (per [ADR-0048](0048-kanon-as-protocol-substrate.md)) is exactly what this discipline enforces.
 
@@ -24,9 +24,9 @@ Three numbered ratifications:
 
 ### 1. Substrate-independence is a permanent invariant
 
-`kanon-substrate`'s test suite passes when run in a clean Python environment with no `kanon-reference` installed and no `kanon.aspects` entry-points visible. This invariant is permanent — not a Phase A milestone — and applies to every kernel-version-bump commit on the substrate's main branch.
+`kanon-core`'s test suite passes when run in a clean Python environment with no `kanon-aspects` installed and no `kanon.aspects` entry-points visible. This invariant is permanent — not a Phase A milestone — and applies to every kernel-version-bump commit on the substrate's main branch.
 
-The invariant's machinery: a CI gate (`ci/check_substrate_independence.py` per [ADR-0040](0040-kernel-reference-runtime-interface.md)'s companion design) runs on every PR and every merge-to-main against `kanon-substrate`. Phase A authors the gate; this ADR ratifies that the gate is part of the substrate's *permanent* CI surface, not a one-time Phase A check.
+The invariant's machinery: a CI gate (`ci/check_substrate_independence.py` per [ADR-0040](0040-kernel-reference-runtime-interface.md)'s companion design) runs on every PR and every merge-to-main against `kanon-core`. Phase A authors the gate; this ADR ratifies that the gate is part of the substrate's *permanent* CI surface, not a one-time Phase A check.
 
 Failure of the gate is a P0 substrate halt. Future kernel work that breaks independence — accidentally importing reference-aspect content from kernel code, hardcoding aspect names in non-data paths, regressing the entry-point discovery — is rejected before merge.
 
@@ -52,7 +52,7 @@ This is what makes the independence claim a *credible commitment*. Without publi
 
 3. **Substrate self-conformance via informal review.** Reviewers check independence on every PR; no automated gate. **Rejected.** The substrate's contribution model is a single maintainer with multiple LLM-agent worktrees (per the `solo-with-agents` persona). Informal review is unreliable at multi-agent cadence; an automated gate is the only credible enforcement.
 
-4. **Integrate into ADR-0042 verification scope-of-exit-zero.** ADR-0042 already speaks to what `kanon verify` certifies; extend it to substrate-independence. **Rejected.** ADR-0042 is the *consumer-facing claim* (what exit-0 means for *consumers*). ADR-0044's discipline is the *substrate-author-facing claim* (what `kanon-substrate`'s own CI gates ensure). Different audiences, different normative surfaces; merging would obscure both.
+4. **Integrate into ADR-0042 verification scope-of-exit-zero.** ADR-0042 already speaks to what `kanon verify` certifies; extend it to substrate-independence. **Rejected.** ADR-0042 is the *consumer-facing claim* (what exit-0 means for *consumers*). ADR-0044's discipline is the *substrate-author-facing claim* (what `kanon-core`'s own CI gates ensure). Different audiences, different normative surfaces; merging would obscure both.
 
 ## Consequences
 
