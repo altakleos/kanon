@@ -52,6 +52,7 @@ packages = ["kernel", "src/kanon_reference"]
 [tool.hatch.build.targets.sdist]
 include = [
     "kernel",
+    "src/kanon_reference",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",
