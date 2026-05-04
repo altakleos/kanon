@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-05-04
 ---
 # ADR-0061: DAG-driven verification — the graph as verification substrate
