@@ -74,6 +74,7 @@ depth-2:
   validators:
     - kanon_core._validators.link_check
     - kanon_core._validators.adr_immutability
+    - kanon_core._validators.foundations_coherence
 
 depth-3:
   files:
