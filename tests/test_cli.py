@@ -36,7 +36,7 @@ _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
     2: {
         "tier-up-advisor.md", "verify-triage.md", "completion-checklist.md",
         "scope-check.md", "plan-before-build.md", "spec-review.md",
-        "spec-before-design.md",
+        "spec-before-design.md", "adr-immutability.md",
     },
     3: {
         "tier-up-advisor.md",
@@ -423,7 +423,7 @@ _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
     2: {
         "tier-up-advisor.md", "verify-triage.md", "completion-checklist.md",
         "scope-check.md", "plan-before-build.md", "spec-review.md",
-        "spec-before-design.md",
+        "spec-before-design.md", "adr-immutability.md",
     },
     3: {
         "tier-up-advisor.md",
