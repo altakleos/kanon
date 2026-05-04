@@ -1,4 +1,13 @@
 kanon-dialect: "2026-05-01"
+stability: stable
+depth-range: [0, 3]
+default-depth: 1
+description: "Spec-Driven Development: plans, specs, design docs"
+requires: []
+provides:
+  - planning-discipline
+  - spec-discipline
+suggests: []
 # Per-aspect sub-manifest for `sdd` — tier content at each depth of the SDD aspect.
 #
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.

@@ -1,4 +1,12 @@
 kanon-dialect: "2026-05-01"
+stability: experimental
+depth-range: [0, 2]
+default-depth: 1
+description: "Release checklist, preflight, and CLI gate"
+requires: []
+provides:
+  - release-discipline
+suggests: []
 # Release aspect — disciplined release publishing.
 # Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + automation.
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N.

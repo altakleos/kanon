@@ -1,5 +1,10 @@
 # Kanon kit manifest — aspect registry (v0.3 shape).
 #
+# NOTE (ADR-0055): Per-aspect registry fields (stability, depth-range,
+# default-depth, description, requires, provides, suggests) are now canonical
+# in each aspect's own manifest.yaml. This file is retained for backward
+# compatibility; the entry-point MANIFEST is the single source of truth.
+#
 # Each top-level entry under `aspects:` declares one opt-in discipline the kit
 # packages. Per-aspect file/protocol/section membership lives in each aspect's
 # own sub-manifest at kernel/kit/aspects/<name>/manifest.yaml.

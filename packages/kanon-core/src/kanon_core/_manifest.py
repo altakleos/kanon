@@ -641,30 +641,35 @@ def _validate_validators_field(sub_path: Path, validators: Any) -> None:
 
 @cache
 def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
-    """Load the aspect's per-aspect ``manifest.yaml``.
+    """Load the aspect's per-aspect manifest.
 
-    For kit-aspects the file lives at ``kernel/kit/aspects/<aspect>/manifest.yaml``.
-    For project-aspects the file lives at ``<target>/.kanon/aspects/<aspect>/manifest.yaml``
-    (resolved via the active overlay set by :func:`_load_aspect_registry`).
+    For kanon-* aspects (ADR-0055): the entry-point dict already contains the
+    full unified manifest (registry + content fields), so return it directly.
+    For project-aspects: read ``manifest.yaml`` from disk as before.
     """
     entry = _aspect_entry(aspect)
     if entry is None:
         raise click.ClickException(f"Unknown aspect: {aspect!r}.")
-    sub_path = _aspect_path(aspect) / "manifest.yaml"
-    if not sub_path.is_file():
-        raise click.ClickException(f"aspect sub-manifest missing: {sub_path}")
-    data: dict[str, Any] = _load_yaml(sub_path)
+    # kanon-* aspects: entry-point MANIFEST is the single source of truth (ADR-0055).
+    if aspect.startswith(f"{_KANON_NAMESPACE}-"):
+        data = dict(entry)
+    else:
+        sub_path = _aspect_path(aspect) / "manifest.yaml"
+        if not sub_path.is_file():
+            raise click.ClickException(f"aspect sub-manifest missing: {sub_path}")
+        data = _load_yaml(sub_path)
+    source_label = f"<entry-point {aspect}>" if aspect.startswith(f"{_KANON_NAMESPACE}-") else str(_aspect_path(aspect) / "manifest.yaml")
     min_d, max_d = _aspect_depth_range(aspect)
     for d in range(min_d, max_d + 1):
         key = f"depth-{d}"
         if key not in data:
-            raise click.ClickException(f"{sub_path}: missing {key!r} entry.")
+            raise click.ClickException(f"{source_label}: missing {key!r} entry.")
         if not isinstance(data[key], dict):
-            raise click.ClickException(f"{sub_path}: {key} must be a mapping.")
+            raise click.ClickException(f"{source_label}: {key} must be a mapping.")
     if "config-schema" in data:
-        _validate_config_schema(sub_path, data["config-schema"])
+        _validate_config_schema(Path(source_label), data["config-schema"])
     if "validators" in data:
-        _validate_validators_field(sub_path, data["validators"])
+        _validate_validators_field(Path(source_label), data["validators"])
     return data
 
 
