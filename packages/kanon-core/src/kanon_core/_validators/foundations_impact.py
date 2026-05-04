@@ -7,11 +7,12 @@ Also flags broken references (slugs that resolve to no existing file).
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import yaml
 
 
-def _parse_frontmatter(path: Path) -> dict | None:
+def _parse_frontmatter(path: Path) -> dict[str, Any] | None:
     """Return parsed YAML frontmatter or None."""
     try:
         text = path.read_text(encoding="utf-8")
