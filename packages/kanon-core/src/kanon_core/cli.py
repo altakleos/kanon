@@ -449,7 +449,6 @@ def verify(target: Path) -> None:
         check_fidelity_lock,
         check_required_files,
         check_verified_by,
-        run_kit_validators,
         run_project_validators,
     )
 
@@ -497,29 +496,18 @@ def verify(target: Path) -> None:
         spec_sha_fn=_spec_sha, accepted_specs_fn=_accepted_or_draft_specs,
     )
     check_verified_by(target, aspects.get("kanon-sdd", 0), warnings)
-    # Kit-aspect validators: trusted code, runs from the installed package.
-    # Depth-gated via depth-N: validators: entries in aspect sub-manifests.
-    run_kit_validators(target, aspects, errors, warnings)
-
-    # DAG-driven verification (ADR-0061): graph-based relationship checks
-    # with impact chains. Runs alongside legacy validators during migration.
-    try:
-        from kanon_core._graph import build_graph
-        from kanon_core._dag_verify import run_dag_verify, format_findings
-        from kanon_core._handlers import register_all_handlers
-        register_all_handlers()
-        graph = build_graph(target)
-        dag_findings = run_dag_verify(target, graph, full=True)
-        dag_errors, dag_warnings = format_findings(dag_findings)
-        # Merge DAG findings, deduplicating against legacy findings
-        for e in dag_errors:
-            if e not in errors:
-                errors.append(e)
-        for w in dag_warnings:
-            if w not in warnings:
-                warnings.append(w)
-    except Exception:
-        pass  # DAG engine is additive; failures don't block legacy verify
+    # Kit-aspect validators: now handled by the DAG engine (ADR-0061).
+    # The DAG builds the artifact graph, walks downstream from changed
+    # nodes, and dispatches node/edge handlers that wrap the same validators.
+    from kanon_core._graph import build_graph
+    from kanon_core._dag_verify import run_dag_verify, format_findings
+    from kanon_core._handlers import register_all_handlers
+    register_all_handlers()
+    graph = build_graph(target)
+    dag_findings = run_dag_verify(target, graph, full=True)
+    dag_errors, dag_warnings = format_findings(dag_findings)
+    errors.extend(dag_errors)
+    warnings.extend(dag_warnings)
 
     # Per docs/specs/verification-contract.md INV-10 (carve-out from INV-9,
     # ratified by ADR-0029): fidelity-fixture replay runs only when an
