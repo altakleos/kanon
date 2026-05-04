@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-05-04
 ---
 # ADR-0055: Manifest unification — YAML as single source of truth
