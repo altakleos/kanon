@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 date: 2026-05-04
 ---
 # ADR-0056: Close SDD protocol gaps — ADR authoring gate and design-before-plan gate

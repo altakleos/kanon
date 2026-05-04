@@ -31,11 +31,11 @@ _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
     0: set(),
     1: {
         "tier-up-advisor.md", "verify-triage.md", "completion-checklist.md",
-        "scope-check.md", "plan-before-build.md",
+        "scope-check.md", "plan-before-build.md", "adr-authoring.md",
     },
     2: {
         "tier-up-advisor.md", "verify-triage.md", "completion-checklist.md",
-        "scope-check.md", "plan-before-build.md", "spec-review.md",
+        "scope-check.md", "plan-before-build.md", "adr-authoring.md", "spec-review.md",
         "spec-before-design.md", "adr-immutability.md",
     },
     3: {
@@ -44,9 +44,11 @@ _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
         "completion-checklist.md",
         "scope-check.md",
         "plan-before-build.md",
+        "adr-authoring.md",
         "spec-review.md",
         "spec-before-design.md",
         "adr-immutability.md",
+        "design-before-plan.md",
     },
 }
 
@@ -418,11 +420,11 @@ _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
     0: set(),
     1: {
         "tier-up-advisor.md", "verify-triage.md", "completion-checklist.md",
-        "scope-check.md", "plan-before-build.md",
+        "scope-check.md", "plan-before-build.md", "adr-authoring.md",
     },
     2: {
         "tier-up-advisor.md", "verify-triage.md", "completion-checklist.md",
-        "scope-check.md", "plan-before-build.md", "spec-review.md",
+        "scope-check.md", "plan-before-build.md", "adr-authoring.md", "spec-review.md",
         "spec-before-design.md", "adr-immutability.md",
     },
     3: {
@@ -431,9 +433,11 @@ _EXPECTED_PROTOCOLS_BY_TIER: dict[int, set[str]] = {
         "completion-checklist.md",
         "scope-check.md",
         "plan-before-build.md",
+        "adr-authoring.md",
         "spec-review.md",
         "spec-before-design.md",
         "adr-immutability.md",
+        "design-before-plan.md",
     },
 }
 

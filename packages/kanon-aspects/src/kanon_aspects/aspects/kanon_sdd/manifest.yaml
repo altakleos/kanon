@@ -51,6 +51,7 @@ depth-1:
     - completion-checklist.md
     - scope-check.md
     - plan-before-build.md
+    - adr-authoring.md
   sections:
     - protocols-index
   validators:
@@ -78,7 +79,8 @@ depth-3:
     - docs/foundations/vision.md
     - docs/foundations/principles/README.md
     - docs/foundations/personas/README.md
-  protocols: []
+  protocols:
+    - design-before-plan.md
   sections: []
   validators:
     - kanon_core._validators.spec_design_parity
