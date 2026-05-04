@@ -38,3 +38,5 @@ depth-2:
   files: []
   protocols: []
   sections: []
+  validators:
+    - kanon_core._validators.deps_hygiene_check
