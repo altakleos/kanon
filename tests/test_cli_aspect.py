@@ -378,9 +378,11 @@ def test_init_with_worktrees_depth_2(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
 
     assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-lifecycle.md").is_file()
+    assert (target / ".kanon" / "protocols" / "kanon-worktrees" / "worktree-scripts.md").is_file()
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "worktree-lifecycle" in agents
     assert "branch-hygiene" in agents  # protocol in index, not marker section
+    assert "worktree-scripts" in agents  # depth-2 protocol in index
     for script in ("worktree-setup.sh", "worktree-teardown.sh", "worktree-status.sh"):
         assert (target / "scripts" / script).is_file(), f"missing scripts/{script}"
 

@@ -123,6 +123,7 @@ def test_aspect_lifecycle(tmp_path: Path) -> None:
     # Step 10b: AGENTS.md still has worktrees markers at depth 2
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "branch-hygiene" in agents  # protocol in index
+    assert "worktree-scripts" in agents  # depth-2 protocol in index
 
     # Step 10c: verify passes at depth 2
     _verify_ok(runner, target)

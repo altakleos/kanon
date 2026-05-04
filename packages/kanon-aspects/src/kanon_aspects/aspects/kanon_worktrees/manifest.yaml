@@ -39,5 +39,6 @@ depth-2:
     - scripts/worktree-setup.sh
     - scripts/worktree-teardown.sh
     - scripts/worktree-status.sh
-  protocols: []
+  protocols:
+    - worktree-scripts.md
   sections: []
