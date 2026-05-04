@@ -71,11 +71,13 @@ depth-2:
     - spec-before-design.md
     - adr-immutability.md
     - foundations-authoring.md
+    - foundations-review.md
   sections: []
   validators:
     - kanon_core._validators.link_check
     - kanon_core._validators.adr_immutability
     - kanon_core._validators.foundations_coherence
+    - kanon_core._validators.foundations_impact
 
 depth-3:
   files:
