@@ -73,9 +73,11 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | [`completion-checklist`](.kanon/protocols/kanon-sdd/completion-checklist.md) | 1 | An agent is about to declare a plan or task complete, or the user asks "is this done?" |
 | [`scope-check`](.kanon/protocols/kanon-sdd/scope-check.md) | 1 | An agent discovers during implementation that the current task requires changes not described in the approved plan |
 | [`plan-before-build`](.kanon/protocols/kanon-sdd/plan-before-build.md) | 1 | A non-trivial source change is about to begin, or the agent is unsure whether a change is trivial |
+| [`adr-authoring`](.kanon/protocols/kanon-sdd/adr-authoring.md) | 1 | A non-obvious technical choice is being made during design or planning, or the agent identifies a choice with genuine alternatives, or the agent is unsure whether an ADR is needed |
 | [`spec-review`](.kanon/protocols/kanon-sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
 | [`spec-before-design`](.kanon/protocols/kanon-sdd/spec-before-design.md) | 2 | A change introduces a new user-visible capability, or the agent is unsure whether a spec is needed |
 | [`adr-immutability`](.kanon/protocols/kanon-sdd/adr-immutability.md) | 2 | An ADR is being modified after acceptance, or a contributor proposes a body edit on an `accepted` / `accepted (lite)` ADR |
+| [`design-before-plan`](.kanon/protocols/kanon-sdd/design-before-plan.md) | 3 | About to write a plan for a change where a spec exists and the change introduces new component boundaries, cross-component interfaces, or non-obvious architectural mechanisms |
 
 ### kanon-security (depth 2)
 
