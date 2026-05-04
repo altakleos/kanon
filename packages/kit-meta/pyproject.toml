@@ -1,0 +1,43 @@
+# kanon-kit (meta-package) — future-canonical publisher per ADR-0054 §1 + §7.
+#
+# **NOT YET THE ACTIVE PYPI SHIP TARGET.** The root `pyproject.toml` continues
+# to publish the kanon-kit monolith (collecting both kanon_core + kanon_aspects
+# source trees into a single wheel) until ADR-0053's forcing function fires.
+# When that happens, the active publisher swaps to this file: kanon-kit becomes
+# a true meta-package depending on the published kanon-core + kanon-aspects
+# distributions on PyPI.
+#
+# This pyproject is BUILD-CORRECT STANDALONE. `cd packages/kit-meta && python
+# -m build --wheel` produces a publishable meta-package wheel. Per ADR-0053,
+# the actual publish is gated on the forcing function.
+#
+# Contributor note: do NOT update version here OR the dependencies' pin
+# without coordinating with `packages/kanon-core/src/kanon_core/__init__.py`
+# and `packages/kanon-aspects/src/kanon_aspects/__init__.py` — all three are
+# lock-stepped per ADR-0054 §6.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kanon-kit"
+version = "0.5.0a2"
+description = "Meta-package for the kanon protocol substrate. Depends on kanon-core (substrate kernel) + kanon-aspects (reference aspect bundles). Per ADR-0048 + ADR-0051."
+readme = "../../README.md"
+license = { file = "../../LICENSE" }
+requires-python = ">=3.10"
+classifiers = [
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+]
+dependencies = [
+    "kanon-core==0.5.0a2",
+    "kanon-aspects==0.5.0a2",
+]
+
+[tool.hatch.build.targets.wheel]
+# Meta-package: ships zero source files. Wheel contains only METADATA and
+# RECORD; the actual installable content comes from the dependencies.
+bypass-selection = true

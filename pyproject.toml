@@ -92,3 +92,27 @@ markers = ["e2e: end-to-end tests against installed package (slow)"]
 [tool.coverage.run]
 source = ["kanon_core"]
 branch = true
+
+# Per ADR-0054 §7: uv workspace coordinator. Each member has its own
+# pyproject.toml; `uv sync` installs all editable into one shared .venv.
+# `packages/kit-meta` is intentionally NOT a workspace member: both root
+# and kit-meta would otherwise both name `kanon-kit` and uv refuses dup
+# names. kit-meta exists as a build-correct standalone pyproject (the
+# future-canonical publisher) but only swaps in as a member when
+# ADR-0053's forcing function fires and root's [project] is removed.
+# Until then, the active PyPI ship target is the kanon-kit monolith
+# built from THIS root pyproject.
+[tool.uv.workspace]
+members = [
+    "packages/kanon-core",
+    "packages/kanon-aspects",
+]
+exclude = [
+    "packages/kit-meta",
+]
+
+# kanon-aspects depends on kanon-core (per packages/kanon-aspects/pyproject.toml).
+# Tell uv to resolve it from the local workspace member during dev/sync,
+# not from PyPI (where it doesn't exist yet per ADR-0053).
+[tool.uv.sources]
+kanon-core = { workspace = true }
