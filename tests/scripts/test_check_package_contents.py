@@ -19,9 +19,9 @@ _VERSION = "1.0.0"
 
 # Read the real manifests so synthetic wheels match the actual kit shape.
 # Per ADR-0049 Migration PR A (bundle collapse): kanon-* aspect bundles
-# live at src/kanon_reference/aspects/kanon_<slug>/. Top manifest stays at kit/.
+# live at packages/kanon-aspects/src/kanon_aspects/aspects/kanon_<slug>/. Top manifest stays at kit/.
 _KIT = _REPO_ROOT / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
-_REF_DATA = _REPO_ROOT / "src" / "kanon_reference" / "aspects"
+_REF_DATA = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects"
 _TOP_MANIFEST_TEXT = (_KIT / "manifest.yaml").read_text(encoding="utf-8")
 _TOP_MANIFEST = yaml.safe_load(_TOP_MANIFEST_TEXT)
 
@@ -45,11 +45,11 @@ def _build_wheel(tmp_path: Path, *, extra_files: dict[str, str] | None = None,
             files[f] = ""
 
     # Aspect files derived from manifests (same logic the script uses).
-    # Per ADR-0049 PR A: bundles at kanon_reference/aspects/kanon_<slug>/
+    # Per ADR-0049 PR A: bundles at kanon_aspects/aspects/kanon_<slug>/
     # (underscore in dir name; hyphen in slug everywhere else).
     for _name, entry in _TOP_MANIFEST["aspects"].items():
         _dir_name = _name.replace("-", "_")
-        aspect_base = f"kanon_reference/aspects/{_dir_name}"
+        aspect_base = f"kanon_aspects/aspects/{_dir_name}"
         sub_path = _REF_DATA / _dir_name / "manifest.yaml"
         sub_text = sub_path.read_text(encoding="utf-8")
         sub = yaml.safe_load(sub_text)

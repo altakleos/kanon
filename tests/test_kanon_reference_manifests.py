@@ -1,6 +1,6 @@
-"""Phase A.2.2: kanon_reference LOADER MANIFEST equivalence with the YAML source-of-truth.
+"""Phase A.2.2: kanon_aspects LOADER MANIFEST equivalence with the YAML source-of-truth.
 
-Each LOADER stub at ``src/kanon_reference/aspects/kanon_<id>.py`` carries a
+Each LOADER stub at ``packages/kanon-aspects/src/kanon_aspects/aspects/kanon_<id>.py`` carries a
 ``MANIFEST: dict[str, Any]`` literal that mirrors the **union** of:
 
 - the registry-level fields from ``kernel/kit/manifest.yaml``'s
@@ -28,8 +28,8 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent
 KIT_ROOT = REPO_ROOT / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
 # Per substrate-content-move sub-plan: aspect data moved to
-# src/kanon_reference/aspects/<slug>/. Top manifest stays at kit/.
-KIT_ASPECTS = REPO_ROOT / "src" / "kanon_reference" / "aspects"
+# packages/kanon-aspects/src/kanon_aspects/aspects/<slug>/. Top manifest stays at kit/.
+KIT_ASPECTS = REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects"
 
 ASPECT_IDS = (
     "kanon-deps",
@@ -43,9 +43,9 @@ ASPECT_IDS = (
 
 
 @pytest.fixture(scope="module", autouse=True)
-def _ensure_kanon_reference_importable():
-    """Add ``src/`` to sys.path so the LOADER modules import without an installed wheel."""
-    src = str(REPO_ROOT / "src")
+def _ensure_kanon_aspects_importable():
+    """Add ``packages/kanon-aspects/src/`` to sys.path so the LOADER modules import without an installed wheel."""
+    src = str(REPO_ROOT / "packages" / "kanon-aspects" / "src")
     inserted = src not in sys.path
     if inserted:
         sys.path.insert(0, src)
@@ -72,7 +72,7 @@ def test_loader_manifest_matches_union(aspect_id: str, _top_manifest: dict) -> N
 
     expected = {**top_entry, **sub_manifest}
 
-    module_name = f"kanon_reference.aspects.{aspect_id.replace('-', '_')}.loader"
+    module_name = f"kanon_aspects.aspects.{aspect_id.replace('-', '_')}.loader"
     module = importlib.import_module(module_name)
     manifest = getattr(module, "MANIFEST", None)
     assert manifest is not None, f"{module_name}: no MANIFEST attribute"
@@ -87,7 +87,7 @@ def test_loader_manifest_matches_union(aspect_id: str, _top_manifest: dict) -> N
 @pytest.mark.parametrize("aspect_id", ASPECT_IDS)
 def test_loader_manifest_has_no_path_field(aspect_id: str) -> None:
     """LOADER MANIFEST must NOT contain a `path:` field — substrate synthesizes it."""
-    module_name = f"kanon_reference.aspects.{aspect_id.replace('-', '_')}.loader"
+    module_name = f"kanon_aspects.aspects.{aspect_id.replace('-', '_')}.loader"
     module = importlib.import_module(module_name)
     assert "path" not in module.MANIFEST, (
         f"{module_name}.MANIFEST: must not contain 'path:' field "

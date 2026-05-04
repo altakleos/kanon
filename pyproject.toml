@@ -33,33 +33,33 @@ dev = [
 kanon = "kanon_core.cli:main"
 
 # Per ADR-0040: substrate discovers aspects via Python entry-points group
-# `kanon.aspects`. The seven kanon-* aspects are shipped by src/kanon_reference/
+# `kanon.aspects`. The seven kanon-* aspects are shipped by packages/kanon-aspects/src/kanon_aspects/
 # (will be renamed to packages/kanon-aspects/src/kanon_aspects/ in a sibling PR
 # per ADR-0054).
 [project.entry-points."kanon.aspects"]
-kanon-deps = "kanon_reference.aspects.kanon_deps.loader:MANIFEST"
-kanon-fidelity = "kanon_reference.aspects.kanon_fidelity.loader:MANIFEST"
-kanon-release = "kanon_reference.aspects.kanon_release.loader:MANIFEST"
-kanon-sdd = "kanon_reference.aspects.kanon_sdd.loader:MANIFEST"
-kanon-security = "kanon_reference.aspects.kanon_security.loader:MANIFEST"
-kanon-testing = "kanon_reference.aspects.kanon_testing.loader:MANIFEST"
-kanon-worktrees = "kanon_reference.aspects.kanon_worktrees.loader:MANIFEST"
+kanon-deps = "kanon_aspects.aspects.kanon_deps.loader:MANIFEST"
+kanon-fidelity = "kanon_aspects.aspects.kanon_fidelity.loader:MANIFEST"
+kanon-release = "kanon_aspects.aspects.kanon_release.loader:MANIFEST"
+kanon-sdd = "kanon_aspects.aspects.kanon_sdd.loader:MANIFEST"
+kanon-security = "kanon_aspects.aspects.kanon_security.loader:MANIFEST"
+kanon-testing = "kanon_aspects.aspects.kanon_testing.loader:MANIFEST"
+kanon-worktrees = "kanon_aspects.aspects.kanon_worktrees.loader:MANIFEST"
 
 [tool.hatch.version]
 path = "packages/kanon-core/src/kanon_core/__init__.py"
 
 # Per ADR-0054 §7: root pyproject continues to publish kanon-kit as the monolith
 # until ADR-0053's forcing function fires. The wheel ships `kanon_core/...` and
-# `kanon_reference/...` collected from their respective source-tree locations.
+# `kanon_aspects/...` collected from their respective source-tree locations.
 # `packages/kanon-core/pyproject.toml` is independently buildable (build-correct
 # standalone) but not published to PyPI yet.
 [tool.hatch.build.targets.wheel]
-packages = ["packages/kanon-core/src/kanon_core", "src/kanon_reference"]
+packages = ["packages/kanon-core/src/kanon_core", "packages/kanon-aspects/src/kanon_aspects"]
 
 [tool.hatch.build.targets.sdist]
 include = [
     "packages/kanon-core",
-    "src/kanon_reference",
+    "packages/kanon-aspects/src/kanon_aspects",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",

@@ -1,21 +1,21 @@
 """Substrate-independence gate (per ADR-0044).
 
 Verifies that ``kanon-core``'s runtime code does not depend on
-``kanon_reference`` being importable. The substrate's foundational invariant:
+``kanon_aspects`` being importable. The substrate's foundational invariant:
 the kernel runs without the reference aspects.
 
 Today's reality: the substrate and reference ship together as one ``kanon-kit``
 wheel. The full ADR-0044 gate (separately-installed substrate wheel + clean
 venv test run) is a future plan; this gate verifies the runtime contract by
-spawning a sub-process with ``kanon_reference`` masked and exercising
+spawning a sub-process with ``kanon_aspects`` masked and exercising
 substrate-internal queries that should not require it.
 
-Failure mode: any substrate code that attempts ``import kanon_reference``
+Failure mode: any substrate code that attempts ``import kanon_aspects``
 surfaces as ``ModuleNotFoundError`` in the sub-process and the gate fails.
 
 Exit codes:
-    0 — substrate runs without kanon_reference
-    1 — substrate code attempted to import kanon_reference (or other failure)
+    0 — substrate runs without kanon_aspects
+    1 — substrate code attempted to import kanon_aspects (or other failure)
 """
 
 from __future__ import annotations
@@ -32,28 +32,28 @@ _SUBPROCESS_SCRIPT = '''
 import sys
 import os
 
-# Mask kanon_reference imports via meta_path finder. Any code path that
-# tries `import kanon_reference` or `from kanon_reference import X` raises.
-class _BlockKanonReference:
+# Mask kanon_aspects imports via meta_path finder. Any code path that
+# tries `import kanon_aspects` or `from kanon_aspects import X` raises.
+class _BlockKanonAspects:
     def find_spec(self, name, path=None, target=None):
-        if name == "kanon_reference" or name.startswith("kanon_reference."):
+        if name == "kanon_aspects" or name.startswith("kanon_aspects."):
             raise ImportError(
                 f"substrate-independence gate (ADR-0044): {name!r} is masked; "
-                f"substrate code MUST NOT depend on kanon_reference."
+                f"substrate code MUST NOT depend on kanon_aspects."
             )
         return None
 
-sys.meta_path.insert(0, _BlockKanonReference())
+sys.meta_path.insert(0, _BlockKanonAspects())
 
-# Also clear any existing cached kanon_reference imports from sys.modules
+# Also clear any existing cached kanon_aspects imports from sys.modules
 # so subsequent attempts go through the meta_path finder.
 for mod in list(sys.modules):
-    if mod == "kanon_reference" or mod.startswith("kanon_reference."):
+    if mod == "kanon_aspects" or mod.startswith("kanon_aspects."):
         del sys.modules[mod]
 
-# Substrate logic that must work without kanon_reference.
+# Substrate logic that must work without kanon_aspects.
 # Use KANON_TEST_OVERLAY_PATH to substitute the entry-point source so we
-# don't trigger real entry-point loading (which may pull kanon_reference).
+# don't trigger real entry-point loading (which may pull kanon_aspects).
 os.environ["KANON_TEST_OVERLAY_PATH"] = "/nonexistent/empty/overlay"
 
 from kanon_core._manifest import _load_aspects_from_entry_points
@@ -70,7 +70,7 @@ try:
 except click.ClickException:
     pass
 
-# Verify the resolutions engine works without kanon_reference.
+# Verify the resolutions engine works without kanon_aspects.
 from kanon_core._resolutions import replay, ReplayReport
 from pathlib import Path
 import tempfile

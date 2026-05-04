@@ -78,7 +78,7 @@ def _aspect_root(aspect: str, top: dict[str, Any]) -> Path | None:
     """Resolve an aspect's on-disk root directory.
 
     Per ADR-0049 Migration PR A (bundle collapse): kanon-* aspect bundles
-    live under src/kanon_reference/aspects/kanon_<slug>/ (with underscore
+    live under packages/kanon-aspects/src/kanon_aspects/aspects/kanon_<slug>/ (with underscore
     in the dir name for Python import compatibility, while the aspect
     SLUG remains kanon-<slug>). Falls back to the prior data/ layout, then
     the legacy kit/ location.
@@ -86,10 +86,10 @@ def _aspect_root(aspect: str, top: dict[str, Any]) -> Path | None:
     entry = top["aspects"].get(aspect)
     if not entry:
         return None
-    bundle_root = _REPO_ROOT / "src" / "kanon_reference" / "aspects" / aspect.replace("-", "_")
+    bundle_root = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects" / aspect.replace("-", "_")
     if bundle_root.is_dir():
         return bundle_root
-    kref_data_root = _REPO_ROOT / "src" / "kanon_reference" / "data" / aspect
+    kref_data_root = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "data" / aspect
     if kref_data_root.is_dir():
         return kref_data_root
     kit_root = _KIT / entry["path"]
@@ -214,13 +214,13 @@ def _check_registry_and_manifests(errors: list[str]) -> None:
             )
             continue
         # Per substrate-content-move sub-plan: kanon-* aspect data lives
-        # under src/kanon_reference/data/<slug>/ (per ADR-0044 substrate-
+        # under packages/kanon-aspects/src/kanon_aspects/data/<slug>/ (per ADR-0044 substrate-
         # independence). Check both locations; either suffices.
         aspect_root = _aspect_root(name, top)
         if aspect_root is None:
             errors.append(
                 f"manifest.yaml: aspects.{name}.path: {entry['path']} "
-                f"does not exist under kit/ nor src/kanon_reference/data/"
+                f"does not exist under kit/ nor packages/kanon-aspects/src/kanon_aspects/data/"
             )
             continue
         sub, err2 = _load_aspect_manifest(name, top)

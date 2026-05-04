@@ -1,0 +1,47 @@
+# kanon-aspects — reference aspect bundles distribution per ADR-0048 + ADR-0051 + ADR-0054.
+#
+# This pyproject is BUILD-CORRECT STANDALONE. `cd packages/kanon-aspects && python -m build`
+# produces a publishable wheel + sdist. Per ADR-0053, the actual three-distribution
+# PyPI publish is deferred pending a forcing function; until then, the root
+# pyproject.toml builds the kanon-kit monolith as the only PyPI ship target.
+#
+# Layout invariant per ADR-0054 §2: prefix-REMOVE `sources = ["src"]` form.
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kanon-aspects"
+dynamic = ["version"]
+description = "Reference aspect bundles for the kanon protocol — seven kanon-* discipline aspects shipped as data + loaders. Per ADR-0048 + ADR-0040."
+readme = "../../README.md"
+license = { file = "../../LICENSE" }
+requires-python = ">=3.10"
+classifiers = [
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+]
+dependencies = [
+    "kanon-core",
+    "pyyaml>=6.0",
+]
+
+# Per ADR-0040: the aspect bundles register under the `kanon.aspects` entry-point group
+# (the universal protocol contract — preserved unchanged across renames).
+[project.entry-points."kanon.aspects"]
+kanon-deps = "kanon_aspects.aspects.kanon_deps.loader:MANIFEST"
+kanon-fidelity = "kanon_aspects.aspects.kanon_fidelity.loader:MANIFEST"
+kanon-release = "kanon_aspects.aspects.kanon_release.loader:MANIFEST"
+kanon-sdd = "kanon_aspects.aspects.kanon_sdd.loader:MANIFEST"
+kanon-security = "kanon_aspects.aspects.kanon_security.loader:MANIFEST"
+kanon-testing = "kanon_aspects.aspects.kanon_testing.loader:MANIFEST"
+kanon-worktrees = "kanon_aspects.aspects.kanon_worktrees.loader:MANIFEST"
+
+[tool.hatch.version]
+path = "src/kanon_aspects/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["src"]
+sources = ["src"]

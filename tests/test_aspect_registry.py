@@ -100,7 +100,7 @@ class _FakeDist:
         self.metadata = {"name": name}
 
 
-def test_namespace_ownership_kanon_via_kanon_reference_ok() -> None:
+def test_namespace_ownership_kanon_via_kanon_aspects_ok() -> None:
     _validate_namespace_ownership("kanon-foo", _FakeDist("kanon-aspects"))
 
 
@@ -240,14 +240,14 @@ def test_unified_registry_includes_project_aspects(tmp_path: Path) -> None:
 
 
 # --- Plan v040a1-release-prep PR 3: _aspect_path() must fail loudly when ---
-# --- kanon_reference is absent for kanon-* aspects. Per ADR-0044, the     ---
+# --- kanon_aspects is absent for kanon-* aspects. Per ADR-0044, the     ---
 # --- substrate must NOT silently fall back to a dead legacy path.         ---
 
 
-def test_aspect_path_fails_loudly_without_kanon_reference(
+def test_aspect_path_fails_loudly_without_kanon_aspects(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """When kanon_reference cannot be imported AND the entry lacks _source
+    """When kanon_aspects cannot be imported AND the entry lacks _source
     (e.g., a synthesized fallback path), _aspect_path() for a kanon-* slug
     MUST raise a helpful click.ClickException pointing the user at install
     options — NOT silently return Path('kernel/kit/aspects/<slug>') which
@@ -258,14 +258,14 @@ def test_aspect_path_fails_loudly_without_kanon_reference(
 
     # Force the entry to lack _source so the synthesis fallback runs.
     monkeypatch.setattr(m, "_aspect_entry", lambda a: {"path": "aspects/kanon-sdd"})
-    # Mask kanon_reference so `import kanon_reference` raises ImportError.
-    monkeypatch.setitem(sys.modules, "kanon_reference", None)
+    # Mask kanon_aspects so `import kanon_aspects` raises ImportError.
+    monkeypatch.setitem(sys.modules, "kanon_aspects", None)
 
     with pytest.raises(click.ClickException) as exc_info:
         m._aspect_path("kanon-sdd")
 
     msg = exc_info.value.message
-    assert "kanon_reference is not installed" in msg
+    assert "kanon_aspects is not installed" in msg
     assert "ADR-0044" in msg
     assert "kanon-kit" in msg or "kanon-aspects" in msg
 

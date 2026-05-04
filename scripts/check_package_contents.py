@@ -44,7 +44,7 @@ import yaml
 # Core files that must always be present regardless of aspects.
 # Per Phase A.3 (kit-globals deletion): kanon_core/kit/kit.md was retired and is
 # no longer in the wheel. Per ADR-0050 Option A: substrate Python module is
-# `kernel/` (was `kanon/`); aspect data lives at `kanon_reference/aspects/`,
+# `kernel/` (was `kanon/`); aspect data lives at `kanon_aspects/aspects/`,
 # but the substrate-level `kanon_core/kit/manifest.yaml` + `harnesses.yaml` stay.
 _CORE_REQUIRED_FILES: tuple[str, ...] = (
     "kanon_core/__init__.py",
@@ -116,9 +116,9 @@ def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list
         if not isinstance(entry, dict):
             continue
         # Per ADR-0049 PR A bundle collapse: kanon-* aspect bundles live at
-        # kanon_reference/aspects/kanon_<slug>/ in the wheel (underscore in
+        # kanon_aspects/aspects/kanon_<slug>/ in the wheel (underscore in
         # dir name; hyphen retained in the runtime aspect SLUG `name`).
-        aspect_base = f"kanon_reference/aspects/{name.replace('-', '_')}"
+        aspect_base = f"kanon_aspects/aspects/{name.replace('-', '_')}"
         required_files.append(f"{aspect_base}/manifest.yaml")
         required_dirs.append(f"{aspect_base}/")
         # Load sub-manifest to get depth-specific files, protocols, sections
