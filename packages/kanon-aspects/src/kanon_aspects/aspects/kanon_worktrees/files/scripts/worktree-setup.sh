@@ -36,6 +36,13 @@ for slug in "$@"; do
     git worktree add "$wt_dir" -b "$branch"
   fi
 
+  # Write compaction-recovery breadcrumb
+  cat > "$wt_dir/.kanon-worktree-context" <<EOF
+slug: $slug
+branch: wt/$slug
+created: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+EOF
+
   echo "Worktree created: ${wt_dir} (branch: ${branch})"
 done
 
@@ -54,4 +61,11 @@ if [[ -f pyproject.toml ]]; then
   done
 else
   echo "NOTE: Run your dependency install command (npm install, etc.) in the new worktree(s)."
+fi
+
+# Run project-specific post-setup hook if present
+hook=".kanon/hooks/post-worktree-setup"
+if [ -x "$hook" ]; then
+  echo "Running post-setup hook..."
+  "$hook" "$slug" "$wt_dir"
 fi

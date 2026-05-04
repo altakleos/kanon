@@ -59,6 +59,8 @@ When multiple worktrees are active simultaneously:
 - Delete the branch only if it has been merged: `git branch -d wt/<slug>`.
 - If the branch has not been merged and work is abandoned, escalate to the human before deleting.
 
+**Merged-branch cleanup (mandatory):** At the start of every session, if `git worktree list` shows a worktree whose branch has been merged to main, tear it down immediately before starting new work. Stale worktrees confuse future sessions and waste disk.
+
 ### Known gotchas
 
 **Submodules.** Git worktrees are NOT recommended for repos with git submodules. The official git documentation (BUGS section) warns: "Multiple checkouts of a superproject are not recommended." If your repo uses submodules, consider separate clones instead.

@@ -8,7 +8,7 @@ label: Worktree Isolation
 summary: all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`.
 audit: 'Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`.'
 priority: 10
-question: 'Am I in a worktree (`.worktrees/<slug>/`)? If not — **stop and create one.**'
+question: 'Am I in a worktree (`.worktrees/<slug>/`)? If not, check if one already exists (`ls .worktrees/`) before creating a new one.'
 skip-when: never (always applies to file modifications)
 ---
 # Protocol: Branch Hygiene

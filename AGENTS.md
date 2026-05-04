@@ -17,7 +17,7 @@ The audit-trail sentence from the relevant protocol must appear before your firs
 **Before every source-modifying tool call, answer these questions:**
 
 1. Is this change trivial? (Trivial = typo, single assertion fix, local rename, provably unreachable deletion. Everything else is non-trivial.)
-2. Am I in a worktree (`.worktrees/<slug>/`)? If not — **stop and create one.**
+2. Am I in a worktree (`.worktrees/<slug>/`)? If not, check if one already exists (`ls .worktrees/`) before creating a new one.
    Skip if: never (always applies to file modifications)
 3. If non-trivial: does a plan exist at `docs/plans/<slug>.md` and has the user approved it? If not — **stop and write the plan.**
    Skip if: Change is trivial (typo, single assertion fix, local rename, provably unreachable deletion)
