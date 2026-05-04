@@ -508,6 +508,8 @@ def verify(target: Path) -> None:
     dag_errors, dag_warnings = format_findings(dag_findings)
     errors.extend(dag_errors)
     warnings.extend(dag_warnings)
+    # Keep structured findings for chain display
+    _dag_findings = dag_findings
 
     # Per docs/specs/verification-contract.md INV-10 (carve-out from INV-9,
     # ratified by ADR-0029): fidelity-fixture replay runs only when an
@@ -516,7 +518,7 @@ def verify(target: Path) -> None:
     check_fidelity_assertions(target, aspects, errors, warnings)
 
     status = "fail" if errors else "ok"
-    _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status=status)
+    _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status=status, dag_findings=_dag_findings)
     if errors:
         sys.exit(1)
 
@@ -587,6 +589,7 @@ def _emit_verify_report(
     errors: list[str],
     warnings: list[str],
     status: str,
+    dag_findings: list | None = None,
 ) -> None:
     report = {
         "target": str(target),
@@ -595,6 +598,26 @@ def _emit_verify_report(
         "errors": errors,
         "warnings": warnings,
     }
+    # Group findings by chain root for display
+    if dag_findings:
+        from collections import defaultdict
+        chains: dict[str, list] = defaultdict(list)
+        standalone: list = []
+        for f in dag_findings:
+            if f.chain:
+                chains[f.chain[0]].append(f)
+            elif f.affected_slug:
+                key = f"{f.source_namespace}/{f.source_slug}"
+                chains[key].append(f)
+            else:
+                standalone.append(f)
+        if chains:
+            report["chains"] = {
+                root: [{"severity": f.severity, "kind": f.kind, "message": f.message,
+                         "affected": f"{f.affected_namespace}/{f.affected_slug}" if f.affected_slug else None}
+                        for f in findings]
+                for root, findings in chains.items()
+            }
     click.echo(json.dumps(report, indent=2))
     if status == "ok":
         click.echo(f"OK — kanon project at {target} is valid.", err=True)
@@ -602,6 +625,20 @@ def _emit_verify_report(
             click.echo("  warnings:", err=True)
             for w in warnings:
                 click.echo(f"    - {w}", err=True)
+        if dag_findings and any(f.affected_slug for f in dag_findings):
+            # Group and display impact chains
+            from collections import defaultdict
+            chains_display: dict[str, list] = defaultdict(list)
+            for f in dag_findings:
+                if f.affected_slug:
+                    key = f"{f.source_namespace}/{f.source_slug}"
+                    chains_display[key].append(f)
+            if chains_display:
+                click.echo("  impact chains:", err=True)
+                for root, findings in sorted(chains_display.items()):
+                    click.echo(f"    {root}:", err=True)
+                    for f in findings:
+                        click.echo(f"      → {f.affected_namespace}/{f.affected_slug}: {f.message}", err=True)
     else:
         click.echo(f"FAIL — {len(errors)} error(s) at {target}.", err=True)
         # Per ADR-0042 §1: surface the exit-zero scope at failure time so
