@@ -3,6 +3,12 @@ status: accepted
 date: 2026-04-28
 depth-min: 1
 invoke-when: A non-trivial source change is about to begin, or the agent is unsure whether a change is trivial
+gate: hard
+label: Plan Before Build
+summary: non-trivial changes require an approved plan before source edits.
+audit: 'Plan at `<path>` has been approved.'
+priority: 100
+question: 'If non-trivial: does a plan exist at `docs/plans/<slug>.md` and has the user approved it? If not — **stop and write the plan.**'
 ---
 # Protocol: Plan Before Build
 

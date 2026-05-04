@@ -3,6 +3,12 @@ status: accepted
 date: 2026-05-04
 depth-min: 3
 invoke-when: About to write a plan for a change where a spec exists and the change introduces new component boundaries, cross-component interfaces, or non-obvious architectural mechanisms
+gate: hard
+label: Design Before Plan
+summary: changes introducing new component boundaries require a design doc before planning.
+audit: 'Design doc at `<path>` covers the architectural scope.'
+priority: 300
+question: 'Does this change introduce new component boundaries or cross-component interfaces? If yes, does a design doc exist? If not — **stop and write the design doc.**'
 ---
 # Protocol: Design Before Plan
 

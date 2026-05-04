@@ -3,6 +3,12 @@ status: accepted
 date: 2026-04-28
 depth-min: 1
 invoke-when: A file-modifying operation is about to begin
+gate: hard
+label: Worktree Isolation
+summary: all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`.
+audit: 'Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`.'
+priority: 10
+question: 'Am I in a worktree (`.worktrees/<slug>/`)? If not — **stop and create one.**'
 ---
 # Protocol: Branch Hygiene
 

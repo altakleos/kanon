@@ -7,7 +7,7 @@ content-construction layer that CLI commands orchestrate.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any
 
 import click
 import yaml
@@ -431,72 +431,61 @@ def _build_bundle(
     return bundle
 
 
-class _HardGate(TypedDict):
-    aspect: str
-    depth_min: int
-    protocol: str
-    label: str
-    summary: str
-    audit: str
-    fires: str
-
-
-_HARD_GATES: list[_HardGate] = [
-    {
-        "aspect": "kanon-sdd",
-        "depth_min": 1,
-        "protocol": "plan-before-build.md",
-        "label": "Plan Before Build",
-        "summary": "non-trivial changes require an approved plan before source edits.",
-        "audit": 'Plan at `<path>` has been approved.',
-        "fires": "About to modify source for a non-trivial change",
-    },
-    {
-        "aspect": "kanon-sdd",
-        "depth_min": 2,
-        "protocol": "spec-before-design.md",
-        "label": "Spec Before Design",
-        "summary": "new user-visible capabilities require an approved spec before design/plan/implementation.",
-        "audit": 'Spec at `<path>` has been approved.',
-        "fires": "About to introduce a new user-visible capability",
-    },
-    {
-        "aspect": "kanon-sdd",
-        "depth_min": 3,
-        "protocol": "design-before-plan.md",
-        "label": "Design Before Plan",
-        "summary": "changes introducing new component boundaries require a design doc before planning.",
-        "audit": 'Design doc at `<path>` covers the architectural scope.',
-        "fires": "About to write a plan for a change where a spec exists and the change introduces new component boundaries, cross-component interfaces, or non-obvious architectural mechanisms",
-    },
-    {
-        "aspect": "kanon-worktrees",
-        "depth_min": 1,
-        "protocol": "branch-hygiene.md",
-        "label": "Worktree Isolation",
-        "summary": "all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`.",
-        "audit": 'Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`.',
-        "fires": "About to modify any file",
-    },
-]
-
-
 def _render_hard_gates(aspects: dict[str, int]) -> str:
-    """Render the hard-gates table, including only gates whose aspects are enabled at sufficient depth."""
+    """Render the hard-gates table from protocol frontmatter declarations."""
+    gates: list[dict[str, Any]] = []
+    for aspect, depth in aspects.items():
+        aspect_root = _aspect_path(aspect)
+        for proto_file in _aspect_protocols(aspect, depth):
+            proto_path = aspect_root / "protocols" / proto_file
+            if not proto_path.exists():
+                continue
+            fm = _parse_frontmatter(proto_path.read_text(encoding="utf-8"))
+            if fm.get("gate") != "hard":
+                continue
+            fm_depth_min = fm.get("depth-min", 1)
+            if depth < fm_depth_min:
+                continue
+            gates.append({
+                "aspect": aspect,
+                "protocol": proto_file,
+                "label": fm["label"],
+                "summary": fm["summary"],
+                "audit": fm["audit"],
+                "fires": fm.get("invoke-when", ""),
+                "priority": fm.get("priority", 500),
+                "question": fm.get("question", ""),
+            })
+
+    gates.sort(key=lambda g: g["priority"])
+
+    if not gates:
+        return "## Hard Gates\n\n_No hard gates active at current aspect configuration._\n"
+
     rows: list[str] = []
-    for gate in _HARD_GATES:
-        aspect = gate["aspect"]
-        if aspect not in aspects or aspects[aspect] < gate["depth_min"]:
-            continue
+    for gate in gates:
         slug = gate["protocol"].removesuffix(".md")
         rows.append(
-            f'| **{gate["label"]}** — {gate["summary"]} '
+            f'| **{gate["label"]}** \u2014 {gate["summary"]} '
             f'Audit: "{gate["audit"]}" '
             f'| {gate["fires"]} '
-            f'| [`{slug}`](.kanon/protocols/{aspect}/{gate["protocol"]}) |'
+            f'| [`{slug}`](.kanon/protocols/{gate["aspect"]}/{gate["protocol"]}) |'
         )
-    if not rows:
-        return "## Hard Gates\n\n_No hard gates active at current aspect configuration._\n"
+
+    # Generate decision tree from active gates
+    questions: list[str] = []
+    q_num = 1
+    questions.append(
+        f"{q_num}. Is this change trivial? (Trivial = typo, single assertion fix, "
+        "local rename, provably unreachable deletion. Everything else is non-trivial.)"
+    )
+    for gate in gates:
+        if gate["question"]:
+            q_num += 1
+            questions.append(f"{q_num}. {gate['question']}")
+    q_num += 1
+    questions.append(f"{q_num}. State the audit sentence from the relevant gate before proceeding.")
+
     lines = [
         "## Hard Gates",
         "",
@@ -510,18 +499,13 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
         "The audit-trail sentence from the relevant protocol must appear "
         "before your first source-modifying tool call. "
         "Its absence in a transcript is how violations get caught. "
-        "This is the intended enforcement mechanism — prose is source code "
+        "This is the intended enforcement mechanism \u2014 prose is source code "
         "([P-prose-is-code](docs/foundations/principles/P-prose-is-code.md)), "
         "not a stopgap for a missing CI gate.",
         "",
         "**Before every source-modifying tool call, answer these questions:**",
         "",
-        "1. Is this change trivial? (Trivial = typo, single assertion fix, "
-        "local rename, provably unreachable deletion. Everything else is "
-        "non-trivial.)",
-        "2. If non-trivial: does a plan exist at `docs/plans/<slug>.md` "
-        "and has the user approved it? If not — **stop and write the plan.**",
-        "3. State the audit sentence from the relevant gate before proceeding.",
+        *questions,
         "",
     ]
     return "\n".join(lines) + "\n"
