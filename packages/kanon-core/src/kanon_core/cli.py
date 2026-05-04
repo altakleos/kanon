@@ -1017,7 +1017,7 @@ def fidelity_update(target: Path) -> None:
 
 @main.group()
 def graph() -> None:
-    """Cross-link graph queries (orphans, rename)."""
+    """Cross-link graph queries (orphans, rename, impact)."""
 
 
 @graph.command("orphans")
@@ -1138,6 +1138,51 @@ def graph_rename(
         click.echo(f"-- {report['files']} file(s) would change --")
         return
     click.echo(f"Renamed {old_slug} -> {new_slug} ({report['files']} file(s) updated).")
+
+
+@graph.command("impact")
+@click.argument("slug")
+@click.option(
+    "--target",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Repo root (default: current directory).",
+)
+def graph_impact(slug: str, target: Path | None) -> None:
+    """Show the blast radius of changing a given artifact.
+
+    Walks downstream from the node matching SLUG and prints every
+    artifact that references it (transitively, up to depth 2).
+    """
+    root = Path(target).resolve() if target else Path.cwd()
+    graph_data = build_graph(root)
+
+    # Find the node matching the slug across all namespaces.
+    matches = [
+        (ns, s) for (ns, s) in graph_data.by_slug if s == slug
+    ]
+    if not matches:
+        raise click.ClickException(f"No node found with slug '{slug}'.")
+
+    for ns, s in matches:
+        click.echo(f"{s} ({ns})")
+        _print_impact(graph_data, (ns, s), depth=1, max_depth=2)
+
+
+def _print_impact(
+    graph_data: "GraphData",
+    key: tuple[str, str],
+    depth: int,
+    max_depth: int,
+) -> None:
+    """Recursively print inbound edges with indentation."""
+    if depth > max_depth:
+        return
+    indent = "  " * depth
+    for edge in graph_data.inbound_all.get(key, []):
+        src_key = (edge.src_namespace, edge.src_slug)
+        click.echo(f"{indent}\u2190 {edge.src_slug} ({edge.kind})")
+        _print_impact(graph_data, src_key, depth + 1, max_depth)
 
 
 # --- Phase A.7: resolutions + contracts CLI verbs ---
