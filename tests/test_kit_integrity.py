@@ -15,8 +15,8 @@ import yaml
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _KIT = _REPO_ROOT / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
 # Per substrate-content-move sub-plan: kanon-* aspect data lives at
-# src/kanon_reference/aspects/<slug>/. Tests below reference _REF_DATA.
-_REF_DATA = _REPO_ROOT / "src" / "kanon_reference" / "aspects"
+# packages/kanon-aspects/src/kanon_aspects/aspects/<slug>/. Tests below reference _REF_DATA.
+_REF_DATA = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects"
 _SDD = _REF_DATA / "kanon_sdd"
 
 
@@ -33,7 +33,7 @@ def _load_sdd_manifest() -> dict:
 
 def test_kit_root_has_expected_top_level_entries() -> None:
     # Phase A.3: kit.md retired per ADR-0048 de-opinionation.
-    # Sub-content-move: aspects/ moved to src/kanon_reference/aspects/.
+    # Sub-content-move: aspects/ moved to packages/kanon-aspects/src/kanon_aspects/aspects/.
     for entry in ("manifest.yaml", "harnesses.yaml"):
         assert (_KIT / entry).exists(), f"missing kit entry: {entry}"
 

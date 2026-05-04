@@ -14,7 +14,7 @@ def csi(load_ci_script):
 
 
 def test_real_repo_passes(csi) -> None:
-    """The substrate must run without kanon_reference today."""
+    """The substrate must run without kanon_aspects today."""
     rc = csi.main([])
     assert rc == 0, "substrate-independence gate must pass on main"
 
@@ -34,17 +34,17 @@ def test_subprocess_emits_ok_sentinel() -> None:
     spec_text = script_path.read_text(encoding="utf-8")
     # Extract the _SUBPROCESS_SCRIPT constant to verify its content shape.
     assert "_SUBPROCESS_SCRIPT" in spec_text
-    assert "kanon_reference" in spec_text
+    assert "kanon_aspects" in spec_text
     assert "substrate-independence: OK" in spec_text
 
 
-def test_failure_when_substrate_imports_kanon_reference(csi, monkeypatch: pytest.MonkeyPatch) -> None:
-    """If we synthetically inject `import kanon_reference` into the script,
+def test_failure_when_substrate_imports_kanon_aspects(csi, monkeypatch: pytest.MonkeyPatch) -> None:
+    """If we synthetically inject `import kanon_aspects` into the script,
     the gate must detect it and fail."""
     bad_script = csi._SUBPROCESS_SCRIPT.replace(
         "print(\"substrate-independence: OK\")",
-        "import kanon_reference  # synthesised — should be blocked\nprint(\"substrate-independence: OK\")",
+        "import kanon_aspects  # synthesised — should be blocked\nprint(\"substrate-independence: OK\")",
     )
     monkeypatch.setattr(csi, "_SUBPROCESS_SCRIPT", bad_script)
     rc = csi.main([])
-    assert rc == 1, "gate must fail when substrate code imports kanon_reference"
+    assert rc == 1, "gate must fail when substrate code imports kanon_aspects"

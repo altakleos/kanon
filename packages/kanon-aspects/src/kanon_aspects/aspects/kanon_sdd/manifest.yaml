@@ -2,9 +2,9 @@ kanon-dialect: "2026-05-01"
 # Per-aspect sub-manifest for `sdd` — tier content at each depth of the SDD aspect.
 #
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.
-# Paths under `files:` are relative to src/kanon_reference/aspects/kanon_sdd/files/.
-# Paths under `protocols:` are relative to src/kanon_reference/aspects/kanon_sdd/protocols/.
-# Names under `sections:` resolve to src/kanon_reference/aspects/kanon_sdd/sections/<name>.md,
+# Paths under `files:` are relative to packages/kanon-aspects/src/kanon_aspects/aspects/kanon_sdd/files/.
+# Paths under `protocols:` are relative to packages/kanon-aspects/src/kanon_aspects/aspects/kanon_sdd/protocols/.
+# Names under `sections:` resolve to packages/kanon-aspects/src/kanon_aspects/aspects/kanon_sdd/sections/<name>.md,
 # except the unprefixed `protocols-index` which is rendered dynamically by the CLI
 # as the cross-aspect unified catalog.
 #

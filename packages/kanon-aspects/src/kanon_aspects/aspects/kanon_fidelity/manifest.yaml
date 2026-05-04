@@ -3,8 +3,8 @@ kanon-dialect: "2026-05-01"
 #
 # Depth 0: opt-out. Depth 1: lexical-replay engine + authoring protocol + AGENTS.md fragments.
 # Strict-superset semantics: depth-N is the union of depth-0..depth-N for scaffolding.
-# Paths under `protocols:` are relative to src/kanon_reference/aspects/kanon_fidelity/protocols/.
-# Names under `sections:` resolve to src/kanon_reference/aspects/kanon_fidelity/sections/<name>.md.
+# Paths under `protocols:` are relative to packages/kanon-aspects/src/kanon_aspects/aspects/kanon_fidelity/protocols/.
+# Names under `sections:` resolve to packages/kanon-aspects/src/kanon_aspects/aspects/kanon_fidelity/sections/<name>.md.
 #
 # The assertion engine ships in kernel/_fidelity.py (kit-internal) and runs as part
 # of `kanon verify` when the aspect is enabled at depth >= 1, per the carve-out in

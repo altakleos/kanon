@@ -528,18 +528,18 @@ def _load_aspect_registry(target: Path | None = None) -> dict[str, Any]:
     for name, entry in top["aspects"].items():
         e = dict(entry)
         # Per substrate-content-move sub-plan: kanon-* aspect data lives at
-        # src/kanon_reference/aspects/<slug>/ (per ADR-0044 substrate-independence;
+        # packages/kanon-aspects/src/kanon_aspects/aspects/<slug>/ (per ADR-0044 substrate-independence;
         # substrate ships zero aspect data). Other slugs (acme-*) come from the
         # entry-point publisher's distribution root via importlib.metadata.
         if name.startswith(f"{_KANON_NAMESPACE}-"):
             try:
-                import kanon_reference
+                import kanon_aspects
 
                 e["_source"] = str(
-                    Path(kanon_reference.__file__).parent / "aspects" / name.replace("-", "_")
+                    Path(kanon_aspects.__file__).parent / "aspects" / name.replace("-", "_")
                 )
             except ImportError:
-                # kanon_reference not installed — fall back to legacy kit
+                # kanon_aspects not installed — fall back to legacy kit
                 # location for transitional consumers (will be empty after
                 # content move; substrate-independence gate enforces).
                 e["_source"] = str(_kit_root() / e["path"])
@@ -701,10 +701,10 @@ def _aspect_path(aspect: str) -> Path:
     absolute ``_source``; kit-aspect entries set ``_source`` via
     :func:`_load_aspect_registry`. When neither is available (callers that
     look up via :func:`_aspect_entry` without first calling the registry),
-    the fallback synthesizes the path from kanon_reference for kanon-* aspects.
+    the fallback synthesizes the path from kanon_aspects for kanon-* aspects.
 
     Per ADR-0044 substrate-independence: the substrate (kanon-core) MUST
-    NOT silently fall back to a dead legacy path when kanon_reference is
+    NOT silently fall back to a dead legacy path when kanon_aspects is
     absent. After Phase A.7 (substrate-content-move), kernel/kit/aspects/
     no longer exists for kanon-* aspects; returning that path would resolve
     to a non-existent directory and downstream callers (_load_aspect_manifest,
@@ -718,12 +718,12 @@ def _aspect_path(aspect: str) -> Path:
         return Path(entry["_source"])
     if aspect.startswith(f"{_KANON_NAMESPACE}-"):
         try:
-            import kanon_reference
+            import kanon_aspects
 
-            return Path(kanon_reference.__file__).parent / "aspects" / aspect.replace("-", "_")
+            return Path(kanon_aspects.__file__).parent / "aspects" / aspect.replace("-", "_")
         except ImportError as exc:
             raise click.ClickException(
-                f"Cannot resolve aspect {aspect!r}: kanon_reference is not "
+                f"Cannot resolve aspect {aspect!r}: kanon_aspects is not "
                 f"installed. kanon-core ships no kanon-* aspect data per "
                 f"ADR-0044 substrate-independence; install kanon-kit (which "
                 f"depends on both kanon-core and kanon-aspects) or "
