@@ -691,9 +691,12 @@ def _merge_agents_md(existing: str, new: str) -> str:
 
     Also migrates v1 unprefixed markers to v2 namespaced form.
     """
+    # Kit-level sections not owned by any single aspect.
+    _KIT_SECTIONS = {"hard-gates", "banner"}
+
     # Iterate kit + active project-overlay aspects so project-aspect sections
     # also participate in the merge (ADR-0028).
-    possible: set[str] = set()
+    possible: set[str] = _KIT_SECTIONS.copy()
     for aspect_name in _all_known_aspects():
         possible.add(f"{aspect_name}/body")
         for section in _all_aspect_sections(aspect_name):
@@ -707,7 +710,7 @@ def _merge_agents_md(existing: str, new: str) -> str:
             result = _remove_section(result, section)
             continue
         _, nbe, nes, _ = new_pair
-        new_body = new[nbe:nes].strip()
+        new_body = new[nbe:nes].strip("\n")
         if _find_section_pair(result, section) is not None:
             result = _replace_section(result, section, new_body)
         else:

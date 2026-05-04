@@ -111,6 +111,14 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | [`worktree-scripts`](.kanon/protocols/kanon-worktrees/worktree-scripts.md) | 2 | Creating, inspecting, or tearing down worktrees at depth 2, where shell helper scripts are available |
 <!-- kanon:end:protocols-index -->
 
+<!-- kanon:begin:banner -->
+  _  __
+ | |/ /__ _ _ __   ___  _ __
+ | ' // _` | '_ \ / _ \| '_ \
+ | . \ (_| | | | | (_) | | | |
+ |_|\_\__,_|_| |_|\___/|_| |_|
+<!-- kanon:end:banner -->
+
 ## Contribution Conventions
 
 - **Human contributors** — read [`docs/contributing.md`](docs/contributing.md) for module map, gate matrix, and the "where does my change go?" decision flow. This file is the agent-facing router; that one is the human-facing one.
