@@ -47,8 +47,8 @@ MANIFEST: dict[str, Any] = {
     },
     "depth-2": {
         "files": ["docs/specs/README.md", "docs/specs/_template.md"],
-        "protocols": ["spec-review.md", "spec-before-design.md"],
-        "sections": None,
+        "protocols": ["spec-review.md", "spec-before-design.md", "adr-immutability.md"],
+        "sections": [],
         "validators": [
             "kanon_core._validators.link_check",
             "kanon_core._validators.adr_immutability",
@@ -63,7 +63,7 @@ MANIFEST: dict[str, Any] = {
             "docs/foundations/principles/README.md",
             "docs/foundations/personas/README.md",
         ],
-        "protocols": ["adr-immutability.md"],
+        "protocols": [],
         "sections": [],
         "validators": ["kanon_core._validators.spec_design_parity"],
     },

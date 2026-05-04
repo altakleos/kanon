@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-04-27
-depth-min: 3
+depth-min: 2
 invoke-when: An ADR is being modified after acceptance, or a contributor proposes a body edit on an `accepted` / `accepted (lite)` ADR
 ---
 # Protocol: ADR immutability

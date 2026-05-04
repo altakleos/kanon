@@ -23,6 +23,7 @@ byte-equality:
     repo: docs/design/_template.md
 
 files: []
+# depth-0: intentionally empty — prototypes get only AGENTS.md from core.
 depth-0:
   files: []
   protocols: []
@@ -54,7 +55,8 @@ depth-2:
   protocols:
     - spec-review.md
     - spec-before-design.md
-  sections:
+    - adr-immutability.md
+  sections: []
   validators:
     - kanon_core._validators.link_check
     - kanon_core._validators.adr_immutability
@@ -67,8 +69,7 @@ depth-3:
     - docs/foundations/vision.md
     - docs/foundations/principles/README.md
     - docs/foundations/personas/README.md
-  protocols:
-    - adr-immutability.md
+  protocols: []
   sections: []
   validators:
     - kanon_core._validators.spec_design_parity
