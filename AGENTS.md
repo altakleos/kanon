@@ -18,9 +18,13 @@ The audit-trail sentence from the relevant protocol must appear before your firs
 
 1. Is this change trivial? (Trivial = typo, single assertion fix, local rename, provably unreachable deletion. Everything else is non-trivial.)
 2. Am I in a worktree (`.worktrees/<slug>/`)? If not — **stop and create one.**
+   Skip if: never (always applies to file modifications)
 3. If non-trivial: does a plan exist at `docs/plans/<slug>.md` and has the user approved it? If not — **stop and write the plan.**
+   Skip if: Change is trivial (typo, single assertion fix, local rename, provably unreachable deletion)
 4. Does this introduce a new user-visible capability? If yes, does a spec exist at `docs/specs/<slug>.md` with status:accepted? If not — **stop and write the spec.**
+   Skip if: Internal refactors, bug fixes, or changes to existing capabilities that don't alter user-facing behavior
 5. Does this change introduce new component boundaries or cross-component interfaces? If yes, does a design doc exist? If not — **stop and write the design doc.**
+   Skip if: Change follows an existing pattern with no new boundaries, or the spec is self-contained with obvious implementation
 6. State the audit sentence from the relevant gate before proceeding.
 <!-- kanon:end:hard-gates -->
 

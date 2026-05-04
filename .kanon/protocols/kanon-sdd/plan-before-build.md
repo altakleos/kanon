@@ -9,6 +9,7 @@ summary: non-trivial changes require an approved plan before source edits.
 audit: 'Plan at `<path>` has been approved.'
 priority: 100
 question: 'If non-trivial: does a plan exist at `docs/plans/<slug>.md` and has the user approved it? If not — **stop and write the plan.**'
+skip-when: Change is trivial (typo, single assertion fix, local rename, provably unreachable deletion)
 ---
 # Protocol: Plan Before Build
 

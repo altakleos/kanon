@@ -9,6 +9,7 @@ summary: changes introducing new component boundaries require a design doc befor
 audit: 'Design doc at `<path>` covers the architectural scope.'
 priority: 300
 question: 'Does this change introduce new component boundaries or cross-component interfaces? If yes, does a design doc exist? If not — **stop and write the design doc.**'
+skip-when: Change follows an existing pattern with no new boundaries, or the spec is self-contained with obvious implementation
 ---
 # Protocol: Design Before Plan
 

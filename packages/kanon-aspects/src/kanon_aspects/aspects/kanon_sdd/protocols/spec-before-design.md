@@ -9,6 +9,7 @@ summary: new user-visible capabilities require an approved spec before design/pl
 audit: 'Spec at `<path>` has been approved.'
 priority: 200
 question: 'Does this introduce a new user-visible capability? If yes, does a spec exist at `docs/specs/<slug>.md` with status:accepted? If not — **stop and write the spec.**'
+skip-when: Internal refactors, bug fixes, or changes to existing capabilities that don't alter user-facing behavior
 ---
 # Protocol: Spec Before Design
 

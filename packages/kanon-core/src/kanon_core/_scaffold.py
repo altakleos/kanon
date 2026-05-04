@@ -455,6 +455,7 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
                 "fires": fm.get("invoke-when", ""),
                 "priority": fm.get("priority", 500),
                 "question": fm.get("question", ""),
+                "skip_when": fm.get("skip-when", ""),
             })
 
     gates.sort(key=lambda g: g["priority"])
@@ -482,7 +483,10 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
     for gate in gates:
         if gate["question"]:
             q_num += 1
-            questions.append(f"{q_num}. {gate['question']}")
+            q_line = f"{q_num}. {gate['question']}"
+            if gate["skip_when"]:
+                q_line += f"\n   Skip if: {gate['skip_when']}"
+            questions.append(q_line)
     q_num += 1
     questions.append(f"{q_num}. State the audit sentence from the relevant gate before proceeding.")
 
