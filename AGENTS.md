@@ -101,6 +101,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | --- | --- | --- |
 | [`worktree-lifecycle`](.kanon/protocols/kanon-worktrees/worktree-lifecycle.md) | 1 | A file-modifying operation is about to begin, or `git worktree list` shows active worktrees from other work streams |
 | [`branch-hygiene`](.kanon/protocols/kanon-worktrees/branch-hygiene.md) | 1 | A file-modifying operation is about to begin |
+| [`worktree-scripts`](.kanon/protocols/kanon-worktrees/worktree-scripts.md) | 2 | Creating, inspecting, or tearing down worktrees at depth 2, where shell helper scripts are available |
 <!-- kanon:end:protocols-index -->
 
 ## Contribution Conventions
