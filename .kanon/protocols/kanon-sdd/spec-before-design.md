@@ -3,6 +3,12 @@ status: accepted
 date: 2026-04-28
 depth-min: 2
 invoke-when: A change introduces a new user-visible capability, or the agent is unsure whether a spec is needed
+gate: hard
+label: Spec Before Design
+summary: new user-visible capabilities require an approved spec before design/plan/implementation.
+audit: 'Spec at `<path>` has been approved.'
+priority: 200
+question: 'Does this introduce a new user-visible capability? If yes, does a spec exist at `docs/specs/<slug>.md` with status:accepted? If not — **stop and write the spec.**'
 ---
 # Protocol: Spec Before Design
 
