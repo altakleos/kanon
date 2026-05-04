@@ -1,5 +1,5 @@
 ---
-status: approved
+status: done
 slug: phase-a.9-migration-script
 date: 2026-05-02
 design: docs/design/distribution-boundary.md
