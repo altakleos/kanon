@@ -1,6 +1,7 @@
 ---
 slug: uv-workspace-kit-meta
-status: approved
+status: done
+shipped-in: PR #117
 owner: makutaku
 created: 2026-05-04
 related-adr: 0054

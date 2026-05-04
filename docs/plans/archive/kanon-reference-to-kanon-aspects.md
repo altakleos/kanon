@@ -1,6 +1,7 @@
 ---
 slug: kanon-reference-to-kanon-aspects
-status: approved
+status: done
+shipped-in: PR #114
 owner: makutaku
 created: 2026-05-03
 related-adr: 0054
