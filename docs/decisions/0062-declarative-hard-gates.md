@@ -56,5 +56,5 @@ None. No changes to `.kanon/config.yaml` schema. Gate declaration is purely in p
 ## References
 
 - [Spec: Declarative Hard Gates](../specs/declarative-hard-gates.md)
-- [ADR-0034](0034-hard-gates-table.md): Original hard-gates table design
+- [ADR-0034](0034-routing-index-agents-md.md): Original hard-gates table design
 - [ADR-0056](0056-sdd-protocol-gaps.md): design-before-plan protocol addition

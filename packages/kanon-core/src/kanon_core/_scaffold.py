@@ -443,6 +443,13 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
             fm = _parse_frontmatter(proto_path.read_text(encoding="utf-8"))
             if fm.get("gate") != "hard":
                 continue
+            # INV-gate-frontmatter-schema: required fields when gate: hard.
+            _required = ("label", "summary", "audit")
+            missing = [f for f in _required if f not in fm]
+            if missing:
+                raise click.ClickException(
+                    f"{aspect}/{proto_file}: gate: hard requires {', '.join(missing)}"
+                )
             fm_depth_min = fm.get("depth-min", 1)
             if depth < fm_depth_min:
                 continue
@@ -459,6 +466,17 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
             })
 
     gates.sort(key=lambda g: g["priority"])
+
+    # INV-gate-priority-unique: no two active gates may share a priority.
+    seen_priorities: dict[int, str] = {}
+    for gate in gates:
+        p = gate["priority"]
+        if p in seen_priorities:
+            raise click.ClickException(
+                f"Hard gate priority {p} collision: "
+                f"{seen_priorities[p]} and {gate['aspect']}/{gate['protocol']}"
+            )
+        seen_priorities[p] = f"{gate['aspect']}/{gate['protocol']}"
 
     if not gates:
         return "## Hard Gates\n\n_No hard gates active at current aspect configuration._\n"
