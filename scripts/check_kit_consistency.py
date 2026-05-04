@@ -86,10 +86,11 @@ def _aspect_root(aspect: str, top: dict[str, Any]) -> Path | None:
     entry = top["aspects"].get(aspect)
     if not entry:
         return None
-    bundle_root = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects" / aspect.replace("-", "_")
+    aspects_pkg = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects"
+    bundle_root = aspects_pkg / "aspects" / aspect.replace("-", "_")
     if bundle_root.is_dir():
         return bundle_root
-    kref_data_root = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "data" / aspect
+    kref_data_root = aspects_pkg / "data" / aspect
     if kref_data_root.is_dir():
         return kref_data_root
     kit_root = _KIT / entry["path"]
