@@ -63,6 +63,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | --- | --- | --- |
 | [`release-checklist`](.kanon/protocols/kanon-release/release-checklist.md) | 1 | A release is being prepared, or the user asks to cut a release |
 | [`publishing-discipline`](.kanon/protocols/kanon-release/publishing-discipline.md) | 1 | A release is being prepared, or executing release publish steps |
+| [`preflight-automation`](.kanon/protocols/kanon-release/preflight-automation.md) | 2 | Preparing a release at depth 2, or the user asks to automate release preflight checks |
 
 ### kanon-sdd (depth 3)
 
@@ -86,6 +87,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | Protocol | Depth-min | Invoke when |
 | --- | --- | --- |
 | [`secure-defaults`](.kanon/protocols/kanon-security/secure-defaults.md) | 1 | Writing or modifying code that handles secrets, user input, network requests, file operations, or authentication |
+| [`security-review`](.kanon/protocols/kanon-security/security-review.md) | 2 | A spec or plan introduces a new external-facing endpoint, a new data store, a new authentication mechanism, or a new third-party integration |
 
 ### kanon-testing (depth 3)
 

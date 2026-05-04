@@ -37,5 +37,6 @@ depth-2:
   # + preflight wiring retired (per ADR-0048 de-opinionation; substrate no longer
   # ships consumer-side CI scripts nor GitHub-Actions workflow files).
   files: []
-  protocols: []
+  protocols:
+    - preflight-automation.md
   sections: []
