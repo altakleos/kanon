@@ -96,6 +96,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | [`test-discipline`](.kanon/protocols/kanon-testing/test-discipline.md) | 1 | Writing or modifying code |
 | [`error-diagnosis`](.kanon/protocols/kanon-testing/error-diagnosis.md) | 1 | A test fails, a build breaks, or a command produces an unexpected error during implementation |
 | [`ac-first-tdd`](.kanon/protocols/kanon-testing/ac-first-tdd.md) | 2 | Implementing a plan or spec invariant at testing depth >= 2 |
+| [`test-quality`](.kanon/protocols/kanon-testing/test-quality.md) | 3 | Writing or modifying tests at testing depth >= 3 |
 
 ### kanon-worktrees (depth 2)
 

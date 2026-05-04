@@ -48,8 +48,11 @@ depth-3:
   # Phase A.8: scaffolded ci/check_test_quality.py retired
   # (per ADR-0048 de-opinionation).
   files: []
-  protocols: []
+  protocols:
+    - test-quality.md
   sections: []
+  validators:
+    - kanon_core._validators.test_quality_check
 
 # Phase A.4: config-schema retired (per ADR-0048 de-opinionation; substrate
 # no longer reads test_cmd / lint_cmd / typecheck_cmd / format_cmd /
