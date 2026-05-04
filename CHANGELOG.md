@@ -6,6 +6,47 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- **DAG-driven verification engine (ADR-0061).** `kanon verify` now builds the artifact graph and dispatches node/edge handlers via topological walk. Replaces the legacy `run_kit_validators` linear pipeline. Structured `Finding` dataclass with impact-chain context. Hash-based change detection infrastructure. Synthetic `derived_from` edges (vision→principles) in the graph model.
+- **`kanon graph impact <slug>` command.** Shows the transitive blast radius of changing any artifact by walking downstream through the cross-link graph (realizes, stressed_by, stresses, inv_ref edges). Max depth 2.
+- **Impact chain output in `kanon verify`.** Related warnings are grouped as cascading chains from root cause to affected artifacts, in both JSON output (`chains` key) and human-readable stderr.
+- **`foundations-authoring` protocol (depth-min 2).** Partners with the user to populate vision, principles, and personas when foundations are empty templates. Fires at first-spec time or on user request. One-time onboarding cascade with consent checkpoints at every step.
+- **`foundations-review` protocol (depth-min 2, ADR-0060).** When vision changes, classifies each principle/persona as keep/amend/retire/new-implied. Presents disposition table for user approval. Clears the coherence warning after execution.
+- **`foundations_impact` validator (depth 2, ADR-0060).** Traces `realizes:` and `stressed_by:` frontmatter references to superseded or missing foundation slugs. Emits affected-spec list in `kanon verify`.
+- **`foundations_coherence` validator (depth 2, ADR-0058).** Automatic vision-drift detection via SHA-256 hashing. Warns when vision.md changes but no principle or persona file has been updated. Self-clearing.
+- **`adr-authoring` protocol (depth-min 1, ADR-0056).** Gate protocol preventing retroactive ADR authoring, strawman alternatives, missing cross-references, and status lifecycle abuse.
+- **`design-before-plan` protocol (depth-min 3, ADR-0056).** Gate protocol ensuring design docs are written before plans for changes with new component boundaries.
+- **Makefile** with common dev targets: `test`, `lint`, `typecheck`, `e2e`, `check`.
+- **`_banner.py` tests.** Covers `_BANNER` content and all `_should_emit_banner` branches.
+
+### Changed
+
+- **Manifest unification (ADR-0055).** Each aspect's `manifest.yaml` is now the single source of truth for all metadata (registry + content fields). `loader.py` files replaced with 3-line `importlib.resources` trampolines. `_load_aspect_manifest()` simplified to return entry-point dict directly for kit aspects. Net -192 lines.
+- **Foundations moved to depth 2 (ADR-0057).** Vision, personas, and principles are now scaffolded alongside specs instead of design docs. `spec-before-design` Step 2 amended to consult foundations before writing specs.
+- **Foundations README updated.** Changed from "not a processing stage" to "consulted during spec authoring."
+- **`adr-immutability` protocol moved from depth-3 to depth-2.** Aligns with its validator registration depth. Depth-2 users now see the protocol guidance.
+- **`sections: null` normalized to `sections: []`** in kanon-sdd manifest (depth-2).
+- **Enriched `vision.md` template.** Replaced generic angle-bracket placeholders with Mission / Non-goals / Key bets guided prompts.
+- **CI: macOS added to verify workflow matrix.** Both `ubuntu-latest` and `macos-latest` across Python 3.10–3.13.
+- **CI: E2E tests added to verify workflow.** Separate job running `pytest -m e2e` on both OSes.
+- **CI: shared steps extracted into reusable `checks.yml` workflow.** `verify.yml` and `release.yml` deduplicated.
+- **Narrowed `except Exception`** to specific types in `_verify.py`, `_preflight.py`, `_atomic.py`.
+
+### Removed
+
+- **`run_kit_validators`** from `_verify.py` — replaced by DAG engine.
+
+### Decided
+
+- **ADR-0055:** Manifest unification — YAML as single source of truth.
+- **ADR-0056:** SDD protocol gaps — adr-authoring and design-before-plan gates.
+- **ADR-0057:** Foundations to depth 2 — LLM context for spec authoring.
+- **ADR-0058:** Foundations coherence — automatic vision-drift detection.
+- **ADR-0059:** Foundations onboarding cascade — LLM-human collaboration on project identity.
+- **ADR-0060:** Foundations review and downstream impact validator.
+- **ADR-0061:** DAG-driven verification — the graph as verification substrate.
+
 ## [0.5.0a3] — 2026-05-04
 
 `kanon migrate` retired; `kanon upgrade` becomes the single user-facing migration verb. Per migrate-expanded plan + ADR-0054 §7 follow-up. The release also includes the prior `[Unreleased]` items from the v0.5.0a3 cycle (move-toward-final-layout: `kernel` → `kanon_core` rename, `kanon_reference` → `kanon_aspects` rename, `packages/{kanon-core,kanon-aspects,kit-meta}/` per-package pyprojects, uv workspace coordinator).
