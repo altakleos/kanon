@@ -40,7 +40,7 @@ If `docs/foundations/` exists, scan it before writing the spec:
 
 Carry these forward into the spec's frontmatter fields. This step is informational — it does not block if foundations are absent or incomplete.
 
-If `kanon verify` has flagged a foundations-coherence warning (vision.md changed but principles/personas have not been updated), surface this to the user before proceeding. Stale foundations may lead to specs grounded in outdated project stances.
+If `kanon verify` has flagged a foundations-coherence warning (vision.md changed but principles/personas have not been updated), invoke the `foundations-review` protocol before proceeding. Stale foundations may lead to specs grounded in outdated project stances.
 
 If `vision.md` contains only scaffolded template content, invoke the `foundations-authoring` protocol to partner with the user on populating foundations before writing the spec.
 
