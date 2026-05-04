@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ### Added
 
+- **Declarative hard gates via protocol frontmatter (ADR-0062).** Hard gates are now declared in protocol YAML frontmatter (`gate: hard`, `label`, `summary`, `audit`, `priority`, `question`, `skip-when`) instead of a static Python list. Any aspect (kit, project, third-party) can declare hard gates — publisher symmetry restored.
+- **Dynamic decision-tree prose.** The "Before every source-modifying tool call" checklist is generated from active gates' `question` fields, sorted by priority. Adapts to depth — no more static 3-step list.
+- **`skip-when:` frontmatter for hard gates.** Skip conditions rendered as "Skip if:" lines in the decision tree, visible post-compaction without reading the full protocol.
+- **`design-before-plan` promoted to hard gate (sdd depth ≥ 3).** Fires when a plan is about to be written for a change introducing new component boundaries.
+- **`kanon upgrade` now refreshes kit-level sections.** Fixed bug where `hard-gates` and `banner` marker sections were never updated during upgrade.
+
+### Added
+
 - **DAG-driven verification engine (ADR-0061).** `kanon verify` now builds the artifact graph and dispatches node/edge handlers via topological walk. Replaces the legacy `run_kit_validators` linear pipeline. Structured `Finding` dataclass with impact-chain context. Hash-based change detection infrastructure. Synthetic `derived_from` edges (vision→principles) in the graph model.
 - **`kanon graph impact <slug>` command.** Shows the transitive blast radius of changing any artifact by walking downstream through the cross-link graph (realizes, stressed_by, stresses, inv_ref edges). Max depth 2.
 - **Impact chain output in `kanon verify`.** Related warnings are grouped as cascading chains from root cause to affected artifacts, in both JSON output (`chains` key) and human-readable stderr.
