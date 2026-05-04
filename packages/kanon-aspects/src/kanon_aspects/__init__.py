@@ -12,4 +12,4 @@ single `kanon-kit` distribution to PyPI until ADR-0053's forcing function
 fires. The version below mirrors `kanon_core.__version__`.
 """
 
-__version__ = "0.5.0a2"
+__version__ = "0.5.0a3"

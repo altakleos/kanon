@@ -141,6 +141,119 @@ def _migrate_legacy_config(config: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+_RETIRED_TESTING_CONFIG_KEYS = (
+    "test_cmd",
+    "lint_cmd",
+    "typecheck_cmd",
+    "format_cmd",
+    "coverage_floor",
+)
+
+
+def _apply_v3_to_v4_migration(
+    config: dict[str, Any],
+    target: Path,
+) -> tuple[dict[str, Any], list[str], list[Path]]:
+    """One-way v3 → v4 transformer + cleanup. Idempotent if already v4.
+
+    Promotes a v3-shape config (`kit_version` + `aspects:` namespaced) to v4
+    by adding the v4 fields (`schema-version: 4`, `kanon-dialect`,
+    `provenance:`), strips deprecated config keys (Phase A.4 retired
+    kanon-testing keys), and identifies stale `.kanon/protocols/<aspect>/`
+    directories whose aspect is no longer in the active set.
+
+    The stale-protocols directories are returned as a list of paths; the
+    caller decides whether to delete them (so dry-run callers can preview).
+
+    Returns:
+        (new_config, change_descriptions, stale_protocols_dirs)
+
+    Raises:
+        click.ClickException for v5+ configs (forward-version guard).
+    """
+    schema_version = config.get("schema-version")
+
+    # Forward-version guard: refuse v5+ rather than silently mangling.
+    if schema_version is not None:
+        if isinstance(schema_version, bool) or not isinstance(schema_version, int):
+            raise click.ClickException(
+                f"Unsupported schema-version type: {schema_version!r} "
+                f"(got {type(schema_version).__name__}; must be an integer "
+                f"like `schema-version: 4`)."
+            )
+        if schema_version > 4:
+            raise click.ClickException(
+                f"Unknown schema-version: {schema_version}. This kanon only knows how "
+                f"to handle v3 → v4. To handle v{schema_version}, install a newer "
+                f"kanon-core."
+            )
+
+    changes: list[str] = []
+    out = dict(config)
+
+    # Promote to v4 if not already.
+    if "schema-version" not in out:
+        out["schema-version"] = 4
+        changes.append("added schema-version: 4")
+    if "kanon-dialect" not in out:
+        out["kanon-dialect"] = "2026-05-01"
+        changes.append('added kanon-dialect: "2026-05-01"')
+    if "provenance" not in out:
+        out["provenance"] = [
+            {
+                "recipe": "manual-migration",
+                "publisher": "kanon-migrate",
+                "recipe-version": "1.0",
+                "applied_at": _now_iso(),
+            }
+        ]
+        changes.append("added provenance entry")
+
+    # Strip retired kanon-testing config keys (Phase A.4 deletion).
+    aspects = out.get("aspects") or {}
+    if isinstance(aspects, dict):
+        testing_entry = aspects.get("kanon-testing")
+        if isinstance(testing_entry, dict):
+            testing_config = testing_entry.get("config") or {}
+            if isinstance(testing_config, dict):
+                stripped = []
+                for key in _RETIRED_TESTING_CONFIG_KEYS:
+                    if key in testing_config:
+                        del testing_config[key]
+                        stripped.append(key)
+                if stripped:
+                    changes.append(
+                        f"stripped retired kanon-testing config keys: {stripped}"
+                    )
+                testing_entry["config"] = testing_config
+
+    # Reorder: v4 fields at top.
+    reordered: dict[str, Any] = {}
+    for key in ("schema-version", "kanon-dialect", "provenance"):
+        if key in out:
+            reordered[key] = out[key]
+    for key, value in out.items():
+        if key not in reordered:
+            reordered[key] = value
+
+    # Detect stale .kanon/protocols/<aspect>/ dirs.
+    stale_dirs: list[Path] = []
+    enabled_aspects: set[str] = set()
+    aspects_block = reordered.get("aspects")
+    if isinstance(aspects_block, dict):
+        enabled_aspects = {name for name in aspects_block if isinstance(name, str)}
+    protocols_dir = target / ".kanon" / "protocols"
+    if protocols_dir.is_dir():
+        for entry in sorted(protocols_dir.iterdir()):
+            if entry.is_dir() and entry.name not in enabled_aspects:
+                stale_dirs.append(entry)
+                changes.append(
+                    f"would remove stale protocols dir: .kanon/protocols/{entry.name}/"
+                )
+
+    return reordered, changes, stale_dirs
+
+
 def _config_aspects(config: dict[str, Any]) -> dict[str, int]:
     """Extract {aspect_name: depth} from a v2 config."""
     aspects = config.get("aspects", {})
@@ -176,15 +289,40 @@ def _write_config(
     *,
     extra: dict[str, Any] | None = None,
 ) -> None:
-    """Write a v2 .kanon/config.yaml atomically."""
+    """Write a v4 .kanon/config.yaml atomically.
+
+    Per ADR-0054 + the `migrate-expanded` plan (2026-05-04): new configs
+    ship in v4 shape (`schema-version: 4` + `kanon-dialect` + `provenance`
+    at the top), with `kit_version` + `aspects:` retained for the v3
+    reader carve-out. Extras passed in win over defaults so callers can
+    override any field.
+    """
     from kanon_core._atomic import atomic_write_text
 
     config_dir = _ensure_within(target / ".kanon", target)
     config_dir.mkdir(parents=True, exist_ok=True)
-    payload: dict[str, Any] = {"kit_version": kit_version, "aspects": aspects_with_meta}
-    if extra:
-        # Defensive: never let extra overwrite canonical keys.
-        payload.update({k: v for k, v in extra.items() if k not in ("kit_version", "aspects")})
+    extra = extra or {}
+    payload: dict[str, Any] = {}
+    # v4 fields at the top of the file.
+    payload["schema-version"] = extra.get("schema-version", 4)
+    payload["kanon-dialect"] = extra.get("kanon-dialect", "2026-05-01")
+    payload["provenance"] = extra.get(
+        "provenance",
+        [
+            {
+                "recipe": "manual-migration",
+                "publisher": "kanon-migrate",
+                "recipe-version": "1.0",
+                "applied_at": _now_iso(),
+            }
+        ],
+    )
+    # v3 fields (kit_version + aspects) — kept for backward-readability.
+    payload["kit_version"] = kit_version
+    payload["aspects"] = aspects_with_meta
+    # Any other extras (publisher fields, etc.) preserved verbatim.
+    canonical = {"schema-version", "kanon-dialect", "provenance", "kit_version", "aspects"}
+    payload.update({k: v for k, v in extra.items() if k not in canonical})
     atomic_write_text(config_dir / "config.yaml", yaml.safe_dump(payload, sort_keys=False))
 
 

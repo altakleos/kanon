@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.5.0a3] — 2026-05-04
+
+`kanon migrate` retired; `kanon upgrade` becomes the single user-facing migration verb. Per migrate-expanded plan + ADR-0054 §7 follow-up. The release also includes the prior `[Unreleased]` items from the v0.5.0a3 cycle (move-toward-final-layout: `kernel` → `kanon_core` rename, `kanon_reference` → `kanon_aspects` rename, `packages/{kanon-core,kanon-aspects,kit-meta}/` per-package pyprojects, uv workspace coordinator).
+
+### Changed (BREAKING)
+
+- **`kanon migrate` retired; `kanon upgrade` is now the single user-facing migration verb.** Per migrate-expanded plan + user direction (2026-05-04). The standalone `kanon migrate` CLI verb shipped in v0.5.0a2 (one day prior, deprecated-on-arrival) is removed. Its v3 → v4 schema-promotion logic (add `schema-version: 4`, `kanon-dialect`, `provenance`; strip Phase A.4 retired kanon-testing config keys: `test_cmd`, `lint_cmd`, `typecheck_cmd`, `format_cmd`, `coverage_floor`) lives now in a private helper `_apply_v3_to_v4_migration()` invoked by `kanon upgrade` after the existing v1/v2 → v3 chain. Result: a single `pip install -U kanon-kit && kanon upgrade .` migrates ANY legacy schema (v1 `tier:`, v2 bare-key `aspects:`, v3 namespaced + `kit_version`) all the way to v4 + cleans deprecated state. Asymmetry resolved: previously `upgrade` handled v1/v2→v3 but not v3→v4, and `migrate` handled v3→v4 but didn't refresh kit content; users had to know to run BOTH. Now there's one verb.
+- **`kanon upgrade` cleans stale `.kanon/protocols/<aspect>/` directories** for aspects no longer in the active config. Safe-direction only (active aspects' protocol dirs untouched). Implements the long-pending cleanup that PR #92's byte-mirror loosen (ADR-0049 §1(7)) made structurally allowable.
+- **New configs ship in v4 shape from `kanon init`** (not just from `kanon upgrade`). `_write_config()` now writes `schema-version: 4` + `kanon-dialect: "2026-05-01"` + `provenance:` at the top of every newly-created `.kanon/config.yaml`. `kit_version` + `aspects:` retained underneath for backward-readability.
+
 ### Changed
 
 - **uv workspace coordinator + `packages/kit-meta/` future-canonical publisher** authored. Final step of ADR-0054 §7's move-toward-final-layout work. Root `pyproject.toml` gains `[tool.uv.workspace] members = ["packages/kanon-core", "packages/kanon-aspects"]` + `[tool.uv.sources] kanon-core = { workspace = true }`. `packages/kit-meta/pyproject.toml` is a build-correct standalone meta-package wheel (declares `kanon-core==X.Y.Z` + `kanon-aspects==X.Y.Z` deps; `[tool.hatch.build.targets.wheel] bypass-selection = true` produces a 22 KB metadata-only wheel). **kit-meta is intentionally NOT a workspace member** — it would collide with root's `name = "kanon-kit"`. The active PyPI ship target stays the root pyproject's monolith (kanon-kit + both source trees collected) until ADR-0053's forcing function fires; on that day, the swap is one-step (drop root's [project] block + add kit-meta to workspace members). Per plan `docs/plans/active/uv-workspace-kit-meta.md`.

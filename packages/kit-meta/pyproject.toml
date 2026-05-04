@@ -22,7 +22,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kanon-kit"
-version = "0.5.0a2"
+version = "0.5.0a3"
 description = "Meta-package for the kanon protocol substrate. Depends on kanon-core (substrate kernel) + kanon-aspects (reference aspect bundles). Per ADR-0048 + ADR-0051."
 readme = "../../README.md"
 license = { file = "../../LICENSE" }
@@ -33,8 +33,8 @@ classifiers = [
     "Operating System :: MacOS",
 ]
 dependencies = [
-    "kanon-core==0.5.0a2",
-    "kanon-aspects==0.5.0a2",
+    "kanon-core==0.5.0a3",
+    "kanon-aspects==0.5.0a3",
 ]
 
 [tool.hatch.build.targets.wheel]

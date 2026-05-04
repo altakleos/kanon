@@ -345,9 +345,11 @@ def test_aspect_set_config_lifecycle(tmp_path: Path) -> None:
     result = runner.invoke(main, ["init", str(target), "--tier", "1"])
     assert result.exit_code == 0, result.output
 
-    # Step 2: set a config value on testing aspect
+    # Step 2: set a config value on the sdd aspect (non-retired key per
+    # the migrate-expanded plan — kanon-testing's runtime config-schema
+    # was retired in Phase A.4 and its keys are now stripped on upgrade).
     result = runner.invoke(
-        main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=80"]
+        main, ["aspect", "set-config", str(target), "kanon-sdd", "custom_field=42"]
     )
     assert result.exit_code == 0, result.output
 
@@ -355,7 +357,7 @@ def test_aspect_set_config_lifecycle(tmp_path: Path) -> None:
     config = yaml.safe_load(
         (target / ".kanon" / "config.yaml").read_text(encoding="utf-8")
     )
-    assert config["aspects"]["kanon-testing"]["config"]["coverage_floor"] == 80
+    assert config["aspects"]["kanon-sdd"]["config"]["custom_field"] == 42
 
     # Step 4: upgrade preserves config
     result = runner.invoke(main, ["upgrade", str(target)])
@@ -363,7 +365,7 @@ def test_aspect_set_config_lifecycle(tmp_path: Path) -> None:
     config_after = yaml.safe_load(
         (target / ".kanon" / "config.yaml").read_text(encoding="utf-8")
     )
-    assert config_after["aspects"]["kanon-testing"]["config"]["coverage_floor"] == 80
+    assert config_after["aspects"]["kanon-sdd"]["config"]["custom_field"] == 42
 
 
 # --- Test 9: aspect info lifecycle ---
