@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from typing import Any
 
 
 def compute_node_hash(path: Path) -> str:
@@ -16,7 +17,8 @@ def load_hash_store(kanon_dir: Path) -> dict[str, str]:
     path = kanon_dir / "verify-hashes.json"
     if not path.is_file():
         return {}
-    return json.loads(path.read_text("utf-8"))
+    result: dict[str, str] = json.loads(path.read_text("utf-8"))
+    return result
 
 
 def save_hash_store(kanon_dir: Path, store: dict[str, str]) -> None:
@@ -27,7 +29,7 @@ def save_hash_store(kanon_dir: Path, store: dict[str, str]) -> None:
 
 
 def detect_changes(
-    nodes: list, target: Path, store: dict[str, str],
+    nodes: list[Any], target: Path, store: dict[str, str],
 ) -> set[tuple[str, str]]:
     """Return set of (namespace, slug) for nodes whose content hash changed."""
     changed: set[tuple[str, str]] = set()

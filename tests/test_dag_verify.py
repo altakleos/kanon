@@ -5,12 +5,26 @@ from pathlib import Path
 
 import pytest
 
-from kanon_core._findings import Finding
 from kanon_core._change_detection import compute_node_hash, detect_changes, load_hash_store, save_hash_store
-from kanon_core._dag_verify import format_findings, run_dag_verify, _NODE_HANDLERS, _EDGE_HANDLERS, register_node_handler, register_edge_handler
-from kanon_core._graph import GraphData, Node, Edge
-from kanon_core._handlers import _legacy_node_adapter
-
+from kanon_core._dag_verify import (
+    _EDGE_HANDLERS,
+    _NODE_HANDLERS,
+    _build_chains,
+    _downstream_walk,
+    format_findings,
+    register_edge_handler,
+    register_node_handler,
+    run_dag_verify,
+)
+from kanon_core._findings import Finding
+from kanon_core._graph import Edge, GraphData, Node
+from kanon_core._handlers import (
+    _legacy_node_adapter,
+    handle_design_exists,
+    handle_reference_live,
+    handle_vision_coherence,
+    register_all_handlers,
+)
 
 # -- Finding dataclass --
 
@@ -79,13 +93,15 @@ def _clear_handlers():
 
 
 def test_register_node_handler():
-    handler = lambda node, target, findings: None
+    def handler(node, target, findings):
+        pass
     register_node_handler("spec", handler)
     assert handler in _NODE_HANDLERS["spec"]
 
 
 def test_register_edge_handler():
-    handler = lambda edge, src, dst, target, findings: None
+    def handler(edge, src, dst, target, findings):
+        pass
     register_edge_handler("realizes", handler)
     assert handler in _EDGE_HANDLERS["realizes"]
 
@@ -102,7 +118,10 @@ def test_run_dag_verify_simple(tmp_path):
     )
 
     def handler(n, target, findings):
-        findings.append(Finding(severity="error", kind="t", source_slug=n.slug, source_namespace=n.namespace, message="bad"))
+        findings.append(Finding(
+            severity="error", kind="t",
+            source_slug=n.slug, source_namespace=n.namespace, message="bad",
+        ))
 
     register_node_handler("spec", handler)
     findings = run_dag_verify(tmp_path, graph, full=True)
@@ -171,8 +190,6 @@ def test_save_hash_store_creates_parent(tmp_path):
 
 # -- _dag_verify.py: downstream walk & build_chains --
 
-from kanon_core._dag_verify import _downstream_walk, _build_chains
-
 
 def _make_graph(nodes, edges):
     by_slug = {(n.namespace, n.slug): n for n in nodes}
@@ -238,8 +255,6 @@ def test_run_dag_verify_no_nodes():
 
 
 # -- _handlers.py: register_all_handlers & edge adapters --
-
-from kanon_core._handlers import register_all_handlers, handle_vision_coherence, handle_reference_live, handle_design_exists
 
 
 def test_register_all_handlers_populates_tables():

@@ -8,12 +8,13 @@ from __future__ import annotations
 from collections import defaultdict, deque
 from pathlib import Path
 
-from kanon_core._findings import Finding, NodeHandler, EdgeHandler
-from kanon_core._graph import GraphData, Node, Edge, build_graph
 from kanon_core._change_detection import (
-    detect_changes, load_hash_store, save_hash_store,
+    detect_changes,
+    load_hash_store,
+    save_hash_store,
 )
-
+from kanon_core._findings import EdgeHandler, Finding, NodeHandler
+from kanon_core._graph import GraphData
 
 # -- Dispatch tables (populated by register_* or directly) --
 
@@ -106,15 +107,12 @@ def run_dag_verify(
         if node is None:
             continue
 
-        # Determine chain prefix
-        chain = (f"{ns}/{slug}",)
+        # Determine chain prefix (used for impact-chain grouping)
         if key not in seed_set:
             # Find the edge that brought us here
             for edge in graph.inbound_all.get(key, []):
                 src_key = (edge.src_namespace, edge.src_slug)
                 if src_key in {(ns2, s2) for ns2, s2 in visit_order}:
-                    chain = (f"{edge.dst_namespace}/{edge.dst_slug}",
-                             f"{ns}/{slug}")
                     break
 
         # Dispatch node handlers
@@ -126,8 +124,8 @@ def run_dag_verify(
             if edge.src_namespace == ns and edge.src_slug == slug:
                 dst_key = (edge.dst_namespace, edge.dst_slug) if edge.dst_namespace else None
                 dst_node = graph.by_slug.get(dst_key) if dst_key else None
-                for handler in _EDGE_HANDLERS.get(edge.kind, []):
-                    handler(edge, node, dst_node, target, findings)
+                for edge_handler in _EDGE_HANDLERS.get(edge.kind, []):
+                    edge_handler(edge, node, dst_node, target, findings)
 
     return findings
 

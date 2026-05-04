@@ -43,8 +43,10 @@ from kanon_core._cli_helpers import (
     _parse_config_pair,
 )
 from kanon_core._fidelity import _accepted_or_draft_specs, _fixture_shas, _spec_sha
+from kanon_core._findings import Finding
 from kanon_core._graph import (
     ORPHAN_CANDIDATE_NAMESPACES,
+    GraphData,
     build_graph,
     compute_orphans,
 )
@@ -499,8 +501,8 @@ def verify(target: Path) -> None:
     # Kit-aspect validators: now handled by the DAG engine (ADR-0061).
     # The DAG builds the artifact graph, walks downstream from changed
     # nodes, and dispatches node/edge handlers that wrap the same validators.
+    from kanon_core._dag_verify import format_findings, run_dag_verify
     from kanon_core._graph import build_graph
-    from kanon_core._dag_verify import run_dag_verify, format_findings
     from kanon_core._handlers import register_all_handlers
     register_all_handlers()
     graph = build_graph(target)
@@ -589,7 +591,7 @@ def _emit_verify_report(
     errors: list[str],
     warnings: list[str],
     status: str,
-    dag_findings: list | None = None,
+    dag_findings: list[Finding] | None = None,
 ) -> None:
     report = {
         "target": str(target),
@@ -601,8 +603,8 @@ def _emit_verify_report(
     # Group findings by chain root for display
     if dag_findings:
         from collections import defaultdict
-        chains: dict[str, list] = defaultdict(list)
-        standalone: list = []
+        chains: dict[str, list[Finding]] = defaultdict(list)
+        standalone: list[Finding] = []
         for f in dag_findings:
             if f.chain:
                 chains[f.chain[0]].append(f)
@@ -628,7 +630,7 @@ def _emit_verify_report(
         if dag_findings and any(f.affected_slug for f in dag_findings):
             # Group and display impact chains
             from collections import defaultdict
-            chains_display: dict[str, list] = defaultdict(list)
+            chains_display: dict[str, list[Finding]] = defaultdict(list)
             for f in dag_findings:
                 if f.affected_slug:
                     key = f"{f.source_namespace}/{f.source_slug}"
@@ -1207,7 +1209,7 @@ def graph_impact(slug: str, target: Path | None) -> None:
 
 
 def _print_impact(
-    graph_data: "GraphData",
+    graph_data: GraphData,
     key: tuple[str, str],
     depth: int,
     max_depth: int,
@@ -1478,3 +1480,4 @@ def resolve_cmd(target: Path, contracts_arg: str | None) -> None:
 
 if __name__ == "__main__":
     main()
+

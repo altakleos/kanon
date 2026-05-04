@@ -18,7 +18,6 @@ import yaml
 from kanon_core._manifest import (
     _all_known_aspects,
     _aspect_depth_range,
-    _aspect_depth_validators,
     _aspect_provides,
     _aspect_sections,
     _aspect_validators,

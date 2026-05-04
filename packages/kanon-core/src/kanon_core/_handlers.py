@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
+from kanon_core._dag_verify import register_edge_handler, register_node_handler
 from kanon_core._findings import Finding
-from kanon_core._dag_verify import register_node_handler, register_edge_handler
-
 
 # -- Adapter: wraps a legacy check() validator as a node handler --
 
-def _legacy_node_adapter(check_fn, node, target: Path, findings: list[Finding]) -> None:
+def _legacy_node_adapter(check_fn: Any, node: Any, target: Path, findings: list[Finding]) -> None:
     """Run a legacy check(target, errors, warnings) and convert output to Findings."""
     errors: list[str] = []
     warnings: list[str] = []
@@ -30,25 +30,25 @@ def _legacy_node_adapter(check_fn, node, target: Path, findings: list[Finding]) 
 
 # -- Node handlers (property checks on individual artifacts) --
 
-def handle_plan_completion(node, target: Path, findings: list[Finding]) -> None:
+def handle_plan_completion(node: Any, target: Path, findings: list[Finding]) -> None:
     """Check plan checkbox completion."""
     from kanon_core._validators.plan_completion import check
     _legacy_node_adapter(check, node, target, findings)
 
 
-def handle_index_consistency(node, target: Path, findings: list[Finding]) -> None:
+def handle_index_consistency(node: Any, target: Path, findings: list[Finding]) -> None:
     """Check index README for duplicate entries."""
     from kanon_core._validators.index_consistency import check
     _legacy_node_adapter(check, node, target, findings)
 
 
-def handle_link_check(node, target: Path, findings: list[Finding]) -> None:
+def handle_link_check(node: Any, target: Path, findings: list[Finding]) -> None:
     """Validate relative markdown links."""
     from kanon_core._validators.link_check import check
     _legacy_node_adapter(check, node, target, findings)
 
 
-def handle_adr_immutability(node, target: Path, findings: list[Finding]) -> None:
+def handle_adr_immutability(node: Any, target: Path, findings: list[Finding]) -> None:
     """Check ADR body immutability."""
     from kanon_core._validators.adr_immutability import check
     _legacy_node_adapter(check, node, target, findings)
@@ -56,7 +56,7 @@ def handle_adr_immutability(node, target: Path, findings: list[Finding]) -> None
 
 # -- Edge handlers (relationship checks between artifacts) --
 
-def handle_vision_coherence(edge, src_node, dst_node, target: Path, findings: list[Finding]) -> None:
+def handle_vision_coherence(edge: Any, src_node: Any, dst_node: Any, target: Path, findings: list[Finding]) -> None:
     """Check vision→principle coherence."""
     from kanon_core._validators.foundations_coherence import check
     errors: list[str] = []
@@ -80,7 +80,7 @@ def handle_vision_coherence(edge, src_node, dst_node, target: Path, findings: li
         ))
 
 
-def handle_reference_live(edge, src_node, dst_node, target: Path, findings: list[Finding]) -> None:
+def handle_reference_live(edge: Any, src_node: Any, dst_node: Any, target: Path, findings: list[Finding]) -> None:
     """Check that realizes:/stressed_by: targets are not superseded."""
     from kanon_core._validators.foundations_impact import check
     errors: list[str] = []
@@ -96,7 +96,7 @@ def handle_reference_live(edge, src_node, dst_node, target: Path, findings: list
         ))
 
 
-def handle_design_exists(edge, src_node, dst_node, target: Path, findings: list[Finding]) -> None:
+def handle_design_exists(edge: Any, src_node: Any, dst_node: Any, target: Path, findings: list[Finding]) -> None:
     """Check that accepted specs have companion design docs."""
     from kanon_core._validators.spec_design_parity import check
     errors: list[str] = []
@@ -127,3 +127,4 @@ def register_all_handlers() -> None:
     register_edge_handler("realizes", handle_reference_live)
     register_edge_handler("stressed_by", handle_reference_live)
     register_edge_handler("realizes", handle_design_exists)
+
