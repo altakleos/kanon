@@ -1,25 +1,17 @@
 ---
 status: draft
-date: YYYY-MM-DD
+date: <today>
 ---
-# Vision — What ${project_name} Is, and What It Is Not
+# Vision
 
-## What it is
+## Mission
 
-<A single narrative paragraph. What does the project do? Who is it for? What's the guiding idea?>
+<!-- What problem does this project solve? Who is it for? What's the one-paragraph pitch? -->
 
-## What it is not
+## Non-goals
 
-<Explicit non-goals. What the project deliberately will not do.>
+<!-- What does this project explicitly NOT do? What adjacent problems will you refuse to solve? -->
 
-## Current Promises
+## Key bets
 
-<Observable user-facing guarantees. Update as promises change.>
-
-## Non-Goals
-
-<Things the project commits to NOT doing.>
-
-## Why it exists
-
-<Context, origin, motivating constraints.>
+<!-- What controversial or non-obvious stances does this project take? What would a reasonable person disagree with? -->
