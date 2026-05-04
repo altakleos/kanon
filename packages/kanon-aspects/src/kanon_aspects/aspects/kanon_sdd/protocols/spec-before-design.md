@@ -30,15 +30,25 @@ A change **does NOT need a spec** (skip directly to design/plan/implementation) 
 - adding a check, validator, or test
 - adding a new output type that follows an existing pattern already governed by a spec
 
-### 2. Write the spec
+### 2. Consult foundations (if available)
+
+If `docs/foundations/` exists, scan it before writing the spec:
+
+- Read `vision.md` to verify the capability aligns with the project's mission and non-goals.
+- Scan `principles/` for principles that constrain the design space. Note any the spec should `realize:` in its frontmatter.
+- Scan `personas/` for personas whose stress dimensions are relevant. Note any the spec should list in `stressed_by:` frontmatter.
+
+Carry these forward into the spec's frontmatter fields. This step is informational — it does not block if foundations are absent or incomplete.
+
+### 3. Write the spec
 
 Your **first output** is a spec file at `docs/specs/<slug>.md`, followed by explicit user approval. You may not write a design doc, ADR, plan, or implementation before the spec is approved.
 
-### 3. Design-doc skip convention
+### 4. Design-doc skip convention
 
 When skipping a design doc (all conditions in the SDD method doc § "When to Skip" are met), declare the skip in the plan's YAML frontmatter as `design: "Follows ADR-NNNN"` — citing the ADR that already covers the design space.
 
-### 4. State the audit sentence
+### 5. State the audit sentence
 
 **Before your first design-doc, ADR, plan, or source-modifying tool call, state in one sentence:** "Spec at `<path>` has been approved." If you cannot truthfully emit that sentence, stop and write the spec.
 

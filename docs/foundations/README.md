@@ -1,6 +1,6 @@
 # Foundations
 
-Cross-cutting source material this project commits to. Feature artifacts (specs, ADRs, plans) cite foundations rather than pass through them. Foundations are not a processing stage; nothing flows into or out of them in a normal feature's life cycle. They are the corpus the stack assumes.
+Cross-cutting source material this project commits to. Feature artifacts (specs, ADRs, plans) cite foundations as context during authoring and validate references at review time. Foundations are consulted during spec authoring (via the spec-before-design protocol) and checked at spec review (via the spec-review protocol). They are the corpus the stack assumes.
 
 ## Sub-namespaces
 
