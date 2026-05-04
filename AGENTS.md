@@ -77,6 +77,7 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 | [`spec-review`](.kanon/protocols/kanon-sdd/spec-review.md) | 2 | A draft spec is ready for review (status:draft), or the user asks for a spec review, or a spec is about to be promoted to status:accepted |
 | [`spec-before-design`](.kanon/protocols/kanon-sdd/spec-before-design.md) | 2 | A change introduces a new user-visible capability, or the agent is unsure whether a spec is needed |
 | [`adr-immutability`](.kanon/protocols/kanon-sdd/adr-immutability.md) | 2 | An ADR is being modified after acceptance, or a contributor proposes a body edit on an `accepted` / `accepted (lite)` ADR |
+| [`foundations-authoring`](.kanon/protocols/kanon-sdd/foundations-authoring.md) | 2 | Foundations are empty templates and a spec is about to be written, or the user asks to populate foundations |
 | [`design-before-plan`](.kanon/protocols/kanon-sdd/design-before-plan.md) | 3 | About to write a plan for a change where a spec exists and the change introduces new component boundaries, cross-component interfaces, or non-obvious architectural mechanisms |
 
 ### kanon-security (depth 2)
