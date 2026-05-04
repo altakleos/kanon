@@ -90,3 +90,36 @@ This ADR is **honest about what's deferred** versus what isn't:
 - [`pfmoore/editables#20`](https://github.com/pfmoore/editables/issues/20) — the upstream issue whose resolution would unblock Option 1.
 - v0.5.0a2 release cycle: PRs #96, #97, #98, #99, #100, #102, #104, #107 — the empirical cost of Option-1-class moves.
 - 2026-05-03 experimental attempt: `wt/phase-a-beta-pyprojects` branch (deleted; never PR'd) confirmed the editables error against an isolated `kernel/pyproject.toml` test.
+
+## Historical Note (2026-05-04)
+
+**This ADR's "zero current consumers" framing was factually incorrect on a load-bearing detail.** The error: it conflated "no third-party publisher" (true at write time, true today) with "no current consumer" (false at write time, false today).
+
+The substrate has been shipping into **three live consumers** since well before this ADR was authored — all three are projects in the same lead's `~/workspace/platform/` tree:
+
+| Repo | `.kanon/config.yaml` schema state (2026-05-04) |
+|------|------------------------------------------------|
+| **kanon** (self-host per ADR-0044) | hybrid v3+v4 — `schema-version: 4` + `kanon-dialect` (added by Phase 0.5 / PR #60) AND v3 fields (`kit_version`, `aspects:` with `{depth, enabled_at, config}` shape) preserved per the "v3 reader" comment. The v3 reader was deleted in Phase A.3 (PR #65), but the v3 *fields* in `.kanon/config.yaml` were never cleaned up. |
+| **website** | v3-only (`kit_version: 0.3.1a2`); no v4 fields. Pre-Phase-0.5. |
+| **sensei** | v3-only (`kit_version: 0.2.0a11`); v0.2-era. Pre-Phase-0.5 AND pre-v0.3. Two schema generations behind. |
+
+### Implications for the deferral
+
+The §Decision §"Forcing function" list of three reopen-triggers stays correct **for the multi-distribution PyPI publish** (kanon-core + kanon-aspects as separate PyPI artifacts) — none of the three consumers above is asking to depend on `kanon-core` only; all three are happy with the `kanon-kit` monolith. So Phase A.β (per-package pyprojects), Phase A.γ (release.yml three-wheel reshape), Phase A.δ (PyPI registration), and Phase A.ε (first three-package release) **remain deferred** as written.
+
+But **Phase A.9 (the migration script `kanon migrate v0.3 → v0.4`)** is NOT deferred for this reason. The migration script's audience is exactly these three consumers, and they ARE the forcing function. ADR-0053's blanket statement that Phase A.9 is gated on the same forcing function as the multi-distribution split was an error; the migration script is gated on its own forcing function — "are there v0.3-era configs to migrate?" — and the answer has been "yes, three of them" the whole time.
+
+### Action implied
+
+Phase A.9 may proceed without further ADR action. The corresponding plan at `docs/plans/active/phase-a.9-migration-script.md` is unblocked.
+
+### What's preserved from this ADR
+
+- The deferral of the actual three-distribution PyPI publish (Phase A.β / γ / δ / ε) — still in force.
+- The forcing-function rule for the multi-distribution split — still in force.
+- The architectural commitments (ADR-0048, ADR-0051, ADR-0049) — still in force.
+
+### What's corrected
+
+- Phase A.9 (migration script) is unblocked NOW because three real v0.3-era consumers exist.
+- The ADR's framing of "zero current consumers" applies only to "no third-party publisher of `kanon-core`" — NOT to "no consumer of `kanon-kit`". The latter has always had three.
