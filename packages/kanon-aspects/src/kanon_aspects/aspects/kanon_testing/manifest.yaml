@@ -1,4 +1,13 @@
 kanon-dialect: "2026-05-01"
+stability: experimental
+depth-range: [0, 3]
+default-depth: 1
+description: "Test discipline, AC-first TDD, error diagnosis"
+requires: []
+provides:
+  - test-discipline
+suggests:
+  - "kanon-sdd >= 1"
 # Per-aspect sub-manifest for `testing` — test discipline for LLM-agent-driven repos.
 #
 # Depth 0: opt-out. Depth 1: test discipline. Depth 2: AC-first + TDD. Depth 3: automated enforcement.

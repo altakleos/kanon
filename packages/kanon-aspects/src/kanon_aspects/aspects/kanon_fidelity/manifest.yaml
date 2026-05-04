@@ -1,4 +1,12 @@
 kanon-dialect: "2026-05-01"
+stability: experimental
+depth-range: [0, 1]
+default-depth: 1
+description: "Behavioural conformance via lexical assertions"
+requires: []
+provides:
+  - behavioural-verification
+suggests: []
 # Per-aspect sub-manifest for `kanon-fidelity` — Tier-1 behavioural-conformance verification.
 #
 # Depth 0: opt-out. Depth 1: lexical-replay engine + authoring protocol + AGENTS.md fragments.

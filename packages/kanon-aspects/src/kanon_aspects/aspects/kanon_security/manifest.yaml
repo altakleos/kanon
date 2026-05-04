@@ -1,4 +1,12 @@
 kanon-dialect: "2026-05-01"
+stability: experimental
+depth-range: [0, 2]
+default-depth: 1
+description: "Secure-by-default protocols and CI scanner"
+requires: []
+provides:
+  - security-discipline
+suggests: []
 # Security aspect — hardened defaults for LLM-agent-authored code.
 #
 # Depth 0: opt-out. Depth 1: prose guidance. Depth 2: prose + CI validator.
