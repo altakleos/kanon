@@ -42,23 +42,7 @@ Carry these forward into the spec's frontmatter fields. This step is information
 
 If `kanon verify` has flagged a foundations-coherence warning (vision.md changed but principles/personas have not been updated), surface this to the user before proceeding. Stale foundations may lead to specs grounded in outdated project stances.
 
-### Foundations onboarding (first spec only)
-
-If `vision.md` contains only scaffolded template content (e.g., `status: draft` with no project-specific narrative), pause and ask the user:
-
-> "I don't have your project's vision yet. A quick description will make this spec — and every future spec — sharper. What's the one-paragraph pitch?"
-
-If the user provides a description, populate `vision.md` with their answer, structured into Mission, Non-goals, and Key bets sections.
-
-Then, in a single checkpoint, present extracted foundations:
-
-> "From your vision I extracted **principles** [list] and identified potential **personas** [list, if derivable]. Should I capture any of these? (all / principles only / skip)"
-
-Write whichever artifacts the user approves, then proceed to write the spec.
-
-If the user declines to provide a vision description, proceed to write the spec without foundations context. This is a recommendation, not a gate — the user's choice is respected.
-
-This flow fires only when foundations are empty templates. Once populated, subsequent specs skip directly to consulting the existing foundations.
+If `vision.md` contains only scaffolded template content, invoke the `foundations-authoring` protocol to partner with the user on populating foundations before writing the spec.
 
 ### 3. Write the spec
 
