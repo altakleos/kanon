@@ -51,6 +51,7 @@ def test_full_project_lifecycle(tmp_path: Path) -> None:
     result = runner.invoke(main, ["tier", "set", str(target), "2"])
     assert result.exit_code == 0, result.output
     assert (target / "docs" / "specs").is_dir()
+    assert (target / "docs" / "foundations").is_dir()
 
     # Step 4: verify still ok
     _verify_ok(runner, target)
