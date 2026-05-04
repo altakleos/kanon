@@ -1,6 +1,7 @@
 ---
 slug: kernel-to-kanon-core
-status: approved
+status: done
+shipped-in: PR #112
 owner: makutaku
 created: 2026-05-03
 related-adr: 0054
