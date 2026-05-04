@@ -461,6 +461,15 @@ _HARD_GATES: list[_HardGate] = [
         "fires": "About to introduce a new user-visible capability",
     },
     {
+        "aspect": "kanon-sdd",
+        "depth_min": 3,
+        "protocol": "design-before-plan.md",
+        "label": "Design Before Plan",
+        "summary": "changes introducing new component boundaries require a design doc before planning.",
+        "audit": 'Design doc at `<path>` covers the architectural scope.',
+        "fires": "About to write a plan for a change where a spec exists and the change introduces new component boundaries, cross-component interfaces, or non-obvious architectural mechanisms",
+    },
+    {
         "aspect": "kanon-worktrees",
         "depth_min": 1,
         "protocol": "branch-hygiene.md",
