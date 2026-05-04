@@ -40,6 +40,8 @@ If `docs/foundations/` exists, scan it before writing the spec:
 
 Carry these forward into the spec's frontmatter fields. This step is informational — it does not block if foundations are absent or incomplete.
 
+If `kanon verify` has flagged a foundations-coherence warning (vision.md changed but principles/personas have not been updated), surface this to the user before proceeding. Stale foundations may lead to specs grounded in outdated project stances.
+
 ### 3. Write the spec
 
 Your **first output** is a spec file at `docs/specs/<slug>.md`, followed by explicit user approval. You may not write a design doc, ADR, plan, or implementation before the spec is approved.
