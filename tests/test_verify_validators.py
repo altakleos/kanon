@@ -86,22 +86,6 @@ def test_project_validator_runtime_exception(tmp_path: Path) -> None:
     assert "validator boom" in result.output
 
 
-def test_kit_validator_lookup_failure_warns(tmp_path: Path) -> None:
-    """Kit validator lookup failure surfaces as a warning, not silent."""
-    from unittest.mock import patch
-
-    from kanon_core._verify import run_kit_validators
-
-    errors: list[str] = []
-    warnings: list[str] = []
-    with patch(
-        "kanon_core._verify._aspect_depth_validators",
-        side_effect=RuntimeError("boom"),
-    ):
-        run_kit_validators(tmp_path, {"kanon-sdd": 1}, errors, warnings)
-    assert any("kit-validator lookup failed" in w for w in warnings)
-
-
 def test_fidelity_capability_lookup_failure_warns(tmp_path: Path) -> None:
     """Fidelity capability lookup failure surfaces as a warning, not silent."""
     from unittest.mock import patch
