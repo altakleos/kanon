@@ -16,9 +16,10 @@ import yaml
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 # Per substrate-content-move sub-plan: kanon-* aspect data lives under
 # packages/kanon-aspects/src/kanon_aspects/aspects/<slug>/.
-_SDD_PROTOCOLS = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects" / "kanon_sdd" / "protocols"
+_SDD_BASE = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects" / "kanon_sdd"
+_SDD_PROTOCOLS = _SDD_BASE / "protocols"
+_SDD_MANIFEST = _SDD_BASE / "manifest.yaml"
 _REPO_SDD_PROTOCOLS = _REPO_ROOT / ".kanon" / "protocols" / "kanon-sdd"
-_SDD_MANIFEST = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects" / "kanon_sdd" / "manifest.yaml"
 
 _REQUIRED_FRONTMATTER_KEYS = ("status", "date", "depth-min", "invoke-when")
 
