@@ -658,7 +658,10 @@ def _load_aspect_manifest(aspect: str) -> dict[str, Any]:
         if not sub_path.is_file():
             raise click.ClickException(f"aspect sub-manifest missing: {sub_path}")
         data = _load_yaml(sub_path)
-    source_label = f"<entry-point {aspect}>" if aspect.startswith(f"{_KANON_NAMESPACE}-") else str(_aspect_path(aspect) / "manifest.yaml")
+    if aspect.startswith(f"{_KANON_NAMESPACE}-"):
+        source_label = f"<entry-point {aspect}>"
+    else:
+        source_label = str(_aspect_path(aspect) / "manifest.yaml")
     min_d, max_d = _aspect_depth_range(aspect)
     for d in range(min_d, max_d + 1):
         key = f"depth-{d}"
