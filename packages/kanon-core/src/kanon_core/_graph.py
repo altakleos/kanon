@@ -75,6 +75,7 @@ EDGE_STRESSES = "stresses"
 EDGE_REQUIRES = "requires"
 EDGE_SERVES_PLAN = "serves_plan"
 EDGE_INV_REF = "inv_ref"
+EDGE_DERIVED_FROM = "derived_from"
 
 
 @dataclass(frozen=True)
@@ -579,6 +580,16 @@ def build_graph(repo_root: Path) -> GraphData:
     spec_slug_set = {n.slug for n in spec_nodes}
     for spec_node in spec_nodes:
         edges.extend(_spec_inv_ref_edges(spec_node, spec_slug_set))
+
+    # Synthetic derived_from edges: principle → vision (ADR-0061)
+    vision_key = (NAMESPACE_VISION, "vision")
+    if vision_key in by_slug:
+        for p_node in principle_nodes:
+            edges.append(Edge(
+                p_node.slug, NAMESPACE_PRINCIPLE,
+                "vision", NAMESPACE_VISION,
+                EDGE_DERIVED_FROM, p_node.path,
+            ))
 
     edges = [_resolve_dst(e, by_slug) for e in edges]
 
