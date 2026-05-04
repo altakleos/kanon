@@ -5,7 +5,7 @@ test:
 	.venv/bin/pytest -x -q
 
 lint:
-	.venv/bin/ruff check packages/kanon-core/src/ src/ tests/ scripts/
+	.venv/bin/ruff check packages/kanon-core/src/ packages/kanon-aspects/src/ tests/ scripts/
 
 typecheck:
 	.venv/bin/mypy packages/kanon-core/src/kanon_core/

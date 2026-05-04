@@ -42,7 +42,7 @@ jobs:
         run: pytest -v
 
       - name: Lint with ruff
-        run: ruff check packages/kanon-core/src/ src/ tests/ scripts/
+        run: ruff check packages/kanon-core/src/ packages/kanon-aspects/src/ tests/ scripts/
 
       - name: Type check with mypy
         run: mypy packages/kanon-core/src/kanon_core
