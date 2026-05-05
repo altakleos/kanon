@@ -6,10 +6,28 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.5.0a8] — 2026-05-05
+
+### Fixed
+
+- **`kanon preflight` no longer hangs on stuck commands.** Added `timeout=120` to subprocess execution with proper `TimeoutExpired` handling.
+- **Bare-name aspect sugar removed (ADR-0045 A.5 complete).** `sdd` no longer silently resolves to `kanon-sdd` — a `ClickException` with the correct full name is raised instead. Per ADR-0048 publisher-symmetry.
+- **`_kit_root()` retired (ADR-0045 A.2 complete).** All runtime file access now uses `importlib.resources` via `_kit_data()`, making the kernel location-independent.
+- **Stale "kit-global files" warning** in `kanon verify` replaced with accurate message.
+- **Stale `kanon tier set` reference** in `verify-triage` protocol replaced with `kanon aspect set-depth`.
+- **Silent exception swallowing** in version-check now surfaces as a warning.
+
 ### Added
 
+- **`INV-resolutions-resolver-not-in-ci` validator.** `kanon verify` now scans CI configs (GitHub Actions, GitLab CI, Jenkins, CircleCI, BuildKite, CodeBuild) for `kanon resolve` invocations and reports them as errors.
+- **Direct unit tests for `_gates.py`.** 8 tests covering `evaluate_gates` (pass/fail/timeout/judgment/fail-fast) and `write_trace`.
+- **Hard-gates unconditional enforcement text.** AGENTS.md now explicitly states no user directive overrides hard gates — only `kanon aspect set-depth` to depth 0.
 - **CI gate enforcing ADR-0042 canonical-wording parity.** `scripts/check_adr_0042_wording.py` asserts the four MUST-NOT clauses ratified in ADR-0042 §1 appear in both the ADR body and the `_ADR_0042_VERIFY_SCOPE` constant in `cli.py`. Wired into `.github/workflows/checks.yml` so any drift between the two surfaces blocks merge.
 - **Substrate-independence gate (ADR-0044) is now a required CI check.** `scripts/check_substrate_independence.py` was previously available but unwired; it now runs on every PR and merge-to-main as part of `.github/workflows/checks.yml`, blocking any change that introduces a hidden runtime dependency on `kanon_aspects` from `kanon-core` code paths.
+
+### Changed
+
+- **`kanon-aspects` dependency on `kanon-core` now has a version floor** (`>=0.5.0a3`).
 
 ## [0.5.0a7] — 2026-05-05
 
