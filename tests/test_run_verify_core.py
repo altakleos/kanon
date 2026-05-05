@@ -1,6 +1,7 @@
 """Direct unit tests for _run_verify_core (extracted verify logic)."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from click.testing import CliRunner
@@ -40,3 +41,25 @@ def test_run_verify_core_returns_fail_on_missing_required_file(tmp_path: Path) -
     result = _run_verify_core(target)
     assert result["status"] == "fail"
     assert any("AGENTS.md" in e for e in result["errors"])
+
+
+def test_gates_check_on_valid_project(tmp_path: Path) -> None:
+    """gates check on a valid project exits 0 and produces JSON."""
+    target = _init_project(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(main, ["gates", "check", str(target)])
+    assert result.exit_code == 0, result.output
+    # Output has stderr lines mixed in; find the JSON object
+    report, _ = json.JSONDecoder().raw_decode(result.output[result.output.index("{"):])
+    assert "passed" in report
+    assert "summary" in report
+
+
+def test_gates_check_with_filter(tmp_path: Path) -> None:
+    """gates check --gate filters to matching labels only."""
+    target = _init_project(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(main, ["gates", "check", str(target), "--gate", "Nonexistent"])
+    assert result.exit_code == 0
+    report, _ = json.JSONDecoder().raw_decode(result.output[result.output.index("{"):])
+    assert report["summary"]["total"] == 0
