@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.5.0a7] — 2026-05-05
+
+### Changed
+
+- **AGENTS.md hard-gates section simplified.** Decision tree (6 numbered questions) eliminated. Replaced by a slim table (gate + fires-when + protocol link) and a directive to run `kanon gates check .`. Audit sentences and skip-when conditions are now available only via the CLI JSON output — no longer duplicated in static prose.
+
+### Added
+
+- **`protocol_path` field in `kanon gates check` output.** Each gate now includes the repo-relative path to its protocol file (e.g., `.kanon/protocols/kanon-sdd/plan-before-build.md`).
+- **Decision and design nodes in cross-link graph.** `kanon graph impact` now shows ADRs (via prose links to specs) and design docs (via `implements:` frontmatter). Edge kinds: `decides`, `implements`.
+- **Artifact status in `graph impact` output.** Each node shows its lifecycle status (e.g., `[accepted]`, `[superseded]`).
+- **`graph impact` uses positional TARGET arg.** Consistent with `verify`, `preflight`, `gates check` (`kanon graph impact . <slug>` instead of `--target .`).
+
 ## [0.5.0a6] — 2026-05-04
 
 ### Fixed
