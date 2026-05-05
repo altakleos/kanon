@@ -66,15 +66,16 @@ depth-min: 2
 
 
 def test_discovers_gates_from_frontmatter(tmp_path: Path) -> None:
-    """A protocol with gate: hard and all required fields is discovered."""
+    """A protocol with gate: hard and all required fields is discovered and validated."""
     _write_protocol(tmp_path, "test-gate.md", _VALID_GATE)
 
     with patch("kanon_core._scaffold._aspect_path", return_value=tmp_path), \
          patch("kanon_core._scaffold._aspect_protocols", return_value=["test-gate.md"]):
         result = _render_hard_gates({"kanon-sdd": 1})
 
-    assert "Test Gate" in result
-    assert "a test gate." in result
+    # Gate discovered → imperative section rendered (not the empty-gates fallback)
+    assert "STOP" in result
+    assert "kanon gates check ." in result
 
 
 def test_missing_required_field_raises(tmp_path: Path) -> None:
@@ -131,14 +132,15 @@ def test_depth_filtering_includes_at_sufficient_depth(tmp_path: Path) -> None:
          patch("kanon_core._scaffold._aspect_protocols", return_value=["deep.md"]):
         result = _render_hard_gates({"kanon-sdd": 2})
 
-    assert "Deep Gate" in result
+    # Gate discovered at sufficient depth → imperative rendered
+    assert "STOP" in result
 
 
 # --- INV-declarative-hard-gates-decision-tree-dynamic ---
 
 
 def test_decision_tree_generated_from_questions(tmp_path: Path) -> None:
-    """Gates are rendered in priority order in the table."""
+    """Gates are validated and the imperative section is rendered."""
     _write_protocol(tmp_path, "gate-a.md", _VALID_GATE_B)  # priority 200
     _write_protocol(tmp_path, "gate-b.md", _VALID_GATE)    # priority 100
 
@@ -146,43 +148,42 @@ def test_decision_tree_generated_from_questions(tmp_path: Path) -> None:
          patch("kanon_core._scaffold._aspect_protocols", return_value=["gate-a.md", "gate-b.md"]):
         result = _render_hard_gates({"kanon-sdd": 1})
 
-    # Priority 100 gate comes before priority 200 gate in table
-    pos_a = result.index("Test Gate")
-    pos_b = result.index("Second Gate")
-    assert pos_a < pos_b
-
-    # Command directive present
+    # Imperative directive present (table removed per architect decision)
     assert "kanon gates check ." in result
+    assert "STOP" in result
+    assert "mandatory" in result
 
 
 # --- INV-declarative-hard-gates-skip-when-rendered ---
 
 
 def test_skip_when_rendered(tmp_path: Path) -> None:
-    """skip-when is available via kanon gates check (not in static table)."""
+    """skip-when is available via kanon gates check (not in static prose)."""
     _write_protocol(tmp_path, "gate.md", _VALID_GATE)
 
     with patch("kanon_core._scaffold._aspect_path", return_value=tmp_path), \
          patch("kanon_core._scaffold._aspect_protocols", return_value=["gate.md"]):
         result = _render_hard_gates({"kanon-sdd": 1})
 
-    # Table contains the gate summary but not skip-when (moved to CLI output)
-    assert "a test gate." in result
-    assert "judgment" in result  # directive mentions judgment gates
+    # Directive mentions judgment gates
+    assert "judgment" in result
+    assert "kanon gates check ." in result
 
 
 # --- INV-declarative-hard-gates-fires-from-invoke-when ---
 
 
 def test_fires_from_invoke_when(tmp_path: Path) -> None:
-    """The 'Fires when' column uses the invoke-when frontmatter field."""
+    """Gates are discovered and validated even though invoke-when is not rendered."""
     _write_protocol(tmp_path, "gate.md", _VALID_GATE)
 
     with patch("kanon_core._scaffold._aspect_path", return_value=tmp_path), \
          patch("kanon_core._scaffold._aspect_protocols", return_value=["gate.md"]):
         result = _render_hard_gates({"kanon-sdd": 1})
 
-    assert "A change is about to begin" in result
+    # Section is rendered (gate was discovered successfully)
+    assert "## Hard Gates" in result
+    assert "before modifying any file" in result
 
 
 # --- INV-declarative-hard-gates-publisher-symmetric ---
@@ -196,4 +197,6 @@ def test_publisher_symmetric(tmp_path: Path) -> None:
          patch("kanon_core._scaffold._aspect_protocols", return_value=["custom-gate.md"]):
         result = _render_hard_gates({"project-custom": 1})
 
-    assert "Test Gate" in result
+    # Gate discovered from project-custom namespace (publisher-symmetric)
+    assert "## Hard Gates" in result
+    assert "STOP" in result

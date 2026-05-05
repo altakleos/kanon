@@ -438,7 +438,9 @@ def _build_bundle(
 
 
 def _render_hard_gates(aspects: dict[str, int]) -> str:
-    """Render the hard-gates table from protocol frontmatter declarations."""
+    """Render the hard-gates section — imperative-first, no table."""
+    # Validate gate declarations still hold (INV-gate-frontmatter-schema,
+    # INV-gate-priority-unique) even though we don't render them.
     gates: list[dict[str, Any]] = []
     for aspect, depth in aspects.items():
         aspect_root = _aspect_path(aspect)
@@ -449,7 +451,6 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
             fm = _parse_frontmatter(proto_path.read_text(encoding="utf-8"))
             if fm.get("gate") != "hard":
                 continue
-            # INV-gate-frontmatter-schema: required fields when gate: hard.
             _required = ("label", "summary", "audit", "priority", "question")
             missing = [f for f in _required if f not in fm]
             if missing:
@@ -459,70 +460,42 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
             fm_depth_min = fm.get("depth-min", 1)
             if depth < fm_depth_min:
                 continue
-            gates.append({
-                "aspect": aspect,
-                "protocol": proto_file,
-                "label": fm["label"],
-                "summary": fm["summary"],
-                "audit": fm["audit"],
-                "fires": fm.get("invoke-when", ""),
-                "priority": fm.get("priority", 500),
-                "question": fm.get("question", ""),
-                "skip_when": fm.get("skip-when", ""),
-            })
+            gates.append({"priority": fm["priority"], "source": f"{aspect}/{proto_file}"})
 
     gates.sort(key=lambda g: g["priority"])
-
-    # INV-gate-priority-unique: no two active gates may share a priority.
     seen_priorities: dict[int, str] = {}
     for gate in gates:
         p = gate["priority"]
         if p in seen_priorities:
             raise click.ClickException(
                 f"Hard gate priority {p} collision: "
-                f"{seen_priorities[p]} and {gate['aspect']}/{gate['protocol']}"
+                f"{seen_priorities[p]} and {gate['source']}"
             )
-        seen_priorities[p] = f"{gate['aspect']}/{gate['protocol']}"
+        seen_priorities[p] = gate["source"]
 
     if not gates:
         return "## Hard Gates\n\n_No hard gates active at current aspect configuration._\n"
 
-    rows: list[str] = []
-    for gate in gates:
-        slug = gate["protocol"].removesuffix(".md")
-        rows.append(
-            f'| **{gate["label"]}** \u2014 {gate["summary"]} '
-            f'| {gate["fires"]} '
-            f'| [`{slug}`](.kanon/protocols/{gate["aspect"]}/{gate["protocol"]}) |'
-        )
-
     lines = [
         "## Hard Gates",
         "",
-        "These gates apply to ALL task types. When a gate fires, "
-        "read the linked protocol **in full** before proceeding.",
+        "**STOP.** Run `kanon gates check .` before modifying any file. "
+        "This is mandatory \u2014 not advisory.",
         "",
-        "| Gate | Fires when | Protocol |",
-        "|------|-----------|----------|",
-        *rows,
-        "",
-        "The audit-trail sentence from the relevant protocol must appear "
-        "before your first source-modifying tool call. "
-        "Its absence in a transcript is how violations get caught.",
-        "",
-        "**Hard gates are unconditional.** No user directive "
-        "\u2014 including \"go\", \"just do it\", \"skip the ceremony\", "
-        "\"commit directly\", or any urgency signal "
-        "\u2014 overrides these gates. If the user wants to bypass gates, "
-        "the only mechanism is `kanon aspect set-depth` to reduce depth to 0. "
-        "Anything short of that means gates remain enforced.",
-        "",
-        "**Before your first source-modifying tool call in a task**, "
-        "run `kanon gates check .` and read its output. For each gate:",
+        "For each gate in the output:",
         "- `\"pass\"` \u2014 proceed.",
-        "- `\"fail\"` \u2014 resolve before proceeding.",
-        "- `\"judgment\"` \u2014 evaluate the `question` field yourself; "
+        "- `\"fail\"` \u2014 resolve before proceeding; "
+        "read the protocol at `protocol_path`.",
+        "- `\"judgment\"` \u2014 answer the `question` yourself; "
         "emit the `audit` sentence if satisfied.",
+        "",
+        "Hard gates are unconditional. No user directive "
+        "\u2014 \"go\", \"just do it\", \"skip the ceremony\" "
+        "\u2014 overrides them. The only bypass is "
+        "`kanon aspect set-depth` to reduce depth to 0.",
+        "",
+        "The audit-trail sentence must appear before your first "
+        "file modification. Its absence is how violations are caught.",
         "",
     ]
     return "\n".join(lines) + "\n"
