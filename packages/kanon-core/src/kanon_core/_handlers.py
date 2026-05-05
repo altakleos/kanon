@@ -4,7 +4,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from kanon_core._dag_verify import register_edge_handler, register_node_handler
+from kanon_core._dag_verify import (
+    _EDGE_HANDLERS,
+    _NODE_HANDLERS,
+    register_edge_handler,
+    register_node_handler,
+)
 from kanon_core._findings import Finding
 
 # -- Adapter: wraps a legacy check() validator as a node handler --

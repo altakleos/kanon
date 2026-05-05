@@ -1,336 +1,243 @@
-"""Tests for kit-aspect validator modules."""
+"""Tests for the 4 untested validators in kanon_core._validators."""
 from __future__ import annotations
 
 import subprocess
-import textwrap
 from pathlib import Path
+from unittest.mock import patch
 
-from kanon_core._validators import adr_immutability, link_check, plan_completion
-
-# ── plan_completion ──────────────────────────────────────────────
-
-
-class TestPlanCompletion:
-    def _run(self, tmp_path: Path, files: dict[str, str]) -> list[str]:
-        plans = tmp_path / "docs" / "plans"
-        plans.mkdir(parents=True)
-        for name, content in files.items():
-            (plans / name).write_text(content)
-        errors: list[str] = []
-        plan_completion.check(tmp_path, errors, [])
-        return errors
-
-    def test_done_all_ticked(self, tmp_path: Path) -> None:
-        assert not self._run(tmp_path, {"a.md": textwrap.dedent("""\
-            ---
-            status: done
-            ---
-            - [x] task one
-            - [x] task two
-        """)})
-
-    def test_done_with_unchecked(self, tmp_path: Path) -> None:
-        errs = self._run(tmp_path, {"a.md": textwrap.dedent("""\
-            ---
-            status: done
-            ---
-            - [x] task one
-            - [ ] task two
-        """)})
-        assert len(errs) == 1
-        assert "1 unchecked" in errs[0]
-
-    def test_not_done_ignored(self, tmp_path: Path) -> None:
-        assert not self._run(tmp_path, {"a.md": textwrap.dedent("""\
-            ---
-            status: in-progress
-            ---
-            - [ ] task one
-        """)})
-
-    def test_no_frontmatter(self, tmp_path: Path) -> None:
-        assert not self._run(tmp_path, {"a.md": "- [ ] task one\n"})
-
-    def test_skips_readme_and_roadmap(self, tmp_path: Path) -> None:
-        done_unchecked = "---\nstatus: done\n---\n- [ ] oops\n"
-        assert not self._run(tmp_path, {
-            "README.md": done_unchecked,
-            "roadmap.md": done_unchecked,
-        })
-
-    def test_missing_plans_dir(self, tmp_path: Path) -> None:
-        errors: list[str] = []
-        plan_completion.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_tilde_counts_as_ticked(self, tmp_path: Path) -> None:
-        assert not self._run(tmp_path, {"a.md": textwrap.dedent("""\
-            ---
-            status: done
-            ---
-            - [~] partial task
-            - [x] done task
-        """)})
-
-    def test_unclosed_frontmatter_ignored(self, tmp_path: Path) -> None:
-        """Plan with opening --- but no closing --- is not treated as done."""
-        assert not self._run(tmp_path, {"a.md": "---\nstatus: done\n# no closing\n"})
-
-    def test_frontmatter_without_status_ignored(self, tmp_path: Path) -> None:
-        """Plan with valid frontmatter but no status key is not treated as done."""
-        assert not self._run(tmp_path, {"a.md": "---\ntitle: foo\n---\n- [ ] task\n"})
+import pytest
 
 
-# ── link_check ───────────────────────────────────────────────────
+# --- deps_hygiene_check ---
 
 
-class TestLinkCheck:
-    def test_valid_link(self, tmp_path: Path) -> None:
-        docs = tmp_path / "docs"
-        docs.mkdir()
-        (docs / "target.md").write_text("# Target\n")
-        (docs / "source.md").write_text("[link](target.md)\n")
-        errors: list[str] = []
-        link_check.check(tmp_path, errors, [])
-        assert not errors
+class TestDepsHygieneCheck:
+    def test_no_manifest_no_warning(self, tmp_path: Path) -> None:
+        from kanon_core._validators.deps_hygiene_check import check
 
-    def test_broken_link(self, tmp_path: Path) -> None:
-        docs = tmp_path / "docs"
-        docs.mkdir()
-        (docs / "source.md").write_text("[link](missing.md)\n")
-        errors: list[str] = []
-        link_check.check(tmp_path, errors, [])
-        assert len(errors) == 1
-        assert "missing.md" in errors[0]
-
-    def test_external_link_ignored(self, tmp_path: Path) -> None:
-        docs = tmp_path / "docs"
-        docs.mkdir()
-        (docs / "source.md").write_text("[link](https://example.com)\n")
-        errors: list[str] = []
-        link_check.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_code_block_ignored(self, tmp_path: Path) -> None:
-        docs = tmp_path / "docs"
-        docs.mkdir()
-        (docs / "source.md").write_text(
-            "```\n[link](missing.md)\n```\n"
-        )
-        errors: list[str] = []
-        link_check.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_anchor_only_ignored(self, tmp_path: Path) -> None:
-        docs = tmp_path / "docs"
-        docs.mkdir()
-        (docs / "source.md").write_text("[link](#heading)\n")
-        errors: list[str] = []
-        link_check.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_missing_docs_dir(self, tmp_path: Path) -> None:
-        errors: list[str] = []
-        link_check.check(tmp_path, errors, [])
-        assert not errors
-
-
-# ── adr_immutability ─────────────────────────────────────────────
-
-
-def _git_init(path: Path) -> None:
-    """Create a git repo with an initial commit."""
-    subprocess.run(["git", "init", "-b", "main"], cwd=path, capture_output=True, check=True)
-    subprocess.run(["git", "config", "user.email", "test@test"], cwd=path, capture_output=True, check=True)
-    subprocess.run(["git", "config", "user.name", "Test"], cwd=path, capture_output=True, check=True)
-    (path / ".gitkeep").write_text("")
-    subprocess.run(["git", "add", "."], cwd=path, capture_output=True, check=True)
-    subprocess.run(["git", "commit", "-m", "init"], cwd=path, capture_output=True, check=True)
-
-
-def _commit(path: Path, msg: str = "update") -> None:
-    subprocess.run(["git", "add", "."], cwd=path, capture_output=True, check=True)
-    subprocess.run(["git", "commit", "-m", msg, "--allow-empty"], cwd=path, capture_output=True, check=True)
-
-
-_ACCEPTED_ADR = """\
----
-status: accepted
----
-# ADR-0001
-
-Body text.
-"""
-
-
-class TestAdrImmutability:
-    def test_body_change_detected(self, tmp_path: Path) -> None:
-        _git_init(tmp_path)
-        adr = tmp_path / "docs" / "decisions" / "0001-test.md"
-        adr.parent.mkdir(parents=True)
-        adr.write_text(_ACCEPTED_ADR)
-        _commit(tmp_path, "add adr")
-        adr.write_text(_ACCEPTED_ADR.replace("Body text.", "Changed body."))
-        _commit(tmp_path, "edit adr")
-        errors: list[str] = []
-        adr_immutability.check(tmp_path, errors, [])
-        assert len(errors) == 1
-        assert "body change" in errors[0]
-
-    def test_frontmatter_only_change_ok(self, tmp_path: Path) -> None:
-        _git_init(tmp_path)
-        adr = tmp_path / "docs" / "decisions" / "0001-test.md"
-        adr.parent.mkdir(parents=True)
-        adr.write_text(_ACCEPTED_ADR)
-        _commit(tmp_path, "add adr")
-        adr.write_text(_ACCEPTED_ADR.replace(
-            "status: accepted", "status: accepted\ndate: 2026-01-01"
-        ))
-        _commit(tmp_path, "update fm")
-        errors: list[str] = []
-        adr_immutability.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_historical_note_append_ok(self, tmp_path: Path) -> None:
-        _git_init(tmp_path)
-        adr = tmp_path / "docs" / "decisions" / "0001-test.md"
-        adr.parent.mkdir(parents=True)
-        adr.write_text(_ACCEPTED_ADR)
-        _commit(tmp_path, "add adr")
-        adr.write_text(_ACCEPTED_ADR + "\n## Historical Note\n\nAdded later.\n")
-        _commit(tmp_path, "add note")
-        errors: list[str] = []
-        adr_immutability.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_trailer_exemption(self, tmp_path: Path) -> None:
-        _git_init(tmp_path)
-        adr = tmp_path / "docs" / "decisions" / "0001-test.md"
-        adr.parent.mkdir(parents=True)
-        adr.write_text(_ACCEPTED_ADR)
-        _commit(tmp_path, "add adr")
-        adr.write_text(_ACCEPTED_ADR.replace("Body text.", "Changed body."))
-        _commit(tmp_path, "edit adr\n\nAllow-ADR-edit: 0001 — reason here")
-        errors: list[str] = []
-        adr_immutability.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_non_accepted_ignored(self, tmp_path: Path) -> None:
-        _git_init(tmp_path)
-        adr = tmp_path / "docs" / "decisions" / "0001-test.md"
-        adr.parent.mkdir(parents=True)
-        adr.write_text("---\nstatus: draft\n---\n# ADR\n\nBody.\n")
-        _commit(tmp_path, "add adr")
-        adr.write_text("---\nstatus: draft\n---\n# ADR\n\nChanged.\n")
-        _commit(tmp_path, "edit")
-        errors: list[str] = []
-        adr_immutability.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_new_adr_not_flagged(self, tmp_path: Path) -> None:
-        _git_init(tmp_path)
-        adr = tmp_path / "docs" / "decisions" / "0001-test.md"
-        adr.parent.mkdir(parents=True)
-        adr.write_text(_ACCEPTED_ADR)
-        _commit(tmp_path, "add adr")
-        errors: list[str] = []
-        adr_immutability.check(tmp_path, errors, [])
-        assert not errors
-
-    def test_deleted_adr_flagged(self, tmp_path: Path) -> None:
-        _git_init(tmp_path)
-        adr = tmp_path / "docs" / "decisions" / "0001-test.md"
-        adr.parent.mkdir(parents=True)
-        adr.write_text(_ACCEPTED_ADR)
-        _commit(tmp_path, "add adr")
-        adr.unlink()
-        _commit(tmp_path, "delete adr")
-        errors: list[str] = []
-        adr_immutability.check(tmp_path, errors, [])
-        assert len(errors) == 1
-        assert "deleted" in errors[0]
-
-    def test_non_adr_file_ignored(self, tmp_path: Path) -> None:
-        _git_init(tmp_path)
-        f = tmp_path / "docs" / "decisions" / "README.md"
-        f.parent.mkdir(parents=True)
-        f.write_text("# Index\n")
-        _commit(tmp_path, "add readme")
-        f.write_text("# Updated Index\n")
-        _commit(tmp_path, "edit readme")
-        errors: list[str] = []
-        adr_immutability.check(tmp_path, errors, [])
-        assert not errors
-
-
-# ── _check_one unit tests (no git needed) ────────────────────────
-
-
-class TestCheckOne:
-    def test_body_change_returns_error(self) -> None:
-        err = adr_immutability._check_one(
-            path="docs/decisions/0001-test.md",
-            old_text=_ACCEPTED_ADR,
-            new_text=_ACCEPTED_ADR.replace("Body text.", "New."),
-            commit_msg="edit", sha="abc12345",
-        )
-        assert err and "body change" in err
-
-    def test_same_body_returns_none(self) -> None:
-        assert adr_immutability._check_one(
-            path="docs/decisions/0001-test.md",
-            old_text=_ACCEPTED_ADR, new_text=_ACCEPTED_ADR,
-            commit_msg="noop", sha="abc12345",
-        ) is None
-
-
-class TestParseTrailers:
-    def test_single(self) -> None:
-        t = adr_immutability._parse_trailers("msg\n\nAllow-ADR-edit: 0001 — reason")
-        assert t == {"0001": "reason"}
-
-    def test_comma_separated(self) -> None:
-        t = adr_immutability._parse_trailers("msg\n\nAllow-ADR-edit: 1, 2 — reason")
-        assert "0001" in t and "0002" in t
-
-    def test_no_reason_rejected(self) -> None:
-        t = adr_immutability._parse_trailers("msg\n\nAllow-ADR-edit: 0001 — ")
-        assert not t
-
-
-class TestSplitFm:
-    def test_no_frontmatter(self) -> None:
-        fm, body = adr_immutability._split_fm("# Title\nBody\n")
-        assert fm == {} and body == "# Title\nBody\n"
-
-    def test_with_frontmatter(self) -> None:
-        fm, body = adr_immutability._split_fm("---\nk: v\n---\nbody\n")
-        assert fm == {"k": "v"} and body == "body\n"
-
-
-# --- Error-path tests ---
-
-
-def test_validators_nonexistent_target(tmp_path: Path) -> None:
-    """Validators handle nonexistent target gracefully."""
-    from kanon_core._validators import index_consistency, link_check, plan_completion
-
-    target = tmp_path / "nonexistent"
-    for validator in (link_check, index_consistency, plan_completion):
         errors: list[str] = []
         warnings: list[str] = []
-        validator.check(target, errors, warnings)
-        # Should not crash — just return with no findings
-        assert isinstance(errors, list)
+        check(tmp_path, errors, warnings)
+        assert errors == []
+        assert warnings == []
 
+    def test_manifest_without_lockfile_warns(self, tmp_path: Path) -> None:
+        from kanon_core._validators.deps_hygiene_check import check
 
-def test_validators_empty_docs(tmp_path: Path) -> None:
-    """Validators handle target with empty docs/ directory."""
-    from kanon_core._validators import index_consistency, link_check
-
-    (tmp_path / "docs").mkdir()
-    for validator in (link_check, index_consistency):
+        (tmp_path / "pyproject.toml").write_text("[project]\n", encoding="utf-8")
         errors: list[str] = []
         warnings: list[str] = []
-        validator.check(tmp_path, errors, warnings)
-        assert isinstance(errors, list)
+        check(tmp_path, errors, warnings)
+        assert any("no lockfile" in w for w in warnings)
+        assert errors == []
+
+    def test_manifest_with_lockfile_no_warning(self, tmp_path: Path) -> None:
+        from kanon_core._validators.deps_hygiene_check import check
+
+        (tmp_path / "pyproject.toml").write_text("[project]\n", encoding="utf-8")
+        (tmp_path / "uv.lock").write_text("", encoding="utf-8")
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(tmp_path, errors, warnings)
+        assert not any("no lockfile" in w for w in warnings)
+
+    def test_unpinned_requirements_warns(self, tmp_path: Path) -> None:
+        from kanon_core._validators.deps_hygiene_check import check
+
+        (tmp_path / "requirements.txt").write_text(
+            "flask\nrequests>=2.0\nclick==8.1.7\n", encoding="utf-8"
+        )
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(tmp_path, errors, warnings)
+        assert any("unpinned" in w for w in warnings)
+
+    def test_fully_pinned_requirements_no_warning(self, tmp_path: Path) -> None:
+        from kanon_core._validators.deps_hygiene_check import check
+
+        (tmp_path / "requirements.txt").write_text(
+            "flask==3.0.0\nclick==8.1.7\n", encoding="utf-8"
+        )
+        # Also need a lockfile to avoid that warning
+        (tmp_path / "pyproject.toml").write_text("[project]\n", encoding="utf-8")
+        (tmp_path / "uv.lock").write_text("", encoding="utf-8")
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(tmp_path, errors, warnings)
+        assert not any("unpinned" in w for w in warnings)
+
+
+# --- orphan_branches ---
+
+
+class TestOrphanBranches:
+    def test_no_worktrees_dir_no_warning(self, tmp_path: Path) -> None:
+        from kanon_core._validators.orphan_branches import check
+
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(str(tmp_path), errors, warnings)
+        assert errors == []
+        assert warnings == []
+
+    def test_orphan_branch_detected(self, tmp_path: Path) -> None:
+        from kanon_core._validators.orphan_branches import check
+
+        # Create .worktrees/ with one active slug
+        (tmp_path / ".worktrees" / "active").mkdir(parents=True)
+
+        # Mock git to return branches including an orphan
+        mock_result = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="  wt/active\n  wt/orphan\n", stderr=""
+        )
+        errors: list[str] = []
+        warnings: list[str] = []
+        with patch("subprocess.run", return_value=mock_result):
+            check(str(tmp_path), errors, warnings)
+
+        assert any("orphan" in w.lower() for w in warnings)
+        assert not any("active" in w for w in warnings)
+
+    def test_no_orphans_no_warning(self, tmp_path: Path) -> None:
+        from kanon_core._validators.orphan_branches import check
+
+        (tmp_path / ".worktrees" / "feature").mkdir(parents=True)
+
+        mock_result = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="  wt/feature\n", stderr=""
+        )
+        errors: list[str] = []
+        warnings: list[str] = []
+        with patch("subprocess.run", return_value=mock_result):
+            check(str(tmp_path), errors, warnings)
+
+        assert warnings == []
+
+
+# --- test_quality_check ---
+
+
+class TestTestQualityCheck:
+    def test_no_tests_dir_no_warning(self, tmp_path: Path) -> None:
+        from kanon_core._validators.test_quality_check import check
+
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(tmp_path, errors, warnings)
+        assert errors == []
+        assert warnings == []
+
+    def test_nonspecific_assertions_warns(self, tmp_path: Path) -> None:
+        from kanon_core._validators.test_quality_check import check
+
+        tests_dir = tmp_path / "tests"
+        tests_dir.mkdir()
+        (tests_dir / "test_bad.py").write_text(
+            "def test_one():\n    assert result\n\n"
+            "def test_two():\n    assert x\n\n"
+            "def test_three():\n    assert y is not None\n",
+            encoding="utf-8",
+        )
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(tmp_path, errors, warnings)
+        assert any("non-specific" in w for w in warnings)
+
+    def test_specific_assertions_no_warning(self, tmp_path: Path) -> None:
+        from kanon_core._validators.test_quality_check import check
+
+        tests_dir = tmp_path / "tests"
+        tests_dir.mkdir()
+        (tests_dir / "test_good.py").write_text(
+            "def test_one():\n    assert result == 42\n\n"
+            "def test_two():\n    assert x > 0\n\n"
+            "def test_error():\n    assert err is None\n",
+            encoding="utf-8",
+        )
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(tmp_path, errors, warnings)
+        assert not any("non-specific" in w for w in warnings)
+
+    def test_happy_path_only_warns(self, tmp_path: Path) -> None:
+        from kanon_core._validators.test_quality_check import check
+
+        tests_dir = tmp_path / "tests"
+        tests_dir.mkdir()
+        (tests_dir / "test_happy.py").write_text(
+            "def test_create():\n    assert True\n\n"
+            "def test_read():\n    assert True\n\n"
+            "def test_update():\n    assert True\n",
+            encoding="utf-8",
+        )
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(tmp_path, errors, warnings)
+        assert any("negative" in w.lower() or "error" in w.lower() for w in warnings)
+
+
+# --- worktree_hygiene ---
+
+
+class TestWorktreeHygiene:
+    def test_no_worktrees_dir_no_warning(self, tmp_path: Path) -> None:
+        from kanon_core._validators.worktree_hygiene import check
+
+        errors: list[str] = []
+        warnings: list[str] = []
+        check(str(tmp_path), errors, warnings)
+        assert errors == []
+        assert warnings == []
+
+    def test_stale_worktree_warns(self, tmp_path: Path) -> None:
+        from kanon_core._validators.worktree_hygiene import check
+
+        (tmp_path / ".worktrees" / "old-feature").mkdir(parents=True)
+
+        # Mock git log to return a timestamp 10 days ago
+        import time
+        old_ts = str(int(time.time()) - 10 * 86400)
+        log_result = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout=old_ts + "\n", stderr=""
+        )
+        merged_result = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="", stderr=""
+        )
+
+        def mock_run(cmd, **kwargs):
+            if "log" in cmd:
+                return log_result
+            return merged_result
+
+        errors: list[str] = []
+        warnings: list[str] = []
+        with patch("subprocess.run", side_effect=mock_run):
+            check(str(tmp_path), errors, warnings)
+
+        assert any("stale" in w.lower() for w in warnings)
+
+    def test_merged_worktree_warns(self, tmp_path: Path) -> None:
+        from kanon_core._validators.worktree_hygiene import check
+
+        (tmp_path / ".worktrees" / "done-feature").mkdir(parents=True)
+
+        import time
+        recent_ts = str(int(time.time()) - 3600)  # 1 hour ago (not stale)
+        log_result = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout=recent_ts + "\n", stderr=""
+        )
+        merged_result = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="  wt/done-feature\n", stderr=""
+        )
+
+        def mock_run(cmd, **kwargs):
+            if "log" in cmd:
+                return log_result
+            return merged_result
+
+        errors: list[str] = []
+        warnings: list[str] = []
+        with patch("subprocess.run", side_effect=mock_run):
+            check(str(tmp_path), errors, warnings)
+
+        assert any("merged" in w.lower() for w in warnings)

@@ -764,11 +764,15 @@ def _write_tree_atomically(
 
 
 def _migrate_flat_protocols(target: Path, aspects: dict[str, int]) -> bool:
-    """Move .kanon/protocols/*.md (flat, v0.1) under the first enabled kit aspect.
+    """Move .kanon/protocols/*.md (flat, v0.1) under .kanon/protocols/kanon-sdd/.
 
-    Per ADR-0028 the v3 namespace is aspect-prefixed (was flat in v0.1).
-    In v0.1 all protocols belonged to the SDD aspect. Returns True if any
-    file was migrated.
+    Per ADR-0028 the v3 namespace is `kanon-sdd` (was bare `sdd` in v0.2 and
+    flat in v0.1). Returns True if any file was migrated.
+
+    NOTE: The literal 'kanon-sdd' is required here because this is migration
+    code for a historical layout where only the SDD aspect existed. The
+    presence of flat .md files in protocols/ is the implicit format-version
+    guard (only pre-v3 projects have this layout).
     """
     protocols_dir = target / ".kanon" / "protocols"
     if not protocols_dir.is_dir():
@@ -776,15 +780,11 @@ def _migrate_flat_protocols(target: Path, aspects: dict[str, int]) -> bool:
     flat = [p for p in protocols_dir.glob("*.md") if p.is_file()]
     if not flat:
         return False
-    # v0.1 flat protocols belong to the first enabled kit aspect that declares
-    # protocols (historically always the SDD aspect).
-    dest_aspect = next(
-        (a for a in aspects if a.startswith("kanon-") and _all_aspect_sections(a)),
-        None,
-    )
-    if dest_aspect is None:
+    # Migration target: in v0.1 all protocols belonged to kanon-sdd.
+    _V1_PROTOCOL_OWNER = "kanon-sdd"  # noqa: N806 — migration constant
+    if _V1_PROTOCOL_OWNER not in aspects:
         return False
-    dest_dir = protocols_dir / dest_aspect
+    dest_dir = protocols_dir / _V1_PROTOCOL_OWNER
     _ensure_within(dest_dir, target)
     dest_dir.mkdir(parents=True, exist_ok=True)
     for p in flat:

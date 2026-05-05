@@ -336,8 +336,7 @@ def init(
     if quiet_arg:
         return
 
-    if not quiet_arg:
-        _emit_init_hints(aspects_meta, aspects_to_enable)
+    _emit_init_hints(aspects_meta, aspects_to_enable)
 
 
 @main.command()
@@ -455,42 +454,48 @@ def verify(target: Path) -> None:
     )
 
     target = target.resolve()
+    result = _run_verify_core(target)
+    _emit_verify_report(
+        target, result["aspects"], errors=result["errors"],
+        warnings=result["warnings"], status=result["status"],
+        dag_findings=result.get("dag_findings"),
+    )
+    if result["status"] != "ok":
+        sys.exit(1 if result["errors"] else 2)
+
+
+def _run_verify_core(target: Path) -> dict:
+    """Core verification logic. Returns structured result without printing."""
+    from kanon_core._verify import (
+        check_agents_md_markers,
+        check_aspects_known,
+        check_fidelity_assertions,
+        check_fidelity_lock,
+        check_required_files,
+        check_verified_by,
+        run_project_validators,
+    )
+
     errors: list[str] = []
     warnings: list[str] = []
     _check_pending_recovery(target)
 
-    # Side-effect: sets the active project-aspects overlay so the structural
-    # checks below see project-aspects discovered under .kanon/aspects/.
-    # A malformed project-aspect manifest (e.g., a kanon-namespace dir under
-    # .kanon/aspects/, or a missing required field) surfaces here as a
-    # verify-error rather than crashing the command.
     try:
         _load_aspect_registry(target)
     except click.ClickException as exc:
-        _emit_verify_report(
-            target, {}, errors=[exc.message], warnings=[], status="fail"
-        )
-        sys.exit(2)
+        return {"aspects": {}, "errors": [exc.message], "warnings": [], "status": "fail"}
 
     try:
         config = _read_config(target)
     except click.ClickException as exc:
-        _emit_verify_report(
-            target, {}, errors=[exc.message], warnings=[], status="fail"
-        )
-        sys.exit(2)
+        return {"aspects": {}, "errors": [exc.message], "warnings": [], "status": "fail"}
 
     aspects = _config_aspects(config)
     if not aspects:
         warnings.append("No aspects enabled; only kit-global files verified.")
 
-    # Per project-aspects spec INV-9 (validator non-overriding), project-
-    # aspect validators run BEFORE the kit's structural checks: any
-    # `errors.clear()` from a hostile validator is overwritten by the kit's
-    # subsequent appends, so kit-emitted errors cannot be suppressed.
     run_project_validators(target, aspects, errors, warnings)
 
-    # Worktree validators: runtime/git-state checks (not DAG-driven).
     if aspects.get("kanon-worktrees", 0) >= 1:
         from kanon_core._validators.worktree_hygiene import check as _wt_hygiene
         from kanon_core._validators.orphan_branches import check as _orphan_branches
@@ -505,9 +510,7 @@ def verify(target: Path) -> None:
         spec_sha_fn=_spec_sha, accepted_specs_fn=_accepted_or_draft_specs,
     )
     check_verified_by(target, aspects.get("kanon-sdd", 0), warnings)
-    # Kit-aspect validators: now handled by the DAG engine (ADR-0061).
-    # The DAG builds the artifact graph, walks downstream from changed
-    # nodes, and dispatches node/edge handlers that wrap the same validators.
+
     from kanon_core._dag_verify import format_findings, run_dag_verify
     from kanon_core._graph import build_graph
     from kanon_core._handlers import register_all_handlers
@@ -517,19 +520,17 @@ def verify(target: Path) -> None:
     dag_errors, dag_warnings = format_findings(dag_findings)
     errors.extend(dag_errors)
     warnings.extend(dag_warnings)
-    # Keep structured findings for chain display
-    _dag_findings = dag_findings
 
-    # Per docs/specs/verification-contract.md INV-10 (carve-out from INV-9,
-    # ratified by ADR-0029): fidelity-fixture replay runs only when an
-    # enabled aspect declares the `behavioural-verification` capability
-    # (per ADR-0026). When no such aspect is enabled, this is a no-op.
     check_fidelity_assertions(target, aspects, errors, warnings)
 
     status = "fail" if errors else "ok"
-    _emit_verify_report(target, aspects, errors=errors, warnings=warnings, status=status, dag_findings=_dag_findings)
-    if errors:
-        sys.exit(1)
+    return {
+        "aspects": aspects,
+        "errors": errors,
+        "warnings": warnings,
+        "status": status,
+        "dag_findings": dag_findings,
+    }
 
 
 @main.command()
@@ -543,8 +544,7 @@ def verify(target: Path) -> None:
 )
 @click.option("--tag", default=None, help="Release tag (required for --stage release).")
 @click.option("--fail-fast", is_flag=True, help="Stop on first failing check.")
-@click.pass_context
-def preflight(ctx: click.Context, target: Path, stage: str, tag: str | None, fail_fast: bool) -> None:
+def preflight(target: Path, stage: str, tag: str | None, fail_fast: bool) -> None:
     """Run staged local validation: verify + configured checks."""
     from kanon_core._preflight import _resolve_preflight_checks, _run_preflight
 
@@ -555,15 +555,12 @@ def preflight(ctx: click.Context, target: Path, stage: str, tag: str | None, fai
     config = _read_config(target)
     aspects = _config_aspects(config)
 
-    # Step 1: Run kanon verify (same process, via ctx.invoke).
+    # Step 1: Run verify logic directly (no stdout output).
     import time as _time
 
     t0 = _time.monotonic()
-    try:
-        ctx.invoke(verify, target=target)
-        verify_passed = True
-    except SystemExit as e:
-        verify_passed = (e.code == 0 or e.code is None)
+    verify_result = _run_verify_core(target)
+    verify_passed = verify_result["status"] == "ok"
     verify_duration = round(_time.monotonic() - t0, 1)
     verify_mark = "✓" if verify_passed else "✗"
     print(f"{verify_mark} verify (structural)  {verify_duration}s", file=sys.stderr)
