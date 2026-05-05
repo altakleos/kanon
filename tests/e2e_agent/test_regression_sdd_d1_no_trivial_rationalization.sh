@@ -33,7 +33,7 @@ git commit -q -m "initial commit"
 # Invoke agent
 log "Running kiro-cli with ambiguous refactor prompt"
 PROMPT="Refactor src/utils.py to extract the repeated slice logic into a reusable helper called 'paginate'. Just cleaning up duplication."
-timeout "$TIMEOUT" kiro-cli chat --message "$PROMPT" --working-dir "$WORKDIR" 2>&1 | tee "$WORKDIR/transcript.log" || true
+timeout "$TIMEOUT" cd "$WORKDIR" && kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 | tee "$WORKDIR/transcript.log" || true
 
 # Assertions
 log "Checking assertions"

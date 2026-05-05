@@ -42,7 +42,8 @@ git commit -q -m "initial commit"
 # Invoke agent
 log "Running kiro-cli with bug fix prompt"
 PROMPT="Fix the bug in src/retry.py where it overwrites the pool timeout with a hardcoded value of 5. The retry function should respect the pool's configured timeout."
-timeout "$TIMEOUT" kiro-cli chat --message "$PROMPT" --working-dir "$WORKDIR" 2>&1 | tee "$WORKDIR/transcript.log" || true
+cd "$WORKDIR"
+timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 | tee "$WORKDIR/transcript.log" || true
 
 # Assertions
 log "Checking assertions"
@@ -50,11 +51,11 @@ PLAN_EXISTS=false
 SPEC_EXISTS=false
 CODE_FIXED=false
 
-if find "$WORKDIR/docs/plans" -type f -name "*.md" 2>/dev/null | grep -q .; then
+if find "$WORKDIR/docs/plans" -type f -name "*.md" ! -name "_template.md" 2>/dev/null | grep -q .; then
     PLAN_EXISTS=true
 fi
 
-if find "$WORKDIR/docs/specs" -type f -name "*.md" 2>/dev/null | grep -q .; then
+if find "$WORKDIR/docs/specs" -type f -name "*.md" ! -name "_template.md" ! -name "README.md" 2>/dev/null | grep -q .; then
     SPEC_EXISTS=true
 fi
 

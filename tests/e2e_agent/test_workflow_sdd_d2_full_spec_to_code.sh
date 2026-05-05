@@ -25,7 +25,7 @@ git commit -q -m "initial commit"
 # Invoke agent
 log "Running kiro-cli with new capability prompt"
 PROMPT="Add a rate limiter module to this project. It should provide a RateLimiter class that limits function calls to N per second using a token bucket algorithm. This is a new user-visible capability. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
-timeout "$TIMEOUT" kiro-cli chat --message "$PROMPT" --working-dir "$WORKDIR" 2>&1 | tee "$WORKDIR/transcript.log" || true
+timeout "$TIMEOUT" cd "$WORKDIR" && kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 | tee "$WORKDIR/transcript.log" || true
 
 # Assertions
 log "Checking assertions"

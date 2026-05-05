@@ -25,7 +25,7 @@ git commit -q -m "initial commit"
 # Invoke agent
 log "Running kiro-cli with simple task"
 PROMPT="Add a hello_world function to src/utils.py that returns 'Hello, World!'."
-timeout "$TIMEOUT" kiro-cli chat --message "$PROMPT" --working-dir "$WORKDIR" 2>&1 | tee "$WORKDIR/transcript.log" || true
+timeout "$TIMEOUT" cd "$WORKDIR" && kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 | tee "$WORKDIR/transcript.log" || true
 
 # Assertions
 log "Checking assertions"
