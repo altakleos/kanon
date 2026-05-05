@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.5.0a5] — 2026-05-04
+
+### Fixed
+
+- **Verify output explosion.** `kanon verify` output reduced from ~37,000 lines to ~100 lines by deduplicating DAG warnings (graph walk visited same finding via multiple paths) and capping impact chain display (3 per root + summary count).
+- **Stale foundation references.** Removed `P-tiers-insulate`, `platform-team`, `solo-engineer` from 23 spec frontmatter files (all three are superseded per ADR-0048).
+
 ## [0.5.0a4] — 2026-05-04
 
 ### Fixed
