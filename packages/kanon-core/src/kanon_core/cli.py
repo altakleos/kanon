@@ -443,16 +443,6 @@ def upgrade(target: Path, quiet_arg: bool) -> None:
 @main.command(help=_ADR_0042_VERIFY_SCOPE)
 @click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 def verify(target: Path) -> None:
-    from kanon_core._verify import (
-        check_agents_md_markers,
-        check_aspects_known,
-        check_fidelity_assertions,
-        check_fidelity_lock,
-        check_required_files,
-        check_verified_by,
-        run_project_validators,
-    )
-
     target = target.resolve()
     result = _run_verify_core(target)
     _emit_verify_report(
