@@ -114,6 +114,9 @@ def handle_design_exists(edge: Any, src_node: Any, dst_node: Any, target: Path, 
 
 def register_all_handlers() -> None:
     """Register all built-in handlers with the DAG engine."""
+    _NODE_HANDLERS.clear()
+    _EDGE_HANDLERS.clear()
+
     # Node handlers
     register_node_handler("plan", handle_plan_completion)
     register_node_handler("spec", handle_link_check)

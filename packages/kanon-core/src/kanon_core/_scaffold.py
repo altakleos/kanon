@@ -678,12 +678,15 @@ def _rewrite_legacy_markers(text: str) -> str:
         if canonical.startswith("kanon-"):
             bare_to_canonical[canonical[len("kanon-"):]] = canonical
 
-    # v0.1 → v0.3: only kanon-sdd's section names are unprefixed legacy candidates.
-    sdd_sections: set[str] = set()
-    if "kanon-sdd" in top["aspects"]:
-        sdd_sections = {
-            s for s in _all_aspect_sections("kanon-sdd") if s not in _UNPREFIXED_SECTIONS
-        }
+    # v0.1 → v0.3: unprefixed legacy sections belong to whichever kit aspect
+    # declares them. Collect all kit-aspect sections that aren't in the
+    # cross-aspect unprefixed set.
+    legacy_sections: dict[str, str] = {}  # section → owning aspect
+    for canonical in top["aspects"]:
+        if canonical.startswith("kanon-"):
+            for s in _all_aspect_sections(canonical):
+                if s not in _UNPREFIXED_SECTIONS:
+                    legacy_sections[s] = canonical
 
     pieces: list[str] = []
     last = 0
@@ -694,9 +697,9 @@ def _rewrite_legacy_markers(text: str) -> str:
             if prefix in bare_to_canonical:
                 # v0.2 bare-prefixed → v0.3 namespaced.
                 new_sec = f"{bare_to_canonical[prefix]}/{leaf}"
-        elif sec in sdd_sections:
-            # v0.1 unprefixed → v0.3 namespaced (kanon-sdd's own sections).
-            new_sec = f"kanon-sdd/{sec}"
+        elif sec in legacy_sections:
+            # v0.1 unprefixed → v0.3 namespaced (owning aspect from manifest).
+            new_sec = f"{legacy_sections[sec]}/{sec}"
         if new_sec is None:
             continue
         pieces.append(text[last:line_start])
@@ -761,10 +764,11 @@ def _write_tree_atomically(
 
 
 def _migrate_flat_protocols(target: Path, aspects: dict[str, int]) -> bool:
-    """Move .kanon/protocols/*.md (flat, v0.1) under .kanon/protocols/kanon-sdd/.
+    """Move .kanon/protocols/*.md (flat, v0.1) under the first enabled kit aspect.
 
-    Per ADR-0028 the v3 namespace is `kanon-sdd` (was bare `sdd` in v0.2 and
-    flat in v0.1). Returns True if any file was migrated.
+    Per ADR-0028 the v3 namespace is aspect-prefixed (was flat in v0.1).
+    In v0.1 all protocols belonged to the SDD aspect. Returns True if any
+    file was migrated.
     """
     protocols_dir = target / ".kanon" / "protocols"
     if not protocols_dir.is_dir():
@@ -772,13 +776,19 @@ def _migrate_flat_protocols(target: Path, aspects: dict[str, int]) -> bool:
     flat = [p for p in protocols_dir.glob("*.md") if p.is_file()]
     if not flat:
         return False
-    if "kanon-sdd" not in aspects:
+    # v0.1 flat protocols belong to the first enabled kit aspect that declares
+    # protocols (historically always the SDD aspect).
+    dest_aspect = next(
+        (a for a in aspects if a.startswith("kanon-") and _all_aspect_sections(a)),
+        None,
+    )
+    if dest_aspect is None:
         return False
-    sdd_dir = protocols_dir / "kanon-sdd"
-    _ensure_within(sdd_dir, target)
-    sdd_dir.mkdir(parents=True, exist_ok=True)
+    dest_dir = protocols_dir / dest_aspect
+    _ensure_within(dest_dir, target)
+    dest_dir.mkdir(parents=True, exist_ok=True)
     for p in flat:
-        dest = sdd_dir / p.name
+        dest = dest_dir / p.name
         if dest.exists():
             p.unlink()
         else:

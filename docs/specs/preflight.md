@@ -28,7 +28,7 @@ Provide a single CLI command that runs escalating checks before commit, push, or
 4. **Aspect-contributed defaults.** Aspects may declare `preflight:` entries in their sub-manifest `depth-N:` blocks. These are default checks contributed when the aspect is enabled at that depth. Consumer entries in `preflight-stages:` override aspect defaults by label (same label = consumer wins) or append (new label = added).
 
 <!-- INV-preflight-testing-config -->
-5. **Testing config keys.** The `kanon-testing` aspect gains four config-schema keys: `test_cmd`, `lint_cmd`, `typecheck_cmd`, `format_cmd`. These are shell command strings. When non-empty, they are contributed as aspect defaults to the appropriate preflight stages (format/lint → commit, test/typecheck → push).
+5. **Testing config keys (retired).** ~~The `kanon-testing` aspect gains four config-schema keys: `test_cmd`, `lint_cmd`, `typecheck_cmd`, `format_cmd`.~~ These keys were retired in v0.4 per ADR-0048 (de-opinionation). The substrate no longer reads these from `kanon-testing`'s user-config block. Consumers declare preflight commands directly in `preflight-stages:` (see INV-preflight-consumer-configured above).
 
 <!-- INV-preflight-output -->
 6. **Structured output.** Preflight prints per-check results to stderr (label, command, pass/fail, duration) and a JSON summary to stdout: `{stage, checks: [{label, command, passed, duration_s}], passed: bool}`. Exit 0 if all checks pass, non-zero otherwise.
