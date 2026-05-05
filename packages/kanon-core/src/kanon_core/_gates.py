@@ -36,6 +36,7 @@ def discover_gates(aspects: dict[str, int], target: Path | None = None) -> list[
                 "label": fm.get("label", proto_file),
                 "aspect": aspect,
                 "protocol": proto_file,
+                "protocol_path": f".kanon/protocols/{aspect}/{proto_file}",
                 "priority": fm.get("priority", 500),
                 "check": fm.get("check"),
                 "question": fm.get("question", ""),
@@ -56,6 +57,7 @@ def evaluate_gates(
             "label": gate["label"],
             "aspect": gate["aspect"],
             "protocol": gate["protocol"],
+            "protocol_path": gate["protocol_path"],
             "priority": gate["priority"],
             "check": gate["check"],
         }

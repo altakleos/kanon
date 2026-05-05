@@ -487,6 +487,7 @@ def _run_verify_core(target: Path) -> dict[str, Any]:
         kit_version = config.get("kit_version")
         if kit_version:
             from packaging.version import Version
+
             from kanon_core import __version__
             try:
                 if Version(__version__) < Version(kit_version):

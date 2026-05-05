@@ -486,27 +486,9 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
         slug = gate["protocol"].removesuffix(".md")
         rows.append(
             f'| **{gate["label"]}** \u2014 {gate["summary"]} '
-            f'Audit: "{gate["audit"]}" '
             f'| {gate["fires"]} '
             f'| [`{slug}`](.kanon/protocols/{gate["aspect"]}/{gate["protocol"]}) |'
         )
-
-    # Generate decision tree from active gates
-    questions: list[str] = []
-    q_num = 1
-    questions.append(
-        f"{q_num}. Is this change trivial? (Trivial = typo, single assertion fix, "
-        "local rename, provably unreachable deletion. Everything else is non-trivial.)"
-    )
-    for gate in gates:
-        if gate["question"]:
-            q_num += 1
-            q_line = f"{q_num}. {gate['question']}"
-            if gate["skip_when"]:
-                q_line += f"\n   Skip if: {gate['skip_when']}"
-            questions.append(q_line)
-    q_num += 1
-    questions.append(f"{q_num}. State the audit sentence from the relevant gate before proceeding.")
 
     lines = [
         "## Hard Gates",
@@ -520,19 +502,13 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
         "",
         "The audit-trail sentence from the relevant protocol must appear "
         "before your first source-modifying tool call. "
-        "Its absence in a transcript is how violations get caught. "
-        "This is the intended enforcement mechanism \u2014 prose is source code "
-        "([P-prose-is-code](docs/foundations/principles/P-prose-is-code.md)), "
-        "not a stopgap for a missing CI gate.",
+        "Its absence in a transcript is how violations get caught.",
         "",
-        "**Before every source-modifying tool call, answer these questions:**",
-        "",
-        *questions,
-        "",
-        "**Mechanical pre-check:** Before your first source-modifying tool call "
-        "in a task, run `kanon gates check .` and read its output. "
-        "If any gate has status `\"fail\"`, resolve it before proceeding. "
-        "For gates with status `\"judgment\"`, evaluate the `question` yourself and "
+        "**Before your first source-modifying tool call in a task**, "
+        "run `kanon gates check .` and read its output. For each gate:",
+        "- `\"pass\"` \u2014 proceed.",
+        "- `\"fail\"` \u2014 resolve before proceeding.",
+        "- `\"judgment\"` \u2014 evaluate the `question` field yourself; "
         "emit the `audit` sentence if satisfied.",
         "",
     ]

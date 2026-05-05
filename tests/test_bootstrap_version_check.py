@@ -1,7 +1,6 @@
 """Tests for the bootstrap version check in _run_verify_core."""
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from unittest.mock import patch
 

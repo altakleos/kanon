@@ -7,27 +7,17 @@ These gates apply to ALL task types. When a gate fires, read the linked protocol
 
 | Gate | Fires when | Protocol |
 |------|-----------|----------|
-| **Worktree Isolation** — all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`. Audit: "Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`." | A file-modifying operation is about to begin | [`branch-hygiene`](.kanon/protocols/kanon-worktrees/branch-hygiene.md) |
-| **Plan Before Build** — non-trivial changes require an approved plan before source edits. Audit: "Plan at `<path>` has been approved." | A non-trivial source change is about to begin, or the agent is unsure whether a change is trivial | [`plan-before-build`](.kanon/protocols/kanon-sdd/plan-before-build.md) |
-| **Spec Before Design** — new user-visible capabilities require an approved spec before design/plan/implementation. Audit: "Spec at `<path>` has been approved." | A change introduces a new user-visible capability, or the agent is unsure whether a spec is needed | [`spec-before-design`](.kanon/protocols/kanon-sdd/spec-before-design.md) |
-| **Design Before Plan** — changes introducing new component boundaries require a design doc before planning. Audit: "Design doc at `<path>` covers the architectural scope." | About to write a plan for a change where a spec exists and the change introduces new component boundaries, cross-component interfaces, or non-obvious architectural mechanisms | [`design-before-plan`](.kanon/protocols/kanon-sdd/design-before-plan.md) |
+| **Worktree Isolation** — all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`. | A file-modifying operation is about to begin | [`branch-hygiene`](.kanon/protocols/kanon-worktrees/branch-hygiene.md) |
+| **Plan Before Build** — non-trivial changes require an approved plan before source edits. | A non-trivial source change is about to begin, or the agent is unsure whether a change is trivial | [`plan-before-build`](.kanon/protocols/kanon-sdd/plan-before-build.md) |
+| **Spec Before Design** — new user-visible capabilities require an approved spec before design/plan/implementation. | A change introduces a new user-visible capability, or the agent is unsure whether a spec is needed | [`spec-before-design`](.kanon/protocols/kanon-sdd/spec-before-design.md) |
+| **Design Before Plan** — changes introducing new component boundaries require a design doc before planning. | About to write a plan for a change where a spec exists and the change introduces new component boundaries, cross-component interfaces, or non-obvious architectural mechanisms | [`design-before-plan`](.kanon/protocols/kanon-sdd/design-before-plan.md) |
 
-The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught. This is the intended enforcement mechanism — prose is source code ([P-prose-is-code](docs/foundations/principles/P-prose-is-code.md)), not a stopgap for a missing CI gate.
+The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught.
 
-**Before every source-modifying tool call, answer these questions:**
-
-1. Is this change trivial? (Trivial = typo, single assertion fix, local rename, provably unreachable deletion. Everything else is non-trivial.)
-2. Am I in a worktree (`.worktrees/<slug>/`)? If not, check if one already exists (`ls .worktrees/`) before creating a new one.
-   Skip if: never (always applies to file modifications)
-3. If non-trivial: does a plan exist at `docs/plans/<slug>.md` and has the user approved it? If not — **stop and write the plan.**
-   Skip if: Change is trivial (typo, single assertion fix, local rename, provably unreachable deletion)
-4. Does this introduce a new user-visible capability? If yes, does a spec exist at `docs/specs/<slug>.md` with status:accepted? If not — **stop and write the spec.**
-   Skip if: Internal refactors, bug fixes, or changes to existing capabilities that don't alter user-facing behavior
-5. Does this change introduce new component boundaries or cross-component interfaces? If yes, does a design doc exist? If not — **stop and write the design doc.**
-   Skip if: Change follows an existing pattern with no new boundaries, or the spec is self-contained with obvious implementation
-6. State the audit sentence from the relevant gate before proceeding.
-
-**Mechanical pre-check:** Before your first source-modifying tool call in a task, run `kanon gates check .` and read its output. If any gate has status `"fail"`, resolve it before proceeding. For gates with status `"judgment"`, evaluate the `question` yourself and emit the `audit` sentence if satisfied.
+**Before your first source-modifying tool call in a task**, run `kanon gates check .` and read its output. For each gate:
+- `"pass"` — proceed.
+- `"fail"` — resolve before proceeding.
+- `"judgment"` — evaluate the `question` field yourself; emit the `audit` sentence if satisfied.
 <!-- kanon:end:hard-gates -->
 
 ## Task Playbook

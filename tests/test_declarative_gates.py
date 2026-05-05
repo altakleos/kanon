@@ -74,7 +74,7 @@ def test_discovers_gates_from_frontmatter(tmp_path: Path) -> None:
         result = _render_hard_gates({"kanon-sdd": 1})
 
     assert "Test Gate" in result
-    assert "Audit sentence here." in result
+    assert "a test gate." in result
 
 
 def test_missing_required_field_raises(tmp_path: Path) -> None:
@@ -138,7 +138,7 @@ def test_depth_filtering_includes_at_sufficient_depth(tmp_path: Path) -> None:
 
 
 def test_decision_tree_generated_from_questions(tmp_path: Path) -> None:
-    """Decision tree contains gate questions sorted by priority."""
+    """Gates are rendered in priority order in the table."""
     _write_protocol(tmp_path, "gate-a.md", _VALID_GATE_B)  # priority 200
     _write_protocol(tmp_path, "gate-b.md", _VALID_GATE)    # priority 100
 
@@ -146,28 +146,29 @@ def test_decision_tree_generated_from_questions(tmp_path: Path) -> None:
          patch("kanon_core._scaffold._aspect_protocols", return_value=["gate-a.md", "gate-b.md"]):
         result = _render_hard_gates({"kanon-sdd": 1})
 
-    # Priority 100 question comes before priority 200 question
-    pos_a = result.index("Is this ready?")
-    pos_b = result.index("Is this also ready?")
+    # Priority 100 gate comes before priority 200 gate in table
+    pos_a = result.index("Test Gate")
+    pos_b = result.index("Second Gate")
     assert pos_a < pos_b
 
-    # Starts with trivial-check, ends with audit-sentence
-    assert "1. Is this change trivial?" in result
-    assert "State the audit sentence" in result
+    # Command directive present
+    assert "kanon gates check ." in result
 
 
 # --- INV-declarative-hard-gates-skip-when-rendered ---
 
 
 def test_skip_when_rendered(tmp_path: Path) -> None:
-    """skip-when field renders as 'Skip if:' below the question."""
+    """skip-when is available via kanon gates check (not in static table)."""
     _write_protocol(tmp_path, "gate.md", _VALID_GATE)
 
     with patch("kanon_core._scaffold._aspect_path", return_value=tmp_path), \
          patch("kanon_core._scaffold._aspect_protocols", return_value=["gate.md"]):
         result = _render_hard_gates({"kanon-sdd": 1})
 
-    assert "Skip if: Never" in result
+    # Table contains the gate summary but not skip-when (moved to CLI output)
+    assert "a test gate." in result
+    assert "judgment" in result  # directive mentions judgment gates
 
 
 # --- INV-declarative-hard-gates-fires-from-invoke-when ---
