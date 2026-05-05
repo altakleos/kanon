@@ -130,3 +130,126 @@ def test_preflight_release_requires_tag(tmp_path: Path) -> None:
     result = runner.invoke(main, ["preflight", str(target), "--stage", "release"])
     assert result.exit_code != 0
     assert "tag" in result.output.lower()
+
+
+def test_preflight_timeout(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
+    """A check that times out is marked as failed (covers TimeoutExpired handler)."""
+    import subprocess as _sp
+
+    from kanon_core._preflight import _run_preflight
+
+    target = _init_project(tmp_path)
+
+    original_run = _sp.run
+
+    def _fake_run(*args, **kwargs):
+        raise _sp.TimeoutExpired(cmd="sleep 999", timeout=120)
+
+    monkeypatch.setattr(_sp, "run", _fake_run)
+
+    checks = [{"run": "sleep 999", "label": "slow"}]
+    all_passed, results = _run_preflight(target, checks, None, False)
+    assert not all_passed
+    assert results[0]["passed"] is False
+
+
+def test_preflight_fail_fast(tmp_path: Path) -> None:
+    """fail_fast=True stops after first failure (covers break on fail_fast)."""
+    from kanon_core._preflight import _run_preflight
+
+    target = _init_project(tmp_path)
+    checks = [
+        {"run": "exit 1", "label": "fail-first"},
+        {"run": "echo ok", "label": "never-reached"},
+    ]
+    all_passed, results = _run_preflight(target, checks, None, True)
+    assert not all_passed
+    assert len(results) == 1
+    assert results[0]["label"] == "fail-first"
+
+
+def test_resolve_aspect_contributed_preflight(monkeypatch: "pytest.MonkeyPatch") -> None:
+    """Aspect-contributed preflight checks are resolved (covers lines 37-43)."""
+    from kanon_core import _preflight
+
+    fake_manifest = {
+        "depth-1": {
+            "preflight": {
+                "commit": [{"run": "echo aspect-check", "label": "aspect-lint"}],
+            }
+        }
+    }
+    monkeypatch.setattr(_preflight, "_load_aspect_manifest", lambda _a: fake_manifest)
+    monkeypatch.setattr(_preflight, "_aspect_depth_range", lambda _a: (1, 2))
+
+    aspects = {"acme-foo": 1}
+    checks = _resolve_preflight_checks(aspects, {}, "commit")
+    assert any(c["label"] == "aspect-lint" for c in checks)
+
+
+def test_preflight_oserror(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
+    """A check that raises OSError is marked as failed (covers OSError handler)."""
+    import subprocess as _sp
+
+    from kanon_core._preflight import _run_preflight
+
+    target = _init_project(tmp_path)
+
+    def _fake_run(*args, **kwargs):
+        raise OSError("No such file or directory")
+
+    monkeypatch.setattr(_sp, "run", _fake_run)
+
+    checks = [{"run": "/nonexistent/binary", "label": "bad-cmd"}]
+    all_passed, results = _run_preflight(target, checks, None, False)
+    assert not all_passed
+    assert results[0]["passed"] is False
+
+
+def test_resolve_aspect_invalid_stage_skipped(monkeypatch: "pytest.MonkeyPatch") -> None:
+    """Aspect preflight with invalid stage name is skipped (covers line 38)."""
+    from kanon_core import _preflight
+
+    fake_manifest = {
+        "depth-1": {
+            "preflight": {
+                "invalid-stage": [{"run": "echo bad", "label": "bad"}],
+            }
+        }
+    }
+    monkeypatch.setattr(_preflight, "_load_aspect_manifest", lambda _a: fake_manifest)
+    monkeypatch.setattr(_preflight, "_aspect_depth_range", lambda _a: (1, 2))
+
+    checks = _resolve_preflight_checks({"acme-x": 1}, {}, "commit")
+    assert checks == []
+
+
+def test_resolve_aspect_unresolved_placeholder_skipped(monkeypatch: "pytest.MonkeyPatch") -> None:
+    """Aspect preflight with unresolved placeholder is skipped (covers line 42)."""
+    from kanon_core import _preflight
+
+    fake_manifest = {
+        "depth-1": {
+            "preflight": {
+                "commit": [{"run": "${undefined_var} check", "label": "unresolved"}],
+            }
+        }
+    }
+    monkeypatch.setattr(_preflight, "_load_aspect_manifest", lambda _a: fake_manifest)
+    monkeypatch.setattr(_preflight, "_aspect_depth_range", lambda _a: (1, 2))
+
+    checks = _resolve_preflight_checks({"acme-y": 1}, {}, "commit")
+    assert checks == []
+
+
+def test_verify_malformed_kit_version(tmp_path: Path) -> None:
+    """Malformed kit_version in config produces a warning (covers cli.py:498-499)."""
+    target = _init_project(tmp_path)
+    config_path = target / ".kanon" / "config.yaml"
+    config = yaml.safe_load(config_path.read_text())
+    config["kit_version"] = "not-a-valid-version!!!"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False))
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["verify", str(target)])
+    assert "Could not parse kit_version" in result.output
