@@ -15,15 +15,15 @@ Live LLM-in-the-loop tests that verify kanon's SDD gates cause correct agent beh
 
 ```bash
 # Individual tests
-./tests/e2e_agent/test_hardgate_sdd_d0_freedom.sh
-./tests/e2e_agent/test_hardgate_sdd_d1_plan_fire.sh
-./tests/e2e_agent/test_hardgate_sdd_d1_plan_skip_typo.sh
-./tests/e2e_agent/test_hardgate_sdd_d1_plan_skip_approved.sh
-./tests/e2e_agent/test_hardgate_sdd_d2_spec_fire.sh
-./tests/e2e_agent/test_hardgate_sdd_d2_spec_skip_refactor.sh
-./tests/e2e_agent/test_protocol_sdd_d2_foundations_populated.sh
-./tests/e2e_agent/test_hardgate_sdd_d3_design_fire.sh
-./tests/e2e_agent/test_hardgate_sdd_d3_design_skip_pattern.sh
+./tests/e2e_agent/test_hardgate_sdd_d0_codes_without_ceremony.sh
+./tests/e2e_agent/test_hardgate_sdd_d1_plans_before_coding.sh
+./tests/e2e_agent/test_hardgate_sdd_d1_skips_plan_for_typo.sh
+./tests/e2e_agent/test_hardgate_sdd_d1_builds_from_existing_plan.sh
+./tests/e2e_agent/test_hardgate_sdd_d2_specs_before_planning.sh
+./tests/e2e_agent/test_hardgate_sdd_d2_skips_spec_for_refactor.sh
+./tests/e2e_agent/test_protocol_sdd_d2_respects_existing_vision.sh
+./tests/e2e_agent/test_hardgate_sdd_d3_designs_before_planning.sh
+./tests/e2e_agent/test_hardgate_sdd_d3_skips_design_for_pattern.sh
 
 # Run all
 for f in tests/e2e_agent/test_*.sh; do echo "--- $f ---"; "$f"; done
@@ -32,21 +32,21 @@ for f in tests/e2e_agent/test_*.sh; do echo "--- $f ---"; "$f"; done
 ## Naming Convention
 
 ```
-test_{type}_{aspect}_{scenario}.sh
+test_{type}_{aspect}_d{N}_{agent_does_what}.sh
 ```
 
 | Segment | Values | Purpose |
 |---------|--------|---------|
-| `type` | `hardgate`, `protocol`, `workflow`, `regression` | What class of behavior |
+| `type` | `hardgate`, `protocol`, `workflow`, `regression` | What mechanism is being tested |
 | `aspect` | `sdd`, `worktrees`, `testing`, `security`, `deps` | Which kanon aspect |
-| `scenario` | `d{N}_{gate}_{context}` or freeform slug | Depth + specifics |
+| `d{N}` | `d0`–`d3` | Depth level (omit if depth-agnostic) |
+| `agent_does_what` | Behavioral verb phrase | What the agent does — reads as "the agent..." |
 
 Rules:
-1. `hardgate` tests MUST include `_fire` or `_skip_{reason}` in scenario
-2. `protocol` tests use a verb/state slug — no fire/skip (they're advisory)
-3. `workflow` tests name the arc, not individual gates
-4. `regression` tests name the failure mode being prevented
-5. Depth prefix (`d0`–`d3`) only when depth is relevant to the scenario
+1. Behavioral suffix reads as a sentence: "the agent plans_before_coding"
+2. Skip scenarios use `skips_{what}_for_{reason}`
+3. `type` enables filtering: `grep hardgate` vs `grep protocol`
+4. Depth prefix enables filtering: `grep d2`
 
 ## Requirements
 
