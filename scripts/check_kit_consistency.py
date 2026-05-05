@@ -60,42 +60,118 @@ _STABILITY_VALUES: frozenset[str] = frozenset({"experimental", "stable", "deprec
 # directory because project-aspects live under `.kanon/aspects/` in the consumer.
 _KIT_ASPECT_NAME_RE = re.compile(r"^kanon-[a-z][a-z0-9-]*$")
 
+# Per plan T1 (panel-ratified): the top-level aspect registry's source of truth
+# is `pyproject.toml`'s `[project.entry-points."kanon.aspects"]` table + each
+# aspect's per-aspect `manifest.yaml` (canonical per ADR-0055). The kit YAML at
+# `kanon_core/kit/manifest.yaml` is retired in T4; this gate no longer reads it.
+_TOML_STRING_KV = re.compile(
+    r'^\s*(?P<key>[A-Za-z_][A-Za-z0-9_-]*)\s*=\s*"(?P<value>[^"]+)"\s*(?:#.*)?$'
+)
+_ENTRY_POINTS_HEADER = re.compile(
+    r'^\s*\[project\.entry-points\."kanon\.aspects"\]\s*$', re.MULTILINE,
+)
+
+
+def _extract_aspect_slugs_from_pyproject(pyproject_path: Path) -> tuple[list[str], str | None]:
+    """Return aspect slugs from the pyproject's `kanon.aspects` entry-point table.
+
+    Returns ``(slugs, None)`` on success; ``([], error_msg)`` on absence /
+    malformation. Same regex-based parsing as `scripts/gen_reference_aspects.py`
+    (avoids a `tomli`/`tomllib` dependency for the 3.10 CI matrix).
+    """
+    if not pyproject_path.is_file():
+        return [], f"missing: {pyproject_path.relative_to(_REPO_ROOT)}"
+    text = pyproject_path.read_text(encoding="utf-8")
+    match = _ENTRY_POINTS_HEADER.search(text)
+    if match is None:
+        return [], (
+            f"{pyproject_path.relative_to(_REPO_ROOT)}: missing "
+            f'[project.entry-points."kanon.aspects"] section.'
+        )
+    rest = text[match.end():]
+    next_section = re.search(r"^\s*\[", rest, re.MULTILINE)
+    section_body = rest[: next_section.start()] if next_section else rest
+    slugs: list[str] = []
+    for line in section_body.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        kv = _TOML_STRING_KV.match(line)
+        if kv is not None:
+            slugs.append(kv.group("key"))
+    if not slugs:
+        return [], (
+            f"{pyproject_path.relative_to(_REPO_ROOT)}: "
+            f'[project.entry-points."kanon.aspects"] is empty.'
+        )
+    return sorted(slugs), None
+
 
 def _load_top_manifest() -> tuple[dict[str, Any], str | None]:
-    path = _KIT / "manifest.yaml"
-    if not path.is_file():
-        return {}, f"missing: {path.relative_to(_REPO_ROOT)}"
-    try:
-        data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except yaml.YAMLError as exc:
-        return {}, f"{path.relative_to(_REPO_ROOT)}: invalid YAML — {exc}"
-    if not isinstance(data, dict) or not isinstance(data.get("aspects"), dict):
-        return {}, f"{path.relative_to(_REPO_ROOT)}: missing or malformed 'aspects' mapping"
-    return data, None
+    """Synthesize a top-level registry from pyproject + per-aspect manifests.
+
+    Per plan T1 (panel-ratified): reads `pyproject.toml`'s entry-points table
+    for the aspect slug list, then loads each aspect's per-aspect `manifest.yaml`
+    (canonical per ADR-0055) for stability / depth-range / default-depth /
+    requires / provides / suggests. Returns the same shape downstream checks
+    expect (`{"aspects": {slug: entry, ...}}`), with `entry` carrying every
+    field except the legacy `path` (which was a kit-YAML-only artifact —
+    aspect path is now resolved by slug, not by registry path field).
+    """
+    pyproject_path = _REPO_ROOT / "pyproject.toml"
+    slugs, err = _extract_aspect_slugs_from_pyproject(pyproject_path)
+    if err is not None:
+        return {}, err
+    top: dict[str, Any] = {"aspects": {}}
+    for slug in slugs:
+        sub_path = (
+            _REPO_ROOT
+            / "packages" / "kanon-aspects" / "src" / "kanon_aspects"
+            / "aspects" / slug.replace("-", "_") / "manifest.yaml"
+        )
+        if not sub_path.is_file():
+            return {}, (
+                f"per-aspect manifest missing for {slug!r}: "
+                f"{sub_path.relative_to(_REPO_ROOT)}"
+            )
+        try:
+            sub = yaml.safe_load(sub_path.read_text(encoding="utf-8"))
+        except yaml.YAMLError as exc:
+            return {}, f"{sub_path.relative_to(_REPO_ROOT)}: invalid YAML — {exc}"
+        if not isinstance(sub, dict):
+            return {}, f"{sub_path.relative_to(_REPO_ROOT)}: expected a YAML mapping"
+        # Project the per-aspect manifest's registry-relevant fields into the
+        # top-level shape downstream checks consume. No `path` field — aspect
+        # path resolution goes through slug-based lookup in `_aspect_root`.
+        top["aspects"][slug] = {
+            "stability": sub.get("stability"),
+            "depth-range": sub.get("depth-range"),
+            "default-depth": sub.get("default-depth"),
+            "requires": sub.get("requires", []) or [],
+            "provides": sub.get("provides", []) or [],
+            "suggests": sub.get("suggests", []) or [],
+        }
+    return top, None
 
 
 def _aspect_root(aspect: str, top: dict[str, Any]) -> Path | None:
-    """Resolve an aspect's on-disk root directory.
+    """Resolve an aspect's on-disk root directory by slug.
 
     Per ADR-0049 Migration PR A (bundle collapse): kanon-* aspect bundles
-    live under packages/kanon-aspects/src/kanon_aspects/aspects/kanon_<slug>/ (with underscore
-    in the dir name for Python import compatibility, while the aspect
-    SLUG remains kanon-<slug>). Falls back to the prior data/ layout, then
-    the legacy kit/ location.
+    live under `packages/kanon-aspects/src/kanon_aspects/aspects/kanon_<slug>/`
+    (underscore in directory name for Python import compatibility; the slug
+    itself retains hyphens). Per plan T1, the kit YAML's `path` field is no
+    longer authoritative; resolution is purely slug-based.
     """
-    entry = top["aspects"].get(aspect)
-    if not entry:
+    if aspect not in top["aspects"]:
         return None
-    aspects_pkg = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects"
-    bundle_root = aspects_pkg / "aspects" / aspect.replace("-", "_")
+    bundle_root = (
+        _REPO_ROOT
+        / "packages" / "kanon-aspects" / "src" / "kanon_aspects"
+        / "aspects" / aspect.replace("-", "_")
+    )
     if bundle_root.is_dir():
         return bundle_root
-    kref_data_root = aspects_pkg / "data" / aspect
-    if kref_data_root.is_dir():
-        return kref_data_root
-    kit_root = _KIT / entry["path"]
-    if kit_root.is_dir():
-        return kit_root
     return None
 
 
@@ -198,30 +274,31 @@ def _check_registry_and_manifests(errors: list[str]) -> None:
                 f"match `^kanon-[a-z][a-z0-9-]*$` (ADR-0028 namespace ownership)."
             )
             continue
-        for field in ("path", "stability", "depth-range", "default-depth"):
-            if field not in entry:
+        # Per plan T1: required-fields list no longer includes `path` (the
+        # kit-YAML-only legacy field). The remaining fields all live in the
+        # per-aspect manifest, canonical per ADR-0055.
+        for field in ("stability", "depth-range", "default-depth"):
+            if field not in entry or entry[field] is None:
                 errors.append(
-                    f"manifest.yaml: aspects.{name}: missing required field {field!r}"
+                    f"aspects.{name}: missing required field {field!r} "
+                    f"in per-aspect manifest"
                 )
         if entry.get("stability") not in _STABILITY_VALUES:
             errors.append(
-                f"manifest.yaml: aspects.{name}.stability: invalid value "
+                f"aspects.{name}.stability: invalid value "
                 f"{entry.get('stability')!r}"
             )
         rng = entry.get("depth-range")
         if not (isinstance(rng, list) and len(rng) == 2):
             errors.append(
-                f"manifest.yaml: aspects.{name}.depth-range must be [min, max]"
+                f"aspects.{name}.depth-range must be [min, max]"
             )
             continue
-        # Per substrate-content-move sub-plan: kanon-* aspect data lives
-        # under packages/kanon-aspects/src/kanon_aspects/data/<slug>/ (per ADR-0044 substrate-
-        # independence). Check both locations; either suffices.
         aspect_root = _aspect_root(name, top)
         if aspect_root is None:
             errors.append(
-                f"manifest.yaml: aspects.{name}.path: {entry['path']} "
-                f"does not exist under kit/ nor packages/kanon-aspects/src/kanon_aspects/data/"
+                f"aspects.{name}: bundle directory missing under "
+                f"packages/kanon-aspects/src/kanon_aspects/aspects/{name.replace('-', '_')}/"
             )
             continue
         sub, err2 = _load_aspect_manifest(name, top)
@@ -243,14 +320,14 @@ def _check_registry_and_manifests(errors: list[str]) -> None:
                 if not p.is_file():
                     errors.append(
                         f"aspects.{name} {key}.files: {rel} missing under "
-                        f"{entry['path']}/files/"
+                        f"{aspect_root.relative_to(_REPO_ROOT)}/files/"
                     )
             for rel in depth_entry.get("protocols", []) or []:
                 p = aspect_root / "protocols" / rel
                 if not p.is_file():
                     errors.append(
                         f"aspects.{name} {key}.protocols: {rel} missing under "
-                        f"{entry['path']}/protocols/"
+                        f"{aspect_root.relative_to(_REPO_ROOT)}/protocols/"
                     )
 
 
