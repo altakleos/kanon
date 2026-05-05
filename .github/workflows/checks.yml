@@ -64,6 +64,9 @@ jobs:
             python scripts/check_adr_immutability.py
           fi
 
+      - name: Check ADR-0042 canonical wording parity
+        run: python scripts/check_adr_0042_wording.py
+
       - name: Check process gates (plan-before-build, spec-before-design)
         run: |
           if [ "${{ inputs.is-pr }}" = "true" ]; then
