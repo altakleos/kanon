@@ -26,6 +26,8 @@ The audit-trail sentence from the relevant protocol must appear before your firs
 5. Does this change introduce new component boundaries or cross-component interfaces? If yes, does a design doc exist? If not — **stop and write the design doc.**
    Skip if: Change follows an existing pattern with no new boundaries, or the spec is self-contained with obvious implementation
 6. State the audit sentence from the relevant gate before proceeding.
+
+**Mechanical pre-check:** Before your first source-modifying tool call in a task, run `kanon gates check .` and read its output. If any gate has status `"fail"`, resolve it before proceeding.
 <!-- kanon:end:hard-gates -->
 
 ## Task Playbook
