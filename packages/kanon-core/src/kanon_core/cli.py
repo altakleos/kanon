@@ -495,12 +495,12 @@ def _run_verify_core(target: Path) -> dict[str, Any]:
                         f"Installed kanon {__version__} is older than this project"
                         f" requires ({kit_version}). Run: uv tool upgrade kanon-kit"
                     )
-            except Exception:
-                pass  # Malformed version strings — skip check silently
+            except Exception as exc:
+                warnings.append(f"Could not parse kit_version: {exc}")
 
     aspects = _config_aspects(config)
     if not aspects:
-        warnings.append("No aspects enabled; only kit-global files verified.")
+        warnings.append("No aspects enabled; nothing to verify.")
 
     run_project_validators(target, aspects, errors, warnings)
 
@@ -509,6 +509,11 @@ def _run_verify_core(target: Path) -> dict[str, Any]:
         from kanon_core._validators.worktree_hygiene import check as _wt_hygiene
         _wt_hygiene(str(target), errors, warnings)
         _orphan_branches(str(target), errors, warnings)
+
+    # INV-resolutions-resolver-not-in-ci: detect CI configs invoking kanon resolve.
+    if aspects.get("kanon-sdd", 0) >= 1:
+        from kanon_core._validators.resolver_in_ci import check as _resolver_in_ci
+        _resolver_in_ci(target, errors, warnings)
 
     known_aspects = check_aspects_known(aspects, errors, warnings)
     check_required_files(target, known_aspects, errors)

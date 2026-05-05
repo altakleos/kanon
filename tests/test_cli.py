@@ -132,7 +132,7 @@ def test_init_without_sdd(tmp_path: Path) -> None:
     """kanon init with only worktrees+testing (no sdd) produces a valid project."""
     runner = CliRunner()
     target = tmp_path / "scratch"
-    result = runner.invoke(main, ["init", str(target), "--aspects", "worktrees:1,testing:1"])
+    result = runner.invoke(main, ["init", str(target), "--aspects", "kanon-worktrees:1,kanon-testing:1"])
     assert result.exit_code == 0, result.output
     assert (target / "AGENTS.md").is_file()
     assert (target / ".kanon" / "config.yaml").is_file()

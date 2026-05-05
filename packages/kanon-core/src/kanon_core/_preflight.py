@@ -103,8 +103,12 @@ def _run_preflight(
             proc = subprocess.run(  # nosec — see ADR-0036
                 cmd, shell=True, cwd=str(target), env=env,
                 capture_output=True, text=True,
+                timeout=120,
             )
             passed = proc.returncode == 0
+        except subprocess.TimeoutExpired:
+            passed = False
+            print(f"  timeout: command exceeded 120s", file=sys.stderr)
         except OSError as exc:
             passed = False
             print(f"  error: {exc}", file=sys.stderr)

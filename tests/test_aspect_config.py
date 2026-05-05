@@ -34,7 +34,7 @@ def _config(target: Path) -> dict:
 def test_set_config_idempotent_apart_from_timestamp(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1", "testing:3")
+    _init_with(runner, target, "kanon-sdd:1", "kanon-testing:3")
 
     r1 = runner.invoke(main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=80"])
     assert r1.exit_code == 0, r1.output
@@ -56,7 +56,7 @@ def test_set_config_idempotent_apart_from_timestamp(tmp_path: Path) -> None:
 def test_aspect_add_config_flag_populates_config_at_enable_time(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1")
+    _init_with(runner, target, "kanon-sdd:1")
 
     result = runner.invoke(
         main,
@@ -71,7 +71,7 @@ def test_aspect_add_config_flag_repeatable(tmp_path: Path) -> None:
     """Multiple --config occurrences accumulate; last write wins for shared keys."""
     runner = CliRunner()
     target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1")
+    _init_with(runner, target, "kanon-sdd:1")
 
     # `worktrees` has no config-schema today — schema-free aspects accept any key (INV-6).
     result = runner.invoke(
@@ -159,7 +159,7 @@ def test_set_config_accepts_any_key_when_no_schema(tmp_path: Path) -> None:
     """`worktrees` has no config-schema declared today."""
     runner = CliRunner()
     target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1", "worktrees:1")
+    _init_with(runner, target, "kanon-sdd:1", "kanon-worktrees:1")
 
     result = runner.invoke(
         main, ["aspect", "set-config", str(target), "kanon-worktrees", "anything=42"]
@@ -212,7 +212,7 @@ def test_malformed_config_schema_unknown_field_rejected(tmp_path: Path) -> None:
 def test_set_config_clears_sentinel_on_success(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1", "testing:3")
+    _init_with(runner, target, "kanon-sdd:1", "kanon-testing:3")
 
     pending = target / ".kanon" / ".pending"
     assert not pending.exists()
@@ -225,7 +225,7 @@ def test_set_config_persists_sentinel_on_mid_write_failure(tmp_path: Path) -> No
     """If the underlying _write_config raises, the sentinel must persist."""
     runner = CliRunner()
     target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1", "testing:3")
+    _init_with(runner, target, "kanon-sdd:1", "kanon-testing:3")
 
     pending = target / ".kanon" / ".pending"
 
@@ -259,7 +259,7 @@ def test_aspect_info_omits_config_block_when_no_schema() -> None:
 def test_set_config_errors_when_aspect_not_enabled(tmp_path: Path) -> None:
     runner = CliRunner()
     target = tmp_path / "p"
-    _init_with(runner, target, "sdd:1")  # testing not enabled
+    _init_with(runner, target, "kanon-sdd:1")  # testing not enabled
 
     result = runner.invoke(
         main, ["aspect", "set-config", str(target), "kanon-testing", "coverage_floor=85"]

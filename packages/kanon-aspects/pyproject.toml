@@ -24,7 +24,7 @@ classifiers = [
     "Operating System :: MacOS",
 ]
 dependencies = [
-    "kanon-core",
+    "kanon-core>=0.5.0a3",
     "pyyaml>=6.0",
 ]
 

@@ -129,48 +129,41 @@ def test_migrate_legacy_config_no_tier_no_aspects() -> None:
 
 def test_load_harnesses_missing_file(monkeypatch: pytest.MonkeyPatch) -> None:
     """Line 101: harnesses.yaml doesn't exist."""
-    import tempfile
-
     from kanon_core._scaffold import _load_harnesses
 
-    with tempfile.TemporaryDirectory() as d:
-        monkeypatch.setattr("kanon_core._scaffold._kit_root", lambda: Path(d))
-        assert _load_harnesses() == []
+    def _missing(filename: str) -> str:
+        raise FileNotFoundError(filename)
+
+    monkeypatch.setattr("kanon_core._manifest._kit_data", _missing)
+    assert _load_harnesses() == []
 
 
 
 def test_load_harnesses_malformed(monkeypatch: pytest.MonkeyPatch) -> None:
     """Line 104: harnesses.yaml is not a list."""
-    import tempfile
-
     from kanon_core._scaffold import _load_harnesses
 
-    with tempfile.TemporaryDirectory() as d:
-        p = Path(d)
-        (p / "harnesses.yaml").write_text("not_a_list: true", encoding="utf-8")
-        monkeypatch.setattr("kanon_core._scaffold._kit_root", lambda: p)
-        with pytest.raises(click.ClickException, match="expected a YAML list"):
-            _load_harnesses()
+    monkeypatch.setattr(
+        "kanon_core._manifest._kit_data", lambda f: "not_a_list: true"
+    )
+    with pytest.raises(click.ClickException, match="expected a YAML list"):
+        _load_harnesses()
 
 
 
 def test_render_shims_frontmatter_and_plain(monkeypatch: pytest.MonkeyPatch) -> None:
     """Lines 142, 147: _render_shims with and without frontmatter."""
-    import tempfile
-
     from kanon_core._scaffold import _render_shims
 
     harnesses = [
         {"path": "with_fm.md", "body": "hello\n", "frontmatter": {"key": "val"}},
         {"path": "plain.md", "body": "plain body\n"},
     ]
-    with tempfile.TemporaryDirectory() as d:
-        p = Path(d)
-        (p / "harnesses.yaml").write_text(
-            yaml.safe_dump(harnesses), encoding="utf-8"
-        )
-        monkeypatch.setattr("kanon_core._scaffold._kit_root", lambda: p)
-        result = _render_shims()
+    monkeypatch.setattr(
+        "kanon_core._manifest._kit_data",
+        lambda f: yaml.safe_dump(harnesses),
+    )
+    result = _render_shims()
     assert "---" in result["with_fm.md"]
     assert "key: val" in result["with_fm.md"]
     assert result["plain.md"] == "plain body\n"
@@ -492,7 +485,7 @@ def test_parse_aspects_flag_missing_colon() -> None:
     from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="expected name:depth"):
-        _parse_aspects_flag("sdd", _make_top("kanon-sdd"))
+        _parse_aspects_flag("kanon-sdd", _make_top("kanon-sdd"))
 
 
 def test_parse_aspects_flag_unknown_aspect() -> None:
@@ -500,7 +493,7 @@ def test_parse_aspects_flag_unknown_aspect() -> None:
     from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="Unknown aspect"):
-        _parse_aspects_flag("nope:1", _make_top("kanon-sdd"))
+        _parse_aspects_flag("kanon-nope:1", _make_top("kanon-sdd"))
 
 
 def test_parse_aspects_flag_non_integer_depth() -> None:
@@ -508,7 +501,7 @@ def test_parse_aspects_flag_non_integer_depth() -> None:
     from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="must be an integer"):
-        _parse_aspects_flag("sdd:abc", _make_top("kanon-sdd"))
+        _parse_aspects_flag("kanon-sdd:abc", _make_top("kanon-sdd"))
 
 
 def test_parse_aspects_flag_depth_out_of_range() -> None:
@@ -516,7 +509,7 @@ def test_parse_aspects_flag_depth_out_of_range() -> None:
     from kanon_core._cli_helpers import _parse_aspects_flag
 
     with pytest.raises(click.ClickException, match="outside range"):
-        _parse_aspects_flag("sdd:9", _make_top("kanon-sdd", depth_range=(0, 3)))
+        _parse_aspects_flag("kanon-sdd:9", _make_top("kanon-sdd", depth_range=(0, 3)))
 
 
 def test_parse_aspects_flag_empty_result() -> None:

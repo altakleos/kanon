@@ -25,7 +25,6 @@ from kanon_core._manifest import (
     _aspect_protocols,
     _find_section_pair,
     _iter_markers,
-    _kit_root,
     _load_aspect_manifest,
     _load_top_manifest,
     _load_yaml,
@@ -338,11 +337,18 @@ def _aspects_with_meta(aspects_to_enable: dict[str, int]) -> dict[str, dict[str,
 
 
 def _load_harnesses() -> list[dict[str, Any]]:
-    path = _kit_root() / "harnesses.yaml"
-    if not path.is_file():
+    from kanon_core._manifest import _kit_data
+
+    try:
+        raw = _kit_data("harnesses.yaml")
+    except FileNotFoundError:
         return []
-    result: list[dict[str, Any]] = _load_yaml(path, expected_type=list)
-    return result
+    data = yaml.safe_load(raw)
+    if not isinstance(data, list):
+        raise click.ClickException(
+            "harnesses.yaml: expected a YAML list at top level."
+        )
+    return data
 
 
 def _render_shims(only: set[str] | None = None) -> dict[str, str]:
@@ -563,9 +569,12 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
     placeholders, and fills the protocols-index marker with the unified
     cross-aspect protocol catalog.
     """
-    base = _kit_root() / "agents-md-base.md"
-    if not base.is_file():
-        raise click.ClickException(f"Missing AGENTS.md base: {base}")
+    from kanon_core._manifest import _kit_data
+
+    try:
+        base_text = _kit_data("agents-md-base.md")
+    except FileNotFoundError:
+        raise click.ClickException("Missing AGENTS.md base template in kanon_core package data")
     context: dict[str, str] = {"project_name": project_name}
     for aspect, depth in aspects.items():
         if aspect.startswith("kanon-"):
@@ -574,7 +583,7 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
         else:
             context[f"{aspect.replace('-', '_')}_depth"] = str(depth)
     context.setdefault("tier", context.get("sdd_depth", "0"))
-    text = _render_placeholder(base.read_text(encoding="utf-8"), context)
+    text = _render_placeholder(base_text, context)
 
     # Render the brand banner above the H1 (single source: kernel/_banner.py).
     from kanon_core._banner import _BANNER

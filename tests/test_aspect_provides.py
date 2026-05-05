@@ -67,7 +67,7 @@ def test_provides_invalid_capability_name_rejected(tmp_path: Path) -> None:
 
 
 def test_classify_depth_predicate_three_tokens() -> None:
-    assert _classify_predicate("sdd >= 1") == ("depth", "kanon-sdd", ">=", 1)
+    assert _classify_predicate("kanon-sdd >= 1") == ("depth", "kanon-sdd", ">=", 1)
 
 
 def test_classify_capability_one_token() -> None:
@@ -148,7 +148,7 @@ def test_check_requires_mixed_depth_and_capability() -> None:
     fake_top = {
         "aspects": {
             **top["aspects"],
-            "fake": {"requires": ["sdd >= 1", "planning-discipline"]},
+            "fake": {"requires": ["kanon-sdd >= 1", "planning-discipline"]},
         }
     }
     # both satisfied
@@ -348,11 +348,15 @@ def test_existing_kit_requires_predicates_classify_as_depth() -> None:
 
 
 def test_normalise_aspect_name_bare_sugars_to_kanon() -> None:
-    """A bare aspect name resolves to the `kanon-` namespace by default."""
+    """A bare aspect name now raises ClickException (ADR-0048 A.5 complete)."""
+    import click
     from kanon_core._manifest import _normalise_aspect_name
-    assert _normalise_aspect_name("sdd") == "kanon-sdd"
-    assert _normalise_aspect_name("worktrees") == "kanon-worktrees"
-    assert _normalise_aspect_name("graph-rename") == "kanon-graph-rename"
+    with pytest.raises(click.ClickException, match="no longer accepted"):
+        _normalise_aspect_name("sdd")
+    with pytest.raises(click.ClickException, match="no longer accepted"):
+        _normalise_aspect_name("worktrees")
+    with pytest.raises(click.ClickException, match="no longer accepted"):
+        _normalise_aspect_name("graph-rename")
 
 
 def test_normalise_aspect_name_namespaced_passes_through() -> None:
@@ -386,10 +390,11 @@ def test_split_aspect_name() -> None:
 
 
 def test_classify_predicate_bare_aspect_name_sugars() -> None:
-    """A 3-token depth predicate with a bare aspect name sugars to `kanon-` form."""
+    """A 3-token depth predicate with a bare aspect name raises ClickException."""
+    import click
     from kanon_core._cli_helpers import _classify_predicate
-    classified = _classify_predicate("sdd >= 1")
-    assert classified == ("depth", "kanon-sdd", ">=", 1)
+    with pytest.raises(click.ClickException, match="no longer accepted"):
+        _classify_predicate("sdd >= 1")
 
 
 def test_classify_predicate_namespaced_aspect_name_unchanged() -> None:

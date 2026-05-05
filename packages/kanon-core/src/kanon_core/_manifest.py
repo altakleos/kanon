@@ -129,7 +129,15 @@ def _find_section_pair(
 
 
 def _kit_root() -> Path:
+    """Legacy path accessor — retained for test compatibility only."""
     return Path(kanon_core.__file__).parent / "kit"
+
+
+def _kit_data(filename: str) -> str:
+    """Read a kit data file via importlib.resources (ADR-0045 A.2)."""
+    from importlib.resources import files as _res_files
+
+    return _res_files("kanon_core").joinpath("kit", filename).read_text("utf-8")
 
 
 # --- Manifest loaders ---
@@ -171,14 +179,11 @@ def _normalise_aspect_name(raw: str) -> str:
         return raw
     if _BARE_ASPECT_NAME_RE.match(raw):
         full = f"{_KANON_NAMESPACE}-{raw}"
-        # Use sys.stderr.write directly so capsys/capfd both capture cleanly
-        # (click.echo's stderr handle is not always captured under pytest).
-        sys.stderr.write(
-            f"warning: bare aspect name {raw!r} is deprecated; "
-            f"use the full name {full!r} instead "
-            f"(per ADR-0048 publisher-symmetry).\n"
+        raise click.ClickException(
+            f"Bare aspect name {raw!r} is no longer accepted. "
+            f"Use the full name {full!r} instead "
+            f"(per ADR-0048 publisher-symmetry)."
         )
-        return full
     raise click.ClickException(
         f"Invalid aspect name {raw!r}: must match {_ASPECT_NAME_RE.pattern} "
         f"or be a bare name (will sugar to `kanon-<raw>`)."
@@ -318,6 +323,18 @@ def _load_aspects_from_entry_points() -> dict[str, dict[str, Any]]:
             raise click.ClickException(
                 f"entry-point {ep.name!r}: duplicate registration."
             )
+        # Resolve _source (absolute path to aspect data directory) from the
+        # entry-point's module location (ADR-0045 A.2 — no _kit_root()).
+        if "_source" not in entry:
+            ep_module = ep.value.rsplit(":", 1)[0] if ":" in ep.value else ep.value
+            try:
+                from importlib.resources import files as _res_files
+
+                pkg_path = _res_files(ep_module)
+                entry["_source"] = str(pkg_path._path if hasattr(pkg_path, "_path") else Path(pkg_path))
+            except (TypeError, AttributeError, ModuleNotFoundError):
+                # Fallback: derive from ep.load()'s module __file__
+                entry["_source"] = ""
         aspects[ep.name] = entry
     return aspects
 
@@ -359,8 +376,11 @@ def _load_top_manifest() -> dict[str, Any]:
     block. The kit YAML at ``kernel/kit/manifest.yaml`` is still read for
     kit-globals (``defaults:``, ``files:``); Phase A.3 retires those.
     """
-    path = _kit_root() / "manifest.yaml"
-    yaml_data: dict[str, Any] = _load_yaml(path) if path.is_file() else {}
+    try:
+        raw = _kit_data("manifest.yaml")
+        yaml_data: dict[str, Any] = yaml.safe_load(raw) or {}
+    except (FileNotFoundError, TypeError):
+        yaml_data = {}
     yaml_data["aspects"] = _load_aspects_from_entry_points()
     return yaml_data
 
@@ -415,7 +435,7 @@ def _aspect_entry(aspect: str) -> dict[str, Any] | None:
 
     Returns the entry dict or ``None`` if no source registers *aspect*.
     Project entries carry ``_source`` (absolute path); kit entries carry
-    only ``path`` (relative to ``_kit_root()``).
+    ``_source`` resolved during entry-point loading (ADR-0045 A.2).
     """
     top = _load_top_manifest()
     if aspect in top["aspects"]:
@@ -528,23 +548,22 @@ def _load_aspect_registry(target: Path | None = None) -> dict[str, Any]:
     for name, entry in top["aspects"].items():
         e = dict(entry)
         # Per substrate-content-move sub-plan: kanon-* aspect data lives at
-        # packages/kanon-aspects/src/kanon_aspects/aspects/<slug>/ (per ADR-0044 substrate-independence;
-        # substrate ships zero aspect data). Other slugs (acme-*) come from the
-        # entry-point publisher's distribution root via importlib.metadata.
-        if name.startswith(f"{_KANON_NAMESPACE}-"):
-            try:
-                import kanon_aspects
+        # packages/kanon-aspects/src/kanon_aspects/aspects/<slug>/ (per ADR-0044
+        # substrate-independence; substrate ships zero aspect data). Other slugs
+        # (acme-*) come from the entry-point publisher's distribution root.
+        # _source is resolved during entry-point loading (ADR-0045 A.2).
+        if "_source" not in e:
+            if name.startswith(f"{_KANON_NAMESPACE}-"):
+                try:
+                    import kanon_aspects
 
-                e["_source"] = str(
-                    Path(kanon_aspects.__file__).parent / "aspects" / name.replace("-", "_")
-                )
-            except ImportError:
-                # kanon_aspects not installed — fall back to legacy kit
-                # location for transitional consumers (will be empty after
-                # content move; substrate-independence gate enforces).
-                e["_source"] = str(_kit_root() / e["path"])
-        else:
-            e["_source"] = str(_kit_root() / e["path"])
+                    e["_source"] = str(
+                        Path(kanon_aspects.__file__).parent / "aspects" / name.replace("-", "_")
+                    )
+                except ImportError:
+                    e["_source"] = ""
+            else:
+                e["_source"] = ""
         kit_aspects[name] = e
     if target is None:
         _set_project_aspects_overlay(None)
@@ -737,7 +756,11 @@ def _aspect_path(aspect: str) -> Path:
                 f"depends on both kanon-core and kanon-aspects) or "
                 f"install kanon-aspects directly. ({exc})"
             ) from exc
-    return _kit_root() / str(entry["path"])
+    raise click.ClickException(
+        f"Cannot resolve aspect {aspect!r}: no _source set. "
+        f"Ensure the aspect is registered via entry-points or "
+        f"declared under .kanon/aspects/."
+    )
 
 
 def _aspect_items(aspect: str, depth: int, key: str) -> list[str]:

@@ -36,7 +36,7 @@ Before proposing fixes, read:
 Output order is:
 
 1. **C-class errors first.** A broken config makes every subsequent check spurious. If config says `tier: 7`, none of the tier-1 section checks mean anything.
-2. **S-class errors second.** Missing required files. These are usually single-line fixes: `kanon init --force`, or `cp` from the kit, or `kanon tier set <N>` (if the file exists at a different tier).
+2. **S-class errors second.** Missing required files. These are usually single-line fixes: `kanon init --force`, or `cp` from the kit, or `kanon aspect set-depth <target> <aspect> <N>` (if the file exists at a different depth).
 3. **M-class errors third.** Marker imbalances. Often caused by a user editing AGENTS.md and accidentally deleting half a marker pair.
 4. **D-class errors fourth.** Uncertain territory — prefer routing to the user.
 5. **Warnings last.** Report but don't act unless the user asks.
