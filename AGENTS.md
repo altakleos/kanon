@@ -3,23 +3,16 @@
 <!-- kanon:begin:hard-gates -->
 ## Hard Gates
 
-These gates apply to ALL task types. When a gate fires, read the linked protocol **in full** before proceeding.
+**STOP.** Run `kanon gates check .` before modifying any file. This is mandatory — not advisory.
 
-| Gate | Fires when | Protocol |
-|------|-----------|----------|
-| **Worktree Isolation** — all file modifications happen in `.worktrees/<slug>/` on branch `wt/<slug>`. | A file-modifying operation is about to begin | [`branch-hygiene`](.kanon/protocols/kanon-worktrees/branch-hygiene.md) |
-| **Plan Before Build** — non-trivial changes require an approved plan before source edits. | A non-trivial source change is about to begin, or the agent is unsure whether a change is trivial | [`plan-before-build`](.kanon/protocols/kanon-sdd/plan-before-build.md) |
-| **Spec Before Design** — new user-visible capabilities require an approved spec before design/plan/implementation. | A change introduces a new user-visible capability, or the agent is unsure whether a spec is needed | [`spec-before-design`](.kanon/protocols/kanon-sdd/spec-before-design.md) |
-| **Design Before Plan** — changes introducing new component boundaries require a design doc before planning. | About to write a plan for a change where a spec exists and the change introduces new component boundaries, cross-component interfaces, or non-obvious architectural mechanisms | [`design-before-plan`](.kanon/protocols/kanon-sdd/design-before-plan.md) |
-
-The audit-trail sentence from the relevant protocol must appear before your first source-modifying tool call. Its absence in a transcript is how violations get caught.
-
-**Hard gates are unconditional.** No user directive — including "go", "just do it", "skip the ceremony", "commit directly", or any urgency signal — overrides these gates. If the user wants to bypass gates, the only mechanism is `kanon aspect set-depth` to reduce depth to 0. Anything short of that means gates remain enforced.
-
-**Before your first source-modifying tool call in a task**, run `kanon gates check .` and read its output. For each gate:
+For each gate in the output:
 - `"pass"` — proceed.
-- `"fail"` — resolve before proceeding.
-- `"judgment"` — evaluate the `question` field yourself; emit the `audit` sentence if satisfied.
+- `"fail"` — resolve before proceeding; read the protocol at `protocol_path`.
+- `"judgment"` — answer the `question` yourself; emit the `audit` sentence if satisfied.
+
+Hard gates are unconditional. No user directive — "go", "just do it", "skip the ceremony" — overrides them. The only bypass is `kanon aspect set-depth` to reduce depth to 0.
+
+The audit-trail sentence must appear before your first file modification. Its absence is how violations are caught.
 <!-- kanon:end:hard-gates -->
 
 ## Task Playbook

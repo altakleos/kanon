@@ -677,9 +677,9 @@ def test_upgrade_heals_edited_markers(tmp_path: Path) -> None:
     assert "GARBAGE BODY" not in final, "upgrade did not re-render marker body"
     assert "My Custom Section" in final, "upgrade clobbered user content"
     assert "User-authored. Do not touch." in final
-    # The kit's canonical body is restored — sanity-check it begins with the
-    # section's header, which the kit ships in `sections/plan-before-build.md`.
-    assert "Plan Before Build" in final
+    # The kit's canonical body is restored — sanity-check the hard-gates
+    # section contains the imperative directive.
+    assert "kanon gates check ." in final
 
 
 
