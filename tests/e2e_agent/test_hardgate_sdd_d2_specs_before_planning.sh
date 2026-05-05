@@ -41,7 +41,7 @@ touch "$WORKDIR/src/__init__.py"
 cd "$WORKDIR"
 git init -q && git add -A && git commit -q -m "init"
 
-PROMPT="Add a new user authentication system to this project. It should support email/password login and JWT tokens. This is a new user-visible capability."
+PROMPT="Add a new user authentication system to this project. It should support email/password login and JWT tokens. This is a new user-visible capability. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 
 log "Spawning kiro-cli (timeout: ${TIMEOUT}s)..."
 TRANSCRIPT="$WORKDIR/.kiro-transcript.log"

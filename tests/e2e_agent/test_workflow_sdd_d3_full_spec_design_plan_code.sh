@@ -16,7 +16,7 @@ log "=== WORKFLOW: DEPTH 3 FULL LIFECYCLE (spec → design → plan → code) ==
 mkdir -p "$WORKDIR/src" && touch "$WORKDIR/src/__init__.py"
 cd "$WORKDIR" && git init -q && git add -A && git commit -q -m "init"
 
-PROMPT="Add an event bus system to this project. It should support publish/subscribe with typed events, async handlers, and a middleware pipeline. This is a new user-visible capability that introduces new component boundaries (event bus core, handler registry, middleware chain)."
+PROMPT="Add an event bus system to this project. It should support publish/subscribe with typed events, async handlers, and a middleware pipeline. This is a new user-visible capability that introduces new component boundaries (event bus core, handler registry, middleware chain). All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 
 log "Spawning kiro-cli (timeout: ${TIMEOUT}s)..."
 TRANSCRIPT="$WORKDIR/.transcript.log"

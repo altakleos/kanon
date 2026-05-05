@@ -16,7 +16,7 @@ log "=== DEPTH 1: PLAN REQUIRED FOR NEW FUNCTION ==="
 mkdir -p "$WORKDIR/src" && touch "$WORKDIR/src/__init__.py"
 cd "$WORKDIR" && git init -q && git add -A && git commit -q -m "init"
 
-PROMPT="Add a function called 'paginate' to src/utils.py that takes a list, page number, and page size, and returns the appropriate slice. Include type hints and a docstring."
+PROMPT="Add a function called 'paginate' to src/utils.py that takes a list, page number, and page size, and returns the appropriate slice. Include type hints and a docstring. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 log "Spawning kiro-cli..."
 timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 | tee .transcript.log || true
 

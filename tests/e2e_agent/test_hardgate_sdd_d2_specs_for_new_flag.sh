@@ -34,7 +34,7 @@ git commit -q -m "initial commit"
 
 # Invoke agent
 log "Running kiro-cli with new flag prompt"
-PROMPT="Add a --verbose flag to the verify command that prints detailed per-check results instead of just OK."
+PROMPT="Add a --verbose flag to the verify command that prints detailed per-check results instead of just OK. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 timeout "$TIMEOUT" kiro-cli chat --message "$PROMPT" --working-dir "$WORKDIR" 2>&1 | tee "$WORKDIR/transcript.log" || true
 
 # Assertions

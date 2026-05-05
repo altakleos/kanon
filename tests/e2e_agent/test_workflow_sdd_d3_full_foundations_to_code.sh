@@ -18,7 +18,7 @@ log "Scaffolding depth-3 project with empty foundations..."
 mkdir -p "$WORKDIR/src" && touch "$WORKDIR/src/__init__.py"
 cd "$WORKDIR" && git init -q && git add -A && git commit -q -m "init"
 
-PROMPT="Build a task queue system for this project. It should support async workers, priority scheduling, and dead-letter handling. This is a brand new project — start from the foundations: define the vision, identify key principles and personas, then write the spec, design, plan, and implement. This introduces new component boundaries (scheduler, worker pool, dead-letter store)."
+PROMPT="Build a task queue system for this project. It should support async workers, priority scheduling, and dead-letter handling. This is a brand new project — start from the foundations: define the vision, identify key principles and personas, then write the spec, design, plan, and implement. This introduces new component boundaries (scheduler, worker pool, dead-letter store). All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 
 log "Spawning kiro-cli (timeout: ${TIMEOUT}s)..."
 TRANSCRIPT="$WORKDIR/.transcript.log"

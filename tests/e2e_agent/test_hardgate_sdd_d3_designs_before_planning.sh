@@ -41,7 +41,7 @@ EOF
 cd "$WORKDIR"
 git init -q && git add -A && git commit -q -m "init"
 
-PROMPT="Implement the plugin system per the spec at docs/specs/plugin-system.md. This introduces new component boundaries: a plugin loader, a PluginInterface ABC, and an event dispatcher."
+PROMPT="Implement the plugin system per the spec at docs/specs/plugin-system.md. This introduces new component boundaries: a plugin loader, a PluginInterface ABC, and an event dispatcher. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 
 log "Spawning kiro-cli..."
 TRANSCRIPT="$WORKDIR/.kiro-transcript.log"

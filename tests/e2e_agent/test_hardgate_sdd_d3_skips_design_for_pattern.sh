@@ -67,7 +67,7 @@ EOF
 cd "$WORKDIR"
 git init -q && git add -A && git commit -q -m "init"
 
-PROMPT="Implement the status command per docs/specs/status-command.md. Follow the existing CLI pattern in docs/design/cli-architecture.md — add a new file src/cli/status.py."
+PROMPT="Implement the status command per docs/specs/status-command.md. Follow the existing CLI pattern in docs/design/cli-architecture.md — add a new file src/cli/status.py. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 
 log "Spawning kiro-cli..."
 TRANSCRIPT="$WORKDIR/.kiro-transcript.log"
