@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 - **`skip-when:` frontmatter for hard gates.** Skip conditions rendered as "Skip if:" lines in the decision tree, visible post-compaction without reading the full protocol.
 - **`design-before-plan` promoted to hard gate (sdd depth ≥ 3).** Fires when a plan is about to be written for a change introducing new component boundaries.
 - **`kanon upgrade` now refreshes kit-level sections.** Fixed bug where `hard-gates` and `banner` marker sections were never updated during upgrade.
+- **`kanon gates check` command.** Evaluates hard-gate compliance mechanically (gates with `check:` field) and surfaces judgment gates with their questions. JSON output + human-readable stderr. Traces to `.kanon/traces/gates.jsonl`.
+- **Stale worktree validator (depth 1+).** `kanon verify` warns on worktrees with last commit >7 days ago or branches already merged to main.
+- **Orphan branch validator (depth 1+).** `kanon verify` warns on `wt/*` branches with no corresponding `.worktrees/` directory.
 
 ### Added
 

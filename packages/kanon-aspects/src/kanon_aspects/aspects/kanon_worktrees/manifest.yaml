@@ -33,6 +33,9 @@ depth-1:
     - branch-hygiene.md
   sections:
     - protocols-index
+  validators:
+    - kanon_core._validators.worktree_hygiene
+    - kanon_core._validators.orphan_branches
 
 depth-2:
   files:
