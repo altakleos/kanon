@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 ### Added
 
 - **CI gate enforcing ADR-0042 canonical-wording parity.** `scripts/check_adr_0042_wording.py` asserts the four MUST-NOT clauses ratified in ADR-0042 §1 appear in both the ADR body and the `_ADR_0042_VERIFY_SCOPE` constant in `cli.py`. Wired into `.github/workflows/checks.yml` so any drift between the two surfaces blocks merge.
+- **Substrate-independence gate (ADR-0044) is now a required CI check.** `scripts/check_substrate_independence.py` was previously available but unwired; it now runs on every PR and merge-to-main as part of `.github/workflows/checks.yml`, blocking any change that introduces a hidden runtime dependency on `kanon_aspects` from `kanon-core` code paths.
 
 ## [0.5.0a7] — 2026-05-05
 

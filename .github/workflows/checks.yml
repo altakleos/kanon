@@ -67,6 +67,9 @@ jobs:
       - name: Check ADR-0042 canonical wording parity
         run: python scripts/check_adr_0042_wording.py
 
+      - name: Check substrate-independence (per ADR-0044)
+        run: python scripts/check_substrate_independence.py
+
       - name: Check process gates (plan-before-build, spec-before-design)
         run: |
           if [ "${{ inputs.is-pr }}" = "true" ]; then
