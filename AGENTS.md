@@ -118,6 +118,8 @@ Prose-as-code procedures available at this depth. When a trigger fires, read the
 ## Contribution Conventions
 
 - **Human contributors** — read [`docs/contributing.md`](docs/contributing.md) for module map, gate matrix, and the "where does my change go?" decision flow. This file is the agent-facing router; that one is the human-facing one.
+- **Numbered options** — when an agent presents multiple choices for the user to pick from, the choices MUST be a Markdown ordered list (`1.`, `2.`, `3.`, …) so the user can reply with a single number. Bulleted (`-`) lists are reserved for non-choice content (status recaps, change summaries, links). This applies to "what next?" prompts, alternative approaches, and any "pick one" surface.
+- **No Claude built-in memory** — do not write to or rely on Claude's auto-memory system at `~/.claude/projects/<slug>/memory/` (or any analogous opaque per-agent store). Persistent guidance for this repo lives in `AGENTS.md`, `.kanon/protocols/`, and the `docs/` tree — all in git, all reviewable. CLAUDE.md restates this prohibition for the agent that loads it.
 - **Commit messages** — prefer [Conventional Commits](https://www.conventionalcommits.org/) prefixes (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`). Soft CI check warns on non-conforming messages but does not block merges.
 - **Changelog** — append every user-visible change to `## [Unreleased]` in `CHANGELOG.md` in the same commit that introduces it. Don't batch at release time. Refactors, internal tests, and docs-only edits don't need a changelog entry.
 - **Version references** — always write pre-release versions in full (`v0.1.0a9` or `0.1.0a9`), never the bare suffix (`a9`). A bare suffix is a PEP 440 pre-release marker that attaches to any `X.Y.Z`.
