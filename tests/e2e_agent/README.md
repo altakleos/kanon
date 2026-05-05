@@ -21,7 +21,7 @@ Live LLM-in-the-loop tests that verify kanon's SDD gates cause correct agent beh
 ./tests/e2e_agent/test_hardgate_sdd_d1_plan_skip_approved.sh
 ./tests/e2e_agent/test_hardgate_sdd_d2_spec_fire.sh
 ./tests/e2e_agent/test_hardgate_sdd_d2_spec_skip_refactor.sh
-./tests/e2e_agent/test_protocol_sdd_d2_foundations_skip_populated.sh
+./tests/e2e_agent/test_protocol_sdd_d2_foundations_populated.sh
 ./tests/e2e_agent/test_hardgate_sdd_d3_design_fire.sh
 ./tests/e2e_agent/test_hardgate_sdd_d3_design_skip_pattern.sh
 
@@ -32,12 +32,21 @@ for f in tests/e2e_agent/test_*.sh; do echo "--- $f ---"; "$f"; done
 ## Naming Convention
 
 ```
-test_{what}_{aspect}_{scenario}.sh
+test_{type}_{aspect}_{scenario}.sh
 ```
 
-- `{what}` — what's being tested: `hardgate`, `protocol`, `workflow`, `regression`
-- `{aspect}` — which kanon aspect owns it: `sdd`, `worktrees`, `testing`, `security`
-- `{scenario}` — depth + gate + fire/skip + context (e.g., `d1_plan_fire`, `d2_spec_skip_refactor`)
+| Segment | Values | Purpose |
+|---------|--------|---------|
+| `type` | `hardgate`, `protocol`, `workflow`, `regression` | What class of behavior |
+| `aspect` | `sdd`, `worktrees`, `testing`, `security`, `deps` | Which kanon aspect |
+| `scenario` | `d{N}_{gate}_{context}` or freeform slug | Depth + specifics |
+
+Rules:
+1. `hardgate` tests MUST include `_fire` or `_skip_{reason}` in scenario
+2. `protocol` tests use a verb/state slug — no fire/skip (they're advisory)
+3. `workflow` tests name the arc, not individual gates
+4. `regression` tests name the failure mode being prevented
+5. Depth prefix (`d0`–`d3`) only when depth is relevant to the scenario
 
 ## Requirements
 
