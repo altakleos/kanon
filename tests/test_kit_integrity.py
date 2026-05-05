@@ -20,10 +20,6 @@ _REF_DATA = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" 
 _SDD = _REF_DATA / "kanon_sdd"
 
 
-def _load_top_manifest() -> dict:
-    return yaml.safe_load((_KIT / "manifest.yaml").read_text(encoding="utf-8"))
-
-
 def _load_sdd_manifest() -> dict:
     return yaml.safe_load((_SDD / "manifest.yaml").read_text(encoding="utf-8"))
 
@@ -34,16 +30,21 @@ def _load_sdd_manifest() -> dict:
 def test_kit_root_has_expected_top_level_entries() -> None:
     # Phase A.3: kit.md retired per ADR-0048 de-opinionation.
     # Sub-content-move: aspects/ moved to packages/kanon-aspects/src/kanon_aspects/aspects/.
-    for entry in ("manifest.yaml", "harnesses.yaml"):
+    # Plan T4: kit/manifest.yaml retired; kit-data is now harnesses.yaml only.
+    for entry in ("harnesses.yaml",):
         assert (_KIT / entry).exists(), f"missing kit entry: {entry}"
 
 
-def test_kit_data_reads_manifest() -> None:
-    """_kit_data reads kit files via importlib.resources."""
+def test_kit_data_reads_harnesses() -> None:
+    """_kit_data reads kit files via importlib.resources.
+
+    Plan T4 retired ``kit/manifest.yaml``; the smoke test now reads the
+    remaining kit-data file (``harnesses.yaml``).
+    """
     from kanon_core._manifest import _kit_data
 
-    content = _kit_data("manifest.yaml")
-    assert "aspects" in content or "schema-version" in content
+    content = _kit_data("harnesses.yaml")
+    assert "name:" in content or "path:" in content
 
 
 def test_kit_data_missing_file_raises() -> None:
@@ -118,12 +119,14 @@ def test_harnesses_yaml_is_valid() -> None:
 # --- manifests (registry + per-aspect) ---
 
 
-def test_top_manifest_is_aspect_registry() -> None:
-    top = _load_top_manifest()
-    assert "aspects" in top and isinstance(top["aspects"], dict)
-    assert "kanon-sdd" in top["aspects"]
-    sdd = top["aspects"]["kanon-sdd"]
-    for field in ("path", "stability", "depth-range", "default-depth"):
+def test_kanon_sdd_per_aspect_manifest_has_required_fields() -> None:
+    """Per ADR-0055 + plan T4: per-aspect manifest is canonical for the
+    registry-relevant fields. Replaces the retired
+    ``test_top_manifest_is_aspect_registry`` (which read the kit YAML
+    deleted in plan ``retire-kit-aspects-yaml`` T4).
+    """
+    sdd = _load_sdd_manifest()
+    for field in ("stability", "depth-range", "default-depth"):
         assert field in sdd, f"sdd missing {field}"
     assert sdd["stability"] in {"experimental", "stable", "deprecated"}
 

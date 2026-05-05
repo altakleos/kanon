@@ -32,4 +32,4 @@ Keep `full` and add a new `max` alongside it. Rejected — `full`'s name is the 
 
 - [`docs/specs/cli.md`](../specs/cli.md) — INV-cli-init-profile.
 - [`docs/plans/profile-rename.md`](../plans/archive/profile-rename.md) — implementing plan.
-- [`src/kanon/kit/manifest.yaml`](../../packages/kanon-core/src/kanon_core/kit/manifest.yaml) — `default-depth` and `depth-range` source.
+- Per-aspect [`packages/kanon-aspects/src/kanon_aspects/aspects/<slug>/manifest.yaml`](../../packages/kanon-aspects/src/kanon_aspects) — `default-depth` and `depth-range` source (canonical per ADR-0055; runtime-discovered via the `kanon.aspects` entry-point group per ADR-0040).

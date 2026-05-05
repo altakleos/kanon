@@ -353,18 +353,16 @@ def _load_overlay_aspects(overlay_root: Path) -> dict[str, dict[str, Any]]:
 def _load_top_manifest() -> dict[str, Any]:
     """Load the substrate's top-level manifest.
 
-    Phase A.2.2: ``aspects:`` are sourced from Python entry-points (group
-    ``kanon.aspects``) per ADR-0040, NOT from the kit YAML's ``aspects:``
-    block. The kit YAML at ``kernel/kit/manifest.yaml`` is still read for
-    kit-globals (``defaults:``, ``files:``); Phase A.3 retires those.
+    Per plan T4 (panel-ratified): the kit YAML at
+    ``kanon_core/kit/manifest.yaml`` was retired and the function now
+    composes the registry purely from Python entry-points (group
+    ``kanon.aspects``, per ADR-0040) over the per-aspect manifests
+    (canonical per ADR-0055). Phase A.3 retired the kit-global
+    ``defaults:`` and ``files:`` blocks; T4 retires the residual
+    ``aspects:`` block (whose content was already runtime-overwritten
+    by entry-points).
     """
-    try:
-        raw = _kit_data("manifest.yaml")
-        yaml_data: dict[str, Any] = yaml.safe_load(raw) or {}
-    except (FileNotFoundError, TypeError):
-        yaml_data = {}
-    yaml_data["aspects"] = _load_aspects_from_entry_points()
-    return yaml_data
+    return {"aspects": _load_aspects_from_entry_points()}
 
 
 def _aspect_provides(aspect: str) -> list[str]:

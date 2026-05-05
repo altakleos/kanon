@@ -59,7 +59,7 @@ flowchart LR
     style DIAL fill:#fef3c7,stroke:#92400e
 ```
 
-The 7 kit-shipped aspects (verbatim from [`packages/kanon-core/src/kanon_core/kit/manifest.yaml:35-108`](../packages/kanon-core/src/kanon_core/kit/manifest.yaml)):
+The 7 kit-shipped aspects (canonical roster: [`docs/reference-aspects.md`](reference-aspects.md), generated from `pyproject.toml`'s entry-points + per-aspect manifests):
 
 | Aspect | Stability | Depth range | Default | What it gives you |
 |---|---|---|---:|---|
@@ -71,7 +71,7 @@ The 7 kit-shipped aspects (verbatim from [`packages/kanon-core/src/kanon_core/ki
 | `kanon-deps` | experimental | 0–2 | 1 | Dependency hygiene + CI scanner |
 | `kanon-fidelity` | experimental | 0–1 | 1 | Behavioural conformance via lexical assertions |
 
-Default `kanon init` enables 5 of the 7 (`kanon-sdd`, `kanon-testing`, `kanon-security`, `kanon-deps`, `kanon-worktrees`); `kanon-release` and `kanon-fidelity` are opt-in ([`manifest.yaml:24-29`](../packages/kanon-core/src/kanon_core/kit/manifest.yaml)). Aspects compose via a `provides:` capability registry — a dependent's `requires: ["planning-discipline"]` is satisfied by *any* enabled aspect that declares the capability, kit-shipped or project-defined ([ADR-0026](decisions/0026-aspect-provides-and-generalised-requires.md)).
+Default `kanon init` enables 5 of the 7 (`kanon-sdd`, `kanon-testing`, `kanon-security`, `kanon-deps`, `kanon-worktrees`); `kanon-release` and `kanon-fidelity` are opt-in (per the profile defaults in [`packages/kanon-core/src/kanon_core/cli.py`](../packages/kanon-core/src/kanon_core/cli.py) `_PROFILES`). Aspects compose via a `provides:` capability registry — a dependent's `requires: ["planning-discipline"]` is satisfied by *any* enabled aspect that declares the capability, kit-shipped or project-defined ([ADR-0026](decisions/0026-aspect-provides-and-generalised-requires.md)).
 
 For mechanism (sub-manifest shape, depth resolution, marker namespacing): [`docs/design/aspect-model.md`](design/aspect-model.md). Not re-explained here.
 
