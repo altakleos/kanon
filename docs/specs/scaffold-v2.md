@@ -3,9 +3,7 @@ status: accepted
 date: 2026-04-30
 realizes:
   - P-prose-is-code
-  - P-tiers-insulate
 stressed_by:
-  - solo-engineer
   - onboarding-agent
 fixtures_deferred: "Spec covers architectural changes; fixtures will be added with implementation plans"
 ---

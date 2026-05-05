@@ -6,9 +6,7 @@ realizes:
   - P-verification-co-authored
   - P-specs-are-source
 stressed_by:
-  - solo-engineer
   - solo-with-agents
-  - platform-team
 fixtures:
   - tests/test_cli.py
   - tests/test_kit_integrity.py

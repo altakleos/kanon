@@ -509,7 +509,13 @@ def _run_verify_core(target: Path) -> dict[str, Any]:
     dag_findings = run_dag_verify(target, graph, full=True)
     dag_errors, dag_warnings = format_findings(dag_findings)
     errors.extend(dag_errors)
-    warnings.extend(dag_warnings)
+    # Deduplicate DAG warnings — the graph walk can visit the same finding
+    # through multiple paths, producing O(specs × foundations) duplicates.
+    existing_warnings = set(warnings)
+    for w in dag_warnings:
+        if w not in existing_warnings:
+            warnings.append(w)
+            existing_warnings.add(w)
 
     check_fidelity_assertions(target, aspects, errors, warnings)
 
@@ -600,22 +606,17 @@ def _emit_verify_report(
     # Group findings by chain root for display
     if dag_findings:
         from collections import defaultdict
-        chains: dict[str, list[Finding]] = defaultdict(list)
-        standalone: list[Finding] = []
+        chains: dict[str, set[str]] = defaultdict(set)
         for f in dag_findings:
             if f.chain:
-                chains[f.chain[0]].append(f)
+                chains[f.chain[0]].add(f.message)
             elif f.affected_slug:
                 key = f"{f.source_namespace}/{f.source_slug}"
-                chains[key].append(f)
-            else:
-                standalone.append(f)
+                chains[key].add(f.message)
         if chains:
             report["chains"] = {
-                root: [{"severity": f.severity, "kind": f.kind, "message": f.message,
-                         "affected": f"{f.affected_namespace}/{f.affected_slug}" if f.affected_slug else None}
-                        for f in findings]
-                for root, findings in chains.items()
+                root: sorted(messages)
+                for root, messages in sorted(chains.items())
             }
     click.echo(json.dumps(report, indent=2))
     if status == "ok":
@@ -625,19 +626,23 @@ def _emit_verify_report(
             for w in warnings:
                 click.echo(f"    - {w}", err=True)
         if dag_findings and any(f.affected_slug for f in dag_findings):
-            # Group and display impact chains
+            # Group and display impact chains — deduplicated and capped.
             from collections import defaultdict
-            chains_display: dict[str, list[Finding]] = defaultdict(list)
+            chains_display: dict[str, set[str]] = defaultdict(set)
             for f in dag_findings:
                 if f.affected_slug:
                     key = f"{f.source_namespace}/{f.source_slug}"
-                    chains_display[key].append(f)
+                    chains_display[key].add(f.message)
             if chains_display:
-                click.echo("  impact chains:", err=True)
-                for root, findings in sorted(chains_display.items()):
-                    click.echo(f"    {root}:", err=True)
-                    for f in findings:
-                        click.echo(f"      → {f.affected_namespace}/{f.affected_slug}: {f.message}", err=True)
+                total_findings = sum(len(msgs) for msgs in chains_display.values())
+                click.echo(f"  impact chains ({total_findings} findings across {len(chains_display)} roots):", err=True)
+                _MAX_PER_ROOT = 3
+                for root, messages in sorted(chains_display.items()):
+                    click.echo(f"    {root}: ({len(messages)} findings)", err=True)
+                    for msg in sorted(messages)[:_MAX_PER_ROOT]:
+                        click.echo(f"      → {msg}", err=True)
+                    if len(messages) > _MAX_PER_ROOT:
+                        click.echo(f"      ... and {len(messages) - _MAX_PER_ROOT} more", err=True)
     else:
         click.echo(f"FAIL — {len(errors)} error(s) at {target}.", err=True)
         # Per ADR-0042 §1: surface the exit-zero scope at failure time so

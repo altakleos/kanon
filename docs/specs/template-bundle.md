@@ -7,7 +7,6 @@ realizes:
   - P-self-hosted-bootstrap
   - P-cross-link-dont-duplicate
 stressed_by:
-  - solo-engineer
   - onboarding-agent
 fixtures: [tests/test_kit_integrity.py]
 invariant_coverage:

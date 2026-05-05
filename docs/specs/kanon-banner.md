@@ -6,8 +6,6 @@ realizes:
   - P-self-hosted-bootstrap
 serves:
   - vision
-stressed_by:
-  - solo-engineer
 fixtures:
   - tests/test_cli.py
 invariant_coverage:

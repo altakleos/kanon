@@ -7,7 +7,6 @@ realizes:
   - P-specs-are-source
 stressed_by:
   - onboarding-agent
-  - solo-engineer
 fixtures:
   - tests/test_protocols.py
   - tests/test_kit_integrity.py

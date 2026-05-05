@@ -4,10 +4,7 @@ superseded-by: 0048
 design: "Follows ADR-0008"
 date: 2026-04-22
 realizes:
-  - P-tiers-insulate
   - P-cross-link-dont-duplicate
-stressed_by:
-  - solo-engineer
 fixtures:
   - tests/test_cli.py
 invariant_coverage:

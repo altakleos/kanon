@@ -3,8 +3,6 @@ status: accepted
 date: 2026-04-28
 realizes:
   - P-prose-is-code
-stressed_by:
-  - solo-engineer
 fixtures_deferred: "Spec covers new CLI command; fixtures will be added with implementation"
 ---
 # Spec: `kanon preflight` — staged local validation

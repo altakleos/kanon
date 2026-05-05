@@ -3,11 +3,7 @@ status: superseded
 superseded-by: 0048
 design: "Follows ADR-0006"
 date: 2026-04-22
-realizes:
-  - P-tiers-insulate
 stressed_by:
-  - solo-engineer
-  - platform-team
 fixtures:
   - tests/test_cli.py
 invariant_coverage:

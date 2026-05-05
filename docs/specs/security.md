@@ -4,10 +4,8 @@ design: "Follows ADR-0022"
 date: 2026-04-24
 realizes:
   - P-prose-is-code
-  - P-tiers-insulate
 stressed_by:
   - solo-with-agents
-  - platform-team
 fixtures:
   - tests/test_cli.py
   - tests/test_kit_integrity.py

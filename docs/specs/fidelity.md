@@ -6,7 +6,6 @@ realizes:
   - P-prose-is-code
   - P-verification-co-authored
 stressed_by:
-  - platform-team
   - solo-with-agents
 fixtures:
   - tests/test_fidelity.py

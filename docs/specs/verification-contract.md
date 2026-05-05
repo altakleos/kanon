@@ -4,8 +4,6 @@ design: "Follows ADR-0004"
 date: 2026-04-22
 realizes:
   - P-verification-co-authored
-stressed_by:
-  - platform-team
 fixtures:
   - tests/test_cli.py
   - tests/scripts/test_check_foundations.py

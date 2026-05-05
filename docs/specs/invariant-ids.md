@@ -7,7 +7,6 @@ realizes:
   - P-cross-link-dont-duplicate
 stressed_by:
   - solo-with-agents
-  - platform-team
 fixtures:
   - tests/scripts/test_check_invariant_ids.py
   - tests/test_cli.py

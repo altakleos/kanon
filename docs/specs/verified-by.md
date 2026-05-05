@@ -6,7 +6,6 @@ realizes:
   - P-verification-co-authored
   - P-specs-are-source
 stressed_by:
-  - platform-team
   - solo-with-agents
 fixtures:
   - tests/scripts/test_check_verified_by.py

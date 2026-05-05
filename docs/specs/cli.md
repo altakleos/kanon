@@ -5,9 +5,6 @@ date: 2026-05-01
 realizes:
   - P-prose-is-code
   - P-self-hosted-bootstrap
-stressed_by:
-  - solo-engineer
-  - platform-team
 fixtures:
   - tests/test_cli.py
   - tests/test_atomic.py

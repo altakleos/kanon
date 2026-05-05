@@ -1,16 +1,11 @@
-# v4 fields (added by Phase 0.5 per ADR-0045 — currently ignored by v3 kit; activated by Phase A.1).
-# The provenance block records that this consumer opted in via the kanon-aspects
-# reference-default recipe (checked into .kanon/recipes/reference-default.yaml).
 schema-version: 4
-kanon-dialect: "2026-05-01"
+kanon-dialect: '2026-05-01'
 provenance:
-  - recipe: reference-default
-    publisher: kanon-aspects
-    recipe-version: "1.0"
-    applied_at: "2026-05-01T00:00:00+00:00"
-
-# v3 fields (read by today's kit; preserved verbatim until Phase A.3 deletes the v3 reader).
-kit_version: 0.5.0a3
+- recipe: reference-default
+  publisher: kanon-aspects
+  recipe-version: '1.0'
+  applied_at: '2026-05-01T00:00:00+00:00'
+kit_version: 0.5.0a4
 aspects:
   kanon-deps:
     depth: 2

@@ -4,12 +4,9 @@ design: "docs/design/aspect-model.md"
 date: 2026-04-23
 realizes:
   - P-prose-is-code
-  - P-tiers-insulate
   - P-self-hosted-bootstrap
 stressed_by:
-  - solo-engineer
   - solo-with-agents
-  - platform-team
   - onboarding-agent
 fixtures:
   - tests/test_cli.py

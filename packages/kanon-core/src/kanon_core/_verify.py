@@ -1,8 +1,9 @@
-"""Verification checks for ``kanon verify``.
+"""Structural verification pass: file existence, markers, fidelity locks.
 
-Each ``check_*`` function appends to the provided ``errors`` and
-``warnings`` lists.  The CLI command orchestrates them and emits the
-final report.
+This is the first of two verification layers invoked by ``kanon verify``.
+Each ``check_*`` function validates config-level and file-existence
+invariants.  The second layer (``_dag_verify``) handles graph-relational
+checks across the document DAG.
 """
 
 from __future__ import annotations

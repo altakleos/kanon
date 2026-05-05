@@ -6,11 +6,9 @@ target-release: v0.3
 realizes:
   - P-self-hosted-bootstrap
   - P-cross-link-dont-duplicate
-  - P-tiers-insulate
 serves:
   - vision
 stressed_by:
-  - platform-team
   - solo-with-agents
 fixtures:
   - tests/test_cli.py
