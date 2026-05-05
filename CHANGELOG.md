@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+### Added
+
+- **CI gate enforcing ADR-0042 canonical-wording parity.** `scripts/check_adr_0042_wording.py` asserts the four MUST-NOT clauses ratified in ADR-0042 §1 appear in both the ADR body and the `_ADR_0042_VERIFY_SCOPE` constant in `cli.py`. Wired into `.github/workflows/checks.yml` so any drift between the two surfaces blocks merge.
+
 ## [0.5.0a7] — 2026-05-05
 
 ### Changed
