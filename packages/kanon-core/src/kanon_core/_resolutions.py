@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -181,6 +182,10 @@ def _locate_contract(
 
             registry = _load_aspect_registry(None)
         except Exception:
+            logging.getLogger(__name__).warning(
+                "Failed to load aspect registry for contract resolution",
+                exc_info=True,
+            )
             return None
     aspects = registry.get("aspects") if isinstance(registry, dict) else None
     if not isinstance(aspects, dict):
