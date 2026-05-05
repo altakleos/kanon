@@ -128,11 +128,6 @@ def _find_section_pair(
     return None
 
 
-def _kit_root() -> Path:
-    """Legacy path accessor — retained for test compatibility only."""
-    return Path(kanon_core.__file__).parent / "kit"
-
-
 def _kit_data(filename: str) -> str:
     """Read a kit data file via importlib.resources (ADR-0045 A.2)."""
     from importlib.resources import files as _res_files

@@ -38,6 +38,22 @@ def test_kit_root_has_expected_top_level_entries() -> None:
         assert (_KIT / entry).exists(), f"missing kit entry: {entry}"
 
 
+def test_kit_data_reads_manifest() -> None:
+    """_kit_data reads kit files via importlib.resources."""
+    from kanon_core._manifest import _kit_data
+
+    content = _kit_data("manifest.yaml")
+    assert "aspects" in content or "schema-version" in content
+
+
+def test_kit_data_missing_file_raises() -> None:
+    """_kit_data raises FileNotFoundError for nonexistent files."""
+    from kanon_core._manifest import _kit_data
+
+    with pytest.raises(FileNotFoundError):
+        _kit_data("nonexistent-file.xyz")
+
+
 def test_kit_aspects_dir_has_sdd() -> None:
     assert (_REF_DATA / "kanon_sdd").is_dir()
 
