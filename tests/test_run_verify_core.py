@@ -194,3 +194,113 @@ def test_gates_check_trace_written(tmp_path: Path) -> None:
     assert "gates" in entry
     assert "passed" in entry
     assert isinstance(entry["passed"], bool)
+
+
+# ---------------------------------------------------------------------------
+# Depth-graduated ceremony: behavioral specs for agent gate experience
+# ---------------------------------------------------------------------------
+
+
+def _parse_gates_json(output: str) -> dict:
+    """Extract the JSON report from gates check CLI output."""
+    report, _ = json.JSONDecoder().raw_decode(output[output.index("{"):])
+    return report
+
+
+def test_depth0_agent_can_proceed_without_ceremony(tmp_path: Path) -> None:
+    """At SDD depth 0, no gates block the agent — pure vibe-coding mode."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--aspects", "kanon-sdd:0", "--quiet"])
+
+    # gates check exits 0: nothing blocks
+    result = runner.invoke(main, ["gates", "check", str(target)])
+    assert result.exit_code == 0, f"Expected exit 0 (no gates), got {result.exit_code}: {result.output}"
+
+    report = _parse_gates_json(result.output)
+    assert report["passed"] is True
+    assert report["summary"]["total"] == 0
+
+    # No SDD gates appear at all
+    sdd_gates = [g for g in report["gates"] if g["aspect"] == "kanon-sdd"]
+    assert sdd_gates == [], "Depth 0 should have zero SDD gates"
+
+    # AGENTS.md protocols-index has no protocols listed
+    agents_md = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "_No protocols active at current aspect depths._" in agents_md
+
+
+def test_depth1_agent_must_plan_before_building(tmp_path: Path) -> None:
+    """At SDD depth 1, Plan Before Build gate blocks non-trivial changes."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--aspects", "kanon-sdd:1", "--quiet"])
+
+    result = runner.invoke(main, ["gates", "check", str(target)])
+    report = _parse_gates_json(result.output)
+
+    gate_labels = [g["label"] for g in report["gates"] if g["aspect"] == "kanon-sdd"]
+
+    # Plan Before Build IS present
+    assert "Plan Before Build" in gate_labels
+
+    # Higher-depth gates are NOT present
+    assert "Spec Before Design" not in gate_labels
+    assert "Design Before Plan" not in gate_labels
+
+    # AGENTS.md protocols-index lists plan-before-build
+    agents_md = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "plan-before-build" in agents_md
+    assert "spec-before-design" not in agents_md
+
+
+def test_depth2_agent_must_spec_before_design(tmp_path: Path) -> None:
+    """At SDD depth 2, Spec Before Design gate blocks new capabilities. Foundations recommended."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--aspects", "kanon-sdd:2", "--quiet"])
+
+    result = runner.invoke(main, ["gates", "check", str(target)])
+    report = _parse_gates_json(result.output)
+
+    gate_labels = [g["label"] for g in report["gates"] if g["aspect"] == "kanon-sdd"]
+
+    # Both depth-1 and depth-2 gates present (strict superset)
+    assert "Plan Before Build" in gate_labels
+    assert "Spec Before Design" in gate_labels
+
+    # Depth-3 gate still excluded
+    assert "Design Before Plan" not in gate_labels
+
+    # AGENTS.md protocols-index lists spec-before-design AND foundations-authoring
+    agents_md = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "spec-before-design" in agents_md
+    assert "foundations-authoring" in agents_md
+
+
+def test_depth3_agent_must_design_before_plan(tmp_path: Path) -> None:
+    """At SDD depth 3, Design Before Plan gate blocks architectural changes."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--aspects", "kanon-sdd:3", "--quiet"])
+
+    result = runner.invoke(main, ["gates", "check", str(target)])
+    report = _parse_gates_json(result.output)
+
+    gate_labels = [g["label"] for g in report["gates"] if g["aspect"] == "kanon-sdd"]
+
+    # All three ceremony gates present (full superset)
+    assert "Plan Before Build" in gate_labels
+    assert "Spec Before Design" in gate_labels
+    assert "Design Before Plan" in gate_labels
+
+    # Priority ordering: Design (300) > Spec (200) > Plan (100)
+    sdd_gates = [g for g in report["gates"] if g["aspect"] == "kanon-sdd" and g["label"] in (
+        "Plan Before Build", "Spec Before Design", "Design Before Plan"
+    )]
+    priorities = [g["priority"] for g in sdd_gates]
+    assert priorities == sorted(priorities), "Gates should be ordered by priority (ascending)"
+
+    # AGENTS.md protocols-index lists design-before-plan
+    agents_md = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "design-before-plan" in agents_md
