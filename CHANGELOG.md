@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.5.0a6] — 2026-05-04
+
+### Fixed
+
+- **`graph impact` DX.** Target is now a positional arg (`kanon graph impact . <slug>`) consistent with the rest of the CLI. Previously required `--target .`.
+- **`graph impact` output.** Shows node type and edge kind separately: `← dialect-grammar (spec) [stressed_by]` instead of `← dialect-grammar (stressed_by)`.
+
 ## [0.5.0a5] — 2026-05-04
 
 ### Fixed
