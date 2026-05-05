@@ -1451,11 +1451,15 @@ def check(target: Path, gate_filter: tuple[str, ...], fail_fast: bool) -> None:
     """Evaluate hard-gate compliance for the current working context."""
     import json as _json
 
-    from kanon_core._gates import discover_gates, evaluate_gates, write_trace
+    try:
+        from kanon_core._gates import discover_gates, evaluate_gates, write_trace
 
-    target = target.resolve()
-    aspects = _config_aspects(_read_config(target))
-    all_gates = discover_gates(aspects)
+        target = target.resolve()
+        aspects = _config_aspects(_read_config(target))
+        all_gates = discover_gates(aspects, target)
+    except Exception as exc:
+        click.echo(f"Infrastructure error: {exc}", err=True)
+        raise SystemExit(2) from exc
 
     if gate_filter:
         all_gates = [g for g in all_gates if g["label"] in gate_filter]
@@ -1498,7 +1502,7 @@ def list_gates(target: Path) -> None:
 
     target = target.resolve()
     aspects = _config_aspects(_read_config(target))
-    all_gates = discover_gates(aspects)
+    all_gates = discover_gates(aspects, target)
 
     for g in all_gates:
         mechanical = "\u2713" if g["check"] else "?"

@@ -444,7 +444,7 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
             if fm.get("gate") != "hard":
                 continue
             # INV-gate-frontmatter-schema: required fields when gate: hard.
-            _required = ("label", "summary", "audit")
+            _required = ("label", "summary", "audit", "priority", "question")
             missing = [f for f in _required if f not in fm]
             if missing:
                 raise click.ClickException(
