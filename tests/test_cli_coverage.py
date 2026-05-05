@@ -28,7 +28,7 @@ def test_graph_impact_with_existing_slug(tmp_path: Path) -> None:
         "---\nstatus: approved\ndate: 2026-01-01\n---\n# Plan\n", encoding="utf-8"
     )
     runner = CliRunner()
-    result = runner.invoke(main, ["graph", "impact", "test-plan", "--target", str(target)])
+    result = runner.invoke(main, ["graph", "impact", str(target), "test-plan"])
     # Either finds the node or doesn't — both are valid outcomes depending on graph build
     # The key is it doesn't crash
     assert result.exit_code in (0, 1)
@@ -38,7 +38,7 @@ def test_graph_impact_nonexistent_slug(tmp_path: Path) -> None:
     """graph impact on a non-existent slug exits with error."""
     target = _init_project(tmp_path)
     runner = CliRunner()
-    result = runner.invoke(main, ["graph", "impact", "nonexistent-slug-xyz", "--target", str(target)])
+    result = runner.invoke(main, ["graph", "impact", str(target), "nonexistent-slug-xyz"])
     assert result.exit_code != 0
     assert "No node found" in result.output
 

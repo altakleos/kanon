@@ -1184,20 +1184,15 @@ def graph_rename(
 
 
 @graph.command("impact")
+@click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
 @click.argument("slug")
-@click.option(
-    "--target",
-    type=click.Path(exists=True, file_okay=False, path_type=Path),
-    default=None,
-    help="Repo root (default: current directory).",
-)
-def graph_impact(slug: str, target: Path | None) -> None:
+def graph_impact(target: Path, slug: str) -> None:
     """Show the blast radius of changing a given artifact.
 
     Walks downstream from the node matching SLUG and prints every
     artifact that references it (transitively, up to depth 2).
     """
-    root = Path(target).resolve() if target else Path.cwd()
+    root = target.resolve()
     graph_data = build_graph(root)
 
     # Find the node matching the slug across all namespaces.

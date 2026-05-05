@@ -12,7 +12,7 @@ from kanon_core.cli import main
 def test_graph_impact_nonexistent_slug(tmp_path: Path) -> None:
     runner = CliRunner()
     runner.invoke(main, ["init", str(tmp_path), "--profile", "solo"])
-    result = runner.invoke(main, ["graph", "impact", "nonexistent-slug-xyz", "--target", str(tmp_path)])
+    result = runner.invoke(main, ["graph", "impact", str(tmp_path), "nonexistent-slug-xyz"])
     assert result.exit_code != 0
 
 
