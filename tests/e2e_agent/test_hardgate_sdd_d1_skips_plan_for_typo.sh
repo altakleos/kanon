@@ -67,7 +67,7 @@ else
 fi
 
 # 2. No plan should have been created (trivial change)
-NEW_PLANS=$(find "$WORKDIR/docs/plans" -name "*.md" -newer "$WORKDIR/.git/index" 2>/dev/null || true)
+NEW_PLANS=$(find "$WORKDIR/docs/plans" -name "*.md" 2>/dev/null || true)
 if [[ -z "$NEW_PLANS" ]]; then
   log "  ✓ No plan created (correctly skipped for trivial change)"
 else

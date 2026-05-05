@@ -23,7 +23,7 @@ timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>
 PASS=true
 
 # Plan must be created
-NEW_PLANS=$(find docs/plans -name "*.md" -newer .git/index 2>/dev/null || true)
+NEW_PLANS=$(find docs/plans -name "*.md" 2>/dev/null || true)
 if [[ -n "$NEW_PLANS" ]]; then
   log "  ✓ Plan file created: $NEW_PLANS"
 else

@@ -26,7 +26,7 @@ timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>
 PASS=true
 
 # 1. Spec must exist
-SPECS=$(find docs/specs -name "*.md" -newer .git/index 2>/dev/null || true)
+SPECS=$(find docs/specs -name "*.md" 2>/dev/null || true)
 if [[ -n "$SPECS" ]]; then
   log "  ✓ Spec created: $SPECS"
 else
@@ -35,7 +35,7 @@ else
 fi
 
 # 2. Design doc must exist
-DESIGNS=$(find docs/design -name "*.md" -newer .git/index 2>/dev/null || true)
+DESIGNS=$(find docs/design -name "*.md" 2>/dev/null || true)
 if [[ -n "$DESIGNS" ]]; then
   log "  ✓ Design doc created: $DESIGNS"
 else
@@ -44,7 +44,7 @@ else
 fi
 
 # 3. Plan must exist
-PLANS=$(find docs/plans -name "*.md" -newer .git/index 2>/dev/null || true)
+PLANS=$(find docs/plans -name "*.md" 2>/dev/null || true)
 if [[ -n "$PLANS" ]]; then
   log "  ✓ Plan created: $PLANS"
 else

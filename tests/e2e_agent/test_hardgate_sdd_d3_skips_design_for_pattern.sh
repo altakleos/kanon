@@ -77,7 +77,7 @@ timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>
 PASS=true
 
 # 1. No new design doc should be created (follows existing pattern)
-NEW_DESIGN=$(find "$WORKDIR/docs/design" -name "*.md" -newer "$WORKDIR/.git/index" 2>/dev/null | grep -v cli-architecture || true)
+NEW_DESIGN=$(find "$WORKDIR/docs/design" -name "*.md" 2>/dev/null | grep -v cli-architecture || true)
 if [[ -z "$NEW_DESIGN" ]]; then
   log "  ✓ No new design doc created (correctly follows existing pattern)"
 else

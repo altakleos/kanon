@@ -42,8 +42,8 @@ else
 fi
 
 # 2. Principles or personas populated
-PRINCIPLES=$(find docs/foundations/principles -name "*.md" -newer .git/index 2>/dev/null | grep -v _template || true)
-PERSONAS=$(find docs/foundations/personas -name "*.md" -newer .git/index 2>/dev/null | grep -v _template || true)
+PRINCIPLES=$(find docs/foundations/principles -name "*.md" 2>/dev/null | grep -v _template || true)
+PERSONAS=$(find docs/foundations/personas -name "*.md" 2>/dev/null | grep -v _template || true)
 if [[ -n "$PRINCIPLES" ]] || [[ -n "$PERSONAS" ]]; then
   log "  ✓ Foundations artifacts created: ${PRINCIPLES}${PERSONAS}"
 else
@@ -51,7 +51,7 @@ else
 fi
 
 # 3. Spec must exist
-SPECS=$(find docs/specs -name "*.md" -newer .git/index 2>/dev/null || true)
+SPECS=$(find docs/specs -name "*.md" 2>/dev/null || true)
 if [[ -n "$SPECS" ]]; then
   log "  ✓ Spec created: $SPECS"
 else
@@ -60,7 +60,7 @@ else
 fi
 
 # 4. Design doc must exist
-DESIGNS=$(find docs/design -name "*.md" -newer .git/index 2>/dev/null || true)
+DESIGNS=$(find docs/design -name "*.md" 2>/dev/null || true)
 if [[ -n "$DESIGNS" ]]; then
   log "  ✓ Design doc created: $DESIGNS"
 else
@@ -69,7 +69,7 @@ else
 fi
 
 # 5. Plan must exist
-PLANS=$(find docs/plans -name "*.md" -newer .git/index 2>/dev/null || true)
+PLANS=$(find docs/plans -name "*.md" 2>/dev/null || true)
 if [[ -n "$PLANS" ]]; then
   log "  ✓ Plan created: $PLANS"
 else

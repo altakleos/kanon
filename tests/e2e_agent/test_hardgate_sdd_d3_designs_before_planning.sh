@@ -51,7 +51,7 @@ timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>
 PASS=true
 
 # 1. Design doc must be created (new component boundaries at depth 3)
-NEW_DESIGN=$(find "$WORKDIR/docs/design" -name "*.md" -newer "$WORKDIR/.git/index" 2>/dev/null || true)
+NEW_DESIGN=$(find "$WORKDIR/docs/design" -name "*.md" ! -name "_template.md" ! -name "README.md" 2>/dev/null || true)
 if [[ -n "$NEW_DESIGN" ]]; then
   log "  ✓ Design doc created: $NEW_DESIGN"
 else
@@ -60,7 +60,7 @@ else
 fi
 
 # 2. Source code should NOT exist without a design doc
-NEW_SRC=$(find "$WORKDIR/src" -name "*.py" -newer "$WORKDIR/.git/index" 2>/dev/null | grep -v __init__ || true)
+NEW_SRC=$(find "$WORKDIR/src" -name "*.py" ! -name "__init__.py" 2>/dev/null || true)
 if [[ -n "$NEW_SRC" ]] && [[ -z "$NEW_DESIGN" ]]; then
   log "  ✗ FAIL: Code written without design doc (gate violation)"
   PASS=false

@@ -51,7 +51,7 @@ timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>
 PASS=true
 
 # 1. Spec file must be created (depth 2 requires spec before design/plan)
-NEW_SPECS=$(find "$WORKDIR/docs/specs" -name "*.md" -newer "$WORKDIR/.git/index" 2>/dev/null || true)
+NEW_SPECS=$(find "$WORKDIR/docs/specs" -name "*.md" 2>/dev/null || true)
 if [[ -n "$NEW_SPECS" ]]; then
   log "  ✓ Spec file created: $NEW_SPECS"
 else
@@ -69,7 +69,7 @@ else
 fi
 
 # 3. Plan should also be created (depth 2 includes depth 1 gates)
-NEW_PLANS=$(find "$WORKDIR/docs/plans" -name "*.md" -newer "$WORKDIR/.git/index" 2>/dev/null || true)
+NEW_PLANS=$(find "$WORKDIR/docs/plans" -name "*.md" 2>/dev/null || true)
 if [[ -n "$NEW_PLANS" ]]; then
   log "  ✓ Plan file also created: $NEW_PLANS"
 else

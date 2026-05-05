@@ -46,7 +46,7 @@ timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>
 PASS=true
 
 # 1. No spec should be created (refactor = no new user-visible capability)
-NEW_SPECS=$(find "$WORKDIR/docs/specs" -name "*.md" -newer "$WORKDIR/.git/index" 2>/dev/null || true)
+NEW_SPECS=$(find "$WORKDIR/docs/specs" -name "*.md" 2>/dev/null || true)
 if [[ -z "$NEW_SPECS" ]]; then
   log "  ✓ No spec created (correctly skipped for internal refactor)"
 else
