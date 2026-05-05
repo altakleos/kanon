@@ -63,3 +63,23 @@ def test_gates_check_with_filter(tmp_path: Path) -> None:
     assert result.exit_code == 0
     report, _ = json.JSONDecoder().raw_decode(result.output[result.output.index("{"):])
     assert report["summary"]["total"] == 0
+
+
+def test_gates_check_exits_1_outside_worktree(tmp_path: Path) -> None:
+    """gates check exits 1 when worktree gate fails (CWD not in .worktrees/)."""
+    runner = CliRunner()
+    target = tmp_path / "proj"
+    runner.invoke(main, ["init", str(target), "--aspects", "kanon-sdd:1,kanon-worktrees:1"])
+
+    result = runner.invoke(main, ["gates", "check", str(target)])
+    assert result.exit_code == 1, f"Expected exit 1, got {result.exit_code}: {result.output}"
+
+    report, _ = json.JSONDecoder().raw_decode(result.output[result.output.index("{"):])
+    assert report["passed"] is False
+    assert report["summary"]["fail"] >= 1
+
+    # Worktree Isolation gate specifically failed
+    worktree_gate = next(g for g in report["gates"] if g["label"] == "Worktree Isolation")
+    assert worktree_gate["status"] == "fail"
+    assert worktree_gate["exit_code"] != 0
+    assert worktree_gate["protocol_path"] == ".kanon/protocols/kanon-worktrees/branch-hygiene.md"
