@@ -1431,6 +1431,75 @@ def contracts_validate(bundle_path: Path) -> None:
         sys.exit(1)
 
 
+@main.group()
+def gates() -> None:
+    """Inspect and run hard-gate checks."""
+
+
+@gates.command()
+@click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.option("--gate", "gate_filter", multiple=True, help="Only check gates matching this label.")
+@click.option("--fail-fast", is_flag=True, help="Stop on first failure.")
+def check(target: Path, gate_filter: tuple[str, ...], fail_fast: bool) -> None:
+    """Evaluate hard-gate compliance for the current working context."""
+    import json as _json
+
+    from kanon_core._gates import discover_gates, evaluate_gates, write_trace
+
+    target = target.resolve()
+    aspects = _config_aspects(_read_config(target))
+    all_gates = discover_gates(aspects)
+
+    if gate_filter:
+        all_gates = [g for g in all_gates if g["label"] in gate_filter]
+
+    results = evaluate_gates(all_gates, target, fail_fast=fail_fast)
+    write_trace(target, results)
+
+    for r in results:
+        if r["status"] == "pass":
+            click.echo(f"\u2713 {r['label']}  {r['duration_s']}s", err=True)
+        elif r["status"] == "fail":
+            click.echo(f"\u2717 {r['label']}  {r['duration_s']}s", err=True)
+        else:
+            click.echo(f"? {r['label']}  (judgment)", err=True)
+
+    passed = all(r["status"] != "fail" for r in results)
+    summary = {
+        "total": len(results),
+        "pass": sum(1 for r in results if r["status"] == "pass"),
+        "fail": sum(1 for r in results if r["status"] == "fail"),
+        "judgment": sum(1 for r in results if r["status"] == "judgment"),
+    }
+    report = {
+        "target": str(target),
+        "passed": passed,
+        "summary": summary,
+        "gates": results,
+    }
+    click.echo(_json.dumps(report, indent=2))
+    raise SystemExit(0 if passed else 1)
+
+
+@gates.command(name="list")
+@click.argument("target", type=click.Path(exists=True, file_okay=False, path_type=Path))
+def list_gates(target: Path) -> None:
+    """List active hard gates for the project."""
+    import json as _json
+
+    from kanon_core._gates import discover_gates
+
+    target = target.resolve()
+    aspects = _config_aspects(_read_config(target))
+    all_gates = discover_gates(aspects)
+
+    for g in all_gates:
+        mechanical = "\u2713" if g["check"] else "?"
+        click.echo(f"[{g['priority']:>4}] {mechanical} {g['label']} ({g['aspect']})", err=True)
+
+    click.echo(_json.dumps([{"label": g["label"], "aspect": g["aspect"], "priority": g["priority"], "check": g["check"] is not None} for g in all_gates], indent=2))
+
+
 @main.command("resolve")
 @click.option(
     "--target",
