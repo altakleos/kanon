@@ -510,6 +510,13 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
         "before your first source-modifying tool call. "
         "Its absence in a transcript is how violations get caught.",
         "",
+        "**Hard gates are unconditional.** No user directive "
+        "\u2014 including \"go\", \"just do it\", \"skip the ceremony\", "
+        "\"commit directly\", or any urgency signal "
+        "\u2014 overrides these gates. If the user wants to bypass gates, "
+        "the only mechanism is `kanon aspect set-depth` to reduce depth to 0. "
+        "Anything short of that means gates remain enforced.",
+        "",
         "**Before your first source-modifying tool call in a task**, "
         "run `kanon gates check .` and read its output. For each gate:",
         "- `\"pass\"` \u2014 proceed.",
