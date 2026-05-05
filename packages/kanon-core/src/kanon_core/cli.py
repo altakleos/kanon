@@ -543,7 +543,8 @@ def verify(target: Path) -> None:
 )
 @click.option("--tag", default=None, help="Release tag (required for --stage release).")
 @click.option("--fail-fast", is_flag=True, help="Stop on first failing check.")
-def preflight(target: Path, stage: str, tag: str | None, fail_fast: bool) -> None:
+@click.pass_context
+def preflight(ctx: click.Context, target: Path, stage: str, tag: str | None, fail_fast: bool) -> None:
     """Run staged local validation: verify + configured checks."""
     from kanon_core._preflight import _resolve_preflight_checks, _run_preflight
 
@@ -554,14 +555,16 @@ def preflight(target: Path, stage: str, tag: str | None, fail_fast: bool) -> Non
     config = _read_config(target)
     aspects = _config_aspects(config)
 
-    # Step 1: Run kanon verify via CliRunner (same process).
+    # Step 1: Run kanon verify (same process, via ctx.invoke).
     import time as _time
 
-    from click.testing import CliRunner as _Runner
     t0 = _time.monotonic()
-    _vr = _Runner().invoke(main, ["verify", str(target)])
+    try:
+        ctx.invoke(verify, target=target)
+        verify_passed = True
+    except SystemExit as e:
+        verify_passed = (e.code == 0 or e.code is None)
     verify_duration = round(_time.monotonic() - t0, 1)
-    verify_passed = _vr.exit_code == 0
     verify_mark = "✓" if verify_passed else "✗"
     print(f"{verify_mark} verify (structural)  {verify_duration}s", file=sys.stderr)
 
@@ -667,7 +670,8 @@ def _emit_verify_report(
 )
 @click.option("--tag", required=True, help="Release tag, e.g. v1.2.0")
 @click.option("--dry-run", is_flag=True, help="Run preflight but don't create tag.")
-def release_cmd(target: Path, tag: str, dry_run: bool) -> None:
+@click.pass_context
+def release_cmd(ctx: click.Context, target: Path, tag: str, dry_run: bool) -> None:
     """Gate a release tag on preflight checks (release depth >= 2)."""
     import re as _re
     import subprocess as _sp
@@ -697,12 +701,13 @@ def release_cmd(target: Path, tag: str, dry_run: bool) -> None:
         raise click.ClickException("Working tree is dirty. Commit first.")
 
     # Run preflight --stage release.
-    from click.testing import CliRunner as _Runner
-    pf = _Runner().invoke(
-        main, ["preflight", str(target), "--stage", "release", "--tag", tag],
-    )
+    try:
+        ctx.invoke(preflight, target=target, stage="release", tag=tag, fail_fast=False)
+        preflight_passed = True
+    except SystemExit as e:
+        preflight_passed = (e.code == 0 or e.code is None)
 
-    if pf.exit_code != 0:
+    if not preflight_passed:
         click.echo("✗ Preflight failed — tag NOT created.", err=True)
         sys.exit(1)
 
