@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import zipfile
 from pathlib import Path
 
@@ -17,18 +18,52 @@ mod = _load_ci_script("check_package_contents.py")
 _TAG = "v1.0.0"
 _VERSION = "1.0.0"
 
-# Read the real manifests so synthetic wheels match the actual kit shape.
-# Per ADR-0049 Migration PR A (bundle collapse): kanon-* aspect bundles
-# live at packages/kanon-aspects/src/kanon_aspects/aspects/kanon_<slug>/. Top manifest stays at kit/.
-_KIT = _REPO_ROOT / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
+# Per plan T2 + T4: the gate's source-of-truth for aspect enumeration is
+# pyproject.toml's `[project.entry-points."kanon.aspects"]` table (mirrored
+# in the wheel's `<dist-info>/entry_points.txt`). The kit YAML at
+# `kanon_core/kit/manifest.yaml` is retired in T4; tests therefore enumerate
+# slugs from pyproject directly, not from the retired YAML.
+_PYPROJECT_TEXT = (_REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
 _REF_DATA = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects"
-_TOP_MANIFEST_TEXT = (_KIT / "manifest.yaml").read_text(encoding="utf-8")
-_TOP_MANIFEST = yaml.safe_load(_TOP_MANIFEST_TEXT)
+
+
+def _aspect_slugs_from_pyproject() -> list[str]:
+    """Return aspect slugs from pyproject's `kanon.aspects` entry-point table.
+
+    Mirrors `scripts/check_kit_consistency.py:_extract_aspect_slugs_from_pyproject`
+    so tests stay aligned with the gate's own source-of-truth.
+    """
+    header = re.compile(
+        r'^\s*\[project\.entry-points\."kanon\.aspects"\]\s*$', re.MULTILINE,
+    )
+    kv = re.compile(
+        r'^\s*(?P<key>[A-Za-z_][A-Za-z0-9_-]*)\s*=\s*"(?P<value>[^"]+)"\s*(?:#.*)?$'
+    )
+    match = header.search(_PYPROJECT_TEXT)
+    assert match is not None, "pyproject missing [project.entry-points.\"kanon.aspects\"]"
+    rest = _PYPROJECT_TEXT[match.end():]
+    next_section = re.search(r"^\s*\[", rest, re.MULTILINE)
+    body = rest[: next_section.start()] if next_section else rest
+    slugs: list[str] = []
+    for line in body.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        m = kv.match(line)
+        if m is not None:
+            slugs.append(m.group("key"))
+    return sorted(slugs)
 
 
 def _build_wheel(tmp_path: Path, *, extra_files: dict[str, str] | None = None,
                  omit: set[str] | None = None, version: str = _VERSION) -> Path:
-    """Create a minimal synthetic .whl with all required entries derived from manifests."""
+    """Create a minimal synthetic .whl with all required entries.
+
+    Per plan T2: the wheel must include `<dist-info>/entry_points.txt` with the
+    `[kanon.aspects]` section listing each slug — that file is the gate's
+    external oracle for aspect enumeration (replacing the retired
+    `kanon_core/kit/manifest.yaml`).
+    """
     whl = tmp_path / "fake.whl"
     omit = omit or set()
     files: dict[str, str] = {}
@@ -39,20 +74,25 @@ def _build_wheel(tmp_path: Path, *, extra_files: dict[str, str] | None = None,
             continue
         if f == "kanon_core/__init__.py":
             files[f] = f'__version__ = "{version}"\n'
-        elif f == "kanon_core/kit/manifest.yaml":
-            files[f] = _TOP_MANIFEST_TEXT
         else:
             files[f] = ""
 
-    # Aspect files derived from manifests (same logic the script uses).
-    # Per ADR-0049 PR A: bundles at kanon_aspects/aspects/kanon_<slug>/
-    # (underscore in dir name; hyphen in slug everywhere else).
-    for _name, entry in _TOP_MANIFEST["aspects"].items():
+    # entry_points.txt (gate's external oracle per T2). The dist-info dir
+    # name here is illustrative; the gate matches any "*.dist-info/entry_points.txt".
+    slugs = _aspect_slugs_from_pyproject()
+    dist_info_dir = f"kanon_kit-{version}.dist-info"
+    ep_lines = ["[kanon.aspects]"]
+    for slug in slugs:
+        ep_lines.append(f"{slug} = kanon_aspects.aspects.{slug.replace('-', '_')}.loader:MANIFEST")
+    files[f"{dist_info_dir}/entry_points.txt"] = "\n".join(ep_lines) + "\n"
+
+    for _name in slugs:
         _dir_name = _name.replace("-", "_")
         aspect_base = f"kanon_aspects/aspects/{_dir_name}"
         sub_path = _REF_DATA / _dir_name / "manifest.yaml"
         sub_text = sub_path.read_text(encoding="utf-8")
         sub = yaml.safe_load(sub_text)
+        entry = {"depth-range": sub.get("depth-range", [0, 0])}
 
         mf = f"{aspect_base}/manifest.yaml"
         if mf not in omit:

@@ -32,6 +32,7 @@ publish job runs.
 from __future__ import annotations
 
 import argparse
+import configparser
 import json
 import re
 import sys
@@ -42,15 +43,17 @@ from typing import Any
 import yaml
 
 # Core files that must always be present regardless of aspects.
-# Per Phase A.3 (kit-globals deletion): kanon_core/kit/kit.md was retired and is
-# no longer in the wheel. Per ADR-0050 Option A: substrate Python module is
-# `kernel/` (was `kanon/`); aspect data lives at `kanon_aspects/aspects/`,
-# but the substrate-level `kanon_core/kit/manifest.yaml` + `harnesses.yaml` stay.
+# Per Phase A.3 (kit-globals deletion): kanon_core/kit/kit.md was retired and
+# is no longer in the wheel. Per ADR-0050 Option A: substrate Python module
+# is `kernel/` (was `kanon/`); aspect data lives at `kanon_aspects/aspects/`.
+# Per plan T6: kanon_core/kit/manifest.yaml is no longer required — T4
+# deletes the file. The wheel-internal external oracle for aspect enumeration
+# is now `<dist-info>/entry_points.txt` (parsed by
+# `_derive_requirements_from_wheel` per plan T2).
 _CORE_REQUIRED_FILES: tuple[str, ...] = (
     "kanon_core/__init__.py",
     "kanon_core/cli.py",
     "kanon_core/_atomic.py",
-    "kanon_core/kit/manifest.yaml",
     "kanon_core/kit/harnesses.yaml",
 )
 
@@ -103,25 +106,59 @@ def _changelog_entry_status(changelog_path: Path, version: str) -> tuple[str, st
 
 
 def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list[str]]:
-    """Read manifest.yaml from the wheel and derive required files and dirs."""
+    """Derive wheel-required files and dirs from `<dist-info>/entry_points.txt`.
+
+    Per plan T2 (panel-ratified): the external oracle for which aspects must
+    ship is the wheel's `entry_points.txt` (reproducibly derived at build
+    time from the source-tree pyproject's `[project.entry-points."kanon.aspects"]`
+    table by hatchling). For each declared aspect slug, the per-aspect
+    manifest's `depth-range` (canonical per ADR-0055) drives required-files
+    enumeration.
+
+    Replaces the previous behavior that read `kanon_core/kit/manifest.yaml`
+    from the wheel — that file is retired in T4, and the new oracle is not
+    self-referential because pyproject's entry-points table is hand-edited
+    and version-controlled, while the wheel's `entry_points.txt` is a build
+    artifact derived from it.
+    """
     required_files = list(_CORE_REQUIRED_FILES)
     required_dirs = ["kanon_core/kit/"]
+
+    names = z.namelist()
+    # Find entry_points.txt under any *.dist-info/ in the wheel.
+    entry_points_path: str | None = next(
+        (
+            n for n in names
+            if n.endswith("/entry_points.txt") and ".dist-info/" in n
+        ),
+        None,
+    )
+    if entry_points_path is None:
+        return required_files, required_dirs
+
     try:
-        top = yaml.safe_load(z.read("kanon_core/kit/manifest.yaml").decode("utf-8"))
-    except (KeyError, yaml.YAMLError):
+        ep_text = z.read(entry_points_path).decode("utf-8")
+    except KeyError:
         return required_files, required_dirs
-    if not isinstance(top, dict) or not isinstance(top.get("aspects"), dict):
+
+    # entry_points.txt is INI-format; preserve key case (slugs are lowercase
+    # but the parser default is to lowercase them anyway, this is defensive).
+    parser = configparser.ConfigParser()
+    parser.optionxform = str  # type: ignore[method-assign]
+    try:
+        parser.read_string(ep_text)
+    except configparser.Error:
         return required_files, required_dirs
-    for name, entry in top["aspects"].items():
-        if not isinstance(entry, dict):
-            continue
-        # Per ADR-0049 PR A bundle collapse: kanon-* aspect bundles live at
-        # kanon_aspects/aspects/kanon_<slug>/ in the wheel (underscore in
-        # dir name; hyphen retained in the runtime aspect SLUG `name`).
-        aspect_base = f"kanon_aspects/aspects/{name.replace('-', '_')}"
+
+    if "kanon.aspects" not in parser:
+        return required_files, required_dirs
+
+    for slug in parser["kanon.aspects"]:
+        # Per ADR-0049 PR A bundle collapse: aspect bundles live at
+        # kanon_aspects/aspects/<slug.replace('-', '_')>/ in the wheel.
+        aspect_base = f"kanon_aspects/aspects/{slug.replace('-', '_')}"
         required_files.append(f"{aspect_base}/manifest.yaml")
         required_dirs.append(f"{aspect_base}/")
-        # Load sub-manifest to get depth-specific files, protocols, sections
         sub_path = f"{aspect_base}/manifest.yaml"
         try:
             sub = yaml.safe_load(z.read(sub_path).decode("utf-8"))
@@ -129,7 +166,12 @@ def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list
             continue
         if not isinstance(sub, dict):
             continue
-        rng = entry.get("depth-range", [0, 0])
+        # depth-range comes from the per-aspect manifest itself (ADR-0055
+        # canonical). T2 closes the bug class where stale kit-YAML
+        # depth-range silently skipped required-files checks for newly-
+        # extended depths — every read here is from the same authoritative
+        # artifact.
+        rng = sub.get("depth-range", [0, 0])
         for d in range(int(rng[0]), int(rng[1]) + 1):
             depth_entry = sub.get(f"depth-{d}", {})
             if not isinstance(depth_entry, dict):
@@ -138,10 +180,8 @@ def _derive_requirements_from_wheel(z: zipfile.ZipFile) -> tuple[list[str], list
                 required_files.append(f"{aspect_base}/files/{rel}")
             for rel in depth_entry.get("protocols", []) or []:
                 required_files.append(f"{aspect_base}/protocols/{rel}")
-        # Add subdirs that should be non-empty
         for subdir in ("files", "protocols"):
             sub_dir_path = f"{aspect_base}/{subdir}/"
-            names = z.namelist()
             if any(n.startswith(sub_dir_path) for n in names):
                 required_dirs.append(sub_dir_path)
     return required_files, required_dirs
