@@ -28,14 +28,22 @@ set -euo pipefail
 # --- Config ---
 TIMEOUT=300  # 5 minutes max per depth
 PROMPT="Add a function called 'paginate' to src/utils.py that takes a list, page number, and page size, and returns the appropriate slice. Include type hints and a docstring."
+# Use the dev venv's kanon if available (picks up unreleased protocol changes)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+if [[ -x "$REPO_ROOT/.venv/bin/kanon" ]]; then
+  KANON="$REPO_ROOT/.venv/bin/kanon"
+else
+  KANON="kanon"
+fi
 
 # --- Prerequisites ---
 if ! command -v kiro-cli &>/dev/null; then
   echo "SKIP: kiro-cli not found on PATH"
   exit 2
 fi
-if ! command -v kanon &>/dev/null; then
-  echo "SKIP: kanon not found on PATH"
+if ! command -v kanon &>/dev/null && [[ ! -x "$KANON" ]]; then
+  echo "SKIP: kanon not found on PATH or in .venv"
   exit 2
 fi
 
@@ -57,9 +65,9 @@ run_depth_test() {
 
   # Scaffold
   if [[ $depth -eq 0 ]]; then
-    kanon init "$workdir" --aspects "kanon-sdd:0" --quiet
+    "$KANON" init "$workdir" --aspects "kanon-sdd:0" --quiet
   else
-    kanon init "$workdir" --aspects "kanon-sdd:$depth" --quiet
+    "$KANON" init "$workdir" --aspects "kanon-sdd:$depth" --quiet
   fi
 
   # Init git (for file ordering tracking)

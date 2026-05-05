@@ -8,8 +8,8 @@ label: Plan Before Build
 summary: non-trivial changes require an approved plan before source edits.
 audit: 'Plan at `<path>` has been approved.'
 priority: 100
-question: 'If non-trivial: does a plan exist at `docs/plans/<slug>.md` and has the user approved it? If not — **stop and write the plan.**'
-skip-when: Change is trivial (typo, single assertion fix, local rename, provably unreachable deletion)
+question: 'DEFAULT: Write the plan. Skip ONLY if the change exactly matches skip-when (not "similar to" — exactly matches). Does a plan exist at `docs/plans/<slug>.md`? If not — **stop and write one now.**'
+skip-when: 'Change ONLY does one of: fix a typo/spelling error, fix a single failing assertion without changing logic, rename a local variable within one function, or delete code proven unreachable by static analysis. Adding, moving, or modifying any function/class/module NEVER qualifies as trivial.'
 ---
 # Protocol: Plan Before Build
 
