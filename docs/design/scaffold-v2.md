@@ -1,5 +1,5 @@
 ---
-status: draft
+status: accepted
 implements: docs/specs/scaffold-v2.md
 date: 2026-04-28
 ---
@@ -250,3 +250,24 @@ rendering function that filters gate rows by enabled aspects.
    by `_merge_agents_md` preserving content outside markers.
 3. **Breaking change for consumers.** Mitigated by `kanon upgrade`
    handling the transition automatically.
+
+## Status under ADR-0048 + ADR-0062
+
+[ADR-0048](../decisions/0048-kanon-as-protocol-substrate.md) (de-opinionation transition) and [ADR-0062](../decisions/0062-declarative-hard-gates.md) (declarative hard gates) shipped after this design was drafted. They preserve most of the design's intent, retire two of its proposed mechanisms entirely, and amend one. The historical body above is preserved verbatim per the design-doc convention used by [`aspect-model.md`](aspect-model.md); this section is the canonical bridge between then-and-now.
+
+### Survives
+
+- **Slim AGENTS.md as routing index.** The `_assemble_agents_md` simplification proposed in §"Python changes" landed: load base template, render `${project_name}` placeholder, replace the `protocols-index` marker, leave the rest as-is. Implementation: [`packages/kanon-core/src/kanon_core/_scaffold.py`](../../packages/kanon-core/src/kanon_core/_scaffold.py) `_assemble_agents_md`.
+- **sdd de-privileging.** CLAUDE.md is a harness shim (rendered from [`packages/kanon-core/src/kanon_core/kit/harnesses.yaml`](../../packages/kanon-core/src/kanon_core/kit/harnesses.yaml)), not an sdd file. `kanon-worktrees` declares `suggests: ["kanon-sdd >= 1"]` not `requires:` ([`packages/kanon-aspects/src/kanon_aspects/aspects/kanon_worktrees/manifest.yaml`](../../packages/kanon-aspects/src/kanon_aspects/aspects/kanon_worktrees/manifest.yaml)). All hard `kanon-sdd` requirements have been refactored away.
+- **Per-aspect protocol files.** `plan-before-build.md`, `spec-before-design.md`, `branch-hygiene.md`, `publishing-discipline.md`, `fidelity-discipline.md` ship as discrete protocol files, scaffolded into `.kanon/protocols/<aspect>/` per the design's content migration map. The aspect-level `files:` key landed (under [ADR-0055](../decisions/0055-manifest-unification.md)'s unified manifest shape).
+- **Dynamic `protocols-index`.** Cross-aspect catalog rendered from each aspect's protocol-file frontmatter (`invoke-when:`, `depth-min:`). Implementation: `_render_protocols_index` in `_scaffold.py`.
+
+### Superseded by ADR-0048 (Phase A.3 de-opinionation)
+
+- **Top-level kit-global `files:` field.** §"Manifest schema changes" proposed retaining a top-level `files: [.kanon/kit.md]` block. ADR-0048 retired all kit-global file scaffolding entirely. The substrate scaffolds nothing on its own behalf; aspects own all the files they ship. The `files:` key in [`packages/kanon-core/src/kanon_core/kit/manifest.yaml`](../../packages/kanon-core/src/kanon_core/kit/manifest.yaml) is gone.
+- **`defaults: [kanon-sdd]` as a "CLI convenience".** §"sdd de-privileging" §4 proposed keeping `defaults:` in the manifest as a CLI convenience for `kanon init` with no flags. ADR-0048 deleted the `defaults:` block entirely. Today, `kanon init` with no flags scaffolds an empty project; the consumer must explicitly opt in via `--aspects`, `--tier`, `--lite`, or `--profile` (see [`packages/kanon-core/src/kanon_core/cli.py`](../../packages/kanon-core/src/kanon_core/cli.py) `init`, lines 272-276). `_default_aspects()` was retired.
+- **`${active_aspects_summary}` placeholder for `kit.md`.** §"sdd de-privileging" §3 proposed rewriting `kit.md` with the placeholder. `kit.md` itself was retired alongside the kit-global `files:` field. The placeholder is unused.
+
+### Amended by ADR-0062 (declarative hard gates)
+
+- **Hard-gates table rendering.** §"AGENTS.md base template (new)" proposed a static template containing the hard-gates table, with conditional row rendering by enabled aspect. ADR-0062 made the table fully dynamic: gates are declared in protocol-file frontmatter (`gate: hard`, `label`, `summary`, `audit`, `priority`, `question`, `skip-when`); `_render_hard_gates` in `_scaffold.py` walks every enabled protocol, filters by `gate: hard` and `depth-min`, sorts by priority, and emits the markdown table plus a dynamic decision-tree numbered checklist. Any aspect — including `acme-` and `project-` aspects — can declare hard gates the substrate honours identically (publisher symmetry per [`P-publisher-symmetry`](../foundations/principles/P-publisher-symmetry.md)).
