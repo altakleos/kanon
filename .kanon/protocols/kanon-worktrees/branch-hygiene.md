@@ -10,6 +10,7 @@ audit: 'Working in worktree `.worktrees/<slug>/` on branch `wt/<slug>`.'
 priority: 10
 question: 'Am I in a worktree (`.worktrees/<slug>/`)? If not, check if one already exists (`ls .worktrees/`) before creating a new one.'
 skip-when: never (always applies to file modifications)
+check: '[[ "$PWD" == */.worktrees/* ]]'
 ---
 # Protocol: Branch Hygiene
 
