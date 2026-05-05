@@ -27,7 +27,7 @@ The audit-trail sentence from the relevant protocol must appear before your firs
    Skip if: Change follows an existing pattern with no new boundaries, or the spec is self-contained with obvious implementation
 6. State the audit sentence from the relevant gate before proceeding.
 
-**Mechanical pre-check:** Before your first source-modifying tool call in a task, run `kanon gates check .` and read its output. If any gate has status `"fail"`, resolve it before proceeding.
+**Mechanical pre-check:** Before your first source-modifying tool call in a task, run `kanon gates check .` and read its output. If any gate has status `"fail"`, resolve it before proceeding. For gates with status `"judgment"`, evaluate the `question` yourself and emit the `audit` sentence if satisfied.
 <!-- kanon:end:hard-gates -->
 
 ## Task Playbook

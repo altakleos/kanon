@@ -531,7 +531,9 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
         "",
         "**Mechanical pre-check:** Before your first source-modifying tool call "
         "in a task, run `kanon gates check .` and read its output. "
-        "If any gate has status `\"fail\"`, resolve it before proceeding.",
+        "If any gate has status `\"fail\"`, resolve it before proceeding. "
+        "For gates with status `\"judgment\"`, evaluate the `question` yourself and "
+        "emit the `audit` sentence if satisfied.",
         "",
     ]
     return "\n".join(lines) + "\n"
