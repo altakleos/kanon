@@ -309,17 +309,71 @@ def test_every_shipped_aspect_declares_capability(
     assert _aspect_provides(aspect) == expected
 
 
-def test_kit_manifest_yaml_matches_loader() -> None:
-    """The kit manifest YAML and `_load_top_manifest` agree on `provides:` entries."""
-    import kanon_core
+def test_pyproject_entry_points_align_with_per_aspect_manifests() -> None:
+    """The pyproject's entry-points table and per-aspect manifests agree on
+    `provides:` entries (drift sentinel — replaces the retired
+    `test_kit_manifest_yaml_matches_loader` per plan T3).
 
-    manifest_path = Path(kanon_core.__file__).parent / "kit" / "manifest.yaml"
-    on_disk = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+    Two genuinely-independent declarative artifacts: (a) `pyproject.toml`'s
+    `[project.entry-points."kanon.aspects"]` table, hand-edited by the
+    publisher to declare which aspects ship; (b) each aspect's per-aspect
+    `manifest.yaml`, canonical per ADR-0055 for the aspect's
+    stability/depth/provides/etc. The runtime loader reads (a) via
+    `importlib.metadata.entry_points` + (b) via `importlib.resources`. This
+    test asserts the two artifacts agree on `provides:` for every slug.
+    """
+    import re
+
+    repo_root = Path(__file__).resolve().parent.parent
+    pyproject_text = (repo_root / "pyproject.toml").read_text(encoding="utf-8")
+    header = re.compile(
+        r'^\s*\[project\.entry-points\."kanon\.aspects"\]\s*$', re.MULTILINE,
+    )
+    kv = re.compile(
+        r'^\s*(?P<key>[A-Za-z_][A-Za-z0-9_-]*)\s*=\s*"(?P<value>[^"]+)"\s*(?:#.*)?$'
+    )
+    match = header.search(pyproject_text)
+    assert match is not None, (
+        "pyproject.toml missing [project.entry-points.\"kanon.aspects\"] section"
+    )
+    rest = pyproject_text[match.end():]
+    next_section = re.search(r"^\s*\[", rest, re.MULTILINE)
+    body = rest[: next_section.start()] if next_section else rest
+
+    pyproject_slugs: list[str] = []
+    for line in body.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        m = kv.match(line)
+        if m is not None:
+            pyproject_slugs.append(m.group("key"))
+
+    aspects_pkg = (
+        repo_root / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects"
+    )
     loaded = _load_top_manifest()
-    for name, entry in on_disk["aspects"].items():
-        disk_provides = entry.get("provides", []) or []
-        loaded_provides = loaded["aspects"][name].get("provides", []) or []
-        assert disk_provides == loaded_provides, f"mismatch on {name}"
+
+    # Pyproject ↔ runtime loader: same slug set.
+    assert sorted(pyproject_slugs) == sorted(loaded["aspects"]), (
+        f"slug-set drift: pyproject lists {sorted(pyproject_slugs)}, "
+        f"loader resolves {sorted(loaded['aspects'])}"
+    )
+
+    # Per-aspect manifest ↔ loader: same `provides:` list.
+    for slug in pyproject_slugs:
+        manifest_path = aspects_pkg / slug.replace("-", "_") / "manifest.yaml"
+        assert manifest_path.is_file(), (
+            f"slug {slug!r} declared in pyproject but per-aspect manifest "
+            f"missing at {manifest_path.relative_to(repo_root)}"
+        )
+        on_disk = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
+        disk_provides = on_disk.get("provides", []) or []
+        loaded_provides = loaded["aspects"][slug].get("provides", []) or []
+        assert disk_provides == loaded_provides, (
+            f"`provides:` drift on {slug}: per-aspect manifest has "
+            f"{disk_provides}, loader returns {loaded_provides}"
+        )
 
 
 # --- INV-aspect-provides-no-silent-meaning-change ---
