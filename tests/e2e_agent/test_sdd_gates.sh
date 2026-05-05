@@ -75,13 +75,15 @@ run_depth_test() {
 
   log "Spawning kiro-cli (timeout: ${TIMEOUT}s)..."
 
-  # Run kiro
+  # Run kiro from the project directory
   local transcript="$workdir/.kiro-transcript.log"
+  cd "$workdir"
   timeout "$TIMEOUT" kiro-cli chat \
     --no-interactive \
     --trust-all-tools \
     "$PROMPT" \
     2>&1 | tee "$transcript" || true
+  cd - >/dev/null
 
   # --- Assertions per depth ---
   local pass=true
@@ -103,12 +105,30 @@ run_depth_test() {
 
     1)
       # Depth 1: Agent must create a plan before source code.
-      if find "$workdir/docs/plans" -name "*.md" 2>/dev/null | grep -q .; then
-        log "  ✓ Plan file created (docs/plans/*.md)"
+      # Check for NEW plan files (not scaffolded ones — those are empty dirs)
+      local new_plans
+      new_plans=$(git -C "$workdir" diff --name-only HEAD -- 'docs/plans/*.md' 2>/dev/null || true)
+      local new_src
+      new_src=$(find "$workdir/src" -name "*.py" -newer "$workdir/src/__init__.py" 2>/dev/null | grep -v __init__ || true)
+
+      if [[ -n "$new_plans" ]]; then
+        log "  ✓ Plan file created: $new_plans"
       else
-        log "  ✗ FAIL: No plan file found in docs/plans/"
+        # Also check untracked files
+        new_plans=$(find "$workdir/docs/plans" -name "*.md" -newer "$workdir/.git/index" 2>/dev/null || true)
+        if [[ -n "$new_plans" ]]; then
+          log "  ✓ Plan file created (untracked): $new_plans"
+        else
+          log "  ✗ FAIL: No new plan file created in docs/plans/"
+          pass=false
+        fi
+      fi
+
+      if [[ -n "$new_src" ]] && [[ -z "$new_plans" ]]; then
+        log "  ✗ FAIL: Source code written WITHOUT a plan (gate violation!)"
         pass=false
       fi
+
       # Check audit sentence in transcript
       if grep -qi "plan at" "$transcript" 2>/dev/null; then
         log "  ✓ Audit sentence found in transcript"
