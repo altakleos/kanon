@@ -1220,7 +1220,9 @@ def graph_impact(target: Path, slug: str) -> None:
         raise click.ClickException(f"No node found with slug '{slug}'.")
 
     for ns, s in matches:
-        click.echo(f"{s} ({ns})")
+        node = graph_data.by_slug.get((ns, s))
+        status = f" [{node.status}]" if node and node.status else ""
+        click.echo(f"{s} ({ns}){status}")
         _print_impact(graph_data, (ns, s), depth=1, max_depth=2)
 
 
@@ -1236,7 +1238,9 @@ def _print_impact(
     indent = "  " * depth
     for edge in graph_data.inbound_all.get(key, []):
         src_key = (edge.src_namespace, edge.src_slug)
-        click.echo(f"{indent}\u2190 {edge.src_slug} ({edge.src_namespace}) [{edge.kind}]")
+        node = graph_data.by_slug.get(src_key)
+        status = f" [{node.status}]" if node and node.status else ""
+        click.echo(f"{indent}\u2190 {edge.src_slug} ({edge.src_namespace}){status} [{edge.kind}]")
         _print_impact(graph_data, src_key, depth + 1, max_depth)
 
 
