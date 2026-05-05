@@ -1,0 +1,30 @@
+# Synthetic per-aspect manifest for the acme-test publisher-symmetry overlay.
+#
+# Plan T9: minimal but complete enough that the kit-consistency gate's
+# checks (registry/manifest schema, byte-equality, cross-aspect exclusivity,
+# agents-md markers, requires resolution) all succeed. If a future gate
+# regression accidentally hardcodes `kanon-` somewhere, this overlay fails
+# and AC7 fires.
+
+kanon-dialect: "2026-05-01"
+stability: experimental
+depth-range: [0, 1]
+default-depth: 1
+description: "Synthetic acme- aspect for the publisher-symmetry CI gate (plan T9)."
+requires: []
+provides:
+  - acme-test-discipline
+suggests: []
+
+byte-equality: []
+files: []
+
+depth-0:
+  files: []
+  protocols: []
+  sections: []
+
+depth-1:
+  files: []
+  protocols: []
+  sections: []

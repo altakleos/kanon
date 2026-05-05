@@ -45,6 +45,13 @@ import yaml
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _KIT = _REPO_ROOT / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
+# Per plan T9 (panel-ratified publisher-symmetry CI gate): the aspects-package
+# root and the expected namespace prefix are module-level constants so the
+# tests/scripts/test_publisher_symmetry.py overlay can monkeypatch them to
+# point the gate at a synthetic `acme-` bundle. Without this parameterization,
+# the gate would silently hardcode `kanon-` privilege.
+_ASPECTS_PKG_ROOT = _REPO_ROOT / "packages" / "kanon-aspects" / "src" / "kanon_aspects"
+_KIT_NAMESPACE = "kanon"
 
 # Allow this script to run from a fresh clone without an installed kanon.
 sys.path.insert(0, str(_REPO_ROOT / "packages" / "kanon-core" / "src"))
@@ -55,10 +62,17 @@ from kanon_core._manifest import _iter_markers  # noqa: E402
 _UNPREFIXED_SECTIONS: frozenset[str] = frozenset({"protocols-index"})
 _STABILITY_VALUES: frozenset[str] = frozenset({"experimental", "stable", "deprecated"})
 
-# Kit-side aspect-name grammar (ADR-0028). Every kit-shipped aspect must match
-# this pattern; any other namespace (e.g., `project-`) is forbidden in a kit
-# directory because project-aspects live under `.kanon/aspects/` in the consumer.
-_KIT_ASPECT_NAME_RE = re.compile(r"^kanon-[a-z][a-z0-9-]*$")
+
+def _kit_aspect_name_re() -> re.Pattern[str]:
+    """Build the kit-side aspect-name regex from the active namespace.
+
+    Per plan T9 publisher-symmetry: the namespace is parameterised so the
+    gate's algorithm is publisher-blind. Default is `kanon-` (kit hygiene
+    per ADR-0028); tests/scripts/test_publisher_symmetry.py monkeypatches
+    `_KIT_NAMESPACE` to e.g. `acme-test` to exercise the gate against a
+    synthetic third-party overlay.
+    """
+    return re.compile(rf"^{_KIT_NAMESPACE}-[a-z][a-z0-9-]*$")
 
 # Per plan T1 (panel-ratified): the top-level aspect registry's source of truth
 # is `pyproject.toml`'s `[project.entry-points."kanon.aspects"]` table + each
@@ -125,9 +139,7 @@ def _load_top_manifest() -> tuple[dict[str, Any], str | None]:
     top: dict[str, Any] = {"aspects": {}}
     for slug in slugs:
         sub_path = (
-            _REPO_ROOT
-            / "packages" / "kanon-aspects" / "src" / "kanon_aspects"
-            / "aspects" / slug.replace("-", "_") / "manifest.yaml"
+            _ASPECTS_PKG_ROOT / "aspects" / slug.replace("-", "_") / "manifest.yaml"
         )
         if not sub_path.is_file():
             return {}, (
@@ -165,11 +177,7 @@ def _aspect_root(aspect: str, top: dict[str, Any]) -> Path | None:
     """
     if aspect not in top["aspects"]:
         return None
-    bundle_root = (
-        _REPO_ROOT
-        / "packages" / "kanon-aspects" / "src" / "kanon_aspects"
-        / "aspects" / aspect.replace("-", "_")
-    )
+    bundle_root = _ASPECTS_PKG_ROOT / "aspects" / aspect.replace("-", "_")
     if bundle_root.is_dir():
         return bundle_root
     return None
@@ -268,10 +276,10 @@ def _check_registry_and_manifests(errors: list[str]) -> None:
         # The corresponding runtime check in `kanon._manifest._load_top_manifest`
         # is the load-time gate; this CI check is the kit-author belt-and-
         # suspenders against an accidentally-misnamed kit-side aspect.
-        if not isinstance(name, str) or not _KIT_ASPECT_NAME_RE.match(name):
+        if not isinstance(name, str) or not _kit_aspect_name_re().match(name):
             errors.append(
                 f"manifest.yaml: aspects.{name!r}: kit-side aspect names must "
-                f"match `^kanon-[a-z][a-z0-9-]*$` (ADR-0028 namespace ownership)."
+                f"match `^{_KIT_NAMESPACE}-[a-z][a-z0-9-]*$` (ADR-0028 namespace ownership)."
             )
             continue
         # Per plan T1: required-fields list no longer includes `path` (the
@@ -298,7 +306,7 @@ def _check_registry_and_manifests(errors: list[str]) -> None:
         if aspect_root is None:
             errors.append(
                 f"aspects.{name}: bundle directory missing under "
-                f"packages/kanon-aspects/src/kanon_aspects/aspects/{name.replace('-', '_')}/"
+                f"{_ASPECTS_PKG_ROOT.name}/aspects/{name.replace('-', '_')}/"
             )
             continue
         sub, err2 = _load_aspect_manifest(name, top)

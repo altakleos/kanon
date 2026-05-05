@@ -1,0 +1,13 @@
+# Synthetic third-party publisher fixture per plan T9 publisher-symmetry CI gate.
+#
+# Used by tests/scripts/test_publisher_symmetry.py to point the kit-consistency
+# gate at an `acme-test`-namespaced overlay and confirm the gate's algorithm is
+# publisher-blind. Same shape any real `acme-<vendor>-aspects` distribution
+# would ship per ADR-0040.
+
+[project]
+name = "acme-test-aspects"
+version = "0.0.0"
+
+[project.entry-points."kanon.aspects"]
+acme-test-foo = "acme_test_aspects.aspects.acme_test_foo.loader:MANIFEST"

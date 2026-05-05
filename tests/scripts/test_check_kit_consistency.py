@@ -114,6 +114,26 @@ def _make_synthetic_aspect_bundle(
     return tmp_path
 
 
+def _patch_paths(monkeypatch: pytest.MonkeyPatch, ckc, tmp_path: Path) -> None:
+    """Monkeypatch the gate's three path constants to point at *tmp_path*.
+
+    Per plan T9 (publisher-symmetry parameterization): the gate carries
+    `_REPO_ROOT`, `_KIT`, and `_ASPECTS_PKG_ROOT` as module-level constants.
+    Tests targeting any of the gate's checks must monkeypatch all three so
+    the gate reads the synthetic fixture under tmp_path instead of the
+    live repo.
+    """
+    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
+    monkeypatch.setattr(
+        ckc, "_KIT",
+        tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit",
+    )
+    monkeypatch.setattr(
+        ckc, "_ASPECTS_PKG_ROOT",
+        tmp_path / "packages" / "kanon-aspects" / "src" / "kanon_aspects",
+    )
+
+
 def test_byte_equality_drift_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Byte-equality check catches divergent files."""
     _make_synthetic_aspect_bundle(
@@ -124,8 +144,7 @@ def test_byte_equality_drift_detected(ckc, tmp_path: Path, monkeypatch: pytest.M
             },
         },
     )
-    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
-    monkeypatch.setattr(ckc, "_KIT", tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit")
+    _patch_paths(monkeypatch, ckc, tmp_path)
     # Create divergent kit-side and repo-canonical files
     bundle = tmp_path / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects" / "kanon_sdd"
     (bundle / "files").mkdir()
@@ -150,8 +169,7 @@ def test_registry_bad_stability_detected(ckc, tmp_path: Path, monkeypatch: pytes
         tmp_path,
         {"kanon-sdd": {"stability": "banana"}},
     )
-    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
-    monkeypatch.setattr(ckc, "_KIT", tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit")
+    _patch_paths(monkeypatch, ckc, tmp_path)
 
     errors: list[str] = []
     ckc._check_registry_and_manifests(errors)
@@ -179,8 +197,7 @@ def test_cross_aspect_ownership_conflict_detected(
             },
         },
     )
-    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
-    monkeypatch.setattr(ckc, "_KIT", tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit")
+    _patch_paths(monkeypatch, ckc, tmp_path)
 
     # Create the files so bundle resolution + sub-manifest reads succeed.
     aspects_pkg = tmp_path / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects"
@@ -199,8 +216,7 @@ def test_cross_aspect_ownership_conflict_detected(
 def test_marker_imbalance_detected(ckc, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Unbalanced begin/end markers in agents-md templates are caught."""
     _make_synthetic_aspect_bundle(tmp_path, {"kanon-sdd": {}})
-    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
-    monkeypatch.setattr(ckc, "_KIT", tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit")
+    _patch_paths(monkeypatch, ckc, tmp_path)
     bundle = tmp_path / "packages" / "kanon-aspects" / "src" / "kanon_aspects" / "aspects" / "kanon_sdd"
     agents_md_dir = bundle / "agents-md"
     agents_md_dir.mkdir()
@@ -252,8 +268,7 @@ def test_kit_aspect_with_project_prefix_rejected(
         tmp_path,
         {"project-misnamed": {"stability": "experimental"}},
     )
-    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
-    monkeypatch.setattr(ckc, "_KIT", tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit")
+    _patch_paths(monkeypatch, ckc, tmp_path)
 
     errors: list[str] = []
     ckc._check_registry_and_manifests(errors)
@@ -272,8 +287,7 @@ def test_kit_aspect_with_bare_name_rejected(
     aspect must carry the `kanon-` prefix.
     """
     _make_synthetic_aspect_bundle(tmp_path, {"sdd": {}})
-    monkeypatch.setattr(ckc, "_REPO_ROOT", tmp_path)
-    monkeypatch.setattr(ckc, "_KIT", tmp_path / "packages" / "kanon-core" / "src" / "kanon_core" / "kit")
+    _patch_paths(monkeypatch, ckc, tmp_path)
 
     errors: list[str] = []
     ckc._check_registry_and_manifests(errors)
