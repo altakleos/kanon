@@ -454,7 +454,7 @@ def verify(target: Path) -> None:
         sys.exit(1 if result["errors"] else 2)
 
 
-def _run_verify_core(target: Path) -> dict:
+def _run_verify_core(target: Path) -> dict[str, Any]:
     """Core verification logic. Returns structured result without printing."""
     from kanon_core._verify import (
         check_agents_md_markers,
