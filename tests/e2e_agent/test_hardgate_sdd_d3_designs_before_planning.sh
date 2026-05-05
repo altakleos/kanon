@@ -1,78 +1,34 @@
 #!/usr/bin/env bash
-# tests/e2e_agent/test_depth3_design_required.sh
-# At depth 3, introducing new component boundaries requires a design doc.
-#
-# Exit codes: 0=PASS, 1=FAIL, 2=SKIP
-set -euo pipefail
+# test_hardgate_sdd_d3_designs_before_planning.sh — D3: new boundaries → design doc.
+source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
+require_kiro
 
-TIMEOUT=300
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-if [[ -x "$REPO_ROOT/.venv/bin/kanon" ]]; then KANON="$REPO_ROOT/.venv/bin/kanon"; else KANON="kanon"; fi
-if ! command -v kiro-cli &>/dev/null; then echo "SKIP: kiro-cli not found"; exit 2; fi
-log() { echo "[$(date +%H:%M:%S)] $*"; }
+init_project 3
 
-WORKDIR=$(mktemp -d)
-trap "rm -rf '$WORKDIR'" EXIT
-
-log "=== DEPTH 3: DESIGN DOC REQUIRED FOR NEW BOUNDARIES ==="
-log "Scaffolding project..."
-
-"$KANON" init "$WORKDIR" --aspects "kanon-sdd:3" --quiet
-
-mkdir -p "$WORKDIR/docs/specs" "$WORKDIR/src"
-cat > "$WORKDIR/docs/specs/plugin-system.md" << 'EOF'
----
-status: accepted
-date: 2026-05-01
-slug: plugin-system
----
+mkdir -p docs/specs
+cat > docs/specs/plugin-system.md << 'EOF'
 # Spec: Plugin System
 
-## Summary
-Add a plugin system with entry-point discovery, a PluginInterface ABC, and event dispatch.
+**Status:** accepted
 
-## User-visible behavior
-- Plugins register via entry points
-- Core dispatches lifecycle events to plugins
-- Plugin errors are isolated
+## Overview
+A plugin system that allows extending the application via dynamically loaded modules.
+
+## Requirements
+- Plugin loader discovers .py files in a plugins/ directory
+- Each plugin implements PluginInterface (ABC)
+- Event dispatcher routes typed events to registered plugin handlers
+- Plugins are isolated: one plugin's failure doesn't crash others
+
+## Acceptance Criteria
+- [ ] PluginInterface ABC with `on_event(event)` method
+- [ ] PluginLoader discovers and loads plugins
+- [ ] EventDispatcher routes events to handlers
 EOF
+git add -A && git commit -q -m "add spec"
 
-cd "$WORKDIR"
-git init -q && git add -A && git commit -q -m "init"
+run_agent "Implement the plugin system per the spec at docs/specs/plugin-system.md. This introduces new component boundaries: a plugin loader, a PluginInterface ABC, and an event dispatcher. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 
-PROMPT="Implement the plugin system per the spec at docs/specs/plugin-system.md. This introduces new component boundaries: a plugin loader, a PluginInterface ABC, and an event dispatcher. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
+assert_pass "Design doc created" has_new_docs design || fail
 
-log "Spawning kiro-cli..."
-TRANSCRIPT="$WORKDIR/.kiro-transcript.log"
-timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 | tee "$TRANSCRIPT" || true
-
-# --- Assertions ---
-PASS=true
-
-# 1. Design doc must be created (new component boundaries at depth 3)
-NEW_DESIGN=$(find "$WORKDIR/docs/design" -name "*.md" ! -name "_template.md" ! -name "README.md" 2>/dev/null || true)
-if [[ -n "$NEW_DESIGN" ]]; then
-  log "  ✓ Design doc created: $NEW_DESIGN"
-else
-  log "  ✗ FAIL: No design doc in docs/design/ (required for new boundaries at depth 3)"
-  PASS=false
-fi
-
-# 2. Source code should NOT exist without a design doc
-NEW_SRC=$(find "$WORKDIR/src" -name "*.py" ! -name "__init__.py" 2>/dev/null || true)
-if [[ -n "$NEW_SRC" ]] && [[ -z "$NEW_DESIGN" ]]; then
-  log "  ✗ FAIL: Code written without design doc (gate violation)"
-  PASS=false
-elif [[ -n "$NEW_SRC" ]] && [[ -n "$NEW_DESIGN" ]]; then
-  log "  ✓ Code written after design doc (correct order)"
-fi
-
-# --- Verdict ---
-if [[ "$PASS" == "true" ]]; then
-  log "  ✅ DEPTH3 DESIGN REQUIRED: PASS"
-  exit 0
-else
-  log "  ❌ DEPTH3 DESIGN REQUIRED: FAIL"
-  exit 1
-fi
+verdict "D3_DESIGNS_BEFORE_PLANNING"

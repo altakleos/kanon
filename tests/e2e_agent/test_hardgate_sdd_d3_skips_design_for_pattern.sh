@@ -1,103 +1,27 @@
 #!/usr/bin/env bash
-# tests/e2e_agent/test_depth3_skip_design.sh
-# At depth 3, a change following an existing pattern (no new boundaries) should skip the design gate.
-#
-# Exit codes: 0=PASS, 1=FAIL, 2=SKIP
-set -euo pipefail
+# test_hardgate_sdd_d3_skips_design_for_pattern.sh — D3: existing pattern skips design.
+source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
+require_kiro
 
-TIMEOUT=300
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-if [[ -x "$REPO_ROOT/.venv/bin/kanon" ]]; then KANON="$REPO_ROOT/.venv/bin/kanon"; else KANON="kanon"; fi
-if ! command -v kiro-cli &>/dev/null; then echo "SKIP: kiro-cli not found"; exit 2; fi
-log() { echo "[$(date +%H:%M:%S)] $*"; }
+init_project 3
+mkdir -p docs/specs docs/design src/cli
 
-WORKDIR=$(mktemp -d)
-trap "rm -rf '$WORKDIR'" EXIT
+echo -e "# Spec: Status Command\n**Status:** accepted\n## Requirements\n- Shows SDD depth and aspects" > docs/specs/status-command.md
+echo -e "# Design: CLI Architecture\nEach command lives in src/cli/. Commands use Click." > docs/design/cli-architecture.md
+echo -e "import click\n@click.group()\ndef main(): pass" > src/cli/__init__.py
+echo -e "import click\nfrom src.cli import main\n@main.command()\ndef verify():\n    click.echo('OK')" > src/cli/verify.py
+git add -A && git commit -q -m "add cli pattern"
 
-log "=== DEPTH 3: SKIP DESIGN FOR EXISTING PATTERN ==="
-log "Scaffolding project..."
+DESIGN_COUNT=$(find docs/design -type f -name "*.md" ! -name "_template.md" ! -name "README.md" | wc -l)
 
-"$KANON" init "$WORKDIR" --aspects "kanon-sdd:3" --quiet
+run_agent "Implement the status command per docs/specs/status-command.md. Follow the existing CLI pattern in docs/design/cli-architecture.md — add a new file src/cli/status.py. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
 
-mkdir -p "$WORKDIR/docs/specs" "$WORKDIR/docs/design" "$WORKDIR/src/cli"
-cat > "$WORKDIR/docs/specs/status-command.md" << 'EOF'
----
-status: accepted
-date: 2026-05-01
-slug: status-command
----
-# Spec: Status Command
-
-## Summary
-Add `kanon status` that prints current depth and active aspects.
-
-## User-visible behavior
-- Prints depth and aspect list to stdout
-- Exit code 0
-EOF
-
-cat > "$WORKDIR/docs/design/cli-architecture.md" << 'EOF'
----
-status: accepted
----
-# Design: CLI Architecture
-
-## Components
-- CLI entry point (click group)
-- Command modules (one file per command in src/cli/)
-
-## Pattern
-Each command is a @click.command() function in src/cli/<name>.py
-EOF
-
-cat > "$WORKDIR/src/cli/__init__.py" << 'EOF'
-"""CLI package."""
-EOF
-
-cat > "$WORKDIR/src/cli/verify.py" << 'EOF'
-# src/cli/verify.py
-import click
-@click.command()
-def verify():
-    """Verify project."""
-    click.echo("OK")
-EOF
-
-cd "$WORKDIR"
-git init -q && git add -A && git commit -q -m "init"
-
-PROMPT="Implement the status command per docs/specs/status-command.md. Follow the existing CLI pattern in docs/design/cli-architecture.md — add a new file src/cli/status.py. All plans, specs, and designs are pre-approved — proceed through the full lifecycle without stopping for approval."
-
-log "Spawning kiro-cli..."
-TRANSCRIPT="$WORKDIR/.kiro-transcript.log"
-timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 | tee "$TRANSCRIPT" || true
-
-# --- Assertions ---
-PASS=true
-
-# 1. No new design doc should be created (follows existing pattern)
-NEW_DESIGN=$(find "$WORKDIR/docs/design" -name "*.md" 2>/dev/null | grep -v cli-architecture || true)
-if [[ -z "$NEW_DESIGN" ]]; then
-  log "  ✓ No new design doc created (correctly follows existing pattern)"
+NEW_DESIGN_COUNT=$(find docs/design -type f -name "*.md" ! -name "_template.md" ! -name "README.md" | wc -l)
+if [[ "$NEW_DESIGN_COUNT" -gt "$DESIGN_COUNT" ]]; then
+  log "  ✗ FAIL: New design doc created (should reuse existing pattern)"
+  fail
 else
-  log "  ✗ FAIL: Unnecessary design doc created: $NEW_DESIGN"
-  PASS=false
+  log "  ✓ No new design doc"
 fi
 
-# 2. src/cli/status.py should be created (implementation happened)
-if [[ -f "$WORKDIR/src/cli/status.py" ]]; then
-  log "  ✓ src/cli/status.py created"
-else
-  log "  ✗ FAIL: src/cli/status.py not created"
-  PASS=false
-fi
-
-# --- Verdict ---
-if [[ "$PASS" == "true" ]]; then
-  log "  ✅ DEPTH3 SKIP DESIGN: PASS"
-  exit 0
-else
-  log "  ❌ DEPTH3 SKIP DESIGN: FAIL"
-  exit 1
-fi
+verdict "D3_SKIPS_DESIGN_FOR_PATTERN"

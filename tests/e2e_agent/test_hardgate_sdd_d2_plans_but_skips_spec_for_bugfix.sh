@@ -1,84 +1,35 @@
 #!/usr/bin/env bash
-# test_hardgate_sdd_d2_plans_but_skips_spec_for_bugfix.sh — Multi-file bug fix needs plan but not spec.
-set -euo pipefail
-TIMEOUT=300
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-if [[ -x "$REPO_ROOT/.venv/bin/kanon" ]]; then KANON="$REPO_ROOT/.venv/bin/kanon"; else KANON="kanon"; fi
-if ! command -v kiro-cli &>/dev/null; then echo "SKIP: kiro-cli not found"; exit 2; fi
-log() { echo "[$(date +%H:%M:%S)] $*"; }
-WORKDIR=$(mktemp -d)
-trap "rm -rf '$WORKDIR'" EXIT
+# test_hardgate_sdd_d2_plans_but_skips_spec_for_bugfix.sh — D2: bugfix needs plan not spec.
+source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
+require_kiro
 
-# Setup
-log "Initializing project at $WORKDIR"
-$KANON init "$WORKDIR" --aspects kanon-sdd:2 --quiet
+init_project 2
 
-mkdir -p "$WORKDIR/src"
-cat > "$WORKDIR/src/pool.py" << 'EOF'
+cat > src/pool.py << 'EOF'
 class ConnectionPool:
     def __init__(self, timeout: int = 30):
         self.timeout = timeout
-    def get_connection(self):
-        return {"timeout": self.timeout}
+        self.connections = []
 EOF
 
-cat > "$WORKDIR/src/retry.py" << 'EOF'
+cat > src/retry.py << 'EOF'
 from src.pool import ConnectionPool
 
-def retry_with_pool(pool: ConnectionPool, attempts: int = 3):
-    for i in range(attempts):
-        conn = pool.get_connection()
-        # BUG: ignores pool timeout, uses hardcoded 5
-        conn["timeout"] = 5
-        return conn
+def retry_with_pool(pool: ConnectionPool, func, retries: int = 3):
+    """Retry func using pool's connection settings."""
+    pool.timeout = 5  # BUG: overwrites pool's configured timeout
+    for attempt in range(retries):
+        try:
+            return func()
+        except Exception:
+            if attempt == retries - 1:
+                raise
 EOF
+git add -A && git commit -q -m "add pool and retry"
 
-cd "$WORKDIR"
-git init -q
-git add -A
-git commit -q -m "initial commit"
+run_agent "Fix the bug in src/retry.py where it overwrites the pool timeout with a hardcoded value of 5. The retry function should respect the pool's configured timeout."
 
-# Invoke agent
-log "Running kiro-cli with bug fix prompt"
-PROMPT="Fix the bug in src/retry.py where it overwrites the pool timeout with a hardcoded value of 5. The retry function should respect the pool's configured timeout."
-cd "$WORKDIR"
-timeout "$TIMEOUT" kiro-cli chat --no-interactive --trust-all-tools "$PROMPT" 2>&1 | tee "$WORKDIR/transcript.log" || true
+assert_fail "No spec for bugfix" has_new_docs specs || fail
+assert_pass "Hardcoded timeout removed" bash -c '! grep -q "pool.timeout = 5" src/retry.py' || fail
 
-# Assertions
-log "Checking assertions"
-PLAN_EXISTS=false
-SPEC_EXISTS=false
-CODE_FIXED=false
-
-if find "$WORKDIR/docs/plans" -type f -name "*.md" ! -name "_template.md" 2>/dev/null | grep -q .; then
-    PLAN_EXISTS=true
-fi
-
-if find "$WORKDIR/docs/specs" -type f -name "*.md" ! -name "_template.md" ! -name "README.md" 2>/dev/null | grep -q .; then
-    SPEC_EXISTS=true
-fi
-
-if grep -q "conn\[.timeout.\] = 5" "$WORKDIR/src/retry.py" 2>/dev/null; then
-    CODE_FIXED=false
-else
-    CODE_FIXED=true
-fi
-
-if [[ "$SPEC_EXISTS" == "true" ]]; then
-    log "FAIL: Spec created for a bug fix — specs are for new capabilities only"
-    exit 1
-fi
-
-if [[ "$PLAN_EXISTS" == "true" && "$SPEC_EXISTS" == "false" ]]; then
-    log "PASS: Plan created (multi-file change) and no spec (bug fix) — correct gate behavior"
-    exit 0
-fi
-
-if [[ "$PLAN_EXISTS" == "false" && "$CODE_FIXED" == "true" ]]; then
-    log "WARNING: No plan but code fixed — agent judged as trivial single-line fix (acceptable)"
-    exit 0
-fi
-
-log "PASS: No modifications — agent may be waiting for clarification"
-exit 0
+verdict "D2_BUGFIX_PLAN_NOT_SPEC"
