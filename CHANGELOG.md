@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.
 
 ## [Unreleased]
 
+## [0.5.0a4] — 2026-05-04
+
+### Fixed
+
+- **Replace `CliRunner` in production code.** `preflight` and `release` commands no longer use `click.testing.CliRunner` (a test utility that swallows exceptions). Verify logic extracted into `_run_verify_core()` for clean command composition.
+- **Handler registry duplicate accumulation.** `register_all_handlers()` now clears registries before populating, preventing duplicate handler execution on repeated `verify` calls.
+- **Silent exception swallowing in resolutions.** `_resolve_contract_path` now logs a warning instead of bare `except Exception: return None`.
+- **CLI spec drift.** Documented `preflight`, `release`, `resolve`, `resolutions`, `contracts`, `gates` commands and `graph impact` subcommand in the CLI spec.
+- **Preflight spec retired keys.** Marked `test_cmd`/`lint_cmd`/`typecheck_cmd`/`format_cmd` as retired per ADR-0048.
+- **Aspect-decoupling invariant violation.** Replaced hardcoded `'kanon-sdd'` in `_rewrite_legacy_markers` with manifest-driven lookup.
+- **README references non-existent `kanon migrate`.** Corrected to `kanon upgrade`.
+- **Declarative hard gates spec.** Fixed invariant anchor names, added `invariant_coverage` entries, created test file.
+- **Dead code.** Removed unreachable `if not quiet_arg` guard in `init`.
+
+### Added
+
+- **Test coverage for 4 validators.** `deps_hygiene_check`, `orphan_branches`, `test_quality_check`, `worktree_hygiene` now have dedicated tests.
+- **Test coverage for core modules.** `_change_detection`, `_findings`, `_run_verify_core`, `graph impact`, `gates list` now have direct tests.
+- **`tests/test_declarative_gates.py`.** 9 tests covering all 7 invariants of the declarative hard gates spec.
+
 ### Added
 
 - **Declarative hard gates via protocol frontmatter (ADR-0062).** Hard gates are now declared in protocol YAML frontmatter (`gate: hard`, `label`, `summary`, `audit`, `priority`, `question`, `skip-when`) instead of a static Python list. Any aspect (kit, project, third-party) can declare hard gates — publisher symmetry restored.

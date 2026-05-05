@@ -487,8 +487,8 @@ def _run_verify_core(target: Path) -> dict:
     run_project_validators(target, aspects, errors, warnings)
 
     if aspects.get("kanon-worktrees", 0) >= 1:
-        from kanon_core._validators.worktree_hygiene import check as _wt_hygiene
         from kanon_core._validators.orphan_branches import check as _orphan_branches
+        from kanon_core._validators.worktree_hygiene import check as _wt_hygiene
         _wt_hygiene(str(target), errors, warnings)
         _orphan_branches(str(target), errors, warnings)
 
@@ -1500,7 +1500,11 @@ def list_gates(target: Path) -> None:
         mechanical = "\u2713" if g["check"] else "?"
         click.echo(f"[{g['priority']:>4}] {mechanical} {g['label']} ({g['aspect']})", err=True)
 
-    click.echo(_json.dumps([{"label": g["label"], "aspect": g["aspect"], "priority": g["priority"], "check": g["check"] is not None} for g in all_gates], indent=2))
+    click.echo(_json.dumps(
+        [{"label": g["label"], "aspect": g["aspect"], "priority": g["priority"],
+          "check": g["check"] is not None} for g in all_gates],
+        indent=2,
+    ))
 
 
 @main.command("resolve")
