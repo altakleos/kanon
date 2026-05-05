@@ -350,6 +350,7 @@ def test_existing_kit_requires_predicates_classify_as_depth() -> None:
 def test_normalise_aspect_name_bare_sugars_to_kanon() -> None:
     """A bare aspect name now raises ClickException (ADR-0048 A.5 complete)."""
     import click
+
     from kanon_core._manifest import _normalise_aspect_name
     with pytest.raises(click.ClickException, match="no longer accepted"):
         _normalise_aspect_name("sdd")
@@ -392,6 +393,7 @@ def test_split_aspect_name() -> None:
 def test_classify_predicate_bare_aspect_name_sugars() -> None:
     """A 3-token depth predicate with a bare aspect name raises ClickException."""
     import click
+
     from kanon_core._cli_helpers import _classify_predicate
     with pytest.raises(click.ClickException, match="no longer accepted"):
         _classify_predicate("sdd >= 1")

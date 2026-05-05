@@ -10,7 +10,6 @@ import importlib.metadata
 import os
 import re
 import string
-import sys
 import warnings
 from collections.abc import Iterator
 from datetime import datetime, timezone
@@ -20,8 +19,6 @@ from typing import Any
 
 import click
 import yaml
-
-import kanon_core
 
 
 def _load_yaml(path: Path, expected_type: type = dict) -> Any:
@@ -132,7 +129,7 @@ def _kit_data(filename: str) -> str:
     """Read a kit data file via importlib.resources (ADR-0045 A.2)."""
     from importlib.resources import files as _res_files
 
-    return _res_files("kanon_core").joinpath("kit", filename).read_text("utf-8")
+    return _res_files("kanon_core").joinpath("kit").joinpath(filename).read_text("utf-8")
 
 
 # --- Manifest loaders ---
@@ -320,16 +317,6 @@ def _load_aspects_from_entry_points() -> dict[str, dict[str, Any]]:
             )
         # Resolve _source (absolute path to aspect data directory) from the
         # entry-point's module location (ADR-0045 A.2 — no _kit_root()).
-        if "_source" not in entry:
-            ep_module = ep.value.rsplit(":", 1)[0] if ":" in ep.value else ep.value
-            try:
-                from importlib.resources import files as _res_files
-
-                pkg_path = _res_files(ep_module)
-                entry["_source"] = str(pkg_path._path if hasattr(pkg_path, "_path") else Path(pkg_path))
-            except (TypeError, AttributeError, ModuleNotFoundError):
-                # Fallback: derive from ep.load()'s module __file__
-                entry["_source"] = ""
         aspects[ep.name] = entry
     return aspects
 

@@ -573,8 +573,8 @@ def _assemble_agents_md(aspects: dict[str, int], project_name: str) -> str:
 
     try:
         base_text = _kit_data("agents-md-base.md")
-    except FileNotFoundError:
-        raise click.ClickException("Missing AGENTS.md base template in kanon_core package data")
+    except FileNotFoundError as exc:
+        raise click.ClickException("Missing AGENTS.md base template in kanon_core package data") from exc
     context: dict[str, str] = {"project_name": project_name}
     for aspect, depth in aspects.items():
         if aspect.startswith("kanon-"):

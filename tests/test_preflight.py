@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import yaml
 from click.testing import CliRunner
 
@@ -132,15 +133,13 @@ def test_preflight_release_requires_tag(tmp_path: Path) -> None:
     assert "tag" in result.output.lower()
 
 
-def test_preflight_timeout(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
+def test_preflight_timeout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A check that times out is marked as failed (covers TimeoutExpired handler)."""
     import subprocess as _sp
 
     from kanon_core._preflight import _run_preflight
 
     target = _init_project(tmp_path)
-
-    original_run = _sp.run
 
     def _fake_run(*args, **kwargs):
         raise _sp.TimeoutExpired(cmd="sleep 999", timeout=120)
@@ -168,7 +167,7 @@ def test_preflight_fail_fast(tmp_path: Path) -> None:
     assert results[0]["label"] == "fail-first"
 
 
-def test_resolve_aspect_contributed_preflight(monkeypatch: "pytest.MonkeyPatch") -> None:
+def test_resolve_aspect_contributed_preflight(monkeypatch: pytest.MonkeyPatch) -> None:
     """Aspect-contributed preflight checks are resolved (covers lines 37-43)."""
     from kanon_core import _preflight
 
@@ -187,7 +186,7 @@ def test_resolve_aspect_contributed_preflight(monkeypatch: "pytest.MonkeyPatch")
     assert any(c["label"] == "aspect-lint" for c in checks)
 
 
-def test_preflight_oserror(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") -> None:
+def test_preflight_oserror(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A check that raises OSError is marked as failed (covers OSError handler)."""
     import subprocess as _sp
 
@@ -206,7 +205,7 @@ def test_preflight_oserror(tmp_path: Path, monkeypatch: "pytest.MonkeyPatch") ->
     assert results[0]["passed"] is False
 
 
-def test_resolve_aspect_invalid_stage_skipped(monkeypatch: "pytest.MonkeyPatch") -> None:
+def test_resolve_aspect_invalid_stage_skipped(monkeypatch: pytest.MonkeyPatch) -> None:
     """Aspect preflight with invalid stage name is skipped (covers line 38)."""
     from kanon_core import _preflight
 
@@ -224,7 +223,7 @@ def test_resolve_aspect_invalid_stage_skipped(monkeypatch: "pytest.MonkeyPatch")
     assert checks == []
 
 
-def test_resolve_aspect_unresolved_placeholder_skipped(monkeypatch: "pytest.MonkeyPatch") -> None:
+def test_resolve_aspect_unresolved_placeholder_skipped(monkeypatch: pytest.MonkeyPatch) -> None:
     """Aspect preflight with unresolved placeholder is skipped (covers line 42)."""
     from kanon_core import _preflight
 

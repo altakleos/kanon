@@ -33,8 +33,9 @@ class TestEvaluateGates:
                   "protocol_path": ".kanon/protocols/kanon-sdd/p.md", "priority": 1,
                   "check": "sleep 60", "question": "", "audit": "", "skip_when": ""}]
         # Monkey-patch timeout to 1s for test speed
-        import kanon_core._gates as gates_mod
         import subprocess
+
+        import kanon_core._gates as gates_mod
         original_run = subprocess.run
 
         def fast_timeout_run(*args, **kwargs):
