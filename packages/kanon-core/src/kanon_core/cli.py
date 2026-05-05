@@ -22,6 +22,7 @@ See docs/design/aspect-model.md and ADR-0012 / ADR-0013.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -479,6 +480,22 @@ def _run_verify_core(target: Path) -> dict[str, Any]:
         config = _read_config(target)
     except click.ClickException as exc:
         return {"aspects": {}, "errors": [exc.message], "warnings": [], "status": "fail"}
+
+    # Bootstrap version check: warn if installed kanon is older than what
+    # scaffolded this project (prevents version-skew confusion).
+    if not os.environ.get("KANON_SKIP_VERSION_CHECK"):
+        kit_version = config.get("kit_version")
+        if kit_version:
+            from packaging.version import Version
+            from kanon_core import __version__
+            try:
+                if Version(__version__) < Version(kit_version):
+                    warnings.append(
+                        f"Installed kanon {__version__} is older than this project"
+                        f" requires ({kit_version}). Run: uv tool upgrade kanon-kit"
+                    )
+            except Exception:
+                pass  # Malformed version strings — skip check silently
 
     aspects = _config_aspects(config)
     if not aspects:
