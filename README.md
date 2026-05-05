@@ -137,7 +137,7 @@ See [ADR-0036](docs/decisions/0036-secure-defaults-config-trust-carveout.md) for
 
 ## Status
 
-**Early alpha (v0.4.0a1).** The "kit → protocol substrate" pivot ([ADR-0045](docs/decisions/0045-de-opinionation-transition.md), [ADR-0048](docs/decisions/0048-kanon-as-protocol-substrate.md)) lands here: kernel-reference split skeleton, entry-point discovery for aspects, dialect grammar with realization-shape + composition algebra, resolutions replay engine, substrate-independence CI gate. v0.3.x consumers cannot upgrade in place; use `kanon upgrade` once. See [the roadmap](docs/plans/roadmap.md) for what's coming.
+**Early alpha (v0.5.0a7).** The "kit → protocol substrate" pivot ([ADR-0045](docs/decisions/0045-de-opinionation-transition.md), [ADR-0048](docs/decisions/0048-kanon-as-protocol-substrate.md)) is in flight: entry-point discovery for aspects, dialect grammar with realization-shape + composition algebra, resolutions replay engine, substrate-independence CI gate, monorepo layout per [ADR-0054](docs/decisions/0054-final-layout-and-core-vocabulary.md). The three-distribution PyPI split (`kanon-core` + `kanon-aspects` + `kanon-kit`) is deferred per [ADR-0053](docs/decisions/0053-phase-a-implementation-deferral.md); the active publisher is the `kanon-kit` monolith. v0.3.x consumers cannot upgrade in place; use `kanon upgrade` once. See [the roadmap](docs/plans/roadmap.md) for what's coming.
 
 ## License
 
