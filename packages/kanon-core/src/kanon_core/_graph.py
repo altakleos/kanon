@@ -44,6 +44,8 @@ NAMESPACE_ASPECT = "aspect"
 NAMESPACE_CAPABILITY = "capability"
 NAMESPACE_VISION = "vision"
 NAMESPACE_PLAN = "plan"  # edge-source-only namespace (plans aren't orphan-candidates)
+NAMESPACE_DECISION = "decision"  # edge-source-only (ADRs reference specs in prose)
+NAMESPACE_DESIGN = "design"  # edge-source-only (design docs implement specs)
 
 KNOWN_NAMESPACES: frozenset[str] = frozenset({
     NAMESPACE_PRINCIPLE,
@@ -53,6 +55,8 @@ KNOWN_NAMESPACES: frozenset[str] = frozenset({
     NAMESPACE_CAPABILITY,
     NAMESPACE_VISION,
     NAMESPACE_PLAN,
+    NAMESPACE_DECISION,
+    NAMESPACE_DESIGN,
 })
 
 LIVE_STATUSES: frozenset[str] = frozenset({
@@ -74,6 +78,8 @@ EDGE_STRESSED_BY = "stressed_by"
 EDGE_STRESSES = "stresses"
 EDGE_REQUIRES = "requires"
 EDGE_SERVES_PLAN = "serves_plan"
+EDGE_IMPLEMENTS = "implements"
+EDGE_DECIDES = "decides"
 EDGE_INV_REF = "inv_ref"
 EDGE_DERIVED_FROM = "derived_from"
 
@@ -446,6 +452,52 @@ def _plan_edges(plans_dir: Path) -> list[Edge]:
     return edges
 
 
+_PROSE_SPEC_LINK_FROM_DECISIONS_RE = re.compile(
+    r"\]\(\.\./specs/([a-z0-9][a-z0-9-]*)\.md(?:#[^)\s]*)?\)"
+)
+
+
+def _decision_edges(decisions_dir: Path) -> list[Edge]:
+    """Decision→spec edges from prose markdown links to specs."""
+    edges: list[Edge] = []
+    if not decisions_dir.is_dir():
+        return edges
+    for path in _iter_md(decisions_dir):
+        fm, body = _read_md(path)
+        slug = path.stem
+        seen: set[str] = set()
+        for match in _PROSE_SPEC_LINK_FROM_DECISIONS_RE.finditer(body):
+            spec_slug = match.group(1)
+            if spec_slug not in seen:
+                seen.add(spec_slug)
+                edges.append(Edge(slug, NAMESPACE_DECISION, spec_slug,
+                                  NAMESPACE_SPEC, EDGE_DECIDES, path))
+    return edges
+
+
+def _design_edges(design_dir: Path) -> list[Edge]:
+    """Design→spec edges from frontmatter ``implements:`` field."""
+    edges: list[Edge] = []
+    if not design_dir.is_dir():
+        return edges
+    for path in _iter_md(design_dir):
+        fm, body = _read_md(path)
+        slug = path.stem
+        implements = fm.get("implements")
+        if isinstance(implements, str):
+            spec_slug = _path_to_spec_slug(implements)
+            if spec_slug:
+                edges.append(Edge(slug, NAMESPACE_DESIGN, spec_slug,
+                                  NAMESPACE_SPEC, EDGE_IMPLEMENTS, path))
+        elif isinstance(implements, list):
+            for raw in implements:
+                spec_slug = _path_to_spec_slug(raw)
+                if spec_slug:
+                    edges.append(Edge(slug, NAMESPACE_DESIGN, spec_slug,
+                                      NAMESPACE_SPEC, EDGE_IMPLEMENTS, path))
+    return edges
+
+
 def _path_to_spec_slug(value: str) -> str | None:
     """Accept ``aspect-config``, ``docs/specs/aspect-config.md``,
     ``../specs/aspect-config.md`` — return ``aspect-config``.
@@ -548,6 +600,8 @@ def build_graph(repo_root: Path) -> GraphData:
     foundations = repo_root / "docs" / "foundations"
     specs_dir = repo_root / "docs" / "specs"
     plans_dir = repo_root / "docs" / "plans"
+    decisions_dir = repo_root / "docs" / "decisions"
+    design_dir = repo_root / "docs" / "design"
     kit_root = repo_root / "packages" / "kanon-core" / "src" / "kanon_core" / "kit"
 
     principle_nodes = _discover_principles(foundations)
@@ -576,6 +630,8 @@ def build_graph(repo_root: Path) -> GraphData:
             aspect_node.path,
         ))
     edges.extend(_plan_edges(plans_dir))
+    edges.extend(_decision_edges(decisions_dir))
+    edges.extend(_design_edges(design_dir))
 
     spec_slug_set = {n.slug for n in spec_nodes}
     for spec_node in spec_nodes:
