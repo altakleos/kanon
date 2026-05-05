@@ -1,5 +1,6 @@
 ---
 status: accepted
+design: "Follows ADR-0062"
 date: 2026-05-04
 fixtures_deferred: true
 ---
