@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import json
+import platform
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 from kanon_core.cli import _run_verify_core, main
@@ -85,6 +87,10 @@ def test_gates_check_exits_1_outside_worktree(tmp_path: Path) -> None:
     assert worktree_gate["protocol_path"] == ".kanon/protocols/kanon-worktrees/branch-hygiene.md"
 
 
+@pytest.mark.skipif(
+    platform.system() == "Linux",
+    reason="Worktree shell check uses [[ ]] which requires bash; /bin/sh on Linux is dash",
+)
 def test_gates_check_passes_inside_worktree(tmp_path: Path) -> None:
     """gates check passes when target path contains .worktrees/ segment."""
     runner = CliRunner()
