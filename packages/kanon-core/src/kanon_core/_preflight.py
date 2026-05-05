@@ -108,7 +108,7 @@ def _run_preflight(
             passed = proc.returncode == 0
         except subprocess.TimeoutExpired:
             passed = False
-            print(f"  timeout: command exceeded 120s", file=sys.stderr)
+            print("  timeout: command exceeded 120s", file=sys.stderr)
         except OSError as exc:
             passed = False
             print(f"  error: {exc}", file=sys.stderr)

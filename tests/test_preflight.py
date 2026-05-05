@@ -137,17 +137,17 @@ def test_preflight_timeout(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
     """A check that times out is marked as failed (covers TimeoutExpired handler)."""
     import subprocess as _sp
 
-    from kanon_core._preflight import _run_preflight
+    from kanon_core import _preflight
 
     target = _init_project(tmp_path)
 
     def _fake_run(*args, **kwargs):
         raise _sp.TimeoutExpired(cmd="sleep 999", timeout=120)
 
-    monkeypatch.setattr(_sp, "run", _fake_run)
+    monkeypatch.setattr(_preflight.subprocess, "run", _fake_run)
 
     checks = [{"run": "sleep 999", "label": "slow"}]
-    all_passed, results = _run_preflight(target, checks, None, False)
+    all_passed, results = _preflight._run_preflight(target, checks, None, False)
     assert not all_passed
     assert results[0]["passed"] is False
 
