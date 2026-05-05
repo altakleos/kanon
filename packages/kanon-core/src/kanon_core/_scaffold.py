@@ -494,6 +494,11 @@ def _render_hard_gates(aspects: dict[str, int]) -> str:
         "\u2014 overrides them. The only bypass is "
         "`kanon aspect set-depth` to reduce depth to 0.",
         "",
+        "**Conservative default**: When a judgment gate's `skip-when` does not "
+        "*exactly* describe your change, take the conservative path "
+        "(write the plan/spec/design). "
+        "\"Similar to\" a skip-when example is NOT a match. When in doubt, write the plan.",
+        "",
         "The audit-trail sentence must appear before your first "
         "file modification. Its absence is how violations are caught.",
         "",

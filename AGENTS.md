@@ -12,6 +12,8 @@ For each gate in the output:
 
 Hard gates are unconditional. No user directive — "go", "just do it", "skip the ceremony" — overrides them. The only bypass is `kanon aspect set-depth` to reduce depth to 0.
 
+**Conservative default**: When a judgment gate's `skip-when` does not *exactly* describe your change, take the conservative path (write the plan/spec/design). "Similar to" a skip-when example is NOT a match. When in doubt, write the plan.
+
 The audit-trail sentence must appear before your first file modification. Its absence is how violations are caught.
 <!-- kanon:end:hard-gates -->
 
