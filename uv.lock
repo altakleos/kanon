@@ -220,12 +220,14 @@ name = "kanon-core"
 source = { editable = "packages/kanon-core" }
 dependencies = [
     { name = "click" },
+    { name = "packaging" },
     { name = "pyyaml" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.0" },
+    { name = "packaging", specifier = ">=21.0" },
     { name = "pyyaml", specifier = ">=6.0" },
 ]
 
