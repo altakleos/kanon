@@ -45,7 +45,7 @@ invariant_coverage:
     - tests/test_aspect_provides.py::test_removal_allowed_when_alternative_supplier_remains
   INV-aspect-provides-all-aspects-declare:
     - tests/test_aspect_provides.py::test_every_shipped_aspect_declares_capability
-    - tests/test_aspect_provides.py::test_kit_manifest_yaml_matches_loader
+    - tests/test_aspect_provides.py::test_pyproject_entry_points_align_with_per_aspect_manifests
   INV-aspect-provides-no-silent-meaning-change:
     - tests/test_aspect_provides.py::test_existing_kit_requires_predicates_classify_as_depth
     - tests/test_aspect_provides.py::test_check_requires_depth_predicate_unchanged

@@ -16,7 +16,7 @@ invariant_coverage:
   INV-aspects-aspect-identity:
     - tests/test_cli_aspect.py::test_aspect_list
     - tests/test_cli_aspect.py::test_aspect_info
-    - tests/test_kit_integrity.py::test_top_manifest_is_aspect_registry
+    - tests/test_kit_integrity.py::test_kanon_sdd_per_aspect_manifest_has_required_fields
   INV-aspects-sdd-is-an-aspect:
     - tests/test_cli.py::test_upgrade_legacy_v1_migration
     - tests/test_cli.py::test_init_scaffolds_all_required_files

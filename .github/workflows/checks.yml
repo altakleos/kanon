@@ -70,6 +70,12 @@ jobs:
       - name: Check substrate-independence (per ADR-0044)
         run: python scripts/check_substrate_independence.py
 
+      - name: Check docs/reference-aspects.md is in sync with source
+        run: python scripts/gen_reference_aspects.py --check
+
+      - name: Check publisher-symmetry (per plan T9 + AC7, P-publisher-symmetry)
+        run: pytest tests/scripts/test_publisher_symmetry.py -v
+
       - name: Check process gates (plan-before-build, spec-before-design)
         run: |
           if [ "${{ inputs.is-pr }}" = "true" ]; then

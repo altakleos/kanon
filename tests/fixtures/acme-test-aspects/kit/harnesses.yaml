@@ -1,0 +1,6 @@
+# Synthetic harnesses fixture for the publisher-symmetry overlay.
+# Required by scripts/check_kit_consistency.py:_check_harnesses_yaml.
+
+- name: synthetic-harness
+  path: SYNTH.md
+  body: Read AGENTS.md
