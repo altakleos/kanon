@@ -1219,7 +1219,7 @@ def _print_impact(
     indent = "  " * depth
     for edge in graph_data.inbound_all.get(key, []):
         src_key = (edge.src_namespace, edge.src_slug)
-        click.echo(f"{indent}\u2190 {edge.src_slug} ({edge.kind})")
+        click.echo(f"{indent}\u2190 {edge.src_slug} ({edge.src_namespace}) [{edge.kind}]")
         _print_impact(graph_data, src_key, depth + 1, max_depth)
 
 
