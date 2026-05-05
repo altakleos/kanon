@@ -15,30 +15,29 @@ Live LLM-in-the-loop tests that verify kanon's SDD gates cause correct agent beh
 
 ```bash
 # Individual tests
-./tests/e2e_agent/test_d0_no_gates_freedom.sh
-./tests/e2e_agent/test_d1_plan_fire_new_function.sh
-./tests/e2e_agent/test_d1_plan_skip_typo.sh
-./tests/e2e_agent/test_d1_plan_skip_approved.sh
-./tests/e2e_agent/test_d2_spec_fire_new_capability.sh
-./tests/e2e_agent/test_d2_spec_skip_refactor.sh
-./tests/e2e_agent/test_d2_foundations_skip_populated.sh
-./tests/e2e_agent/test_d3_design_fire_new_boundaries.sh
-./tests/e2e_agent/test_d3_design_skip_existing_pattern.sh
+./tests/e2e_agent/test_hardgate_sdd_d0_freedom.sh
+./tests/e2e_agent/test_hardgate_sdd_d1_plan_fire.sh
+./tests/e2e_agent/test_hardgate_sdd_d1_plan_skip_typo.sh
+./tests/e2e_agent/test_hardgate_sdd_d1_plan_skip_approved.sh
+./tests/e2e_agent/test_hardgate_sdd_d2_spec_fire.sh
+./tests/e2e_agent/test_hardgate_sdd_d2_spec_skip_refactor.sh
+./tests/e2e_agent/test_protocol_sdd_d2_foundations_skip_populated.sh
+./tests/e2e_agent/test_hardgate_sdd_d3_design_fire.sh
+./tests/e2e_agent/test_hardgate_sdd_d3_design_skip_pattern.sh
 
 # Run all
-for f in tests/e2e_agent/test_d*.sh; do echo "--- $f ---"; "$f"; done
+for f in tests/e2e_agent/test_*.sh; do echo "--- $f ---"; "$f"; done
 ```
 
 ## Naming Convention
 
 ```
-test_d{depth}_{gate}_{fire|skip}_{context}.sh
+test_{what}_{aspect}_{scenario}.sh
 ```
 
-- `d{N}` — SDD depth level (0–3)
-- `{gate}` — which gate is being tested (plan, spec, design, foundations, no_gates)
-- `{fire|skip}` — whether the gate should fire (require artifact) or be skipped
-- `{context}` — what makes this scenario unique
+- `{what}` — what's being tested: `hardgate`, `protocol`, `workflow`, `regression`
+- `{aspect}` — which kanon aspect owns it: `sdd`, `worktrees`, `testing`, `security`
+- `{scenario}` — depth + gate + fire/skip + context (e.g., `d1_plan_fire`, `d2_spec_skip_refactor`)
 
 ## Requirements
 
