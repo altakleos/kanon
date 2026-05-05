@@ -11,13 +11,20 @@ from typing import Any
 from kanon_core._manifest import _aspect_path, _aspect_protocols, _parse_frontmatter
 
 
-def discover_gates(aspects: dict[str, int]) -> list[dict[str, Any]]:
-    """Discover active hard gates from protocol frontmatter, filtered by depth."""
+def discover_gates(aspects: dict[str, int], target: Path | None = None) -> list[dict[str, Any]]:
+    """Discover active hard gates from protocol frontmatter, filtered by depth.
+
+    If *target* is provided, reads from .kanon/protocols/<aspect>/ (consumer's copy).
+    Otherwise falls back to the aspect source path (for scaffold-time use).
+    """
     gates: list[dict[str, Any]] = []
     for aspect, depth in aspects.items():
-        aspect_root = _aspect_path(aspect)
+        if target is not None:
+            protocols_dir = target / ".kanon" / "protocols" / aspect
+        else:
+            protocols_dir = _aspect_path(aspect) / "protocols"
         for proto_file in _aspect_protocols(aspect, depth):
-            proto_path = aspect_root / "protocols" / proto_file
+            proto_path = protocols_dir / proto_file
             if not proto_path.exists():
                 continue
             fm = _parse_frontmatter(proto_path.read_text(encoding="utf-8"))
