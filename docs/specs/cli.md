@@ -76,6 +76,22 @@ invariant_coverage:
     - pyproject.toml
     - README.md
     - tests/test_atomic.py::test_fsyncs_parent_directory
+  INV-cli-preflight:
+    - tests/test_preflight.py::test_preflight_cli_commit_stage
+    - tests/test_preflight.py::test_preflight_cli_failing_check
+    - tests/test_preflight.py::test_preflight_release_requires_tag
+  INV-cli-release:
+    - tests/test_e2e_lifecycle.py::test_release_lifecycle
+  INV-cli-resolve:
+    - tests/test_cli_resolutions_contracts.py::test_resolve_emits_deferred_status
+  INV-cli-resolutions-group:
+    - tests/test_cli_resolutions_contracts.py::test_resolutions_check_missing_file_exits_zero
+    - tests/test_cli_resolutions_contracts.py::test_resolutions_explain_emits_deferred_status
+  INV-cli-contracts-group:
+    - tests/test_cli_resolutions_contracts.py::test_contracts_validate_missing_manifest_errors
+    - tests/test_cli_resolutions_contracts.py::test_contracts_validate_clean_empty_bundle_ok
+  INV-cli-gates-group:
+    - tests/test_declarative_gates.py::test_discovers_gates_from_frontmatter
 ---
 # Spec: `kanon` CLI surface
 
@@ -86,7 +102,7 @@ Provide a single `kanon` command with subcommands that cover the full consumer l
 ## Invariants
 
 <!-- INV-cli-subcommands -->
-1. **Subcommands.** The CLI exposes these top-level entries: `init`, `upgrade`, `verify`, `tier` (back-compat group), `aspect` (group), `fidelity` (group), `graph` (group), and `--version`. The `tier` group contains `set`. The `aspect` group contains `list`, `info`, `add`, `remove`, `set-depth`, `set-config`. The `fidelity` group contains `update`. The `graph` group contains `orphans`, `rename`.
+1. **Subcommands.** The CLI exposes these top-level entries: `init`, `upgrade`, `verify`, `preflight`, `release`, `resolve`, `tier` (back-compat group), `aspect` (group), `fidelity` (group), `graph` (group), `resolutions` (group), `contracts` (group), `gates` (group), and `--version`. The `tier` group contains `set`. The `aspect` group contains `list`, `info`, `add`, `remove`, `set-depth`, `set-config`. The `fidelity` group contains `update`. The `graph` group contains `orphans`, `rename`, `impact`. The `resolutions` group contains `check`, `explain`. The `contracts` group contains `validate`. The `gates` group contains `check`, `list`.
 <!-- INV-cli-init -->
 2. **`init <target> [--tier N] [--aspects SPEC] [--profile NAME] [--lite] [--force] [--harness NAME] [--quiet]`** — scaffolds a new project at `<target>`. Without flags, every aspect in the manifest's `defaults:` set is scaffolded at depth 1 (per ADR-0035). `--aspects` accepts comma-separated `aspect:depth` pairs (e.g., `sdd:2,worktrees:1`). `--tier N` is a uniform aspect-depth raise — every aspect in `defaults:` is raised to `min(N, max-depth)` (ADR-0035). `--profile NAME` selects a preset bundle (see INV-cli-init-profile). `--lite` is sugar for `kanon-sdd:0`. `--tier`, `--aspects`, `--profile`, and `--lite` are mutually exclusive. `--force` overwrites an existing `.kanon/` directory; without it, an existing `.kanon/` causes an error. `--harness` (repeatable) selects which harness shims to write; defaults to auto-detection from existing config directories, falling back to `CLAUDE.md` only. `--quiet` / `-q` suppresses the banner and the trailing "Next steps" advisory.
 <!-- INV-cli-init-profile -->
@@ -109,7 +125,7 @@ Provide a single `kanon` command with subcommands that cover the full consumer l
 <!-- INV-cli-fidelity-group -->
 9. **`fidelity` group.** `update <target>` recomputes the fidelity lock (`.kanon/fidelity.lock`) from current spec and fixture SHAs. See `fidelity-lock.md` spec.
 <!-- INV-cli-graph-group -->
-10. **`graph` group.** `orphans [--type <namespace>] [--format json|text] [--target DIR]` reports unreferenced nodes in the cross-link graph. `rename --type <namespace> <old> <new> [--dry-run] [--target DIR]` atomically renames a slug across every artifact that references it. See `spec-graph-orphans.md` and `spec-graph-rename.md` for behavioral invariants.
+10. **`graph` group.** `orphans [--type <namespace>] [--format json|text] [--target DIR]` reports unreferenced nodes in the cross-link graph. `rename --type <namespace> <old> <new> [--dry-run] [--target DIR]` atomically renames a slug across every artifact that references it. `impact [--target DIR] [--format json|text]` shows downstream nodes affected by changes to a given node. See `spec-graph-orphans.md` and `spec-graph-rename.md` for behavioral invariants.
 <!-- INV-cli-version-flag -->
 11. **`--version`** — prints `kanon.__version__` and exits 0.
 <!-- INV-cli-exit-codes -->
@@ -118,8 +134,20 @@ Provide a single `kanon` command with subcommands that cover the full consumer l
 13. **Atomicity.** Every file write is individually atomic via write-to-tmp + fsync + `os.replace()` + fsync parent directory. Multi-file commands are crash-consistent, not instantaneous: a `.kanon/.pending` sentinel is written before the first mutation and cleared after the last; if present on the next invocation, the user is notified to re-run the same command, and idempotency guarantees the re-run completes the operation. All mutating commands are idempotent. `config.yaml` is always written last as the commit marker. See ADR-0024.
 <!-- INV-cli-consumer-friendly-errors -->
 14. **Consumer-friendly errors.** Missing `.kanon/config.yaml`, unknown aspects, depth-range violations, and dependency conflicts emit single-line human-readable messages with the offending path or value.
+<!-- INV-cli-preflight -->
+15. **`preflight <target> [--stage commit|push|release] [--tag TAG] [--fail-fast]`** — runs staged local validation: first `kanon verify`, then consumer-configured checks for the given stage. Outputs per-check results to stderr and a JSON summary to stdout. Exit 0 if all checks pass. See `preflight.md` spec.
+<!-- INV-cli-release -->
+16. **`release <target> --tag TAG [--dry-run]`** — gates a release tag on preflight checks (requires `kanon-release` aspect at depth ≥ 2). Validates tag format, checks clean working tree, runs `preflight --stage release`, then creates an annotated git tag. `--dry-run` runs preflight without creating the tag.
+<!-- INV-cli-resolve -->
+17. **`resolve <target>`** — invokes the consumer's LLM harness to resolve open contracts. Phase A.7 stub: currently emits a deferred-status JSON message.
+<!-- INV-cli-resolutions-group -->
+18. **`resolutions` group.** `check <target>` validates existing resolution records (quadruple-pin, staleness, evidence-grounding). `explain <target> <contract-id>` explains a contract's resolution status. Phase A.7 stub for `explain`.
+<!-- INV-cli-contracts-group -->
+19. **`contracts` group.** `validate <target>` validates contract definitions against their schemas.
+<!-- INV-cli-gates-group -->
+20. **`gates` group.** `check <target>` discovers active hard gates from protocol frontmatter and evaluates their check commands (or reports `judgment` status for gates without a check command). `list <target>` lists all active gates with their priorities and labels.
 <!-- INV-cli-posix-only -->
-15. **POSIX-only.** The `kanon` CLI assumes a POSIX filesystem (Linux, macOS) for its atomic-write primitives (write-to-tmp + `fsync` of parent directory + `rename`). Windows is not supported. The `pyproject.toml` `classifiers` and the README quickstart record this constraint.
+21. **POSIX-only.** The `kanon` CLI assumes a POSIX filesystem (Linux, macOS) for its atomic-write primitives (write-to-tmp + `fsync` of parent directory + `rename`). Windows is not supported. The `pyproject.toml` `classifiers` and the README quickstart record this constraint.
 
 ## Rationale
 
