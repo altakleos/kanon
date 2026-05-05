@@ -1,6 +1,7 @@
 """Tests for kanon_core._findings module."""
 from __future__ import annotations
 
+from dataclasses import FrozenInstanceError
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,7 @@ from kanon_core._findings import Finding
 
 def test_finding_is_frozen() -> None:
     f = Finding(severity="error", kind="missing", source_slug="s", source_namespace="ns", message="msg")
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         f.severity = "warning"  # type: ignore[misc]
 
 

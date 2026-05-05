@@ -1,7 +1,6 @@
 """Tests to cover remaining uncovered CLI paths for coverage threshold."""
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import yaml

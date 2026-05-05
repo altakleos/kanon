@@ -7,7 +7,6 @@ from unittest.mock import patch
 import click
 import pytest
 
-from kanon_core._gates import discover_gates
 from kanon_core._scaffold import _render_hard_gates
 
 
@@ -90,9 +89,9 @@ label: Incomplete
     _write_protocol(tmp_path, "bad.md", incomplete)
 
     with patch("kanon_core._scaffold._aspect_path", return_value=tmp_path), \
-         patch("kanon_core._scaffold._aspect_protocols", return_value=["bad.md"]):
-        with pytest.raises(click.ClickException, match="requires"):
-            _render_hard_gates({"kanon-sdd": 1})
+         patch("kanon_core._scaffold._aspect_protocols", return_value=["bad.md"]), \
+         pytest.raises(click.ClickException, match="requires"):
+        _render_hard_gates({"kanon-sdd": 1})
 
 
 # --- INV-declarative-hard-gates-priority-unique ---
@@ -105,9 +104,9 @@ def test_duplicate_priority_raises(tmp_path: Path) -> None:
     _write_protocol(tmp_path, "gate-b.md", duplicate)
 
     with patch("kanon_core._scaffold._aspect_path", return_value=tmp_path), \
-         patch("kanon_core._scaffold._aspect_protocols", return_value=["gate-a.md", "gate-b.md"]):
-        with pytest.raises(click.ClickException, match="priority.*collision"):
-            _render_hard_gates({"kanon-sdd": 1})
+         patch("kanon_core._scaffold._aspect_protocols", return_value=["gate-a.md", "gate-b.md"]), \
+         pytest.raises(click.ClickException, match="priority.*collision"):
+        _render_hard_gates({"kanon-sdd": 1})
 
 
 # --- INV-declarative-hard-gates-depth-filtering ---
