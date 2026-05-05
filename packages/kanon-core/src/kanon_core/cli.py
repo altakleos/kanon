@@ -490,6 +490,13 @@ def verify(target: Path) -> None:
     # subsequent appends, so kit-emitted errors cannot be suppressed.
     run_project_validators(target, aspects, errors, warnings)
 
+    # Worktree validators: runtime/git-state checks (not DAG-driven).
+    if aspects.get("kanon-worktrees", 0) >= 1:
+        from kanon_core._validators.worktree_hygiene import check as _wt_hygiene
+        from kanon_core._validators.orphan_branches import check as _orphan_branches
+        _wt_hygiene(str(target), errors, warnings)
+        _orphan_branches(str(target), errors, warnings)
+
     known_aspects = check_aspects_known(aspects, errors, warnings)
     check_required_files(target, known_aspects, errors)
     check_agents_md_markers(target, aspects, known_aspects, errors)
